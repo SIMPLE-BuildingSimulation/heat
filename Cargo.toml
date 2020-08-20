@@ -1,5 +1,5 @@
 [package]
-name = "thermal_solver"
+name = "finite_difference_thermal_solver"
 version = "0.1.0"
 authors = ["German Molina <germolinal@gmail.com>"]
 edition = "2018"
@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 building = {path = "../../building"}
 matrix = {path = "../../matrix"}
+convection = {path = "../convection"}
+geometry3d = {path = "../../geometry3d"}
