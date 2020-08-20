@@ -1,12 +1,11 @@
 use std::rc::Rc;
 
 use matrix::Matrix;
-use building::surface::Surface;
-use building::construction::Construction;
+use building_model::surface::Surface;
+use building_model::construction::Construction;
 use convection::*;
 
 
-use crate::zone::ThermalZone;
 
 /// This is a Surface from the point of 
 /// view of our thermal solver.
@@ -523,8 +522,8 @@ pub fn find_dt_and_n_nodes(c: &Construction, main_dt: f64, n: usize, max_dx: f64
 #[cfg(test)]
 mod testing{
     use super::*;
-    use building::material::Material;
-    use building::substance::Substance;
+    use building_model::material::Material;
+    use building_model::substance::Substance;
     use geometry3d::polygon3d::Polygon3D;
     use geometry3d::point3d::Point3D;
     use geometry3d::loop3d::Loop3D;

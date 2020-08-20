@@ -99,10 +99,10 @@ mod testing{
     use geometry3d::loop3d::Loop3D;
 
 
-    use building::substance::Substance;
-    use building::material::Material;
-    use building::construction::Construction;
-    use building::surface::Surface;
+    use building_model::substance::Substance;
+    use building_model::material::Material;
+    use building_model::construction::Construction;
+    use building_model::surface::Surface;
 
 
 
