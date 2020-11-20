@@ -1,3 +1,4 @@
+use gas_properties::air;
 
 pub struct ThermalZone {
     
@@ -53,14 +54,20 @@ impl ThermalZone{
     }
 
     pub fn consume_heat(&mut self){
+
         let delta_t = self.accumulated_heat/self.mcp();
         self.temperature += delta_t;        
         self.accumulated_heat = 0.;
-    }
 
+    }
+    
     pub fn mcp(&self)->f64{
-        let air_density = 1.225; //kg/m3
-        let air_specific_heat = 1003.;//J/kg.K
+
+        
+
+        let air_density = air::density(); //kg/m3
+        let air_specific_heat = air::specific_heat();//J/kg.K
+
         self.volume * air_density * air_specific_heat
     }
 }

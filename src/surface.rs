@@ -1,23 +1,29 @@
-use std::rc::Rc;
-
 use matrix::Matrix;
+
+use building_model::building::Building;
+use building_model::object_trait::ObjectTrait;
+use building_model::substance::*;
+use building_model::material::*;
 use building_model::surface::Surface;
+
 use building_model::construction::Construction;
 use convection::*;
 
+use crate::construction::*;
 
 
 /// This is a Surface from the point of 
 /// view of our thermal solver.
 pub struct ThermalSurface {
     
+    /// The index of this surface within 
+    /// the Thermal Model surfaces array
+    index: usize,
+
     /// A reference to the original Surface in the 
     /// building model
-    surface : Rc<Surface>,
-
-    /// Area of the surface
-    area : f64,
-    
+    surface_index: usize,
+        
     /// The interior (i.e. front side) convection coefficient
     rs_i: f64,
     
@@ -69,22 +75,31 @@ pub struct ThermalSurface {
     /// Zones array of the Thermal Model    
     back_boundary_index: Option<usize>,
 
-    /// The position of this surface within 
-    /// the Thermal Model surfaces array
-    position: usize,
+    /// The area of the Surface
+    area: f64,
 }
 
 impl ThermalSurface {
 
-    pub fn new(surface: Rc<Surface>, dt: f64, nodes: &Vec<usize>, position: usize ) -> Self {
-                
+    pub fn new(building: &Building, surface: &Surface, dt: f64, nodes: &Vec<usize>, index: usize ) -> Self {
+        
+        // Get the surface... or else
+        //let surface = building.get_surface(surface_index).unwrap();
+        
+        // Check if Surface is valid... or else
+        ObjectTrait::is_full(surface).unwrap();
+        
+        // Get construction... or else 
+        
+        // this (should not fail because the surface is valid)
+        let construction_index = surface.get_construction_index().unwrap();
+        let construction = building.get_construction(construction_index).unwrap();
+
         let n_nodes = calc_n_total_nodes(&nodes);
-        let (rs_i,rs_o) = calc_convection_coefficients(surface.as_ref());
-        let area = surface.area();
+        let (rs_i,rs_o) = calc_convection_coefficients(surface);        
         
         let mut ret = ThermalSurface{
-            surface: surface,
-            area: area,
+            surface_index: ObjectTrait::index(surface),            
             rs_i: rs_i,
             rs_o: rs_o,
             full_rso: 0.0, // filled when building thermal network
@@ -97,19 +112,21 @@ impl ThermalSurface {
             massive: true, // filled after building the thermal network
             front_boundary_index: None, // filled when setting boundary
             back_boundary_index: None,
-            position: position
+            index: index,
+            area : surface.area().unwrap(), // should not fail because surface is full
         };
         
-        build_thermal_network(&ret.surface.construction(), dt, &nodes, rs_i, rs_o, &mut ret.k_prime, &mut ret.full_rsi, &mut ret.full_rso, &mut ret.c_i, &mut ret.c_o).unwrap();
+        build_thermal_network(building, &construction, dt, &nodes, rs_i, rs_o, &mut ret.k_prime, &mut ret.full_rsi, &mut ret.full_rso, &mut ret.c_i, &mut ret.c_o).unwrap();
         ret.massive = !(ret.c_o == 0.0 && ret.c_i == 0.);
 
         // return
         ret
+                
     }
     
 
     pub fn area(&self)->f64{
-        self.surface.area()
+        self.area
     }
 
     pub fn rs_i(&self)->f64{
@@ -144,9 +161,9 @@ impl ThermalSurface {
         if self.massive {
             // Update state... T_i+1 = Ti + K_prime*Ti + {t_in/full_rsi/C_i ... 0,0,0... t_out/full_rso/C_o}
             //                              ^^^^^^^^^                    ^^^^^^^^^^^^
-            //                        lets call this vector 'a'         These arethe F components        
+            //                        lets call this vector 'a'         These are the F components        
             let mut a = self.k_prime.from_prod_n_diag(&self.state,3).unwrap();// k_prime is tri-diagonal
-            // ... a should be a vector
+            // ... 'a' should be a vector
 
             // Let's add the F components
             let old_value = a.get(0,0).unwrap();
@@ -276,8 +293,16 @@ fn calc_n_total_nodes(n_nodes : &Vec<usize>)->usize{
     return n
 }
 
-fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: f64, rs_o: f64, k_prime: & mut Matrix, full_rsi: &mut f64, full_rso: &mut f64, c_i: & mut f64, c_o: & mut f64 ) ->Result<(),String> {
+/// It is assumed to be a sandwich where a potentially massive 
+/// wall is between two non-mass layers. These non-mass layers can be 
+/// Film convections coefficients or ust a layer of insulation or something
+/// with negligible thermal mass.
+fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: f64, rs_o: f64, k_prime: & mut Matrix, full_rsi: &mut f64, full_rso: &mut f64, c_i: & mut f64, c_o: & mut f64 ) ->Result<(),String> {
     
+    // This might fail, if there is something wrong with the model
+    //let c = building.get_construction(construction_index).unwrap();
+    let construction_index = c.index();
+
     if n_nodes.len() != c.n_layers(){        
         let err = format!("Mismatch between number of layers in construction ({}) and node scheme ({})",c.n_layers(),n_nodes.len());
         return Err(err);
@@ -297,7 +322,7 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.
         // Simple case... return the following:
-        let r = c.r_value()+rs_i+rs_o;
+        let r = r_value(building, c).unwrap()+rs_i+rs_o;
         *full_rsi = r;
         *full_rso = r;
         k_prime.set(0,0,-1.0/r).unwrap();
@@ -311,13 +336,22 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
         // Calculate inner and outer surface Resistances
         *full_rsi = rs_i;
         for i in 0..first_massive {
-            let layer = c.layer(i).unwrap();
-            *full_rsi += layer.thickness()/layer.substance().thermal_conductivity();
+            let material_index = c.get_layer_index(i).unwrap();
+            let material = building.get_material(material_index).unwrap();            
+            let substance_index = material.get_substance_index().unwrap();
+            let substance = building.get_substance(substance_index).unwrap();
+
+            
+
+            *full_rsi += material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
         }
         *full_rso = rs_o;
         for i in last_massive..c.n_layers() {        
-            let layer = c.layer(i).unwrap();
-            *full_rso += layer.thickness()/layer.substance().thermal_conductivity();
+            let material_index = c.get_layer_index(i).unwrap();
+            let material = building.get_material(material_index).unwrap();                        
+            let substance_index = material.get_substance_index().unwrap();
+            let substance = building.get_substance(substance_index).unwrap();
+            *full_rso += material.thickness().unwrap()/substance.thermal_conductivity().unwrap();
         }
     }
 
@@ -327,7 +361,10 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
     let mut n_layer : usize = first_massive;
 
     while n_layer < last_massive {
-        let material = c.layer(n_layer).unwrap();    
+
+        let material_index = c.get_layer_index(n_layer).unwrap();
+        let material = building.get_material(material_index).unwrap();                        
+
         let m = n_nodes[n_layer];                
         if m == 0 { 
             
@@ -336,9 +373,14 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
             // are together            
             let mut r = 0.0; // if the material is no mass, then the first value 
             while n_layer < last_massive && n_nodes[n_layer] == 0 {                
-                let layer = c.layer(n_layer).unwrap();
-                let dx = layer.thickness();
-                let k =layer.substance().thermal_conductivity();
+                let material_index = c.get_layer_index(n_layer).unwrap();
+                let material = building.get_material(material_index).unwrap();                        
+                let dx = material.thickness().unwrap();
+                
+                let substance_index = material.get_substance_index().unwrap();
+                let substance = building.get_substance(substance_index).unwrap();                
+                let k =substance.thermal_conductivity().unwrap();
+
                 r += dx / k;
                 n_layer += 1;
             }      
@@ -363,9 +405,12 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
             
 
         }else{
-            // calc U value            
-            let k = material.substance().thermal_conductivity();                
-            let dx = material.thickness()/(m as f64);            
+            // calc U value                                           
+            let substance_index = material.get_substance_index().unwrap();
+            let substance = building.get_substance(substance_index).unwrap();
+
+            let k = substance.thermal_conductivity().unwrap();                
+            let dx = material.thickness().unwrap()/(m as f64);            
             let u : f64 = k/dx;
 
             for _i in 0..m {                                                                            
@@ -410,15 +455,21 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
     node = 0;
 
     for n_layer in 0..c.n_layers() {        
-        let material = c.layer(n_layer).unwrap();
+
+        let layer_index = c.get_layer_index(n_layer).unwrap();
+        let material = building.get_material(layer_index).unwrap();                        
+        
         let m = n_nodes[n_layer];  
 
         if m != 0 {
             for _i in 0..m {                   
-                // Calc mass
-                let rho = material.substance().density();
-                let cp = material.substance().heat_capacity();
-                let dx = material.thickness()/(m as f64);
+                // Calc mass                
+                let substance_index = material.get_substance_index().unwrap();
+                let substance = building.get_substance(substance_index).unwrap();
+                
+                let rho = substance.density().unwrap();
+                let cp = substance.specific_heat_capacity().unwrap();
+                let dx = material.thickness().unwrap()/(m as f64);
                 let m = rho * cp * dx / dt;                     
                 
                 left_side[node]+=m/2.0;
@@ -461,7 +512,11 @@ fn build_thermal_network(c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: 
     return Ok(())
 }
 
-pub fn find_dt_and_n_nodes(c: &Construction, main_dt: f64, n: usize, max_dx: f64, min_dt: f64) -> (f64,Vec<usize>){
+/// Given a Maximum thickness (dx) and a minimum timestep (dt), this function
+/// will find a good combination of dt and number of nodes in each
+/// layer of the construction. N is the iteration number; it should always start
+/// at 1.
+pub fn find_dt_and_n_nodes(building: &Building, c: &Construction, main_dt: f64, n: usize, max_dx: f64, min_dt: f64) -> (f64,Vec<usize>){
 
     let dt = main_dt/(n as f64);
     let safety = 1.5;
@@ -474,16 +529,22 @@ pub fn find_dt_and_n_nodes(c: &Construction, main_dt: f64, n: usize, max_dx: f64
     let mut n_nodes : Vec<usize> = vec![];
 
     for n_layer in 0..c.n_layers(){
-        let layer = c.layer(n_layer).unwrap();
+        let material_index = c.get_layer_index(n_layer).unwrap();
+        let material = building.get_material(material_index).unwrap();                        
+        let substance_index = material.get_substance_index().unwrap();
+        let substance = building.get_substance(substance_index).unwrap();
 
         // Calculate the optimum_dx
-        let alpha = layer.substance().thermal_diffusivity();
+        let thickness = material.thickness().unwrap();
+        let alpha = substance.thermal_diffusivity().unwrap();
         let optimum_dx = (safety*2.0*alpha*dt).sqrt();
-        let m = (layer.thickness()/optimum_dx).floor();            
-        let mut dx = layer.thickness()/m;
-        // dx cannot be smaller than thickness
+        let m = (thickness/optimum_dx).floor();            
+        let mut dx = thickness/m;
+        
+        
+        // dx cannot be greater than thickness
         if m == 0. {
-            dx = layer.thickness();
+            dx = thickness;
         }        
 
         // If dx is larger than the max allowed d_x, try to change timestep        
@@ -492,7 +553,7 @@ pub fn find_dt_and_n_nodes(c: &Construction, main_dt: f64, n: usize, max_dx: f64
             let next_dt = main_dt/((n+1) as f64);
             if next_dt > min_dt {
                 // If there is room for that, do it.
-                return find_dt_and_n_nodes(c,main_dt,n+1,max_dx,min_dt)
+                return find_dt_and_n_nodes(building,c,main_dt,n+1,max_dx,min_dt);                
             }else{
                 // otherwise, mark this layer as no-mass
 
@@ -528,80 +589,259 @@ mod testing{
     use geometry3d::point3d::Point3D;
     use geometry3d::loop3d::Loop3D;
 
-    #[test]
-    fn test_get_dt_and_n_nodes(){
-        
-        
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        );
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
+    fn add_polyurethane(building: &mut Building)->usize{
+        let poly_index = building.add_substance("polyurethane".to_string());
+        building.set_substance_properties(poly_index, SubstanceProperties{
+            density: 17.5, // kg/m3... reverse engineered from paper            
+            specific_heat_capacity: 2400., // J/kg.K
+            thermal_conductivity: 0.0252, // W/m.K            
+        }).unwrap();
+        {
+            let poly = building.get_substance(poly_index).unwrap();
+            assert_eq!(poly.thermal_diffusivity().unwrap(),0.6E-6);
+        }      
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        );
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
+        poly_index
+    }
 
+    fn add_brickwork(building: &mut Building)->usize{
+        let brickwork_index = building.add_substance("brickwork".to_string());
+
+        building.set_substance_properties(brickwork_index, SubstanceProperties{
+            density: 1700., // kg/m3... reverse engineered from paper            
+            specific_heat_capacity: 800., // J/kg.K
+            thermal_conductivity: 0.816, // W/m.K            
+        }).unwrap();
+        {
+            let brickwork = building.get_substance(brickwork_index).unwrap();
+            assert_eq!(brickwork.thermal_diffusivity().unwrap(),0.6E-6);
+        }
+        brickwork_index
+    }
+
+    fn add_layer(building: &mut Building, substance_index: usize, thickness: f64)->usize{
+        let m0_index = building.add_material("123123".to_string());
+        building.set_material_substance(m0_index, substance_index).unwrap();
+        building.set_material_properties(m0_index, MaterialProperties{
+            thickness: thickness
+        }).unwrap();
+
+        m0_index
+    }
+
+    fn get_wall_1()->Building{
+        let mut building = Building::new("The Building".to_string());
+
+        /* SUBSTANCES */
+
+        // Add polyurethane Substance
+        let poly_index = add_polyurethane(&mut building);
+
+        /* MATERIAL */
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building,poly_index,m0_thickness);        
+        
         /* WALL 1 */
-        let m1 = Material::new(Rc::clone(&polyurethane), 200.0/1000.);        
-        let c = Construction::new("wall 1".to_string(),vec![Rc::clone(&m1)]);
+        let c0_index = building.add_construction("Wall 1".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
         
+        return building;
+    }
+
+
+    fn get_wall_2()->Building{
+        let mut building = Building::new("The Building".to_string());
+
+        /* SUBSTANCES */
+        // Add polyurethane Substance
+        let poly_index = add_polyurethane(&mut building);
+
+        // Add brickwork
+        let brickwork_index = add_brickwork(&mut building);
+
+        /* MATERIALS */
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, poly_index, m0_thickness);    
+
+        let m1_thickness = 110.0/1000. as f64;
+        let m1_index = add_layer(&mut building, brickwork_index, m1_thickness);        
+
+        /* WALL 2 */
+
+        let c0_index = building.add_construction("Wall 2".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+        building.add_material_to_construction(c0_index, m1_index).unwrap();        
+
+        
+        return building;
+    }
+
+    fn get_wall_3()->Building{
+        let mut building = Building::new("The Building".to_string());
+
+        /* SUBSTANCES */
+        // Add polyurethane Substance
+        let poly_index = add_polyurethane(&mut building);        
+
+        // Add brickwork
+        let brickwork_index = add_brickwork(&mut building);
+        
+
+        /* MATERIALS */
+        let poly_mat_thickness = 20.0/1000. as f64;
+        let poly_mat_index = add_layer(&mut building, poly_index, poly_mat_thickness);
+        
+        
+        let brickwork_mat_thickness = 220.0/1000. as f64;
+        let brickwork_mat_index = add_layer(&mut building, brickwork_index, brickwork_mat_thickness);
+        
+        /* WALL 3 */
+
+        let c0_index = building.add_construction("Wall 3".to_string());
+        building.add_material_to_construction(c0_index, poly_mat_index).unwrap();        
+        building.add_material_to_construction(c0_index, brickwork_mat_index).unwrap();        
+        building.add_material_to_construction(c0_index, poly_mat_index).unwrap();        
+
+        
+        return building;
+    }
+
+    #[test]
+    fn test_new(){
+
+        let mut building = Building::new("A building".to_string());
+
+        /* SUBSTANCES */
+        // Add polyurethane Substance
+        let poly_index = add_polyurethane(&mut building);
+        
+
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, poly_index, m0_thickness);
+        
+
+        /* CONSTRUCTION */
+        let c0_index = building.add_construction("Wall".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+
+
+        
+
+        /* GEOMETRY */
+        let mut the_loop = Loop3D::new();
+        let l = 1. as f64;
+        the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
+        the_loop.push( Point3D::new(l, -l, 0.)).unwrap();
+        the_loop.push( Point3D::new(l, l, 0.)).unwrap();
+        the_loop.push( Point3D::new(-l, l, 0.)).unwrap();
+        the_loop.close().unwrap();
+        let p = Polygon3D::new(the_loop).unwrap();
+        
+
+        /* SURFACE */
+        let s_index = building.add_surface("Surface".to_string());
+        building.set_surface_polygon(s_index, p).unwrap();
+        building.set_surface_construction(s_index, c0_index).unwrap();
+        
+        
+        let m0 = building.get_material(m0_index).unwrap();
+        let c0 = building.get_construction(c0_index).unwrap();
+        let surface = building.get_surface(s_index).unwrap();
+
+        // This should result in a dt of 300, with 8 layers of 0.25m thick.
+        let main_dt = 300.0;
+        let max_dx = m0.thickness().unwrap()/4.0;
+        let min_dt = 1.;
+        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
+
+        let (rs_i,rs_o)=calc_convection_coefficients(&surface);
+        assert!(ts.massive);
+        assert_eq!(ts.n_nodes,9);
+        assert_eq!(ts.rs_i,rs_i);
+        assert_eq!(ts.rs_o,rs_o);
+        assert_eq!(ts.area,4.0);
+
+
+
+    }
+
+    #[test]
+    fn test_get_dt_and_n_nodes_wall_1(){
+        let building = get_wall_1();
+
+        let c0_index = 0;
+        let c0 = building.get_construction(c0_index).unwrap();
+        
+        let m0_index = 0;
+        let m0 = building.get_material(m0_index).unwrap();
+        let m0_thickness = m0.thickness().unwrap();
+
 
         // This should result in a dt of 300, with 8 layers of 0.25m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,m1.thickness()/4.,1.);
-        assert_eq!(n_nodes.len(),1);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/4., 1.);        
+
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],8);
         
 
         // This should result in a dt of 300, with 8 layers of 0.25m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,m1.thickness()/8.,1.);
-        assert_eq!(n_nodes.len(),1);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/8., 1.);                
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],8);
         
 
         // This should result in a dt of 300/2=150, with 12 layers of 0.0166667m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,m1.thickness()/9.,1.);
-        assert_eq!(n_nodes.len(),1);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/9., 1.);                                                      
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],12);
         
 
         // This should result in a dt of 300/4=75, with 17 layers of 0.011...m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,m1.thickness()/15.,1.);
-        assert_eq!(n_nodes.len(),1);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/15., 1.);                                                              
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,75.);
         assert_eq!(n_nodes[0],17);
         
 
         // We imposed a min_dt of 80, meaning that this should result in a no-mass layer
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,m1.thickness()/15.,80.);
-        assert_eq!(n_nodes.len(),1);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/15., 80.);                                                                                         
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,100.);
         assert_eq!(n_nodes[0],0);
         
+    }
 
-        /* WALL 2 */
-        let m1 = Material::new(Rc::clone(&polyurethane),200.0/1000.);
-        let m2 = Material::new(Rc::clone(&brickwork),110.0/1000.);
-        let c = Construction::new("wall 2".to_string(), vec![Rc::clone(&m1),Rc::clone(&m2)]);
+
+    #[test]
+    fn test_get_dt_and_n_nodes_wall_2(){
+        let building = get_wall_2();
+
+        let c0_index = 0;
+        let c0 = building.get_construction(c0_index).unwrap();
         
+        //let m0_index = 0;
+        //let m0 = building.get_material(m0_index).unwrap();
+        //let m0_thickness = m0.thickness().unwrap();
+
+        //let m1_index = 0;
+        //let m1 = building.get_material(m1_index).unwrap();
+        //let m1_thickness = m1.thickness().unwrap();
+
+
+        // WALL 2
 
         // This should result in a dt of 300, with 8 layers and 4 layers.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,0.03,1.);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.03, 1.);                           
         assert_eq!(n_nodes.len(),2);
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],8);
@@ -611,8 +851,8 @@ mod testing{
 
         // This should result in a dt of 300/2=150, with 12 and 6 layers.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt, 1 , 0.02,1.);
-        assert_eq!(n_nodes.len(),2);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.02, 1.);
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],12);
         assert_eq!(n_nodes[1],6);
@@ -620,35 +860,56 @@ mod testing{
 
         // This should result in a dt of 300/3=100, with 14 and 8
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,0.015,1.);
-        assert_eq!(n_nodes.len(),2);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 1.);                            
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,100.);
         assert_eq!(n_nodes[0],14);
         assert_eq!(n_nodes[1],8);
         
 
         // We imposed a min_dt of 100, meaning that this should result in a no-mass layer
-        let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt,1,0.015,110.);
-        assert_eq!(n_nodes.len(),2);
+        //let main_dt = 300.;
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 110.);        
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],0);
         assert_eq!(n_nodes[1],0);
-        
+    }
 
-        /* WALL 3 */
-        let m1 = Material::new(Rc::clone(&polyurethane),20.0/1000.);
-        let m2 = Material::new(Rc::clone(&brickwork),220.0/1000.);        
-        let m3 = Rc::clone(&m1);
-        let c = Construction::new("wall 3".to_string(), vec![Rc::clone(&m1),Rc::clone(&m2),Rc::clone(&m3)]);
+    #[test]
+    fn test_get_dt_and_n_nodes_wall_3(){
         
+        let building = get_wall_3();
+        
+        let c0_index = 0;
+        let c0 = building.get_construction(c0_index).unwrap();
+        
+        //let m0_index = 0;
+        //let m0 = building.get_material(m0_index).unwrap();
+        //let m0_thickness = m0.thickness().unwrap();
+
+        //let m1_index = 0;
+        //let m1 = building.get_material(m1_index).unwrap();
+        //let m1_thickness = m1.thickness().unwrap();
+
+        //let m2_index = 0;
+        //let m2 = building.get_material(m2_index).unwrap();
+        //let m2_thickness = m2.thickness().unwrap();
 
         // This should result in a dt of 150, with [1,13,1] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c, main_dt, 1, 0.03, 1.);
-        assert_eq!(n_nodes.len(),3);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.03, 1.);                            
+        {
+            print!("N-NODES -> [");
+            for n in &n_nodes{
+                print!("{},",n);
+            }
+            println!("]");
+        }
+
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
-        assert_eq!(n_nodes[0],0);
+        assert_eq!(n_nodes[0],0);        
         assert_eq!(n_nodes[1],9);
         assert_eq!(n_nodes[2],0);
         
@@ -656,8 +917,8 @@ mod testing{
 
         // This should result in a dt of 300/6=50, with [2,23,2] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt, 1 , 0.015,1.);
-        assert_eq!(n_nodes.len(),3);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 1.);                                                        
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,50.);
         assert_eq!(n_nodes[0],2);
         assert_eq!(n_nodes[1],23);
@@ -666,8 +927,8 @@ mod testing{
 
         // Limit min_time to 65... This should result in a dt of 300/4=75, with [0, 18, 0] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&c,main_dt, 1 , 0.015,65.);
-        assert_eq!(n_nodes.len(),3);
+        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 65.);                                                                                    
+        assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,75.);
         assert_eq!(n_nodes[0],0);
         assert_eq!(n_nodes[1],18);
@@ -743,23 +1004,23 @@ mod testing{
     }
 
     #[test]
-    fn test_wall_1(){
-       
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
-
+    fn test_wall_brickwork(){
         
+        let mut building = Building::new("The building".to_string());
+        
+        // Add brickwork
+        let brickwork_index = add_brickwork(&mut building);
+     
 
         /* WALL 1: Single layer, with mass. */
-        let m1 = Material::new(Rc::clone(&brickwork),200.0/1000.);
-        let c = Construction::new("wall 1".to_string(), vec![Rc::clone(&m1)]);
-            
+        let brickwork_200_thickness = 200.0/1000. as f64;
+        let brickwork_200_index = add_layer(&mut building, brickwork_index, brickwork_200_thickness);
         
+        
+        let wall_1_index = building.add_construction("Wall 1".to_string());
+        building.add_material_to_construction(wall_1_index, brickwork_200_index).unwrap();        
+        
+        let wall_1 = building.get_construction(wall_1_index).unwrap();
     
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![4];
@@ -769,24 +1030,31 @@ mod testing{
         let mut full_rsi=0.0;
         let mut full_rso=0.0;
         let mut c_i=0.0;
-        let mut c_o=0.0;        
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
-
-        let n_layer = 0;
-        let rho = m1.substance().density();
-        let cp = m1.substance().heat_capacity();
+        let mut c_o=0.0;    
+        build_thermal_network(&building, &wall_1, dt, &n_nodes, 0., 0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();            
+        
+            
+        let substance = building.get_substance(brickwork_index).unwrap();
+        let rho = substance.density().unwrap();
+        let cp = substance.specific_heat_capacity().unwrap();
+        let k = substance.thermal_conductivity().unwrap();
+        
+        let n_layer = 0;                        
         let m = n_nodes[n_layer];
-        let dx = m1.thickness()/(m as f64);
-        let k = m1.substance().thermal_conductivity();
-        let alpha = m1.substance().thermal_diffusivity();
+        let dx = brickwork_200_thickness/(m as f64);
+        let substance = building.get_substance(brickwork_index).unwrap();
+        let alpha = substance.thermal_diffusivity().unwrap();
         let mass = rho * cp * dx / dt;
 
-        
         // check coefficients
         assert_eq!(full_rsi,0.0);// 2.0*dt/(rho*cp*dx));
         assert_eq!(full_rso,0.0);// 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho*cp*dx/(2.0*dt));
         assert_eq!(c_o, rho*cp*dx/(2.0*dt));
+        
+
+        
+        
         
         
         // Check first node
@@ -822,7 +1090,7 @@ mod testing{
 
         let found = k_prime.get(node,node).unwrap();
         let exp = -2.0*alpha*dt/dx/dx;
-        //assert!( (found-exp).abs() < 1E-10 );        
+        assert!( (found-exp).abs() < 1E-10 );        
 
         let found = k_prime.get(node,node - 1).unwrap();
         let exp = 2.0*k/dx/mass;
@@ -834,55 +1102,53 @@ mod testing{
     #[test]
     fn test_wall_2(){
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
-
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
-
+        let building = get_wall_2();
+        let c0_index = 0;
+        let c0 = building.get_construction(c0_index).unwrap();
         
-        /* WALL 2 : Two materials with mass */
-        let m1 = Material::new(Rc::clone(&polyurethane),200.0/1000.);
-        let m2 = Material::new(Rc::clone(&brickwork),110.0/1000.);
-        let c = Construction::new("wall 2".to_string(), vec![Rc::clone(&m1), Rc::clone(&m2)]);            
+        let m0_index = 0;
+        let m0 = building.get_material(m0_index).unwrap();
+        //let m0_thickness = m0.thickness().unwrap();
+        
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
+        
 
+        let m1_index = 1;
+        let m1 = building.get_material(m1_index).unwrap();
+        //let m1_thickness = m1.thickness().unwrap();
+
+        let m1_substance_index = m1.get_substance_index().unwrap();
+        let m1_substance = building.get_substance(m1_substance_index).unwrap();
+        
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![3,3];
         let all_nodes = calc_n_total_nodes(&n_nodes);
 
-        let cp1=m1.substance().heat_capacity();
-        let rho1=m1.substance().density();
-        let dx1=m1.thickness()/3.;
-        let mass1 = rho1*cp1*dx1/dt;
+        let cp0=m0_substance.specific_heat_capacity().unwrap();
+        let rho0=m0_substance.density().unwrap();
+        let dx0=m0.thickness().unwrap()/3.;
+        let mass0 = rho0*cp0*dx0/dt;
 
-        let cp2=m2.substance().heat_capacity();
-        let rho2=m2.substance().density();
-        let dx2=m2.thickness()/3.;
-        let mass2 = rho2*cp2*dx2/dt;
+        let cp1=m1_substance.specific_heat_capacity().unwrap();
+        let rho1=m1_substance.density().unwrap();
+        let dx1=m1.thickness().unwrap()/3.;
+        let mass1 = rho1*cp1*dx1/dt;
 
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;        
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building, &c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
 
         // check coefficients
         assert_eq!(full_rsi,0.0);// 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso,0.0);// 2.0*dt/(rho*cp*dx));
-        assert_eq!(c_i, rho1*cp1*dx1/(2.0*dt));
-        assert_eq!(c_o, rho2*cp2*dx2/(2.0*dt));
+        assert_eq!(full_rso,0.0);// 2.0*dt/(rho*cp*dx));    
+        assert_eq!(c_i, rho0*cp0*dx0/(2.0*dt));
+        assert_eq!(c_o, rho1*cp1*dx1/(2.0*dt));
+
 
         // FIRST LAYER
         //////////////
@@ -890,9 +1156,9 @@ mod testing{
         //let rho = m1.substance.density;
         //let cp = m1.substance.heat_capacity;
         let m = n_nodes[n_layer];
-        let dx = m1.thickness()/(m as f64);
-        let k = m1.substance().thermal_conductivity();
-        let alpha = m1.substance().thermal_diffusivity();
+        let dx = m0.thickness().unwrap()/(m as f64);
+        let k = m0_substance.thermal_conductivity().unwrap();
+        let alpha = m0_substance.thermal_diffusivity().unwrap();
 
         // Check first node in layer
         let node = 0;        
@@ -902,7 +1168,7 @@ mod testing{
         assert!( (found-exp).abs() < 1E-10 );        
 
         let found = k_prime.get(node,node + 1).unwrap();
-        let exp = 2.0*k/dx/mass1;
+        let exp = 2.0*k/dx/mass0;        
         assert!( (found-exp).abs() < 1E-10 );
 
         // check middle nodes
@@ -913,30 +1179,30 @@ mod testing{
             assert!( (found-exp).abs() < 1E-10 );
 
             let found = k_prime.get(node,node + 1).unwrap();
-            let exp = k/dx/mass1;
+            let exp = k/dx/mass0;
             assert!( (found-exp).abs() < 1E-10 );
 
             let found = k_prime.get(node,node - 1).unwrap();
-            let exp = k/dx/mass1;
+            let exp = k/dx/mass0;
             assert!( (found-exp).abs() < 1E-10 );
         }
         // check middle node (e.g. node 3), which 
         // is also the beginning of Layer 2
         let node = 3;
-        let mass_1 = m1.substance().density() * m1.substance().heat_capacity()*m1.thickness()/(6.0*dt);        
-        let mass_2 = m2.substance().density() * m2.substance().heat_capacity()*m2.thickness()/(6.0*dt);        
+        let mass_0 = m0_substance.density().unwrap() * m0_substance.specific_heat_capacity().unwrap()*m0.thickness().unwrap()/(6.0*dt);        
+        let mass_1 = m1_substance.density().unwrap() * m1_substance.specific_heat_capacity().unwrap()*m1.thickness().unwrap()/(6.0*dt);        
         
         let found = k_prime.get(node,node).unwrap();
-        let u1 = 3.0*m1.substance().thermal_conductivity()/m1.thickness();
-        let u2 = 3.0*m2.substance().thermal_conductivity()/m2.thickness();
-        let exp = -(u1+u2)/(mass_1+mass_2);        
+        let u0 = 3.0*m0_substance.thermal_conductivity().unwrap()/m0.thickness().unwrap();
+        let u1 = 3.0*m1_substance.thermal_conductivity().unwrap()/m1.thickness().unwrap();
+        let exp = -(u0+u1)/(mass_0+mass_1);        
         assert_eq!(found,exp);
         
         let found = k_prime.get(node,node - 1).unwrap();        
-        assert_eq!(found, u1/(mass1/2. + mass2/2.0));
+        assert_eq!(found, u0/(mass0/2. + mass1/2.0));
 
         let found = k_prime.get(node,node + 1).unwrap();        
-        assert_eq!(found, u2/(mass1/2.0+mass2/2.0));
+        assert_eq!(found, u1/(mass0/2.0+mass1/2.0));
 
         // SECOND LAYER
         //////////////
@@ -944,9 +1210,9 @@ mod testing{
         //let rho = m2.substance.density;
         //let cp = m2.substance.heat_capacity;
         let m = n_nodes[n_layer];
-        let dx = m2.thickness()/(m as f64);
-        let k = m2.substance().thermal_conductivity();
-        let alpha = m2.substance().thermal_diffusivity();
+        let dx = m1.thickness().unwrap()/(m as f64);
+        let k = m1_substance.thermal_conductivity().unwrap();
+        let alpha = m1_substance.thermal_diffusivity().unwrap();
 
         
         // check middle nodes in layer 2
@@ -957,11 +1223,11 @@ mod testing{
             assert!( (found-exp).abs() < 1E-10 );
 
             let found = k_prime.get(node,node + 1).unwrap();
-            let exp = k/dx/mass2;
+            let exp = k/dx/mass1;
             assert!( (found-exp).abs() < 1E-10 );
 
             let found = k_prime.get(node,node - 1).unwrap();
-            let exp = k/dx/mass2;
+            let exp = k/dx/mass1;
             assert!( (found-exp).abs() < 1E-10 );
         }
         // check end node 
@@ -969,32 +1235,27 @@ mod testing{
         
         
         let found = k_prime.get(node,node).unwrap();        
-        let u2 = 3.0*m2.substance().thermal_conductivity()/m2.thickness();
-        let exp = -2.0*u2/(mass2);        
+        let u2 = 3.0*m1_substance.thermal_conductivity().unwrap()/m1.thickness().unwrap();
+        let exp = -2.0*u2/(mass1);        
         assert_eq!(found,exp);
         
         let found = k_prime.get(node,node - 1).unwrap();        
-        assert_eq!(found, 2.0*u2/mass2);
+        assert_eq!(found, 2.0*u1/mass1);
     }
 
     #[test]
-    fn test_wall_3(){
+    fn test_wall_1(){
 
-         let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-         ); 
-
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
-
+        let building = get_wall_1();
        
+        let c0_index = 0;
+        let c0 = building.get_construction(c0_index).unwrap();
+
+        let m0_index = 0;
+        let m0 = building.get_material(m0_index).unwrap();
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
         
-        
-        /* WALL 3 : Single layer, no mass */
-        let m1 = Material::new(Rc::clone(&polyurethane),200.0/1000.);
-        let c = Construction::new("wall 3".to_string(), vec![Rc::clone(&m1)]);            
         
 
         let dt = 156.0;
@@ -1006,17 +1267,17 @@ mod testing{
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;        
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building, &c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
         
         // check coefficients
-        assert_eq!(full_rsi, m1.thickness()/m1.substance().thermal_conductivity());// 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso, m1.thickness()/m1.substance().thermal_conductivity());// 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rsi, m0.thickness().unwrap()/m0_substance.thermal_conductivity().unwrap());// 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rso, m0.thickness().unwrap()/m0_substance.thermal_conductivity().unwrap());// 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, 0.0);
         assert_eq!(c_o, 0.0);     
         
         for row in 0..all_nodes{
             for col in 0..all_nodes{
-                let exp = m1.substance().thermal_conductivity()/m1.thickness();            
+                let exp = m0_substance.thermal_conductivity().unwrap()/m0.thickness().unwrap();            
                 let found = k_prime.get(row,col).unwrap();
                 if row == col{
                     assert_eq!(-exp,found);
@@ -1028,32 +1289,33 @@ mod testing{
     }
 
     #[test]
-    fn test_wall_4(){
+    fn test_double_wall_1(){
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
+        let mut building = get_wall_1();
 
-        /* WALL 4 : two equal layers, both with no mass */
-        let m1 = Material::new(Rc::clone(&polyurethane), 200.0/1000.);
-        let c = Construction::new("wall 4".to_string(),vec![Rc::clone(&m1), Rc::clone(&m1)]);
+        let c0_index = 0;
+        let m0_index = 0;
 
+        // add second layer
+        building.add_material_to_construction(c0_index, m0_index).unwrap();
+
+        let c0 = building.get_construction(c0_index).unwrap();
+        let m0 = building.get_material(m0_index).unwrap();
+
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
         
         
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![0,0];
         let all_nodes = calc_n_total_nodes(&n_nodes);
-        let r = 2.0*m1.thickness()/m1.substance().thermal_conductivity();
+        let r = 2.0*m0.thickness().unwrap()/m0_substance.thermal_conductivity().unwrap();
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;                
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building, &c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
 
         // check coefficients
         assert_eq!(full_rsi, r);
@@ -1079,53 +1341,61 @@ mod testing{
     #[test]
     fn test_wall_5(){
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-        
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
+        let mut building = Building::new("A building".to_string());
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
+        /* SUBSTANCES */        
+        let poly_index = add_polyurethane(&mut building);        
+        let brickwork_index = add_brickwork(&mut building);
 
-        /* WALL 5 : One layer with mass, one layer without it */
+        /* MATERIALS */
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, poly_index, m0_thickness);
+                
+
+        let m1_thickness = 200.0/1000. as f64;
+        let m1_index = add_layer(&mut building, brickwork_index, m1_thickness);
         
-        let m1 = Material::new(Rc::clone(&brickwork),200./1000.);
-        let m2 = Material::new(Rc::clone(&polyurethane),200./1000.);        
-        let c = Construction::new("wall 5".to_string(),vec![Rc::clone(&m1), Rc::clone(&m2)]);
+        /* WALL */
+
+        let c0_index = building.add_construction("Wall 2".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+        building.add_material_to_construction(c0_index, m1_index).unwrap();        
+
+        
+        let m0 = building.get_material(m0_index).unwrap();
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
+
+        let m1 = building.get_material(m1_index).unwrap();
+        let m1_substance_index = m1.get_substance_index().unwrap();
+        let m1_substance = building.get_substance(m1_substance_index).unwrap();
+        
+        let c0 = building.get_construction(c0_index).unwrap();
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![1,0];
         let all_nodes = calc_n_total_nodes(&n_nodes);
         assert_eq!(all_nodes,2);
 
-        let cp=m1.substance().heat_capacity();
-        let rho=m1.substance().density();
-        let dx=m1.thickness();
+        let cp=m0_substance.specific_heat_capacity().unwrap();
+        let rho=m0_substance.density().unwrap();
+        let dx=m0.thickness().unwrap();
 
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;        
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building, &c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
 
         // check coefficients
         assert_eq!(full_rsi,0.0);// 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso,m2.thickness()/m2.substance().thermal_conductivity());// 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rso,m1.thickness().unwrap()/m1_substance.thermal_conductivity().unwrap());// 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho*cp*dx/(2.0*dt));
         assert_eq!(c_o, rho*cp*dx/(2.0*dt));
 
-        let half_mass = m1.substance().density() * m1.substance().heat_capacity() * m1.thickness()/(2.0*dt);
-        let u = m1.substance().thermal_conductivity()/m1.thickness();
+        let half_mass = m0_substance.density().unwrap() * m0_substance.specific_heat_capacity().unwrap() * m0.thickness().unwrap()/(2.0*dt);
+        let u = m0_substance.thermal_conductivity().unwrap()/m0.thickness().unwrap();
 
         // Check first node        
         let found = k_prime.get(0,0).unwrap();
@@ -1133,7 +1403,7 @@ mod testing{
         assert_eq!(exp,found);
 
         // Check last node
-        let rso = m2.thickness()/m2.substance().thermal_conductivity();
+        let rso = m1.thickness().unwrap()/m1_substance.thermal_conductivity().unwrap();
         let found = k_prime.get(1,1).unwrap();
         let exp = -(u + 1.0/rso) / half_mass;        
         assert!((exp-found).abs() < 1E-10);
@@ -1142,40 +1412,48 @@ mod testing{
     #[test]
     fn test_wall_6(){
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
+        let mut building = Building::new("A building".to_string());
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        );
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
+        /* SUBSTANCES */
+    
+        let poly_index = add_polyurethane(&mut building);                
+        let brickwork_index = add_brickwork(&mut building);
 
-                
+        /* MATERIALS */
 
-        /* WALL 6 : One layer without mass, one layer with it */
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, brickwork_index, m0_thickness);
         
-        let m1 = Material::new(Rc::clone(&brickwork),200./1000.);
-        let m2 = Material::new(Rc::clone(&polyurethane),200./1000.);
+        let m1_thickness = 200.0/1000. as f64;
+        let m1_index = add_layer(&mut building, poly_index, m1_thickness);
         
 
-        let c = Construction::new("wall 6".to_string(),vec![Rc::clone(&m2), Rc::clone(&m1)]);
+        /* WALL */
 
+        let c0_index = building.add_construction("Wall".to_string());
+        building.add_material_to_construction(c0_index, m1_index).unwrap();        
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+
+        let c0 = building.get_construction(c0_index).unwrap();
+
+        let m0 = building.get_material(m0_index).unwrap();
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
+
+        let m1 = building.get_material(m1_index).unwrap();
+        let m1_substance_index = m1.get_substance_index().unwrap();
+        let m1_substance = building.get_substance(m1_substance_index).unwrap();
+        
+
+        /* TESTS */
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![0,1];
         let all_nodes = calc_n_total_nodes(&n_nodes);
         assert_eq!(all_nodes,2);
 
-        let cp=m1.substance().heat_capacity();
-        let rho=m1.substance().density();
-        let dx=m1.thickness();
+        let cp=m0_substance.specific_heat_capacity().unwrap();
+        let rho=m0_substance.density().unwrap();
+        let dx=m0.thickness().unwrap();
 
 
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
@@ -1183,9 +1461,9 @@ mod testing{
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;                
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building, &c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
 
-        let rsi = m2.thickness()/m2.substance().thermal_conductivity();
+        let rsi = m1.thickness().unwrap()/m1_substance.thermal_conductivity().unwrap();
 
         // check coefficients
         assert_eq!(full_rsi,rsi);// 2.0*dt/(rho*cp*dx));
@@ -1193,8 +1471,8 @@ mod testing{
         assert_eq!(c_i, rho*cp*dx/(2.0*dt));
         assert_eq!(c_o, rho*cp*dx/(2.0*dt));
 
-        let half_mass = m1.substance().density() * m1.substance().heat_capacity() * m1.thickness()/(2.0*dt);
-        let u = m1.substance().thermal_conductivity()/m1.thickness();
+        let half_mass = m0_substance.density().unwrap() * m0_substance.specific_heat_capacity().unwrap() * m0.thickness().unwrap()/(2.0*dt);
+        let u = m0_substance.thermal_conductivity().unwrap()/m0.thickness().unwrap();
 
         // Check first node
     
@@ -1213,36 +1491,50 @@ mod testing{
                  
     }
 
+
     #[test]
     fn test_wall_7(){
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(polyurethane.thermal_diffusivity(),0.6E-6);
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        ); 
-        assert_eq!(brickwork.thermal_diffusivity(),0.6E-6);
+        let mut building = Building::new("A building".to_string());
 
-        /* WALL 7 : One layer with mass, two layers without it, and one with it again */
+        /* SUBSTANCES */
         
-        let m1 = Material::new(Rc::clone(&brickwork),200./1000.);
-        let m2 = Material::new(Rc::clone(&polyurethane),200./1000.);
+        let poly_index = add_polyurethane(&mut building);            
+        let brickwork_index = add_brickwork(&mut building);
         
 
-        let c = Construction::new("wall 7".to_string(),vec![Rc::clone(&m1), Rc::clone(&m2), Rc::clone(&m2), Rc::clone(&m1)]);
+        /* MATERIALS */
 
-        let cp=m1.substance().heat_capacity();
-        let rho=m1.substance().density();
-        let dx=m1.thickness();
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, brickwork_index, m0_thickness);
+        
+        let m1_thickness = 200.0/1000. as f64;
+        let m1_index = add_layer(&mut building, poly_index, m1_thickness);
+
+        /* WALL */
+
+        let c0_index = building.add_construction("Wall".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+        building.add_material_to_construction(c0_index, m1_index).unwrap();        
+        building.add_material_to_construction(c0_index, m1_index).unwrap();        
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
+
+        let c0 = building.get_construction(c0_index).unwrap();
+
+        let m0 = building.get_material(m0_index).unwrap();
+        let m0_substance_index = m0.get_substance_index().unwrap();
+        let m0_substance = building.get_substance(m0_substance_index).unwrap();
+
+        let m1 = building.get_material(m1_index).unwrap();
+        let m1_substance_index = m1.get_substance_index().unwrap();
+        let m1_substance = building.get_substance(m1_substance_index).unwrap();
+        
+
+
+        let cp=m0_substance.specific_heat_capacity().unwrap();
+        let rho=m0_substance.density().unwrap();
+        let dx=m0.thickness().unwrap();
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![1,0,0,1];
@@ -1255,7 +1547,7 @@ mod testing{
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;        
-        build_thermal_network(&c, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
+        build_thermal_network(&building,&c0, dt, &n_nodes, 0.,0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();
 
         // check coefficients
         assert_eq!(full_rsi,0.0);// 2.0*dt/(rho*cp*dx));
@@ -1265,9 +1557,9 @@ mod testing{
 
         
 
-        let half_mass = m1.substance().density() * m1.substance().heat_capacity() * m1.thickness()/(2.0*dt);
-        let u = m1.substance().thermal_conductivity()/m1.thickness();
-        let insulation_r = m2.thickness() * 2.0/m2.substance().thermal_conductivity();
+        let half_mass = m0_substance.density().unwrap() * m0_substance.specific_heat_capacity().unwrap() * m0.thickness().unwrap()/(2.0*dt);
+        let u = m0_substance.thermal_conductivity().unwrap()/m0.thickness().unwrap();
+        let insulation_r = m1.thickness().unwrap() * 2.0/m1_substance.thermal_conductivity().unwrap();
 
         // Check first node        
         let found = k_prime.get(0,0).unwrap();
@@ -1291,77 +1583,31 @@ mod testing{
         assert!((exp-found).abs() < 1E-10);
     }
         
-    #[test]
-    fn test_new(){
 
-        // Geometry
-        let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
-        the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
-        the_loop.push( Point3D::new(l, -l, 0.)).unwrap();
-        the_loop.push( Point3D::new(l, l, 0.)).unwrap();
-        the_loop.push( Point3D::new(-l, l, 0.)).unwrap();
-        the_loop.close().unwrap();
-        
-        let p = Polygon3D::new(the_loop).unwrap();
-
-
-        // Materials
-
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-
-        let m1 = Material::new(Rc::clone(&polyurethane),200./1000.);
-
-        let c = Construction::new("wall 1".to_string(),vec![Rc::clone(&m1)]);
-
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
-
-        // This should result in a dt of 300, with 8 layers of 0.25m thick.
-        let main_dt = 300.0;
-        let max_dx = m1.thickness()/4.0;
-        let min_dt = 1.;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
-
-        let (rs_i,rs_o)=calc_convection_coefficients(&surface);
-        assert!(ts.massive);
-        assert_eq!(ts.n_nodes,9);
-        assert_eq!(ts.rs_i,rs_i);
-        assert_eq!(ts.rs_o,rs_o);
-        assert_eq!(ts.area,4.0);
-
-
-
-    }
     #[test] 
     fn test_calc_heat_flow_with_mass(){
 
+
+        let mut building = Building::new("A building".to_string());
+
+        /* SUBSTANCES */
         
-        // Materials
+        let poly_index = add_polyurethane(&mut building);
+        
+        /* MATERIALS */
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        ); 
-
-        let m1 = Material::new(Rc::clone(&polyurethane),200./1000.);
-
-        let c = Construction::new("wall 1".to_string(), vec![Rc::clone(&m1)]);
-
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, poly_index, m0_thickness);
         
 
+        /* CONSTRUCTION */
+        let c0_index = building.add_construction("Wall".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
 
-        // FIRST TEST -- WITH MASS
 
-        // Geometry
+        
+
+        /* GEOMETRY */
         let mut the_loop = Loop3D::new();
         let l = 1. as f64;
         the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
@@ -1371,17 +1617,29 @@ mod testing{
         the_loop.close().unwrap();
         let p = Polygon3D::new(the_loop).unwrap();
         
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
+
+        /* SURFACE */
+        let s_index = building.add_surface("Surface".to_string());
+        building.set_surface_polygon(s_index, p).unwrap();
+        building.set_surface_construction(s_index, c0_index).unwrap();
+
+        
+        /* TEST */
+        let surface = building.get_surface(s_index).unwrap();
+        let m0 = building.get_material(m0_index).unwrap();
+        let c0 = building.get_construction(c0_index).unwrap();
 
         let main_dt = 300.0;
-        let max_dx = m1.thickness()/4.0;
+        let max_dx = m0.thickness().unwrap()/4.0;
         let min_dt = 1.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
+        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+
+        let ts = ThermalSurface::new(&building, &surface, dt,&nodes,0);
         assert!(ts.massive);
         assert_eq!(20.0,ts.state.get(0,0).unwrap());
         assert_eq!(20.0,ts.state.get(ts.n_nodes-1,0).unwrap());
+
+        
         
         let t_in = 10.0;
         let q_in_ref = (20.0-t_in)/ts.rs_i;
@@ -1399,22 +1657,26 @@ mod testing{
 
     #[test]
     fn test_calc_heat_flow_no_mass(){
-        // Materials
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        );
+        let mut building = Building::new("A building".to_string());
 
-        let m1 = Material::new(Rc::clone(&polyurethane),200./1000.);
+        /* SUBSTANCES */
+        
+        let poly_index = add_polyurethane(&mut building);
 
-        let c = Construction::new("wall 1".to_string(),vec![Rc::clone(&m1)]);
+        /* MATERIALS */
+        let m0_thickness = 200.0/1000. as f64;
+        let m0_index = add_layer(&mut building, poly_index, m0_thickness);
+    
 
-        // SECOND TEST -- NO MASS
+        /* CONSTRUCTION */
+        let c0_index = building.add_construction("Wall".to_string());
+        building.add_material_to_construction(c0_index, m0_index).unwrap();        
 
-        // Geometry 
+
+        
+
+        /* GEOMETRY */
         let mut the_loop = Loop3D::new();
         let l = 1. as f64;
         the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
@@ -1424,14 +1686,23 @@ mod testing{
         the_loop.close().unwrap();
         let p = Polygon3D::new(the_loop).unwrap();
         
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
+
+        /* SURFACE */
+        let s_index = building.add_surface("Surface".to_string());
+        building.set_surface_polygon(s_index, p).unwrap();
+        building.set_surface_construction(s_index, c0_index).unwrap();
+
+        /* TEST */
+        let surface = building.get_surface(s_index).unwrap();
+        let m0 = building.get_material(m0_index).unwrap();
+        let c0 = building.get_construction(c0_index).unwrap();
+
 
         let main_dt = 300.0;
-        let max_dx = m1.thickness()/15.;
+        let max_dx = m0.thickness().unwrap()/15.;
         let min_dt = 80.;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
+        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
         
         assert!(!ts.massive);
         assert_eq!(20.0,ts.state.get(0,0).unwrap());
@@ -1452,24 +1723,28 @@ mod testing{
     fn test_calc_heat_flow_mixed_mass(){
 
         // THIRD TEST -- WITH ONE NO-MASS LAYER IN THE EXTERIOR AND ONE IN THE INTERIOR
+
+        let mut building = Building::new("Some building".to_string());
         
-        // Materials
+        /* SUBSTANCES */
+        let poly_index = add_polyurethane(&mut building);
+        let brickwork_index = add_brickwork(&mut building);
 
-        let polyurethane = Substance::new(
-            "polyurethane".to_string(),
-            0.0252, // W/m.K            
-            2400., // J/kg.K
-            17.5, // kg/m3... reverse engineered from paper            
-        );
+        /* MATERIALS */
+        let m1_index = add_layer(&mut building, poly_index, 20./1000.);
+        let m2_index = add_layer(&mut building, brickwork_index, 220./1000.);
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        );
+        /* CONSTRUCTION */
 
-        // Geometry
+        let c_index = building.add_construction("construction".to_string());
+        building.add_material_to_construction(c_index, m1_index).unwrap();
+        building.add_material_to_construction(c_index, m2_index).unwrap();
+        building.add_material_to_construction(c_index, m1_index).unwrap();
+
+        
+
+        /* GEOMETRY */
+        
         let mut the_loop = Loop3D::new();
         let l = 1. as f64;
         the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
@@ -1479,25 +1754,22 @@ mod testing{
         the_loop.close().unwrap();
         let p = Polygon3D::new(the_loop).unwrap();
 
+        /* SURFACE */
 
-        
-        
-        let m1 = Material::new(Rc::clone(&polyurethane),20./1000.);
-        let m2 = Material::new(Rc::clone(&brickwork),220./1000.);
-        
-        let m3 = Rc::clone(&m1);
-        
-        let c = Construction::new("wall 3".to_string(),vec![Rc::clone(&m1),Rc::clone(&m2),Rc::clone(&m3)]);
-        
+        let s_index = building.add_surface("Surface 1".to_string());
+        building.set_surface_construction(s_index, c_index).unwrap();
+        building.set_surface_polygon(s_index, p).unwrap();
 
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
-        
+
+        /* TEST */
+        let c = building.get_construction(c_index).unwrap();
+        let surface = building.get_surface(s_index).unwrap();
+
         let main_dt = 300.0;
         let max_dx = 0.015;
         let min_dt = 65.;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
+        let (dt,nodes)=find_dt_and_n_nodes(&building,&c, main_dt, 1, max_dx, min_dt);
+        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
         
         assert!(ts.massive);
         assert_eq!(20.0,ts.state.get(0,0).unwrap());
@@ -1516,7 +1788,22 @@ mod testing{
 
     #[test]
     fn test_march_massive(){
-        // Geometry
+        let mut building = Building::new("Some building".to_string());
+        
+        /* SUBSTANCES */        
+        let brickwork_index = add_brickwork(&mut building);
+
+        /* MATERIALS */
+        let m1_index = add_layer(&mut building, brickwork_index, 200./1000.);
+        
+
+        /* CONSTRUCTION */
+
+        let c_index = building.add_construction("construction".to_string());
+        building.add_material_to_construction(c_index, m1_index).unwrap();
+        
+
+        /* GEOMETRY */
         let mut the_loop = Loop3D::new();
         let l = 1. as f64;
         the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
@@ -1526,31 +1813,22 @@ mod testing{
         the_loop.close().unwrap();
         let p = Polygon3D::new(the_loop).unwrap();
 
+        /* SURFACE */
+        let s_index = building.add_surface("Surface 1".to_string());
+        building.set_surface_polygon(s_index, p).unwrap();
+        building.set_surface_construction(s_index, c_index).unwrap();
 
-        // Materials
-
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        );
-        
-
-
-        let m1 = Material::new(Rc::clone(&brickwork),200./1000.);
-        let c = Construction::new("wall 1".to_string(),vec![Rc::clone(&m1)]);
-        
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
-
+        /* TEST */
+        let m1 = building.get_material(m1_index).unwrap();
+        let c = building.get_construction(c_index).unwrap();
+        let surface = building.get_surface(s_index).unwrap();
 
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
-        let max_dx = m1.thickness()/2.0;
+        let max_dx = m1.thickness().unwrap()/2.0;
         let min_dt = 1.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let mut ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
+        let (dt,nodes)=find_dt_and_n_nodes(&building,&c, main_dt, 1, max_dx, min_dt);
+        let mut ts = ThermalSurface::new(&building, surface, dt, &nodes,0);
         assert!(ts.massive);
        
         // Try marching until q_in and q_out are zero.
@@ -1608,7 +1886,9 @@ mod testing{
         assert!(final_qout < 0.0);
         assert!((final_qin+final_qout).abs()<1E-6);
 
-        let exp_q = (30.0 - 10.0)/(c.r_value()+ts.rs_i+ts.rs_o);
+        let r = r_value(&building, c).unwrap();
+
+        let exp_q = (30.0 - 10.0)/(r + ts.rs_i + ts.rs_o);
         assert!((exp_q-final_qin).abs() < 1E-4);
         assert!((exp_q+final_qout).abs() < 1E-4);
     }
@@ -1616,7 +1896,20 @@ mod testing{
 
     #[test]
     fn test_march_nomass(){
-        // Geometry
+
+        let mut building = Building::new("A building".to_string());
+
+        /* SUBSTANCE */
+        let brickwork_index = add_brickwork(&mut building);
+
+        /* MATERIAL */
+        let m1_index = add_layer(&mut building, brickwork_index, 3./1000.);
+
+        /* CONSTRUCTION */
+        let c_index = building.add_construction("Construction".to_string());
+        building.add_material_to_construction(c_index, m1_index).unwrap();
+
+        /* GEOMETRY */
         let mut the_loop = Loop3D::new();
         let l = 1. as f64;
         the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
@@ -1626,30 +1919,24 @@ mod testing{
         the_loop.close().unwrap();
         let p = Polygon3D::new(the_loop).unwrap();
 
+        /* SURFACE */
+        let s_index = building.add_surface("WALL".to_string());
+        building.set_surface_construction(s_index, c_index).unwrap();
+        building.set_surface_polygon(s_index, p).unwrap();
 
-        // Materials
+        /* TEST */
 
-        let brickwork = Substance::new(
-            "brickwork".to_string(),
-            0.816, // W/m.K            
-            800., // J/kg.K
-            1700., // kg/m3... reverse engineered from paper            
-        );
-
-
-        let m1 = Material::new(Rc::clone(&brickwork), 3./1000.);
-        let c = Construction::new("wall 1".to_string(),vec![Rc::clone(&m1)]);
-
-        // Physical surface
-        let surface = Surface::new(p,Rc::clone(&c));        
+        let m1 = building.get_material(m1_index).unwrap();
+        let c = building.get_construction(c_index).unwrap();
+        let surface = building.get_surface(s_index).unwrap();        
 
 
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
-        let max_dx = m1.thickness()/2.0;
+        let max_dx = m1.thickness().unwrap()/2.0;
         let min_dt = 100.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&c, main_dt, 1, max_dx, min_dt);
-        let mut ts = ThermalSurface::new(Rc::clone(&surface),dt,&nodes,0);
+        let (dt,nodes)=find_dt_and_n_nodes(&building, c, main_dt, 1, max_dx, min_dt);
+        let mut ts = ThermalSurface::new(&building,surface,dt,&nodes,0);
         assert!(!ts.massive);
        
         // Try marching until q_in and q_out are zero.
@@ -1676,10 +1963,11 @@ mod testing{
         assert!(q_out < 0.0);
         assert!((q_in+q_out).abs()<1E-6);
 
-        let exp_q = (30.0 - 10.0)/(c.r_value()+ts.rs_i+ts.rs_o);
+        let exp_q = (30.0 - 10.0)/(r_value(&building,c).unwrap() + ts.rs_i+ts.rs_o);
         assert!((exp_q-q_in).abs() < 1E-4);
         assert!((exp_q+q_out).abs() < 1E-4);
     }
+    
 }
 
 
