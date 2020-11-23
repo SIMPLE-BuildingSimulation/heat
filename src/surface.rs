@@ -2,9 +2,8 @@ use matrix::Matrix;
 
 use building_model::building::Building;
 use building_model::object_trait::ObjectTrait;
-use building_model::substance::*;
-use building_model::material::*;
 use building_model::surface::Surface;
+use building_model::boundary::Boundary;
 
 use building_model::construction::Construction;
 use convection::*;
@@ -69,11 +68,11 @@ pub struct ThermalSurface {
 
     /// The location of the front boundary zone in the 
     /// Zones array of the Thermal Model
-    front_boundary_index: Option<usize>,
+    front_boundary: Boundary,
 
     /// The location of the back boundary zone in the 
     /// Zones array of the Thermal Model    
-    back_boundary_index: Option<usize>,
+    back_boundary: Boundary,
 
     /// The area of the Surface
     area: f64,
@@ -81,10 +80,8 @@ pub struct ThermalSurface {
 
 impl ThermalSurface {
 
-    pub fn new(building: &Building, surface: &Surface, dt: f64, nodes: &Vec<usize>, index: usize ) -> Self {
+    pub fn new(building: &Building, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Self {
         
-        // Get the surface... or else
-        //let surface = building.get_surface(surface_index).unwrap();
         
         // Check if Surface is valid... or else
         ObjectTrait::is_full(surface).unwrap();
@@ -95,7 +92,7 @@ impl ThermalSurface {
         let construction_index = surface.get_construction_index().unwrap();
         let construction = building.get_construction(construction_index).unwrap();
 
-        let n_nodes = calc_n_total_nodes(&nodes);
+        let n_nodes = calc_n_total_nodes(&n_elements);
         let (rs_i,rs_o) = calc_convection_coefficients(surface);        
         
         let mut ret = ThermalSurface{
@@ -110,13 +107,13 @@ impl ThermalSurface {
             state: Matrix::new(20.0,n_nodes,1),// Set initial conditions... warmup period is required prior to simulation
             n_nodes: n_nodes,            
             massive: true, // filled after building the thermal network
-            front_boundary_index: None, // filled when setting boundary
-            back_boundary_index: None,
+            front_boundary: Boundary::None, // filled when setting boundary
+            back_boundary: Boundary::None,
             index: index,
             area : surface.area().unwrap(), // should not fail because surface is full
         };
         
-        build_thermal_network(building, &construction, dt, &nodes, rs_i, rs_o, &mut ret.k_prime, &mut ret.full_rsi, &mut ret.full_rso, &mut ret.c_i, &mut ret.c_o).unwrap();
+        build_thermal_network(building, &construction, dt, &n_elements, rs_i, rs_o, &mut ret.k_prime, &mut ret.full_rsi, &mut ret.full_rso, &mut ret.c_i, &mut ret.c_o).unwrap();
         ret.massive = !(ret.c_o == 0.0 && ret.c_i == 0.);
 
         // return
@@ -137,6 +134,8 @@ impl ThermalSurface {
         self.rs_o
     }
 
+    /// Calculates the heat flow out of the layer, based
+    /// on the inside and outside temperatures
     fn calc_heat_flow(&self, t_in: f64, t_out: f64)->(f64,f64){
         // Positive is going out of the layer.
         let q_in;
@@ -153,9 +152,11 @@ impl ThermalSurface {
         return (q_in,q_out)
     }
 
+    /// Checks whether a wall has thermal mass
     pub fn is_massive(&self)->bool{
         self.massive
     }
+
     pub fn march(&mut self, t_in: f64, t_out: f64)->(f64,f64){
 
         if self.massive {
@@ -187,44 +188,56 @@ impl ThermalSurface {
         return self.calc_heat_flow(t_in, t_out);
     }
 
-    pub fn set_front_boundary(&mut self, b: usize) {
-        self.front_boundary_index = Some(b);
+    pub fn set_front_boundary(&mut self, b: Boundary) {
+        self.front_boundary = b;
     }
 
-    pub fn set_back_boundary(&mut self, b: usize) {
-        self.back_boundary_index = Some(b);
+    pub fn set_back_boundary(&mut self, b: Boundary) {
+        self.back_boundary = b;
     }
 
-    pub fn front_boundary(&self) -> Option<usize> {
-        self.front_boundary_index
+    pub fn front_boundary(&self) -> Boundary {
+        self.front_boundary
     }
 
-    pub fn back_boundary(&self) -> Option<usize> {
-        self.back_boundary_index
+    pub fn back_boundary(&self) -> Boundary {
+        self.back_boundary
     }
-}
+} // END OF SURFACE IMPL
 
-fn get_first_and_last_massive(n_nodes : &Vec<usize>)->(usize,usize){
+
+
+
+
+
+/// In a discretization scheme, this function finds the 
+/// first and the last massive layers... the no-mass layers
+/// before and after the first and last massive ones, respectively,
+/// are just bulked with the values of RSi and RSo.
+fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usize){
 
     // We need somethig to process!
-    if n_nodes.len() == 0{
+    if n_elements.len() == 0{
         panic!("Impossible to check first and last massive layers in empty discretization scheme");
     }
+    let n_layers = n_elements.len();
 
-    // Border case
-    if n_nodes.len() == 1 {
-        if n_nodes[0] == 0 {
+    // Border cases: one layer
+    if n_layers == 1 {
+        if n_elements[0] == 0 {
+            // if the layer is no-mass, then return 0,0
             return (0,0);
         }else{
+            // if the layer has mas, 
             return (0,1);
         }
     }
 
     // find the first and last massive layers
-    let mut first_massive = n_nodes.len();
+    let mut first_massive = n_layers;
     let mut last_massive = 0;
     let mut any_massive = false;
-    for (i,nodes) in n_nodes.iter().enumerate(){
+    for (i,nodes) in n_elements.iter().enumerate(){
         if *nodes > 0 {
             if first_massive > i {
                 first_massive = i;
@@ -242,28 +255,36 @@ fn get_first_and_last_massive(n_nodes : &Vec<usize>)->(usize,usize){
     }
 }
 
-fn calc_n_total_nodes(n_nodes : &Vec<usize>)->usize{
+
+
+
+/// This function calculates the number of nodes that result
+/// from the construction's discretization. 
+/// 
+/// Nodes are placed in the joints between elements, and 
+/// the nodes for the Rsi and Rso layers are considered.
+fn calc_n_total_nodes(n_elements : &Vec<usize>)->usize{
     
 
     // We need somethig to process!
-    if n_nodes.len() == 0{
+    if n_elements.len() == 0{
         panic!("Wrong discretization scheme!");
     }
 
     // Border case: Only one element.
     
-    if n_nodes.len() == 1 {        
-        if n_nodes[0] == 0 {            
+    if n_elements.len() == 1 {        
+        if n_elements[0] == 0 {            
             return 2;
         }else{
-            return n_nodes[0]+1;
+            return n_elements[0]+1;
         }
     }
     
 
     // Otherwise, let's do this.
     let mut n : usize = 1; // the end node.
-    let(first_massive,last_massive)=get_first_and_last_massive(n_nodes);
+    let(first_massive,last_massive)=get_first_and_last_massive_elements(n_elements);
 
     // No massive layer at all in the construction...
     if first_massive == 0 && last_massive == 0 {
@@ -275,7 +296,7 @@ fn calc_n_total_nodes(n_nodes : &Vec<usize>)->usize{
     // nodes.
     let mut in_nomass_layer : bool = false;
     for i in first_massive..last_massive{
-        let nodes = n_nodes[i];
+        let nodes = n_elements[i];
         if nodes > 0 {
             // Material with mass.
             in_nomass_layer = false;
@@ -293,31 +314,63 @@ fn calc_n_total_nodes(n_nodes : &Vec<usize>)->usize{
     return n
 }
 
-/// It is assumed to be a sandwich where a potentially massive 
+/// Constructions are assumed to be a sandwich where a potentially massive 
 /// wall is between two non-mass layers. These non-mass layers can be 
-/// Film convections coefficients or ust a layer of insulation or something
-/// with negligible thermal mass.
-fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes: &Vec<usize>, rs_i: f64, rs_o: f64, k_prime: & mut Matrix, full_rsi: &mut f64, full_rso: &mut f64, c_i: & mut f64, c_o: & mut f64 ) ->Result<(),String> {
+/// Film convections coefficients, some lightweight insulation or something
+/// with negligible thermal mass, or combinations of them (i.e. the film coefficient
+/// will be combined with insulation into a single composite layer).
+/// 
+/// The nodes are placed in between elements. Each element can be represented by the
+/// 2x2 matrix 
+/// 
+/// #    K = [ -1/R, 1/R; 1/R, -1/R], R being the thermal resistance of the element
+/// 
+/// But after calculating it, the value of K_prime will be calculated.
+/// 
+/// # Aguments
+/// * building: the Building containing the construction and all other data.
+/// * construction: the construction being discretized
+/// * dt: the timestep for the model (relevant for pre-processing some elements that will be used when marching forward in time)
+/// * n_elements: The number of elements in each layer of the construction
+/// * rsi: the interior film coefficient
+/// * rso: the exterior film coefficient
+/// 
+/// # Outputs
+/// 
+/// * k_prime: the Matrix representing the heat transfer between the nodes... will be filled by this function, and the input should be full of zeros
+/// * full_rsi: R_si + the thermal resistance of all the no-mass layers before the first massive element. 
+/// * full_rso: R_so + the thermal resistance of all the no-mass layers after the last massive element. 
+/// * c_i: 
+/// * c_o: 
+fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_elements: &Vec<usize>, rs_i: f64, rs_o: f64, k_prime: & mut Matrix, full_rsi: &mut f64, full_rso: &mut f64, c_i: & mut f64, c_o: & mut f64 ) ->Result<(),String> {
     
-    // This might fail, if there is something wrong with the model
-    //let c = building.get_construction(construction_index).unwrap();
-    let construction_index = c.index();
-
-    if n_nodes.len() != c.n_layers(){        
-        let err = format!("Mismatch between number of layers in construction ({}) and node scheme ({})",c.n_layers(),n_nodes.len());
+    // check coherence in input data
+    if n_elements.len() != c.n_layers(){        
+        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.n_layers(),n_elements.len());
         return Err(err);
     }
     
-    let all_nodes = calc_n_total_nodes(n_nodes);
+    let all_nodes = calc_n_total_nodes(n_elements);
     let (rows,cols) = k_prime.size();
     if rows != all_nodes || cols != all_nodes {
         let err = format!("Unexpected size of given matrix - found ({},{}) and was expecting ({},{})",rows,cols,all_nodes,all_nodes);
         return Err(err);
     }
+
+    #[cfg(debug_assertions)]
+    {
+        println!("Checking that k_prime is only full of zeroes... build_thermal_network()");
+        let (nrows,ncols)=k_prime.size();
+        for row in 0..nrows{
+            for col in 0..ncols{
+                assert_eq!(0., k_prime.get(row,col).unwrap());
+            }
+        }
+    }
         
     // NOW, PROCESS
     ////////////////
-    let (first_massive, last_massive) = get_first_and_last_massive(n_nodes);
+    let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements);
     
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.
@@ -334,6 +387,8 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
         return Ok(());
     }else{
         // Calculate inner and outer surface Resistances
+        
+        // Everything before the first massive layer
         *full_rsi = rs_i;
         for i in 0..first_massive {
             let material_index = c.get_layer_index(i).unwrap();
@@ -341,10 +396,10 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
             let substance_index = material.get_substance_index().unwrap();
             let substance = building.get_substance(substance_index).unwrap();
 
-            
-
             *full_rsi += material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
         }
+
+        // Everything after the last massive layer
         *full_rso = rs_o;
         for i in last_massive..c.n_layers() {        
             let material_index = c.get_layer_index(i).unwrap();
@@ -356,7 +411,7 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
     }
 
     
-    // Calculate the rest.
+    // Calculate what is in between the massive layers
     let mut node : usize = 0;
     let mut n_layer : usize = first_massive;
 
@@ -365,14 +420,14 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
         let material_index = c.get_layer_index(n_layer).unwrap();
         let material = building.get_material(material_index).unwrap();                        
 
-        let m = n_nodes[n_layer];                
+        let m = n_elements[n_layer];                
         if m == 0 { 
             
             // nomass material
             // add up all the R of the no-mass layers that
             // are together            
             let mut r = 0.0; // if the material is no mass, then the first value 
-            while n_layer < last_massive && n_nodes[n_layer] == 0 {                
+            while n_layer < last_massive && n_elements[n_layer] == 0 {                
                 let material_index = c.get_layer_index(n_layer).unwrap();
                 let material = building.get_material(material_index).unwrap();                        
                 let dx = material.thickness().unwrap();
@@ -413,7 +468,7 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
             let dx = material.thickness().unwrap()/(m as f64);            
             let u : f64 = k/dx;
 
-            for _i in 0..m {                                                                            
+            for _ in 0..m {                                                                            
                 // top left
                 let old_value = k_prime.get(node,node).unwrap();
                 k_prime.set(node  , node  , old_value - u ).unwrap();
@@ -459,10 +514,11 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
         let layer_index = c.get_layer_index(n_layer).unwrap();
         let material = building.get_material(layer_index).unwrap();                        
         
-        let m = n_nodes[n_layer];  
+        let m = n_elements[n_layer];  
 
         if m != 0 {
-            for _i in 0..m {                   
+            // if has mass
+            for _ in 0..m {                   
                 // Calc mass                
                 let substance_index = material.get_substance_index().unwrap();
                 let substance = building.get_substance(substance_index).unwrap();
@@ -472,6 +528,8 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
                 let dx = material.thickness().unwrap()/(m as f64);
                 let m = rho * cp * dx / dt;                     
                 
+                // Nodes are in the joints between 
+                // finite elements... add half mass from each
                 left_side[node]+=m/2.0;
                 left_side[node+1]+=m/2.0;
                
@@ -482,7 +540,7 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
             // else, they are zero already...
             // still, we need to move forward one
             // node.            
-            if n_layer > 0 && n_nodes[n_layer-1] > 0 { 
+            if n_layer > 0 && n_elements[n_layer-1] > 0 { 
                 // Only do it if the previous
                 // layer was massive
                 node+=1;
@@ -512,65 +570,92 @@ fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_nodes
     return Ok(())
 }
 
-/// Given a Maximum thickness (dx) and a minimum timestep (dt), this function
-/// will find a good combination of dt and number of nodes in each
-/// layer of the construction. N is the iteration number; it should always start
-/// at 1.
-pub fn find_dt_and_n_nodes(building: &Building, c: &Construction, main_dt: f64, n: usize, max_dx: f64, min_dt: f64) -> (f64,Vec<usize>){
-
-    let dt = main_dt/(n as f64);
-    let safety = 1.5;
-
-    // Choose a dx so that dt allows convergence.
-    // stability is assured by (alpha * dt / dx^2 <= 1/2 )
-    // meaning, we need to satisfy dx >= sqrt(2 * alpha * dt)
+/// Given a Maximum thickness (max_dx) and a minimum timestep (max_dt), this function
+/// will find a good combination of dt and number of elements in each
+/// layer of the construction. 
+/// 
+/// This function recursively increases N in order to reduce dt to numbers
+/// that divide main_dt as a while (e.g. main_dt/1, main_dt/2, main_dt/3...)
+pub fn discretize_construction(building: &Building, c: &Construction, main_dt: f64, max_dx: f64, min_dt: f64) -> (usize,Vec<usize>){
     
-    // So, for each layer
-    let mut n_nodes : Vec<usize> = vec![];
+    // I could only think of how to make this recursively... so I did this.
+    fn aux(building: &Building, c: &Construction, main_dt: f64, n: usize, max_dx: f64, min_dt: f64) -> (usize,Vec<usize>){
+        let dt = main_dt/(n as f64);
+        let safety = 1.5;
 
-    for n_layer in 0..c.n_layers(){
-        let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = building.get_material(material_index).unwrap();                        
-        let substance_index = material.get_substance_index().unwrap();
-        let substance = building.get_substance(substance_index).unwrap();
-
-        // Calculate the optimum_dx
-        let thickness = material.thickness().unwrap();
-        let alpha = substance.thermal_diffusivity().unwrap();
-        let optimum_dx = (safety*2.0*alpha*dt).sqrt();
-        let m = (thickness/optimum_dx).floor();            
-        let mut dx = thickness/m;
+        // Choose a dx so that dt allows convergence.
+        // stability is assured by (alpha * dt / dx^2 <= 1/2 )
+        // meaning, we need to satisfy dx >= sqrt(2 * alpha * dt)
         
-        
-        // dx cannot be greater than thickness
-        if m == 0. {
-            dx = thickness;
-        }        
+        // So, for each layer
+        let mut n_elements : Vec<usize> = Vec::with_capacity(c.n_layers());
 
-        // If dx is larger than the max allowed d_x, try to change timestep        
-        if dx > max_dx {
-            // check if there is room for reducing dt...
-            let next_dt = main_dt/((n+1) as f64);
-            if next_dt > min_dt {
-                // If there is room for that, do it.
-                return find_dt_and_n_nodes(building,c,main_dt,n+1,max_dx,min_dt);                
+        for n_layer in 0..c.n_layers(){
+            let material_index = c.get_layer_index(n_layer).unwrap();
+            let material = building.get_material(material_index).unwrap();                        
+            let substance_index = material.get_substance_index().unwrap();
+            let substance = building.get_substance(substance_index).unwrap();
+
+            // Calculate the optimum_dx
+            let thickness = material.thickness().unwrap();
+            let alpha = substance.thermal_diffusivity().unwrap();
+            let optimum_dx = (safety*2.0*alpha*dt).sqrt();
+
+            // make all the elements of equal thickness
+            let m = (thickness/optimum_dx).floor();            
+            
+            let dx : f64;        
+            if m == 0. {
+                // The given timestep allows for simulating the whole
+                // layer as a single element (i.e. optimum_dx > dx).
+                // However, dx cannot be greater than thickness, so limit it.
+                dx = thickness;
             }else{
-                // otherwise, mark this layer as no-mass
-
-                // Zero nodes indicates no-mass, although
-                // a node will be added in the boundary
-                // with previous layer, if prev. layer has 
-                // mass.
-                n_nodes.push(0);                
+                // Layer must be subdivided in m equal parts.
+                dx = thickness/m;
             }
-        } else {
-            // "normal" case.            
-            n_nodes.push(m as usize)
+
+            if dx > max_dx {
+                // If the found dx is larger than the max allowed d_x, try to change timestep        
+                // check if there is room for reducing dt...
+                let next_dt = main_dt/((n+1) as f64);
+                if next_dt > min_dt {
+                    // If there is room for that, do it.
+                    return aux(building,c,main_dt,n+1,max_dx,min_dt);                
+                }else{
+                    // otherwise, mark this layer as no-mass
+                    
+                    n_elements.push(0);                
+                }
+            } else {
+                // "dx" is smaller than max_dx, and thus this works
+                // fine.
+                n_elements.push(m as usize)
+            }
         }
+        
+        return (n,n_elements)
     }
-    
-    return (dt,n_nodes)
+
+    return aux(building,c,main_dt,1,max_dx,min_dt);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -583,8 +668,8 @@ pub fn find_dt_and_n_nodes(building: &Building, c: &Construction, main_dt: f64, 
 #[cfg(test)]
 mod testing{
     use super::*;
-    use building_model::material::Material;
-    use building_model::substance::Substance;
+    use building_model::material::{MaterialProperties};
+    use building_model::substance::{SubstanceProperties};
     use geometry3d::polygon3d::Polygon3D;
     use geometry3d::point3d::Point3D;
     use geometry3d::loop3d::Loop3D;
@@ -752,7 +837,8 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = m0.thickness().unwrap()/4.0;
         let min_dt = 1.;
-        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
+        let dt = main_dt / n_subdivisions as f64;
         let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
 
         let (rs_i,rs_o)=calc_convection_coefficients(&surface);
@@ -780,7 +866,8 @@ mod testing{
 
         // This should result in a dt of 300, with 8 layers of 0.25m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/4., 1.);        
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, m0_thickness/4., 1.);        
+        let dt = main_dt/n_subdivisions as f64;
 
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
@@ -789,7 +876,8 @@ mod testing{
 
         // This should result in a dt of 300, with 8 layers of 0.25m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/8., 1.);                
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, m0_thickness/8., 1.);                
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],8);
@@ -797,7 +885,8 @@ mod testing{
 
         // This should result in a dt of 300/2=150, with 12 layers of 0.0166667m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/9., 1.);                                                      
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, m0_thickness/9., 1.);                                                      
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],12);
@@ -805,7 +894,8 @@ mod testing{
 
         // This should result in a dt of 300/4=75, with 17 layers of 0.011...m thick.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/15., 1.);                                                              
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, m0_thickness/15., 1.);                                                              
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,75.);
         assert_eq!(n_nodes[0],17);
@@ -813,7 +903,8 @@ mod testing{
 
         // We imposed a min_dt of 80, meaning that this should result in a no-mass layer
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, m0_thickness/15., 80.);                                                                                         
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, m0_thickness/15., 80.);                                                                                         
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,100.);
         assert_eq!(n_nodes[0],0);
@@ -841,7 +932,8 @@ mod testing{
 
         // This should result in a dt of 300, with 8 layers and 4 layers.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.03, 1.);                           
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.03, 1.);                           
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),2);
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],8);
@@ -851,7 +943,8 @@ mod testing{
 
         // This should result in a dt of 300/2=150, with 12 and 6 layers.
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.02, 1.);
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.02, 1.);
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],12);
@@ -860,7 +953,8 @@ mod testing{
 
         // This should result in a dt of 300/3=100, with 14 and 8
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 1.);                            
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.015, 1.);                            
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,100.);
         assert_eq!(n_nodes[0],14);
@@ -869,7 +963,8 @@ mod testing{
 
         // We imposed a min_dt of 100, meaning that this should result in a no-mass layer
         //let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 110.);        
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.015, 110.);        
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,150.);
         assert_eq!(n_nodes[0],0);
@@ -898,15 +993,9 @@ mod testing{
 
         // This should result in a dt of 150, with [1,13,1] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.03, 1.);                            
-        {
-            print!("N-NODES -> [");
-            for n in &n_nodes{
-                print!("{},",n);
-            }
-            println!("]");
-        }
-
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.03, 1.);                            
+        
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,300.);
         assert_eq!(n_nodes[0],0);        
@@ -917,7 +1006,8 @@ mod testing{
 
         // This should result in a dt of 300/6=50, with [2,23,2] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 1.);                                                        
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.015, 1.);                                                        
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,50.);
         assert_eq!(n_nodes[0],2);
@@ -927,7 +1017,8 @@ mod testing{
 
         // Limit min_time to 65... This should result in a dt of 300/4=75, with [0, 18, 0] layers
         let main_dt = 300.;
-        let (dt,n_nodes) = find_dt_and_n_nodes(&building, &c0, main_dt, 1, 0.015, 65.);                                                                                    
+        let (n_subdivisions,n_nodes) = discretize_construction(&building, &c0, main_dt, 0.015, 65.);                                                                                    
+        let dt = main_dt/n_subdivisions as f64;
         assert_eq!(n_nodes.len(),c0.n_layers());
         assert_eq!(dt,75.);
         assert_eq!(n_nodes[0],0);
@@ -940,63 +1031,63 @@ mod testing{
     #[test]
     fn test_find_n_total_nodes(){
         let n_nodes = vec![2,2];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,2);
         assert_eq!(5,calc_n_total_nodes(&n_nodes));
         
 
         let n_nodes = vec![1,0,0,2];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,4);
         assert_eq!(5,calc_n_total_nodes(&n_nodes));
 
         let n_nodes = vec![1,0,2];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,3);
         assert_eq!(5,calc_n_total_nodes(&n_nodes));
 
         let n_nodes = vec![8];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,1);
         assert_eq!(9,calc_n_total_nodes(&n_nodes));
 
         let n_nodes = vec![0];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,0);
         assert_eq!(2,calc_n_total_nodes(&n_nodes));        
 
         let n_nodes = vec![1,0];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,1);
         assert_eq!(2,calc_n_total_nodes(&n_nodes));        
 
 
         let n_nodes = vec![0,1];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,1);
         assert_eq!(last,2);
         assert_eq!(2,calc_n_total_nodes(&n_nodes));        
 
         let n_nodes = vec![0,1,0];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,1);
         assert_eq!(last,2);
         assert_eq!(2,calc_n_total_nodes(&n_nodes));        
 
         let n_nodes = vec![0,0,0];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,0);
         assert_eq!(2,calc_n_total_nodes(&n_nodes));        
 
         let n_nodes = vec![1,0,1];
-        let (first,last) = get_first_and_last_massive(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
         assert_eq!(first,0);
         assert_eq!(last,3);
         assert_eq!(4,calc_n_total_nodes(&n_nodes));        
@@ -1023,15 +1114,15 @@ mod testing{
         let wall_1 = building.get_construction(wall_1_index).unwrap();
     
         let dt = 156.0;
-        let n_nodes : Vec<usize> = vec![4];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let n_elements : Vec<usize> = vec![4];
+        let all_nodes = calc_n_total_nodes(&n_elements);
 
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
         let mut full_rso=0.0;
         let mut c_i=0.0;
         let mut c_o=0.0;    
-        build_thermal_network(&building, &wall_1, dt, &n_nodes, 0., 0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();            
+        build_thermal_network(&building, &wall_1, dt, &n_elements, 0., 0., &mut k_prime, &mut full_rsi, &mut full_rso, &mut c_i, &mut c_o).unwrap();            
         
             
         let substance = building.get_substance(brickwork_index).unwrap();
@@ -1040,7 +1131,7 @@ mod testing{
         let k = substance.thermal_conductivity().unwrap();
         
         let n_layer = 0;                        
-        let m = n_nodes[n_layer];
+        let m = n_elements[n_layer];
         let dx = brickwork_200_thickness/(m as f64);
         let substance = building.get_substance(brickwork_index).unwrap();
         let alpha = substance.thermal_diffusivity().unwrap();
@@ -1632,8 +1723,9 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = m0.thickness().unwrap()/4.0;
         let min_dt = 1.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
 
+        let dt = main_dt / n_subdivisions as f64;
         let ts = ThermalSurface::new(&building, &surface, dt,&nodes,0);
         assert!(ts.massive);
         assert_eq!(20.0,ts.state.get(0,0).unwrap());
@@ -1701,7 +1793,8 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = m0.thickness().unwrap()/15.;
         let min_dt = 80.;
-        let (dt,nodes)=find_dt_and_n_nodes(&building,&c0, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
+        let dt = main_dt / n_subdivisions as f64;
         let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
         
         assert!(!ts.massive);
@@ -1768,7 +1861,8 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = 0.015;
         let min_dt = 65.;
-        let (dt,nodes)=find_dt_and_n_nodes(&building,&c, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
+        let dt = main_dt / n_subdivisions as f64;
         let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
         
         assert!(ts.massive);
@@ -1827,7 +1921,8 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = m1.thickness().unwrap()/2.0;
         let min_dt = 1.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&building,&c, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
+        let dt = main_dt / n_subdivisions as f64;
         let mut ts = ThermalSurface::new(&building, surface, dt, &nodes,0);
         assert!(ts.massive);
        
@@ -1935,7 +2030,8 @@ mod testing{
         let main_dt = 300.0;
         let max_dx = m1.thickness().unwrap()/2.0;
         let min_dt = 100.0;
-        let (dt,nodes)=find_dt_and_n_nodes(&building, c, main_dt, 1, max_dx, min_dt);
+        let (n_subdivisions,nodes)=discretize_construction(&building, c, main_dt, max_dx, min_dt);
+        let dt = main_dt / n_subdivisions as f64;
         let mut ts = ThermalSurface::new(&building,surface,dt,&nodes,0);
         assert!(!ts.massive);
        

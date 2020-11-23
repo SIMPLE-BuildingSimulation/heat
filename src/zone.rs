@@ -5,6 +5,10 @@ pub struct ThermalZone {
     /// The name of the zone
     name: String,
 
+    /// The position of this zone within 
+    /// the Thermal Model zones array
+    index: usize,
+
     /// The position of the surfaces with which
     /// this zone is in contact in the Thermal Model
     /// surfaces array
@@ -12,10 +16,6 @@ pub struct ThermalZone {
 
     /// volume of the zone
     volume: f64,
-
-    /// The position of this zone within 
-    /// the Thermal Model zones array
-    position: usize,
 
     /// The internal average temperature of 
     /// the zone's air
@@ -30,12 +30,13 @@ pub struct ThermalZone {
 }
 
 impl ThermalZone{
-    pub fn new(name: String, volume: f64, position: usize) -> Self{
+    pub fn new(name: String, volume: f64, index: usize) -> Self{
         ThermalZone{
             name: name,
-            surface_indexes: vec![],
+            index: index,
+
             volume: volume,
-            position: position,
+            surface_indexes: vec![],
             temperature: 20.0,
             accumulated_heat: 0.0,
         }
@@ -49,7 +50,7 @@ impl ThermalZone{
         self.temperature
     }
 
-    pub fn accumulate_heat(&mut self, heat: f64){
+    pub fn accumulate_heat(&mut self, heat: f64){        
         self.accumulated_heat += heat;
     }
 
@@ -57,7 +58,7 @@ impl ThermalZone{
 
         let delta_t = self.accumulated_heat/self.mcp();
         self.temperature += delta_t;        
-        self.accumulated_heat = 0.;
+        self.accumulated_heat = 0.;        
 
     }
     
