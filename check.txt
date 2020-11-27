@@ -1,0 +1,224 @@
+warning: associated function is never used: `borrow_triangle`
+  --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:92:8
+   |
+92 |     fn borrow_triangle(&mut self,i:usize )->Result<&mut Triangle3D,String>{
+   |        ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: associated function is never used: `invalidate`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:106:8
+    |
+106 |     fn invalidate(&mut self, i:usize)->Result<(),String>{
+    |        ^^^^^^^^^^
+
+warning: associated function is never used: `mark_as_neighbours`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:131:8
+    |
+131 |     fn mark_as_neighbours(&mut self, i1: usize, edge_1: usize, i2 : usize) -> Result<(),String> {        
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `get_opposite_vertex`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:215:8
+    |
+215 |     fn get_opposite_vertex(&self, triangle: &Triangle3D, edge: Segment3D )->Result<Point3D,String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `get_flipped_aspect_ratio`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:236:8
+    |
+236 |     fn get_flipped_aspect_ratio(&self, index:usize,edge:usize)->Result<f64,String>{
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `flip_diagonal`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:301:8
+    |
+301 |     fn flip_diagonal(&mut self,index: usize, edge: usize)->Result<(),String>{
+    |        ^^^^^^^^^^^^^
+
+warning: associated function is never used: `split_edge`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:468:8
+    |
+468 |     fn split_edge(&mut self, base_index : usize, base_edge : usize, p : Point3D )-> Result<(),String> {
+    |        ^^^^^^^^^^
+
+warning: associated function is never used: `split_triangle`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:592:8
+    |
+592 |     fn split_triangle(&mut self, i:usize, p:Point3D)->Result<(),String>{
+    |        ^^^^^^^^^^^^^^
+
+warning: associated function is never used: `restore_delaunay`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:735:8
+    |
+735 |     fn restore_delaunay(&mut self, max_aspect_ratio: f64){
+    |        ^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `add_point_to_triangle`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:802:8
+    |
+802 |     fn add_point_to_triangle(&mut self, index: usize, point: Point3D, code: usize) -> Result<(),String>{
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `add_point`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:820:8
+    |
+820 |     fn add_point(&mut self, point : Point3D) -> Result<(),String>{
+    |        ^^^^^^^^^
+
+warning: associated function is never used: `refine`
+   --> /Users/german/Documents/simple/geometry3d/src/triangulation3d.rs:838:8
+    |
+838 |     fn refine(&mut self, max_area : f64, max_aspect_ratio : f64) -> Result<(),String>{
+    |        ^^^^^^
+
+warning: 12 warnings emitted
+
+warning: field is never read: `shading`
+  --> /Users/german/Documents/simple/building_model/src/fenestration.rs:38:5
+   |
+38 |     shading: Option<usize>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: 1 warning emitted
+
+   Compiling finite_difference_thermal_model v0.1.0 (/Users/german/Documents/simple/physics/finite_difference_thermal_model)
+warning: unused import: `BuildingStateElement`
+ --> src/model.rs:4:53
+  |
+4 | use building_model::building_state::{BuildingState, BuildingStateElement};
+  |                                                     ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `weather::Weather`
+ --> src/model.rs:8:5
+  |
+8 | use weather::Weather;
+  |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `calendar::date::Date`
+  --> src/model.rs:10:5
+   |
+10 | use calendar::date::Date;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `node_index`
+   --> src/surface.rs:175:72
+    |
+175 |         if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+    |                                                                        ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_index`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `node_index`
+   --> src/surface.rs:191:72
+    |
+191 |         if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+    |                                                                        ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_index`
+
+warning: field is never read: `surface_index`
+  --> src/surface.rs:23:5
+   |
+23 |     surface_index: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused `std::result::Result` that must be used
+   --> src/surface.rs:217:17
+    |
+217 |                 ret.set(node_index, 0, temperature);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_must_use)]` on by default
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused import: `BuildingStateElement`
+ --> src/model.rs:4:53
+  |
+4 | use building_model::building_state::{BuildingState, BuildingStateElement};
+  |                                                     ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `calendar::date::Date`
+  --> src/model.rs:10:5
+   |
+10 | use calendar::date::Date;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: 7 warnings emitted
+
+warning: unused variable: `node_index`
+   --> src/surface.rs:175:72
+    |
+175 |         if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+    |                                                                        ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_index`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `node_index`
+   --> src/surface.rs:191:72
+    |
+191 |         if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+    |                                                                        ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_index`
+
+warning: variable does not need to be mutable
+    --> src/surface.rs:1561:13
+     |
+1561 |         let mut ts = ThermalSurface::new(&building,&mut state, surface, dt, &nodes,0);
+     |             ----^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+    --> src/surface.rs:1672:13
+     |
+1672 |         let mut ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0);
+     |             ----^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src/model.rs:289:13
+    |
+289 |         let mut model = ThermalModel::new(&building, &mut state, n);
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: field is never read: `surface_index`
+  --> src/surface.rs:23:5
+   |
+23 |     surface_index: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused `std::result::Result` that must be used
+   --> src/surface.rs:217:17
+    |
+217 |                 ret.set(node_index, 0, temperature);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_must_use)]` on by default
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused `std::result::Result` that must be used
+   --> src/model.rs:323:13
+    |
+323 |             model.march(&mut state,weather_data);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: 10 warnings emitted
+
+    Finished test [unoptimized + debuginfo] target(s) in 2.83s
+     Running target/debug/deps/finite_difference_thermal_model-f0b04cd43cc43911
+error: test failed, to rerun pass '--lib'

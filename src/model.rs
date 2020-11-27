@@ -1,38 +1,47 @@
 use crate::zone::ThermalZone;
 use crate::surface::*;
 use building_model::building::Building;
-use building_model::object_trait::ObjectTrait;
+use building_model::building_state::{BuildingState, BuildingStateElement};
+
 use building_model::boundary::Boundary;
+use simulation_model_trait::SimulationModel;
+use weather::Weather;
+use weather::current_weather::CurrentWeather;
+use calendar::date::Date;
+
+use crate::construction::discretize_construction;
 
 pub struct ThermalModel {
     zones: Vec<ThermalZone>,
     surfaces: Vec<ThermalSurface>,
     dt_subdivisions: usize,
+    dt: f64,
 }
 
+impl SimulationModel for ThermalModel{
 
-impl ThermalModel {
-
-    pub fn new(building: &Building, main_dt: f64 )-> Self {
+    fn new( building: &Building, state: &mut BuildingState, n: usize )-> Self {
         
+        let main_dt = 60.*60./n as f64;
         
         /* CREATE ALL ZONES, ONE PER SPACE */
         let spaces = building.get_spaces();
         let mut thermal_zones : Vec<ThermalZone> = Vec::with_capacity(spaces.len());
         for space in spaces {
+            
+            // Add the zone to the model... this pushes it to the sate
+            // as well
             thermal_zones.push(
-                ThermalZone::new(
-                    format!("ThermalZone::{}",space.name()),
-                    space.volume().unwrap(),
-                    thermal_zones.len(),
-                )
+                ThermalZone::from_space(space, state)
             );
+
+            
         }
         
         /* FIND MODEL TIMESTEP */
         // choose the smallest timestep in all constructions
         let max_dx = 0.04; // 4cm
-        let min_dt = 60. * 2.; // 2 minutes 
+        let min_dt = 60.; // 1 minute
 
         let mut n_subdivisions : usize = 1;
         let constructions = building.get_constructions();
@@ -46,6 +55,9 @@ impl ThermalModel {
             }            
             all_n_elements.push(n_elements);
         }        
+
+        let dt = main_dt / (n_subdivisions as f64);
+
 
         /* CREATE SURFACES USING THE MINIMUM TIMESTEP */
         // The rationale here is the following: We find the minimum
@@ -64,8 +76,9 @@ impl ThermalModel {
             thermal_surfaces.push(
                 ThermalSurface::new(
                     building,
+                    state,
                     surface,
-                    main_dt / (n_subdivisions as f64),
+                    dt,
                     &all_n_elements[construction_index],
                     i
                 )
@@ -82,79 +95,108 @@ impl ThermalModel {
         return ThermalModel{
             zones: thermal_zones,
             surfaces: thermal_surfaces,
-            dt_subdivisions: n_subdivisions
+            dt_subdivisions: n_subdivisions,
+            dt: dt
         };
     }
 
+    fn march(&self, state: &mut BuildingState, current_weather: CurrentWeather )->Result<(),String>{
+
+        
+        let t_out = match current_weather.dry_bulb_temperature{
+            Some(v)=>v,
+            None => return Err(format!("Trying to march on Thermal Model, but dry bulb temperature was not provided"))
+        };
+
+        // Iterate through all the sub-subdivitions
+        for _ in 0..self.dt_subdivisions{
+
+            // update surface temperatures
+            let mut heat_storage : Vec<f64> = vec![0.0; self.zones.len()];
+
+            for i in 0..self.surfaces.len(){            
+                
+                // get surface
+                let s = &self.surfaces[i];
+                
+                
+                // find t_in and t_out of surface.
+                let t_front = match s.front_boundary(){
+                    Boundary::Space(z_index)=>self.zones[z_index].temperature(state),
+                    Boundary::Ground => unimplemented!(),
+                    Boundary::None => t_out
+                };
+                let t_back = match s.back_boundary(){
+                    Boundary::Space(z_index)=>self.zones[z_index].temperature(state),
+                    Boundary::Ground => unimplemented!(),
+                    Boundary::None => t_out
+                };            
+
+                // Update temperatures
+                let (q_front, q_back) = s.march(state, t_front,t_back);
+
+                // Distribute heat flows.
+                match s.front_boundary(){
+                    Boundary::Space(z_index)=> heat_storage[z_index] += q_front*s.area() * self.dt ,
+                    Boundary::Ground | Boundary::None => {}                
+                };
+                match s.back_boundary(){
+                    Boundary::Space(z_index)=> heat_storage[z_index] += q_back*s.area() * self.dt ,
+                    Boundary::Ground | Boundary::None => {}
+                };
+
+            }// end of iterating surface             
+
+
+            // update air flows
+                // assume constant during timestep... get a vector with Qs
+
+            // ZONE:
+            for i in 0..self.zones.len(){            
+                // calculate air-flow heat transfer
+
+                // calculate infiltration
+                
+                // calculate Zone heating/cooling
+
+                // Calculate people
+                
+                // Calculate lighting
+                        
+                // update all zones temperatures
+                //self.zones[i].consume_heat();
+                self.zones[i].consume_heat(heat_storage[i], state);
+            }// end of iterating zones
+
+        } // End of 'in each sub-timestep-subdivision'
+        
+        Ok(())
+    }
+}
+
+impl ThermalModel {
+
+    
     pub fn dt_subdivisions(&self)->usize{
         self.dt_subdivisions
     }
 
-    pub fn march(&mut self, t_out: f64, dt: f64 /*, building::BuildingState */){
-        
-        // update state
 
-
-        // update solar component
-
-
-        // update surface temperatures
-        for i in 0..self.surfaces.len(){            
-            
-            // get surface
-            let s = &mut self.surfaces[i];
-            
-            
-            // find t_in and t_out of surface.
-            let t_front = match s.front_boundary(){
-                Boundary::Space(z_index)=>self.zones[z_index].temperature(),
-                Boundary::Ground => unimplemented!(),
-                Boundary::None => t_out
-            };
-            let t_back = match s.back_boundary(){
-                Boundary::Space(z_index)=>self.zones[z_index].temperature(),
-                Boundary::Ground => unimplemented!(),
-                Boundary::None => t_out
-            };            
-
-            // Update temperatures
-            let (q_front, q_back) = s.march(t_front,t_back);
-
-            // Distribute heat flows.
-            match s.front_boundary(){
-                Boundary::Space(z_index)=>self.zones[z_index].accumulate_heat(q_front*s.area()*dt),
-                Boundary::Ground | Boundary::None => {}                
-            };
-            match s.back_boundary(){
-                Boundary::Space(z_index)=>self.zones[z_index].accumulate_heat(q_back*s.area()*dt),
-                Boundary::Ground | Boundary::None => {}
-            };
-
-        }                       
-
-        // update air flows
-            // assume constant during timestep... get a vector with Qs
-
-        // ZONE:
-        for i in 0..self.zones.len(){            
-            // calculate air-flow heat transfer
-
-            // calculate infiltration
-            
-            // calculate Zone heating/cooling
-
-            // Calculate people
-            
-            // Calculate lighting
-                    
-            // update all zones temperatures
-            self.zones[i].consume_heat();
-        }
-
-                
-    }
 
 }
+
+
+
+
+
+
+
+
+
+
+/***********/
+/* TESTING */
+/***********/
 
 
 
@@ -168,14 +210,17 @@ mod testing{
 
 
     use building_model::building::Building;
-    use building_model::substance::{Substance, SubstanceProperties};
-    use building_model::material::{Material,MaterialProperties};
-    use building_model::construction::Construction;
-    use building_model::surface::Surface;
+    use building_model::substance::{SubstanceProperties};
+    use building_model::material::{MaterialProperties};
+    
 
     use crate::construction::*;
     use building_model::boundary::Boundary;
 
+
+    use weather::synthetic_weather::SyntheticWeather;
+    use schedule::constant::ScheduleConstant;
+    use calendar::date::Date;
 
     #[test]
     fn test_model_march(){
@@ -236,8 +281,12 @@ mod testing{
             assert!(false);
         }
 
-        let main_dt = 300.;
-        let mut model = ThermalModel::new(&building, main_dt);
+        // Finished building the Building
+        let mut state : BuildingState = Vec::new();
+
+        let n : usize = 12;
+        let main_dt = 60. * 60. / n as f64;
+        let model = ThermalModel::new(&building, &mut state, n);
         let construction = building.get_construction(c_index).unwrap();
 
         // START TESTING.
@@ -247,19 +296,31 @@ mod testing{
         let u = 1./r;
         let area = model.surfaces[0].area();
         
-        let t_o = model.zones[0].temperature(); // Initial T of the zone
-        let t_s = 30.0; // T of surroundings
+        let t_o = model.zones[0].temperature(&state); // Initial T of the zone
+        
+
+        let t_s : f64 = 30.0; // T of surroundings
+
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_s));
 
         let dt = main_dt/model.dt_subdivisions() as f64;
+        
+
         // March:
         for i in 0..3000 {
             let time = (i as f64)*dt;
+            let weather_data = weather.get_weather_data(Date{
+                month: 1,
+                day: 1,
+                hour: 0.0
+            });
 
             
-            let found = model.zones[0].temperature();
+            let found = model.zones[0].temperature(&state);
             let zone_mass = model.zones[0].mcp();
             
-            model.march(t_s,dt);
+            model.march(&mut state,weather_data);
             
             // Get exact solution.            
             let exp = t_s + (t_o - t_s)*(-time * u * area / zone_mass ).exp();            

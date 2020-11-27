@@ -1,5 +1,5 @@
 [package]
-name = "finite_difference_thermal_solver"
+name = "finite_difference_thermal_model"
 version = "0.1.0"
 authors = ["German Molina <germolinal@gmail.com>"]
 edition = "2018"
@@ -7,8 +7,16 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+calendar = { path = "../../calendar" }
+simulation_model_trait = { path="../simulation_model_trait" }
 geometry3d = {path = "../../geometry3d"}
 building_model = {path = "../../building_model"}
 matrix = {path = "../../matrix"}
 convection = {path = "../convection"}
 gas_properties = {path = "../gas_properties"}
+weather = {path = "../../weather"}
+
+[dev-dependencies]
+schedule = { path = "../../schedule" }
+weather = { path = "../../weather" }
+calendar = { path = "../../calendar" }

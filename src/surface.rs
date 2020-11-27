@@ -1,11 +1,10 @@
 use matrix::Matrix;
 
 use building_model::building::Building;
+use building_model::building_state::{BuildingState, BuildingStateElement};
 use building_model::object_trait::ObjectTrait;
 use building_model::surface::Surface;
 use building_model::boundary::Boundary;
-
-use building_model::construction::Construction;
 use convection::*;
 
 use crate::construction::*;
@@ -56,8 +55,9 @@ pub struct ThermalSurface {
     /// The matrix that represents the thermal network
     k_prime : matrix::Matrix,
 
-    /// The temperatures of the nodes
-    state : matrix::Matrix,
+    /// The location of the first temperature node
+    /// in the BuildingState
+    front_side_node_index : usize,
 
     /// The number of nodes after discretizing 
     /// the construction
@@ -80,13 +80,14 @@ pub struct ThermalSurface {
 
 impl ThermalSurface {
 
-    pub fn new(building: &Building, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Self {
+    pub fn new(building: &Building, state: &mut BuildingState, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Self {
         
         
+        let surface_index = ObjectTrait::index(surface);
+
         // Check if Surface is valid... or else
         ObjectTrait::is_full(surface).unwrap();
         
-        // Get construction... or else 
         
         // this (should not fail because the surface is valid)
         let construction_index = surface.get_construction_index().unwrap();
@@ -95,8 +96,18 @@ impl ThermalSurface {
         let n_nodes = calc_n_total_nodes(&n_elements);
         let (rs_i,rs_o) = calc_convection_coefficients(surface);        
         
+        // Push elements to the state
+        let first_node_index = state.len();        
+        for i in 0..n_nodes{
+            state.push(
+                BuildingStateElement::SurfaceNodeTemperature(surface_index,i,20.0)
+            )
+        }
+        
+        
+
         let mut ret = ThermalSurface{
-            surface_index: ObjectTrait::index(surface),            
+            surface_index: surface_index,            
             rs_i: rs_i,
             rs_o: rs_o,
             full_rso: 0.0, // filled when building thermal network
@@ -104,7 +115,7 @@ impl ThermalSurface {
             c_o: 0.0, // filled when building thermal network
             c_i: 0.0, // filled when building thermal network
             k_prime: Matrix::new(0.0,n_nodes,n_nodes),// filled when building thermal network
-            state: Matrix::new(20.0,n_nodes,1),// Set initial conditions... warmup period is required prior to simulation
+            front_side_node_index: first_node_index,
             n_nodes: n_nodes,            
             massive: true, // filled after building the thermal network
             front_boundary: Boundary::None, // filled when setting boundary
@@ -136,12 +147,12 @@ impl ThermalSurface {
 
     /// Calculates the heat flow out of the layer, based
     /// on the inside and outside temperatures
-    fn calc_heat_flow(&self, t_in: f64, t_out: f64)->(f64,f64){
+    fn calc_heat_flow(&self, state: &BuildingState, t_in: f64, t_out: f64)->(f64,f64){
         // Positive is going out of the layer.
         let q_in;
         let q_out;
-        let t_si = self.state.get(0,0).unwrap();
-        let t_so = self.state.get(self.n_nodes-1,0).unwrap();
+        let t_si = self.front_temperature(state);
+        let t_so = self.back_temperature(state);
         if self.massive {
             q_in = (t_si - t_in)/self.full_rsi;            
             q_out = (t_so - t_out)/self.full_rso;
@@ -157,13 +168,95 @@ impl ThermalSurface {
         self.massive
     }
 
-    pub fn march(&mut self, t_in: f64, t_out: f64)->(f64,f64){
+    /// Gets the Front temperature
+    fn front_temperature(&self, state: &BuildingState)->f64{
+        let i = self.front_side_node_index;
+
+        if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+            if surf_index != self.index {
+                panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+            }
+            // all Good here
+            return temperature
+
+        }else{
+            panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+        } 
+    }
+
+    /// Gets the Back temperature
+    fn back_temperature(&self, state: &BuildingState)->f64{
+        let i = self.front_side_node_index + self.n_nodes - 1;
+        
+        if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+            if surf_index != self.index {
+                panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+            }
+            // all Good here
+            return temperature
+
+        }else{
+            panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+        } 
+    }
+
+    /// Sets the node temperatures in the state
+    fn set_node_temperatures(&self, state: &mut BuildingState, matrix: &Matrix){
+        
+        let ini = self.front_side_node_index;
+        let fin = ini + self.n_nodes;        
+
+        for i in ini..fin{
+            
+            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,old_t) = state[i]{
+                if surf_index != self.index {
+                    panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+                }
+                // all Good here
+                let new_t = matrix.get(node_index, 0).unwrap();
+                state[i] = BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,new_t);
+
+            }else{
+                panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+            }                            
+        }
+
+    }
+
+    /// Retrieves the state of the Surface as a Matrix
+    /// object.
+    fn get_node_temperatures(&self, state: &BuildingState)->Matrix{
+
+        let mut ret = Matrix::new(0.0,self.n_nodes,1);
+        let ini = self.front_side_node_index;
+        let fin = ini + self.n_nodes;        
+        for i in ini..fin{
+            
+            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+                if surf_index != self.index {
+                    panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+                }
+                // all Good here
+                ret.set(node_index, 0, temperature);
+
+            }else{
+                panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+            }                            
+        }
+        
+        return ret;
+    }
+
+    /// Marches one timestep
+    pub fn march(&self, state: &mut BuildingState, t_in: f64, t_out: f64)->(f64,f64){        
+        
+        let mut temperatures = self.get_node_temperatures(state);
 
         if self.massive {
-            // Update state... T_i+1 = Ti + K_prime*Ti + {t_in/full_rsi/C_i ... 0,0,0... t_out/full_rso/C_o}
+            // Update temperatures... T_i+1 = Ti + K_prime*Ti + {t_in/full_rsi/C_i ... 0,0,0... t_out/full_rso/C_o}
             //                              ^^^^^^^^^                    ^^^^^^^^^^^^
             //                        lets call this vector 'a'         These are the F components        
-            let mut a = self.k_prime.from_prod_n_diag(&self.state,3).unwrap();// k_prime is tri-diagonal
+            let mut a = self.k_prime.from_prod_n_diag(&temperatures,3).unwrap();// k_prime is tri-diagonal
             // ... 'a' should be a vector
 
             // Let's add the F components
@@ -173,19 +266,23 @@ impl ThermalSurface {
             let old_value = a.get(self.n_nodes-1,0).unwrap();
             a.set(self.n_nodes-1,0,old_value + t_out/self.full_rso/self.c_o).unwrap();
     
-            // Let's add a to the state.
-            self.state.add_to_this(&a).unwrap();
+            // Let's add a to the temperatures.
+            temperatures.add_to_this(&a).unwrap();
         }else{
             let q = (t_out - t_in)/self.full_rsi;
 
             let t_si = t_in  + q*self.rs_i;
             let t_so = t_out - q*self.rs_o;
 
-            self.state.set(0,0,t_si).unwrap();
-            self.state.set(self.n_nodes-1,0,t_so).unwrap();
+            temperatures.set(0,0,t_si).unwrap();
+            temperatures.set(self.n_nodes-1,0,t_so).unwrap();
         }
 
-        return self.calc_heat_flow(t_in, t_out);
+        // Set state
+        self.set_node_temperatures(state, &temperatures);
+
+        // return
+        return self.calc_heat_flow(state, t_in, t_out);
     }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
@@ -204,450 +301,6 @@ impl ThermalSurface {
         self.back_boundary
     }
 } // END OF SURFACE IMPL
-
-
-
-
-
-
-/// In a discretization scheme, this function finds the 
-/// first and the last massive layers... the no-mass layers
-/// before and after the first and last massive ones, respectively,
-/// are just bulked with the values of RSi and RSo.
-fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usize){
-
-    // We need somethig to process!
-    if n_elements.len() == 0{
-        panic!("Impossible to check first and last massive layers in empty discretization scheme");
-    }
-    let n_layers = n_elements.len();
-
-    // Border cases: one layer
-    if n_layers == 1 {
-        if n_elements[0] == 0 {
-            // if the layer is no-mass, then return 0,0
-            return (0,0);
-        }else{
-            // if the layer has mas, 
-            return (0,1);
-        }
-    }
-
-    // find the first and last massive layers
-    let mut first_massive = n_layers;
-    let mut last_massive = 0;
-    let mut any_massive = false;
-    for (i,nodes) in n_elements.iter().enumerate(){
-        if *nodes > 0 {
-            if first_massive > i {
-                first_massive = i;
-            }
-            if last_massive < i {
-                last_massive = i;
-            }
-            any_massive = true;
-        }
-    }
-    if any_massive{
-        return (first_massive,last_massive+1);
-    }else{
-        return (0,0);
-    }
-}
-
-
-
-
-/// This function calculates the number of nodes that result
-/// from the construction's discretization. 
-/// 
-/// Nodes are placed in the joints between elements, and 
-/// the nodes for the Rsi and Rso layers are considered.
-fn calc_n_total_nodes(n_elements : &Vec<usize>)->usize{
-    
-
-    // We need somethig to process!
-    if n_elements.len() == 0{
-        panic!("Wrong discretization scheme!");
-    }
-
-    // Border case: Only one element.
-    
-    if n_elements.len() == 1 {        
-        if n_elements[0] == 0 {            
-            return 2;
-        }else{
-            return n_elements[0]+1;
-        }
-    }
-    
-
-    // Otherwise, let's do this.
-    let mut n : usize = 1; // the end node.
-    let(first_massive,last_massive)=get_first_and_last_massive_elements(n_elements);
-
-    // No massive layer at all in the construction...
-    if first_massive == 0 && last_massive == 0 {
-        return 2;
-    }
-
-    // Now, process from the first massive to the last.
-    // interior and exterior no-mass layers do not contribute
-    // nodes.
-    let mut in_nomass_layer : bool = false;
-    for i in first_massive..last_massive{
-        let nodes = n_elements[i];
-        if nodes > 0 {
-            // Material with mass.
-            in_nomass_layer = false;
-            n += nodes;
-    
-        }else{
-            // material with no-mass
-            if !in_nomass_layer  {
-                n+=1;
-                in_nomass_layer = true;
-            }
-        }
-    }    
-
-    return n
-}
-
-/// Constructions are assumed to be a sandwich where a potentially massive 
-/// wall is between two non-mass layers. These non-mass layers can be 
-/// Film convections coefficients, some lightweight insulation or something
-/// with negligible thermal mass, or combinations of them (i.e. the film coefficient
-/// will be combined with insulation into a single composite layer).
-/// 
-/// The nodes are placed in between elements. Each element can be represented by the
-/// 2x2 matrix 
-/// 
-/// #    K = [ -1/R, 1/R; 1/R, -1/R], R being the thermal resistance of the element
-/// 
-/// But after calculating it, the value of K_prime will be calculated.
-/// 
-/// # Aguments
-/// * building: the Building containing the construction and all other data.
-/// * construction: the construction being discretized
-/// * dt: the timestep for the model (relevant for pre-processing some elements that will be used when marching forward in time)
-/// * n_elements: The number of elements in each layer of the construction
-/// * rsi: the interior film coefficient
-/// * rso: the exterior film coefficient
-/// 
-/// # Outputs
-/// 
-/// * k_prime: the Matrix representing the heat transfer between the nodes... will be filled by this function, and the input should be full of zeros
-/// * full_rsi: R_si + the thermal resistance of all the no-mass layers before the first massive element. 
-/// * full_rso: R_so + the thermal resistance of all the no-mass layers after the last massive element. 
-/// * c_i: 
-/// * c_o: 
-fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_elements: &Vec<usize>, rs_i: f64, rs_o: f64, k_prime: & mut Matrix, full_rsi: &mut f64, full_rso: &mut f64, c_i: & mut f64, c_o: & mut f64 ) ->Result<(),String> {
-    
-    // check coherence in input data
-    if n_elements.len() != c.n_layers(){        
-        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.n_layers(),n_elements.len());
-        return Err(err);
-    }
-    
-    let all_nodes = calc_n_total_nodes(n_elements);
-    let (rows,cols) = k_prime.size();
-    if rows != all_nodes || cols != all_nodes {
-        let err = format!("Unexpected size of given matrix - found ({},{}) and was expecting ({},{})",rows,cols,all_nodes,all_nodes);
-        return Err(err);
-    }
-
-    #[cfg(debug_assertions)]
-    {
-        println!("Checking that k_prime is only full of zeroes... build_thermal_network()");
-        let (nrows,ncols)=k_prime.size();
-        for row in 0..nrows{
-            for col in 0..ncols{
-                assert_eq!(0., k_prime.get(row,col).unwrap());
-            }
-        }
-    }
-        
-    // NOW, PROCESS
-    ////////////////
-    let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements);
-    
-    if first_massive == 0 && last_massive == 0 {
-        // no massive layers at all in construction.
-        // Simple case... return the following:
-        let r = r_value(building, c).unwrap()+rs_i+rs_o;
-        *full_rsi = r;
-        *full_rso = r;
-        k_prime.set(0,0,-1.0/r).unwrap();
-        k_prime.set(0,1,1.0/r).unwrap();
-        k_prime.set(1,0,1.0/r).unwrap();
-        k_prime.set(1,1,-1.0/r).unwrap();
-        *c_i=0.0;
-        *c_o=0.0;
-        return Ok(());
-    }else{
-        // Calculate inner and outer surface Resistances
-        
-        // Everything before the first massive layer
-        *full_rsi = rs_i;
-        for i in 0..first_massive {
-            let material_index = c.get_layer_index(i).unwrap();
-            let material = building.get_material(material_index).unwrap();            
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
-
-            *full_rsi += material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
-        }
-
-        // Everything after the last massive layer
-        *full_rso = rs_o;
-        for i in last_massive..c.n_layers() {        
-            let material_index = c.get_layer_index(i).unwrap();
-            let material = building.get_material(material_index).unwrap();                        
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
-            *full_rso += material.thickness().unwrap()/substance.thermal_conductivity().unwrap();
-        }
-    }
-
-    
-    // Calculate what is in between the massive layers
-    let mut node : usize = 0;
-    let mut n_layer : usize = first_massive;
-
-    while n_layer < last_massive {
-
-        let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = building.get_material(material_index).unwrap();                        
-
-        let m = n_elements[n_layer];                
-        if m == 0 { 
-            
-            // nomass material
-            // add up all the R of the no-mass layers that
-            // are together            
-            let mut r = 0.0; // if the material is no mass, then the first value 
-            while n_layer < last_massive && n_elements[n_layer] == 0 {                
-                let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = building.get_material(material_index).unwrap();                        
-                let dx = material.thickness().unwrap();
-                
-                let substance_index = material.get_substance_index().unwrap();
-                let substance = building.get_substance(substance_index).unwrap();                
-                let k =substance.thermal_conductivity().unwrap();
-
-                r += dx / k;
-                n_layer += 1;
-            }      
-
-            // update values
-            let u = 1./r;
-            // top left
-            let old_value = k_prime.get(node,node).unwrap();
-            k_prime.set(node  , node  , old_value - u ).unwrap();
-            // top right
-            let old_value = k_prime.get(node,node+1).unwrap();
-            k_prime.set(node  , node+1, old_value + u ).unwrap();
-            // bottom left
-            let old_value = k_prime.get(node+1, node).unwrap();
-            k_prime.set(node+1, node  , old_value + u ).unwrap();
-            // bottom right
-            let old_value = k_prime.get(node+1,node+1).unwrap();
-            k_prime.set(node+1, node+1, old_value - u ).unwrap();
-
-            // Move one node ahead
-            node += 1;
-            
-
-        }else{
-            // calc U value                                           
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
-
-            let k = substance.thermal_conductivity().unwrap();                
-            let dx = material.thickness().unwrap()/(m as f64);            
-            let u : f64 = k/dx;
-
-            for _ in 0..m {                                                                            
-                // top left
-                let old_value = k_prime.get(node,node).unwrap();
-                k_prime.set(node  , node  , old_value - u ).unwrap();
-                // top right
-                let old_value = k_prime.get(node,node+1).unwrap();
-                k_prime.set(node  , node+1, old_value + u ).unwrap();
-                // bottom left
-                let old_value = k_prime.get(node+1, node).unwrap();
-                k_prime.set(node+1, node  , old_value + u ).unwrap();
-                // bottom right
-                let old_value = k_prime.get(node+1,node+1).unwrap();
-                k_prime.set(node+1, node+1, old_value - u ).unwrap();
-                
-                // advance node.                
-                node += 1;
-            }
-            n_layer += 1;
-        }
-
-    }       
-    
-
-    // ADD RSI AND RSO 
-    // add r_si to first node            
-    if *full_rsi > 0.0 {
-        let old_value = k_prime.get(0,0).unwrap();        
-        k_prime.set(0,0, old_value - 1.0/ (*full_rsi) ).unwrap();        
-    }
-
-    if *full_rso > 0.0{        
-        let old_value = k_prime.get(all_nodes-1,all_nodes-1).unwrap();
-        k_prime.set(all_nodes-1,all_nodes-1, old_value - 1.0/(*full_rso) ).unwrap();        
-    }
-    
-    
-
-    // CALCULATE MASSES
-    let mut left_side : Vec<f64> = vec![0.0;all_nodes];
-    node = 0;
-
-    for n_layer in 0..c.n_layers() {        
-
-        let layer_index = c.get_layer_index(n_layer).unwrap();
-        let material = building.get_material(layer_index).unwrap();                        
-        
-        let m = n_elements[n_layer];  
-
-        if m != 0 {
-            // if has mass
-            for _ in 0..m {                   
-                // Calc mass                
-                let substance_index = material.get_substance_index().unwrap();
-                let substance = building.get_substance(substance_index).unwrap();
-                
-                let rho = substance.density().unwrap();
-                let cp = substance.specific_heat_capacity().unwrap();
-                let dx = material.thickness().unwrap()/(m as f64);
-                let m = rho * cp * dx / dt;                     
-                
-                // Nodes are in the joints between 
-                // finite elements... add half mass from each
-                left_side[node]+=m/2.0;
-                left_side[node+1]+=m/2.0;
-               
-                // advance node.
-                node += 1;
-            }
-        }else{
-            // else, they are zero already...
-            // still, we need to move forward one
-            // node.            
-            if n_layer > 0 && n_elements[n_layer-1] > 0 { 
-                // Only do it if the previous
-                // layer was massive
-                node+=1;
-            }            
-        }
-    }         
-    
-    
-    // DIVIDE ONE BY THE OTHER 
-    for i in 0..all_nodes{
-        let mass = left_side[i];
-        
-        if mass != 0.0 {                        
-            // Multiply the whole column by this.
-            for j in 0..all_nodes{
-                let old_k_value = k_prime.get(i,j).unwrap();
-                k_prime.set(i,j, old_k_value / mass).unwrap();                   
-            }
-        }// Else, masses are already Zero.
-                
-    }    
-
-    // SET C_I AND C_O
-    *c_i = left_side[0];
-    *c_o = left_side[all_nodes-1];
-    
-    return Ok(())
-}
-
-/// Given a Maximum thickness (max_dx) and a minimum timestep (max_dt), this function
-/// will find a good combination of dt and number of elements in each
-/// layer of the construction. 
-/// 
-/// This function recursively increases N in order to reduce dt to numbers
-/// that divide main_dt as a while (e.g. main_dt/1, main_dt/2, main_dt/3...)
-pub fn discretize_construction(building: &Building, c: &Construction, main_dt: f64, max_dx: f64, min_dt: f64) -> (usize,Vec<usize>){
-    
-    // I could only think of how to make this recursively... so I did this.
-    fn aux(building: &Building, c: &Construction, main_dt: f64, n: usize, max_dx: f64, min_dt: f64) -> (usize,Vec<usize>){
-        let dt = main_dt/(n as f64);
-        let safety = 1.5;
-
-        // Choose a dx so that dt allows convergence.
-        // stability is assured by (alpha * dt / dx^2 <= 1/2 )
-        // meaning, we need to satisfy dx >= sqrt(2 * alpha * dt)
-        
-        // So, for each layer
-        let mut n_elements : Vec<usize> = Vec::with_capacity(c.n_layers());
-
-        for n_layer in 0..c.n_layers(){
-            let material_index = c.get_layer_index(n_layer).unwrap();
-            let material = building.get_material(material_index).unwrap();                        
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
-
-            // Calculate the optimum_dx
-            let thickness = material.thickness().unwrap();
-            let alpha = substance.thermal_diffusivity().unwrap();
-            let optimum_dx = (safety*2.0*alpha*dt).sqrt();
-
-            // make all the elements of equal thickness
-            let m = (thickness/optimum_dx).floor();            
-            
-            let dx : f64;        
-            if m == 0. {
-                // The given timestep allows for simulating the whole
-                // layer as a single element (i.e. optimum_dx > dx).
-                // However, dx cannot be greater than thickness, so limit it.
-                dx = thickness;
-            }else{
-                // Layer must be subdivided in m equal parts.
-                dx = thickness/m;
-            }
-
-            if dx > max_dx {
-                // If the found dx is larger than the max allowed d_x, try to change timestep        
-                // check if there is room for reducing dt...
-                let next_dt = main_dt/((n+1) as f64);
-                if next_dt > min_dt {
-                    // If there is room for that, do it.
-                    return aux(building,c,main_dt,n+1,max_dx,min_dt);                
-                }else{
-                    // otherwise, mark this layer as no-mass
-                    
-                    n_elements.push(0);                
-                }
-            } else {
-                // "dx" is smaller than max_dx, and thus this works
-                // fine.
-                n_elements.push(m as usize)
-            }
-        }
-        
-        return (n,n_elements)
-    }
-
-    return aux(building,c,main_dt,1,max_dx,min_dt);
-}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -839,7 +492,8 @@ mod testing{
         let min_dt = 1.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
+        let mut state : BuildingState = Vec::new(); 
+        let ts = ThermalSurface::new(&building, &mut state, &surface,dt,&nodes,0);
 
         let (rs_i,rs_o)=calc_convection_coefficients(&surface);
         assert!(ts.massive);
@@ -1726,10 +1380,13 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
 
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building, &surface, dt,&nodes,0);
+        let mut state : BuildingState = Vec::new(); 
+        let ts = ThermalSurface::new(&building, &mut state, &surface, dt,&nodes,0);
         assert!(ts.massive);
-        assert_eq!(20.0,ts.state.get(0,0).unwrap());
-        assert_eq!(20.0,ts.state.get(ts.n_nodes-1,0).unwrap());
+        let temperatures = ts.get_node_temperatures(&state);
+
+        assert_eq!(20.0,temperatures.get(0,0).unwrap());
+        assert_eq!(20.0,temperatures.get(ts.n_nodes-1,0).unwrap());
 
         
         
@@ -1738,7 +1395,7 @@ mod testing{
         
         let t_out = 10.0;
         let q_out_ref = (20.0-t_out)/ts.rs_o;
-        let (q_in,q_out)=ts.calc_heat_flow(t_in,t_out);
+        let (q_in,q_out)=ts.calc_heat_flow(&state, t_in,t_out);
         
         assert_eq!(q_in,q_in_ref);
         assert_eq!(q_out,q_out_ref);
@@ -1795,18 +1452,20 @@ mod testing{
         let min_dt = 80.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
+        let mut state : BuildingState = Vec::new(); 
+        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0);
         
         assert!(!ts.massive);
-        assert_eq!(20.0,ts.state.get(0,0).unwrap());
-        assert_eq!(20.0,ts.state.get(ts.n_nodes-1,0).unwrap());
+        let temperatures = ts.get_node_temperatures(&state);
+        assert_eq!(20.0,temperatures.get(0,0).unwrap());
+        assert_eq!(20.0,temperatures.get(ts.n_nodes-1,0).unwrap());
         
         let t_in = 10.0;
         let q_in_ref = (20.0-t_in)/ts.rs_i;
         
         let t_out = 10.0;
         let q_out_ref = (20.0-t_out)/ts.rs_o;
-        let (q_in,q_out)=ts.calc_heat_flow(t_in,t_out);
+        let (q_in,q_out)=ts.calc_heat_flow(&state,t_in,t_out);
         
         assert_eq!(q_in,q_in_ref);
         assert_eq!(q_out,q_out_ref);
@@ -1863,18 +1522,20 @@ mod testing{
         let min_dt = 65.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building,&surface,dt,&nodes,0);
+        let mut state : BuildingState = Vec::new(); 
+        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0);
         
         assert!(ts.massive);
-        assert_eq!(20.0,ts.state.get(0,0).unwrap());
-        assert_eq!(20.0,ts.state.get(ts.n_nodes-1,0).unwrap());
+        let temperatures = ts.get_node_temperatures(&state);
+        assert_eq!(20.0,temperatures.get(0,0).unwrap());
+        assert_eq!(20.0,temperatures.get(ts.n_nodes-1,0).unwrap());
         
         let t_in = 10.0;
         let q_in_ref = (20.0-t_in)/ts.full_rsi;
         
         let t_out = 10.0;
         let q_out_ref = (20.0-t_out)/ts.full_rso;
-        let (q_in,q_out)=ts.calc_heat_flow(t_in,t_out);
+        let (q_in,q_out)=ts.calc_heat_flow(&state, t_in,t_out);
         
         assert_eq!(q_in,q_in_ref);
         assert_eq!(q_out,q_out_ref);
@@ -1917,13 +1578,15 @@ mod testing{
         let c = building.get_construction(c_index).unwrap();
         let surface = building.get_surface(s_index).unwrap();
 
+        let mut state : BuildingState = Vec::new();
+
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
         let max_dx = m1.thickness().unwrap()/2.0;
         let min_dt = 1.0;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut ts = ThermalSurface::new(&building, surface, dt, &nodes,0);
+        let ts = ThermalSurface::new(&building,&mut state, surface, dt, &nodes,0);
         assert!(ts.massive);
        
         // Try marching until q_in and q_out are zero.
@@ -1932,7 +1595,7 @@ mod testing{
         
         let mut counter : usize = 0;
         while q.abs() > 1E-5 {
-            let (q_in,q_out)=ts.march(10.0,10.0);                        
+            let (q_in,q_out)=ts.march(&mut state,10.0,10.0);                        
             assert!((q_in-q_out).abs() < 1E-5);            
             assert!(q_in  >= 0.);            
             assert!(q_in  < q);            
@@ -1945,8 +1608,9 @@ mod testing{
         }
 
         // all nodes should be at 10.0 now.
+        let temperatures = ts.get_node_temperatures(&state);
         for i in 0..ts.n_nodes{
-            let t = ts.state.get(i,0).unwrap();
+            let t = temperatures.get(i,0).unwrap();
             assert!((t-10.0).abs()<1E-5);
         }
 
@@ -1963,7 +1627,7 @@ mod testing{
         let mut final_qout:f64 = 123123123.;
         while change.abs() > 1E-10 {
             
-            let (q_in,q_out)=ts.march(10.0,30.0);                        
+            let (q_in,q_out)=ts.march(&mut state, 10.0,30.0);                        
             final_qin = q_in;
             final_qout = q_out;
             
@@ -2019,6 +1683,8 @@ mod testing{
         building.set_surface_construction(s_index, c_index).unwrap();
         building.set_surface_polygon(s_index, p).unwrap();
 
+        let mut state : BuildingState = Vec::new();
+        
         /* TEST */
 
         let m1 = building.get_material(m1_index).unwrap();
@@ -2032,16 +1698,18 @@ mod testing{
         let min_dt = 100.0;
         let (n_subdivisions,nodes)=discretize_construction(&building, c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut ts = ThermalSurface::new(&building,surface,dt,&nodes,0);
+        
+        let mut ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0);
         assert!(!ts.massive);
        
         // Try marching until q_in and q_out are zero.
 
-        let (q_in,q_out)= ts.march(10.0,10.0);                        
+        let (q_in,q_out)= ts.march(&mut state, 10.0,10.0);                        
 
         // this should show instantaneous update. So,
-        assert_eq!(ts.state.get(0,0).unwrap(),10.0);
-        assert_eq!(ts.state.get(1,0).unwrap(),10.0);
+        let temperatures = ts.get_node_temperatures(&state);
+        assert_eq!(temperatures.get(0,0).unwrap(),10.0);
+        assert_eq!(temperatures.get(1,0).unwrap(),10.0);
         assert_eq!(q_in,0.0);
         assert_eq!(q_out,0.0);
                 
@@ -2051,7 +1719,7 @@ mod testing{
         // outside to inside. I.E. q_in = (30-10)/R, 
         // q_out = -(30-10)/R
         
-        let (q_in,q_out)=ts.march(10.0,30.0);                        
+        let (q_in,q_out)=ts.march(&mut state, 10.0,30.0);                        
 
        
         // Expecting 

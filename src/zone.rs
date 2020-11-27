@@ -1,4 +1,7 @@
 use gas_properties::air;
+use building_model::space::Space;
+use building_model::object_trait::ObjectTrait;
+use building_model::building_state::{BuildingState, BuildingStateElement};
 
 pub struct ThermalZone {
     
@@ -17,20 +20,17 @@ pub struct ThermalZone {
     /// volume of the zone
     volume: f64,
 
-    /// The internal average temperature of 
-    /// the zone's air
-    temperature: f64,
-
-    /// A value containing the amount of heat
-    /// that has been accumulated as the result
-    /// of the difference in temperature between the zone
-    /// and the adjactent surfaces. It resets to 0.0 every time
-    /// the tempearture of the zone is set
-    accumulated_heat: f64,
+    /// The index containing the temperature of this
+    /// Zone in the BuildingState
+    temperature_state_index : usize,
+    
 }
 
 impl ThermalZone{
+    /*
     pub fn new(name: String, volume: f64, index: usize) -> Self{
+
+    
         ThermalZone{
             name: name,
             index: index,
@@ -41,30 +41,69 @@ impl ThermalZone{
             accumulated_heat: 0.0,
         }
     }
+    */
+
+    /// This function creates a new ThermalZone from a Space. 
+    /// It will copy the index of the space, so it should be used
+    /// by iterating the spaces in a building (so there is no mismatch).
+    pub fn from_space(space: &Space, state: &mut BuildingState)->Self{
+
+        let state_index = state.len();
+
+        // Add State
+        // Add the zone to the State
+        state.push(
+            // Zones start, by default, at 22.0 C
+            BuildingStateElement::SpaceDryBulbTemperature(space.index(), 22.0)
+        );
+
+        ThermalZone {
+            name : format!("ThermalZone::{}",space.name()),
+            index : space.index(),
+            volume : space.volume().unwrap(),
+            temperature_state_index: state_index,
+            surface_indexes: Vec::with_capacity(space.get_surfaces().len()),
+        }
+        
+        
+    }
 
     pub fn push_surface(&mut self, s: usize){        
         self.surface_indexes.push(s);        
     }
 
-    pub fn temperature(&self)-> f64{
-        self.temperature
+    pub fn temperature(&self, state: &BuildingState)-> f64{
+        if let BuildingStateElement::SpaceDryBulbTemperature(i,v) = state[self.temperature_state_index]{
+            if i != self.index {
+                panic!("Incorrect index allocated for Temperature of Space '{}'", self.name);
+            }
+            return v;
+        }else{
+            panic!("Incorrect StateElement kind allocated for Temperature of Space '{}'", self.name);
+        }
     }
 
+    /*
     pub fn accumulate_heat(&mut self, heat: f64){        
         self.accumulated_heat += heat;
     }
 
-    pub fn consume_heat(&mut self){
+    */
+    pub fn consume_heat(&self, accumulated_heat: f64, state: &mut BuildingState){
 
-        let delta_t = self.accumulated_heat/self.mcp();
-        self.temperature += delta_t;        
-        self.accumulated_heat = 0.;        
-
+        let delta_t = accumulated_heat/self.mcp();
+        
+        if let BuildingStateElement::SpaceDryBulbTemperature(i,v) = state[self.temperature_state_index]{
+            if i != self.index {
+                panic!("Incorrect index allocated for Temperature of Space '{}'", self.name);
+            }
+            state[self.temperature_state_index] = BuildingStateElement::SpaceDryBulbTemperature(i,v + delta_t)
+        }else{
+            panic!("Incorrect StateElement kind allocated for Temperature of Space '{}'", self.name);
+        }        
     }
     
     pub fn mcp(&self)->f64{
-
-        
 
         let air_density = air::density(); //kg/m3
         let air_specific_heat = air::specific_heat();//J/kg.K
