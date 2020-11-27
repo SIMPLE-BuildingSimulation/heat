@@ -1,13 +1,12 @@
 use crate::zone::ThermalZone;
 use crate::surface::*;
 use building_model::building::Building;
-use building_model::building_state::{BuildingState, BuildingStateElement};
+use building_model::building_state::BuildingState;
 
 use building_model::boundary::Boundary;
 use simulation_model_trait::SimulationModel;
-use weather::Weather;
 use weather::current_weather::CurrentWeather;
-use calendar::date::Date;
+
 
 use crate::construction::discretize_construction;
 
@@ -216,8 +215,8 @@ mod testing{
 
     use crate::construction::*;
     use building_model::boundary::Boundary;
-
-
+    
+    use weather::Weather;
     use weather::synthetic_weather::SyntheticWeather;
     use schedule::constant::ScheduleConstant;
     use calendar::date::Date;
@@ -320,7 +319,7 @@ mod testing{
             let found = model.zones[0].temperature(&state);
             let zone_mass = model.zones[0].mcp();
             
-            model.march(&mut state,weather_data);
+            model.march(&mut state,weather_data).unwrap();
             
             // Get exact solution.            
             let exp = t_s + (t_o - t_s)*(-time * u * area / zone_mass ).exp();            

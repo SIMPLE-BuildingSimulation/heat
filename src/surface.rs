@@ -18,9 +18,9 @@ pub struct ThermalSurface {
     /// the Thermal Model surfaces array
     index: usize,
 
-    /// A reference to the original Surface in the 
-    /// building model
-    surface_index: usize,
+    // A reference to the original Surface in the 
+    // building model    
+    //surface_index: usize,
         
     /// The interior (i.e. front side) convection coefficient
     rs_i: f64,
@@ -107,7 +107,7 @@ impl ThermalSurface {
         
 
         let mut ret = ThermalSurface{
-            surface_index: surface_index,            
+            //surface_index: surface_index,            
             rs_i: rs_i,
             rs_o: rs_o,
             full_rso: 0.0, // filled when building thermal network
@@ -176,6 +176,9 @@ impl ThermalSurface {
             if surf_index != self.index {
                 panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
             }
+            if node_index != 0 {
+                panic!("Incorrect index allocated for Front Temperature of of Surface '{}'", self.index);
+            }
             // all Good here
             return temperature
 
@@ -191,6 +194,9 @@ impl ThermalSurface {
         if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
             if surf_index != self.index {
                 panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+            }
+            if node_index != self.n_nodes-1 {
+                panic!("Incorrect index allocated for Back Temperature of of Surface '{}'", self.index);
             }
             // all Good here
             return temperature
@@ -208,7 +214,7 @@ impl ThermalSurface {
 
         for i in ini..fin{
             
-            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,old_t) = state[i]{
+            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,_) = state[i]{
                 if surf_index != self.index {
                     panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
                 }
@@ -237,7 +243,7 @@ impl ThermalSurface {
                     panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
                 }
                 // all Good here
-                ret.set(node_index, 0, temperature);
+                ret.set(node_index, 0, temperature).unwrap();
 
             }else{
                 panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
