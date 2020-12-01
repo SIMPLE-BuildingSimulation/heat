@@ -1705,7 +1705,7 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building, c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
         
-        let mut ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0);
+        let ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0);
         assert!(!ts.massive);
        
         // Try marching until q_in and q_out are zero.

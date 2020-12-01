@@ -99,7 +99,13 @@ impl SimulationModel for ThermalModel{
         };
     }
 
-    fn march(&self, state: &mut BuildingState, current_weather: CurrentWeather )->Result<(),String>{
+    /* ********************************* */
+    /* ********************************* */
+    /* ********************************* */
+    /* ********************************* */
+    /* ********************************* */
+    
+    fn march(&self, state: &mut BuildingState, current_weather: &CurrentWeather )->Result<(),String>{
 
         
         let t_out = match current_weather.dry_bulb_temperature{
@@ -157,13 +163,14 @@ impl SimulationModel for ThermalModel{
                 // calculate infiltration
                 
                 // calculate Zone heating/cooling
+                heat_storage[i] += self.zones[i].calc_heating_cooling_power(state) * self.dt ;
 
                 // Calculate people
                 
                 // Calculate lighting
+                heat_storage[i] += self.zones[i].calc_lighting_power(state) * self.dt ;
                         
-                // update all zones temperatures
-                //self.zones[i].consume_heat();
+                // update all zones temperatures                
                 self.zones[i].consume_heat(heat_storage[i], state);
             }// end of iterating zones
 
@@ -319,7 +326,7 @@ mod testing{
             let found = model.zones[0].temperature(&state);
             let zone_mass = model.zones[0].mcp();
             
-            model.march(&mut state,weather_data).unwrap();
+            model.march(&mut state, &weather_data).unwrap();
             
             // Get exact solution.            
             let exp = t_s + (t_o - t_s)*(-time * u * area / zone_mass ).exp();            

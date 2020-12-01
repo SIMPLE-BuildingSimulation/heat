@@ -2,6 +2,7 @@ use gas_properties::air;
 use building_model::space::Space;
 use building_model::object_trait::ObjectTrait;
 use building_model::building_state::{BuildingState, BuildingStateElement};
+use building_model::heating_cooling::HeatingCoolingState;
 
 pub struct ThermalZone {
     
@@ -23,25 +24,19 @@ pub struct ThermalZone {
     /// The index containing the temperature of this
     /// Zone in the BuildingState
     temperature_state_index : usize,
+
+    /// The index of the state of the heating/cooling in 
+    /// the BuildingState
+    heating_cooling_state_index: Option<usize>,
+
+    /// The index of the state of the luminaire in 
+    /// the BuildingState
+    luminaire_state_index: Option<usize>,
     
 }
 
 impl ThermalZone{
-    /*
-    pub fn new(name: String, volume: f64, index: usize) -> Self{
-
     
-        ThermalZone{
-            name: name,
-            index: index,
-
-            volume: volume,
-            surface_indexes: vec![],
-            temperature: 20.0,
-            accumulated_heat: 0.0,
-        }
-    }
-    */
 
     /// This function creates a new ThermalZone from a Space. 
     /// It will copy the index of the space, so it should be used
@@ -57,15 +52,67 @@ impl ThermalZone{
             BuildingStateElement::SpaceDryBulbTemperature(space.index(), 22.0)
         );
 
+        
+
         ThermalZone {
             name : format!("ThermalZone::{}",space.name()),
             index : space.index(),
             volume : space.volume().unwrap(),
             temperature_state_index: state_index,
             surface_indexes: Vec::with_capacity(space.get_surfaces().len()),
+            heating_cooling_state_index: space.get_heating_cooling_state_index(),
+            luminaire_state_index: space.get_luminaires_state_index(),
         }
         
         
+    }
+
+    pub fn calc_heating_cooling_power(&self, state: &BuildingState)->f64{
+        match self.heating_cooling_state_index{
+            // Has a system... let's do something with it
+            Some(i)=>{
+                // Check consistency
+                if let BuildingStateElement::SpaceHeatingCoolingPowerConsumption(space_index,s) = state[i]{
+                    if space_index == self.index {
+                        panic!("Getting Cooling / Heating for the wrong Space");
+                    }
+                    
+                    println!("WARNING:::: DIFFERENT KINDS OF HEATING/COOLING ARE NOT SUPPORTED YET");
+
+                    match s {
+                        HeatingCoolingState::Heating(p)=>p,
+                        HeatingCoolingState::Cooling(p)=>-p,
+                        HeatingCoolingState::Off => 0.0
+                    }
+                
+                }else{
+                    panic!("Corrupt BUildingState... incorrect BuildingStateElement found")
+                }
+            },
+            // Does not have heating or cooling
+            None => 0.0
+        }
+    }
+
+    pub fn calc_lighting_power(&self, state: &BuildingState) -> f64 {
+        match self.luminaire_state_index {
+            // Has a system... let's do something with it
+            Some(i)=>{
+                // Check consistency
+                if let BuildingStateElement::SpaceLightingPowerConsumption(space_index,s) = state[i]{
+                    if space_index == self.index {
+                        panic!("Getting Lighting for the wrong Space");
+                    }                                        
+
+                    s
+                
+                }else{
+                    panic!("Corrupt BUildingState... incorrect BuildingStateElement found")
+                }
+            },
+            // Does not have heating or cooling
+            None => 0.0
+        }
     }
 
     pub fn push_surface(&mut self, s: usize){        
