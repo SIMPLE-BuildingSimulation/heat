@@ -1,7 +1,8 @@
 use matrix::Matrix;
 
 use building_model::building::Building;
-use building_model::building_state::{BuildingState, BuildingStateElement};
+use building_model::building_state::BuildingState;
+use building_model::building_state_element::BuildingStateElement;
 use building_model::object_trait::ObjectTrait;
 use building_model::surface::Surface;
 use building_model::boundary::Boundary;
@@ -80,7 +81,7 @@ pub struct ThermalSurface {
 
 impl ThermalSurface {
 
-    pub fn new(building: &Building, state: &mut BuildingState, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Self {
+    pub fn new(building: &Building, state: &mut BuildingState, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Result<Self,String> {
         
         
         let surface_index = ObjectTrait::index(surface);
@@ -93,7 +94,11 @@ impl ThermalSurface {
         let construction_index = surface.get_construction_index().unwrap();
         let construction = building.get_construction(construction_index).unwrap();
 
-        let n_nodes = calc_n_total_nodes(&n_elements);
+        let n_nodes = match calc_n_total_nodes(&n_elements){
+            Ok(v)=>v,
+            Err(e)=>return Err(e),
+        };
+
         let (rs_i,rs_o) = calc_convection_coefficients(surface);        
         
         // Push elements to the state
@@ -101,7 +106,7 @@ impl ThermalSurface {
         for i in 0..n_nodes{
             state.push(
                 BuildingStateElement::SurfaceNodeTemperature(surface_index,i,20.0)
-            )
+            );
         }
         
         
@@ -128,7 +133,7 @@ impl ThermalSurface {
         ret.massive = !(ret.c_o == 0.0 && ret.c_i == 0.);
 
         // return
-        ret
+        Ok(ret)
                 
     }
     
@@ -498,8 +503,8 @@ mod testing{
         let min_dt = 1.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = Vec::new(); 
-        let ts = ThermalSurface::new(&building, &mut state, &surface,dt,&nodes,0);
+        let mut state : BuildingState = BuildingState::new(); 
+        let ts = ThermalSurface::new(&building, &mut state, &surface,dt,&nodes,0).unwrap();
 
         let (rs_i,rs_o)=calc_convection_coefficients(&surface);
         assert!(ts.massive);
@@ -691,66 +696,66 @@ mod testing{
     #[test]
     fn test_find_n_total_nodes(){
         let n_nodes = vec![2,2];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,2);
-        assert_eq!(5,calc_n_total_nodes(&n_nodes));
+        assert_eq!(5,calc_n_total_nodes(&n_nodes).unwrap());
         
 
         let n_nodes = vec![1,0,0,2];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,4);
-        assert_eq!(5,calc_n_total_nodes(&n_nodes));
+        assert_eq!(5,calc_n_total_nodes(&n_nodes).unwrap());
 
         let n_nodes = vec![1,0,2];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,3);
-        assert_eq!(5,calc_n_total_nodes(&n_nodes));
+        assert_eq!(5,calc_n_total_nodes(&n_nodes).unwrap());
 
         let n_nodes = vec![8];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,1);
-        assert_eq!(9,calc_n_total_nodes(&n_nodes));
+        assert_eq!(9,calc_n_total_nodes(&n_nodes).unwrap());
 
         let n_nodes = vec![0];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,0);
-        assert_eq!(2,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(2,calc_n_total_nodes(&n_nodes).unwrap());        
 
         let n_nodes = vec![1,0];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,1);
-        assert_eq!(2,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(2,calc_n_total_nodes(&n_nodes).unwrap());        
 
 
         let n_nodes = vec![0,1];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,1);
         assert_eq!(last,2);
-        assert_eq!(2,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(2,calc_n_total_nodes(&n_nodes).unwrap());        
 
         let n_nodes = vec![0,1,0];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,1);
         assert_eq!(last,2);
-        assert_eq!(2,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(2,calc_n_total_nodes(&n_nodes).unwrap());        
 
         let n_nodes = vec![0,0,0];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,0);
-        assert_eq!(2,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(2,calc_n_total_nodes(&n_nodes).unwrap());        
 
         let n_nodes = vec![1,0,1];
-        let (first,last) = get_first_and_last_massive_elements(&n_nodes);
+        let (first,last) = get_first_and_last_massive_elements(&n_nodes).unwrap();
         assert_eq!(first,0);
         assert_eq!(last,3);
-        assert_eq!(4,calc_n_total_nodes(&n_nodes));        
+        assert_eq!(4,calc_n_total_nodes(&n_nodes).unwrap());        
         
     }
 
@@ -775,7 +780,7 @@ mod testing{
     
         let dt = 156.0;
         let n_elements : Vec<usize> = vec![4];
-        let all_nodes = calc_n_total_nodes(&n_elements);
+        let all_nodes = calc_n_total_nodes(&n_elements).unwrap();
 
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
@@ -875,7 +880,7 @@ mod testing{
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![3,3];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
 
         let cp0=m0_substance.specific_heat_capacity().unwrap();
         let rho0=m0_substance.density().unwrap();
@@ -1011,7 +1016,7 @@ mod testing{
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![0];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         
         let mut full_rsi=0.0;
@@ -1059,7 +1064,7 @@ mod testing{
         
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![0,0];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         let r = 2.0*m0.thickness().unwrap()/m0_substance.thermal_conductivity().unwrap();
         let mut k_prime = Matrix::new(0.0,all_nodes,all_nodes);
         let mut full_rsi=0.0;
@@ -1125,7 +1130,7 @@ mod testing{
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![1,0];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         assert_eq!(all_nodes,2);
 
         let cp=m0_substance.specific_heat_capacity().unwrap();
@@ -1199,7 +1204,7 @@ mod testing{
         /* TESTS */
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![0,1];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         assert_eq!(all_nodes,2);
 
         let cp=m0_substance.specific_heat_capacity().unwrap();
@@ -1289,7 +1294,7 @@ mod testing{
 
         let dt = 156.0;
         let n_nodes : Vec<usize> = vec![1,0,0,1];
-        let all_nodes = calc_n_total_nodes(&n_nodes);
+        let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         assert_eq!(all_nodes,4);
 
 
@@ -1386,8 +1391,8 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
 
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = Vec::new(); 
-        let ts = ThermalSurface::new(&building, &mut state, &surface, dt,&nodes,0);
+        let mut state : BuildingState = BuildingState::new(); 
+        let ts = ThermalSurface::new(&building, &mut state, &surface, dt,&nodes,0).unwrap();
         assert!(ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
 
@@ -1458,8 +1463,8 @@ mod testing{
         let min_dt = 80.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = Vec::new(); 
-        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0);
+        let mut state : BuildingState = BuildingState::new(); 
+        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0).unwrap();
         
         assert!(!ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
@@ -1528,8 +1533,8 @@ mod testing{
         let min_dt = 65.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = Vec::new(); 
-        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0);
+        let mut state : BuildingState = BuildingState::new(); 
+        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0).unwrap();
         
         assert!(ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
@@ -1584,7 +1589,7 @@ mod testing{
         let c = building.get_construction(c_index).unwrap();
         let surface = building.get_surface(s_index).unwrap();
 
-        let mut state : BuildingState = Vec::new();
+        let mut state : BuildingState = BuildingState::new();
 
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
@@ -1592,7 +1597,7 @@ mod testing{
         let min_dt = 1.0;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building,&mut state, surface, dt, &nodes,0);
+        let ts = ThermalSurface::new(&building,&mut state, surface, dt, &nodes,0).unwrap();
         assert!(ts.massive);
        
         // Try marching until q_in and q_out are zero.
@@ -1689,7 +1694,7 @@ mod testing{
         building.set_surface_construction(s_index, c_index).unwrap();
         building.set_surface_polygon(s_index, p).unwrap();
 
-        let mut state : BuildingState = Vec::new();
+        let mut state : BuildingState = BuildingState::new();
         
         /* TEST */
 
@@ -1705,7 +1710,7 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building, c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
         
-        let ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0);
+        let ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0).unwrap();
         assert!(!ts.massive);
        
         // Try marching until q_in and q_out are zero.

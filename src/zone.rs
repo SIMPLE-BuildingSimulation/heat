@@ -1,8 +1,12 @@
 use gas_properties::air;
+use building_model::building::Building;
 use building_model::space::Space;
 use building_model::object_trait::ObjectTrait;
-use building_model::building_state::{BuildingState, BuildingStateElement};
-use building_model::heating_cooling::HeatingCoolingState;
+use building_model::building_state::BuildingState;
+use building_model::building_state_element::BuildingStateElement;
+
+
+use crate::heating_cooling::calc_cooling_heating_power;
 
 pub struct ThermalZone {
     
@@ -43,11 +47,11 @@ impl ThermalZone{
     /// by iterating the spaces in a building (so there is no mismatch).
     pub fn from_space(space: &Space, state: &mut BuildingState)->Self{
 
-        let state_index = state.len();
+        
 
         // Add State
         // Add the zone to the State
-        state.push(
+        let state_index = state.push(
             // Zones start, by default, at 22.0 C
             BuildingStateElement::SpaceDryBulbTemperature(space.index(), 22.0)
         );
@@ -67,7 +71,7 @@ impl ThermalZone{
         
     }
 
-    pub fn calc_heating_cooling_power(&self, state: &BuildingState)->f64{
+    pub fn calc_heating_cooling_power(&self, building: &Building, state: &BuildingState)->f64{
         match self.heating_cooling_state_index{
             // Has a system... let's do something with it
             Some(i)=>{
@@ -77,13 +81,11 @@ impl ThermalZone{
                         panic!("Getting Cooling / Heating for the wrong Space");
                     }
                     
-                    println!("WARNING:::: DIFFERENT KINDS OF HEATING/COOLING ARE NOT SUPPORTED YET");
-
-                    match s {
-                        HeatingCoolingState::Heating(p)=>p,
-                        HeatingCoolingState::Cooling(p)=>-p,
-                        HeatingCoolingState::Off => 0.0
-                    }
+                    // Get the kind of heater/cooler
+                    let heater_cooler = building.get_space(space_index).unwrap().get_heating_cooling().unwrap();
+                    
+                    return calc_cooling_heating_power(heater_cooler, s)
+                                        
                 
                 }else{
                     panic!("Corrupt BUildingState... incorrect BuildingStateElement found")

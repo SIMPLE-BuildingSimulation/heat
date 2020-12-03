@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 calendar = { path = "../../calendar" }
-simulation_model_trait = { path="../simulation_model_trait" }
+communication_traits = { path="../../communication_traits" }
 geometry3d = {path = "../../geometry3d"}
 building_model = {path = "../../building_model"}
 matrix = {path = "../../matrix"}

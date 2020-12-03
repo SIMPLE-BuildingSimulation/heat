@@ -108,11 +108,11 @@ pub fn discretize_construction(building: &Building, c: &Construction, main_dt: f
 /// first and the last massive layers... the no-mass layers
 /// before and after the first and last massive ones, respectively,
 /// are just bulked with the values of RSi and RSo.
-pub fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usize){
+pub fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->Result<(usize,usize), String>{
 
     // We need somethig to process!
     if n_elements.len() == 0{
-        panic!("Impossible to check first and last massive layers in empty discretization scheme");
+        return Err(format!("Impossible to check first and last massive layers in empty discretization scheme"))
     }
     let n_layers = n_elements.len();
 
@@ -120,10 +120,10 @@ pub fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usi
     if n_layers == 1 {
         if n_elements[0] == 0 {
             // if the layer is no-mass, then return 0,0
-            return (0,0);
+            return Ok((0,0));
         }else{
             // if the layer has mas, 
-            return (0,1);
+            return Ok((0,1));
         }
     }
 
@@ -143,9 +143,9 @@ pub fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usi
         }
     }
     if any_massive{
-        return (first_massive,last_massive+1);
+        return Ok((first_massive,last_massive+1));
     }else{
-        return (0,0);
+        return Ok((0,0));
     }
 }
 
@@ -157,32 +157,35 @@ pub fn get_first_and_last_massive_elements(n_elements : &Vec<usize>)->(usize,usi
 /// 
 /// Nodes are placed in the joints between elements, and 
 /// the nodes for the Rsi and Rso layers are considered.
-pub fn calc_n_total_nodes(n_elements : &Vec<usize>)->usize{
+pub fn calc_n_total_nodes(n_elements : &Vec<usize>)->Result<usize,String>{
     
 
     // We need somethig to process!
     if n_elements.len() == 0{
-        panic!("Wrong discretization scheme!");
+        return Err(format!("Wrong discretization scheme... no elements considered"));
     }
 
     // Border case: Only one element.
     
     if n_elements.len() == 1 {        
         if n_elements[0] == 0 {            
-            return 2;
+            return Ok(2);
         }else{
-            return n_elements[0]+1;
+            return Ok(n_elements[0]+1);
         }
     }
     
 
     // Otherwise, let's do this.
     let mut n : usize = 1; // the end node.
-    let(first_massive,last_massive)=get_first_and_last_massive_elements(n_elements);
+    let (first_massive,last_massive)=match get_first_and_last_massive_elements(n_elements){
+        Ok(v)=>v,
+        Err(e)=>return Err(e)
+    };
 
     // No massive layer at all in the construction...
     if first_massive == 0 && last_massive == 0 {
-        return 2;
+        return Ok(2);
     }
 
     // Now, process from the first massive to the last.
@@ -205,7 +208,7 @@ pub fn calc_n_total_nodes(n_elements : &Vec<usize>)->usize{
         }
     }    
 
-    return n
+    return Ok(n);
 }
 
 /// Constructions are assumed to be a sandwich where a potentially massive 
@@ -244,7 +247,11 @@ pub fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_e
         return Err(err);
     }
     
-    let all_nodes = calc_n_total_nodes(n_elements);
+    let all_nodes = match calc_n_total_nodes(n_elements){
+        Ok(v)=>v,
+        Err(e)=>return Err(e)
+    };
+
     let (rows,cols) = k_prime.size();
     if rows != all_nodes || cols != all_nodes {
         let err = format!("Unexpected size of given matrix - found ({},{}) and was expecting ({},{})",rows,cols,all_nodes,all_nodes);
@@ -264,7 +271,10 @@ pub fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_e
         
     // NOW, PROCESS
     ////////////////
-    let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements);
+    let (first_massive, last_massive) = match get_first_and_last_massive_elements(n_elements){
+        Ok(v)=>v,
+        Err(e)=>return Err(e),
+    };
     
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.

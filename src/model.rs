@@ -2,9 +2,10 @@ use crate::zone::ThermalZone;
 use crate::surface::*;
 use building_model::building::Building;
 use building_model::building_state::BuildingState;
+use communication_traits::simulation_model::SimulationModel;
+use communication_traits::error_handling::ErrorHandling;
 
 use building_model::boundary::Boundary;
-use simulation_model_trait::SimulationModel;
 use weather::current_weather::CurrentWeather;
 
 
@@ -17,9 +18,15 @@ pub struct ThermalModel {
     dt: f64,
 }
 
-impl SimulationModel for ThermalModel{
+impl ErrorHandling for ThermalModel{
+    fn module_name(&self)->&'static str{
+        "Finite Difference Thermal Model"
+    }
+}
 
-    fn new( building: &Building, state: &mut BuildingState, n: usize )-> Self {
+impl SimulationModel<ThermalModel> for ThermalModel{
+
+    fn new( building: &Building, state: &mut BuildingState, n: usize )-> Result<ThermalModel,String> {
         
         let main_dt = 60.*60./n as f64;
         
@@ -72,15 +79,20 @@ impl SimulationModel for ThermalModel{
             let construction_index = surface.get_construction_index().unwrap();
 
             let i = thermal_surfaces.len();
+            let thermal_surface = match ThermalSurface::new(
+                building,
+                state,
+                surface,
+                dt,
+                &all_n_elements[construction_index],
+                i
+            ){
+                Ok(v)=>v,
+                Err(e)=>return Err(e),
+            };
+
             thermal_surfaces.push(
-                ThermalSurface::new(
-                    building,
-                    state,
-                    surface,
-                    dt,
-                    &all_n_elements[construction_index],
-                    i
-                )
+                thermal_surface
             );
 
             // Match surface and zones        
@@ -89,14 +101,13 @@ impl SimulationModel for ThermalModel{
             
         }
 
-
-
-        return ThermalModel{
+        let ret = ThermalModel{
             zones: thermal_zones,
             surfaces: thermal_surfaces,
             dt_subdivisions: n_subdivisions,
             dt: dt
         };
+        return Ok(ret);
     }
 
     /* ********************************* */
@@ -105,7 +116,7 @@ impl SimulationModel for ThermalModel{
     /* ********************************* */
     /* ********************************* */
     
-    fn march(&self, state: &mut BuildingState, current_weather: &CurrentWeather )->Result<(),String>{
+    fn march(&self, building: &Building, state: &mut BuildingState, current_weather: &CurrentWeather )->Result<(),String>{
 
         
         let t_out = match current_weather.dry_bulb_temperature{
@@ -163,7 +174,7 @@ impl SimulationModel for ThermalModel{
                 // calculate infiltration
                 
                 // calculate Zone heating/cooling
-                heat_storage[i] += self.zones[i].calc_heating_cooling_power(state) * self.dt ;
+                heat_storage[i] += self.zones[i].calc_heating_cooling_power(building, state) * self.dt ;
 
                 // Calculate people
                 
@@ -182,9 +193,21 @@ impl SimulationModel for ThermalModel{
 
 impl ThermalModel {
 
-    
+    /// Retrieves the dt_subdivisions (i.e. the 
+    /// number of substimesteps per timestep of this 
+    /// model)
     pub fn dt_subdivisions(&self)->usize{
         self.dt_subdivisions
+    }
+
+    /// Retrieves a ThermalZone
+    pub fn get_thermal_zone(&self, index: usize)->Result<&ThermalZone, String>{
+
+        if index >= self.zones.len(){
+            return self.internal_error(format!("Ouf of bounds: Thermal Zone number {} does not exist", index))            
+        }
+
+        Ok(&self.zones[index])
     }
 
 
@@ -288,11 +311,11 @@ mod testing{
         }
 
         // Finished building the Building
-        let mut state : BuildingState = Vec::new();
+        let mut state : BuildingState = BuildingState::new();
 
         let n : usize = 12;
         let main_dt = 60. * 60. / n as f64;
-        let model = ThermalModel::new(&building, &mut state, n);
+        let model = ThermalModel::new(&building, &mut state, n).unwrap();
         let construction = building.get_construction(c_index).unwrap();
 
         // START TESTING.
@@ -326,7 +349,7 @@ mod testing{
             let found = model.zones[0].temperature(&state);
             let zone_mass = model.zones[0].mcp();
             
-            model.march(&mut state, &weather_data).unwrap();
+            model.march(&building, &mut state, &weather_data).unwrap();
             
             // Get exact solution.            
             let exp = t_s + (t_o - t_s)*(-time * u * area / zone_mass ).exp();            
