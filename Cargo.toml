@@ -7,8 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+simulation_state = { path = "../../simulation_state" }
+communication_protocols = { path = "../../communication_protocols" }
 calendar = { path = "../../calendar" }
-communication_traits = { path="../../communication_traits" }
 geometry3d = {path = "../../geometry3d"}
 building_model = {path = "../../building_model"}
 matrix = {path = "../../matrix"}

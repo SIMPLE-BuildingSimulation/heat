@@ -1,10 +1,11 @@
 use matrix::Matrix;
 
 use building_model::building::Building;
-use building_model::building_state::BuildingState;
-use building_model::building_state_element::BuildingStateElement;
+use simulation_state::simulation_state::SimulationState;
+use simulation_state::simulation_state_element::SimulationStateElement;
 use building_model::object_trait::ObjectTrait;
 use building_model::surface::Surface;
+use building_model::fenestration::Fenestration;
 use building_model::boundary::Boundary;
 use convection::*;
 
@@ -57,7 +58,7 @@ pub struct ThermalSurface {
     k_prime : matrix::Matrix,
 
     /// The location of the first temperature node
-    /// in the BuildingState
+    /// in the SimulationState
     front_side_node_index : usize,
 
     /// The number of nodes after discretizing 
@@ -81,36 +82,24 @@ pub struct ThermalSurface {
 
 impl ThermalSurface {
 
-    pub fn new(building: &Building, state: &mut BuildingState, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Result<Self,String> {
-        
-        
-        let surface_index = ObjectTrait::index(surface);
-
-        // Check if Surface is valid... or else
-        ObjectTrait::is_full(surface).unwrap();
-        
-        
-        // this (should not fail because the surface is valid)
-        let construction_index = surface.get_construction_index().unwrap();
+    pub fn new(building: &Building, state: &mut SimulationState, surface_index: usize, construction_index: usize, dt: f64, area: f64, rs_i: f64, rs_o: f64, n_elements: &Vec<usize>, index: usize ) -> Result<Self,String> {
+                
         let construction = building.get_construction(construction_index).unwrap();
 
+        
         let n_nodes = match calc_n_total_nodes(&n_elements){
             Ok(v)=>v,
             Err(e)=>return Err(e),
-        };
+        };        
 
-        let (rs_i,rs_o) = calc_convection_coefficients(surface);        
-        
         // Push elements to the state
         let first_node_index = state.len();        
         for i in 0..n_nodes{
             state.push(
-                BuildingStateElement::SurfaceNodeTemperature(surface_index,i,20.0)
+                SimulationStateElement::SurfaceNodeTemperature(surface_index,i,20.0)
             );
         }
-        
-        
-
+                
         let mut ret = ThermalSurface{
             //surface_index: surface_index,            
             rs_i: rs_i,
@@ -126,7 +115,7 @@ impl ThermalSurface {
             front_boundary: Boundary::None, // filled when setting boundary
             back_boundary: Boundary::None,
             index: index,
-            area : surface.area().unwrap(), // should not fail because surface is full
+            area : area
         };
         
         build_thermal_network(building, &construction, dt, &n_elements, rs_i, rs_o, &mut ret.k_prime, &mut ret.full_rsi, &mut ret.full_rso, &mut ret.c_i, &mut ret.c_o).unwrap();
@@ -134,6 +123,42 @@ impl ThermalSurface {
 
         // return
         Ok(ret)
+                
+    }
+
+    pub fn from_surface(building: &Building, state: &mut SimulationState, surface: &Surface, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Result<Self,String> {
+        
+        let surface_index = ObjectTrait::index(surface);
+
+        // Check if Surface is valid... or else
+        ObjectTrait::is_full(surface).unwrap();
+
+        // this (should not fail because the surface is valid)
+        let construction_index = surface.get_construction_index().unwrap();
+
+        let area = surface.area().unwrap(); // should not fail because surface is full
+
+        let (rs_i,rs_o) = calc_convection_coefficients(surface);        
+       
+        ThermalSurface::new(building, state, surface_index, construction_index, dt, area, rs_i, rs_o, n_elements, index)
+                
+    }
+
+    pub fn from_fenestration(building: &Building, state: &mut SimulationState, fenestration: &Fenestration, dt: f64, n_elements: &Vec<usize>, index: usize ) -> Result<Self,String> {
+        
+        let surface_index = ObjectTrait::index(fenestration);
+
+        // Check if Surface is valid... or else
+        ObjectTrait::is_full(fenestration).unwrap();
+
+        // this (should not fail because the surface is valid)
+        let construction_index = fenestration.get_construction_index().unwrap();
+
+        let area = fenestration.area().unwrap(); // should not fail because surface is full
+
+        let (rs_i,rs_o) = calc_convection_coefficients_for_fenestration(fenestration);                        
+
+        ThermalSurface::new(building, state, surface_index, construction_index, dt, area, rs_i, rs_o, n_elements, index)
                 
     }
     
@@ -152,7 +177,7 @@ impl ThermalSurface {
 
     /// Calculates the heat flow out of the layer, based
     /// on the inside and outside temperatures
-    fn calc_heat_flow(&self, state: &BuildingState, t_in: f64, t_out: f64)->(f64,f64){
+    fn calc_heat_flow(&self, state: &SimulationState, t_in: f64, t_out: f64)->(f64,f64){
         // Positive is going out of the layer.
         let q_in;
         let q_out;
@@ -174,10 +199,10 @@ impl ThermalSurface {
     }
 
     /// Gets the Front temperature
-    fn front_temperature(&self, state: &BuildingState)->f64{
+    fn front_temperature(&self, state: &SimulationState)->f64{
         let i = self.front_side_node_index;
 
-        if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+        if let SimulationStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
             if surf_index != self.index {
                 panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
             }
@@ -193,10 +218,10 @@ impl ThermalSurface {
     }
 
     /// Gets the Back temperature
-    fn back_temperature(&self, state: &BuildingState)->f64{
+    fn back_temperature(&self, state: &SimulationState)->f64{
         let i = self.front_side_node_index + self.n_nodes - 1;
         
-        if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+        if let SimulationStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
             if surf_index != self.index {
                 panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
             }
@@ -212,20 +237,20 @@ impl ThermalSurface {
     }
 
     /// Sets the node temperatures in the state
-    fn set_node_temperatures(&self, state: &mut BuildingState, matrix: &Matrix){
+    fn set_node_temperatures(&self, state: &mut SimulationState, matrix: &Matrix){
         
         let ini = self.front_side_node_index;
         let fin = ini + self.n_nodes;        
 
         for i in ini..fin{
             
-            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,_) = state[i]{
+            if let SimulationStateElement::SurfaceNodeTemperature(surf_index,node_index,_) = state[i]{
                 if surf_index != self.index {
                     panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
                 }
                 // all Good here
                 let new_t = matrix.get(node_index, 0).unwrap();
-                state[i] = BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,new_t);
+                state[i] = SimulationStateElement::SurfaceNodeTemperature(surf_index,node_index,new_t);
 
             }else{
                 panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
@@ -236,16 +261,16 @@ impl ThermalSurface {
 
     /// Retrieves the state of the Surface as a Matrix
     /// object.
-    fn get_node_temperatures(&self, state: &BuildingState)->Matrix{
+    fn get_node_temperatures(&self, state: &SimulationState)->Matrix{
 
         let mut ret = Matrix::new(0.0,self.n_nodes,1);
         let ini = self.front_side_node_index;
         let fin = ini + self.n_nodes;        
         for i in ini..fin{
             
-            if let BuildingStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
+            if let SimulationStateElement::SurfaceNodeTemperature(surf_index,node_index,temperature) = state[i]{
                 if surf_index != self.index {
-                    panic!("Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+                    panic!("Incorrect index allocated for Temperature of SurfaceNode... surf_index = {}, self.index = {}", surf_index, self.index);
                 }
                 // all Good here
                 ret.set(node_index, 0, temperature).unwrap();
@@ -259,7 +284,7 @@ impl ThermalSurface {
     }
 
     /// Marches one timestep
-    pub fn march(&self, state: &mut BuildingState, t_in: f64, t_out: f64)->(f64,f64){        
+    pub fn march(&self, state: &mut SimulationState, t_in: f64, t_out: f64)->(f64,f64){        
         
         let mut temperatures = self.get_node_temperatures(state);
 
@@ -503,8 +528,8 @@ mod testing{
         let min_dt = 1.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = BuildingState::new(); 
-        let ts = ThermalSurface::new(&building, &mut state, &surface,dt,&nodes,0).unwrap();
+        let mut state : SimulationState = SimulationState::new(); 
+        let ts = ThermalSurface::from_surface(&building, &mut state, &surface,dt,&nodes,0).unwrap();
 
         let (rs_i,rs_o)=calc_convection_coefficients(&surface);
         assert!(ts.massive);
@@ -1391,8 +1416,8 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
 
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = BuildingState::new(); 
-        let ts = ThermalSurface::new(&building, &mut state, &surface, dt,&nodes,0).unwrap();
+        let mut state : SimulationState = SimulationState::new(); 
+        let ts = ThermalSurface::from_surface(&building, &mut state, &surface, dt,&nodes,0).unwrap();
         assert!(ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
 
@@ -1463,8 +1488,8 @@ mod testing{
         let min_dt = 80.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c0, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = BuildingState::new(); 
-        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0).unwrap();
+        let mut state : SimulationState = SimulationState::new(); 
+        let ts = ThermalSurface::from_surface(&building,&mut state, &surface,dt,&nodes,0).unwrap();
         
         assert!(!ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
@@ -1533,8 +1558,8 @@ mod testing{
         let min_dt = 65.;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let mut state : BuildingState = BuildingState::new(); 
-        let ts = ThermalSurface::new(&building,&mut state, &surface,dt,&nodes,0).unwrap();
+        let mut state : SimulationState = SimulationState::new(); 
+        let ts = ThermalSurface::from_surface(&building,&mut state, &surface,dt,&nodes,0).unwrap();
         
         assert!(ts.massive);
         let temperatures = ts.get_node_temperatures(&state);
@@ -1589,7 +1614,7 @@ mod testing{
         let c = building.get_construction(c_index).unwrap();
         let surface = building.get_surface(s_index).unwrap();
 
-        let mut state : BuildingState = BuildingState::new();
+        let mut state : SimulationState = SimulationState::new();
 
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
@@ -1597,7 +1622,7 @@ mod testing{
         let min_dt = 1.0;
         let (n_subdivisions,nodes)=discretize_construction(&building,&c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
-        let ts = ThermalSurface::new(&building,&mut state, surface, dt, &nodes,0).unwrap();
+        let ts = ThermalSurface::from_surface(&building,&mut state, surface, dt, &nodes,0).unwrap();
         assert!(ts.massive);
        
         // Try marching until q_in and q_out are zero.
@@ -1694,7 +1719,7 @@ mod testing{
         building.set_surface_construction(s_index, c_index).unwrap();
         building.set_surface_polygon(s_index, p).unwrap();
 
-        let mut state : BuildingState = BuildingState::new();
+        let mut state : SimulationState = SimulationState::new();
         
         /* TEST */
 
@@ -1710,7 +1735,7 @@ mod testing{
         let (n_subdivisions,nodes)=discretize_construction(&building, c, main_dt, max_dx, min_dt);
         let dt = main_dt / n_subdivisions as f64;
         
-        let ts = ThermalSurface::new(&building,&mut state, surface,dt,&nodes,0).unwrap();
+        let ts = ThermalSurface::from_surface(&building,&mut state, surface,dt,&nodes,0).unwrap();
         assert!(!ts.massive);
        
         // Try marching until q_in and q_out are zero.

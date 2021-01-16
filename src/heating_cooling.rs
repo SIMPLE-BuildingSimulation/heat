@@ -1,4 +1,5 @@
-use building_model::heating_cooling::{HeaterCooler, HeatingCoolingState, HeatingCoolingKind};
+use simulation_state::simulation_state_element::HeatingCoolingState;
+use building_model::heating_cooling::{HeaterCooler, HeatingCoolingKind};
 
 pub fn calc_cooling_heating_power(system: &HeaterCooler, state: HeatingCoolingState)->f64{
     
