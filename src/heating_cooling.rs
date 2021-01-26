@@ -1,26 +1,18 @@
-use simulation_state::simulation_state_element::HeatingCoolingState;
 use building_model::heating_cooling::{HeaterCooler, HeatingCoolingKind};
 
-pub fn calc_cooling_heating_power(system: &HeaterCooler, state: HeatingCoolingState)->f64{
+pub fn calc_cooling_heating_power(system: &HeaterCooler, consumption_power: f64)->f64{
+        
     
-    if let HeatingCoolingState::Off = state {
-        return 0.0
-    }
     
     match system.get_kind() {
-        HeatingCoolingKind::IdealHeaterCooler => {
-            match state {
-                HeatingCoolingState::Off       => 0.0,
-                HeatingCoolingState::Cooling(p)=> -p,
-                HeatingCoolingState::Heating(p)=>  p,
-            }
-        },
+        HeatingCoolingKind::IdealHeaterCooler => consumption_power,
+        
         HeatingCoolingKind::ElectricHeating => {
-            match state {
-                HeatingCoolingState::Off       => 0.0,
-                HeatingCoolingState::Cooling(_)=> panic!("Electric Heating cannot be cooling!"),
-                HeatingCoolingState::Heating(p)=>  p,
-            }
+            if consumption_power >= 0.0 {
+                return consumption_power
+            }else {
+                panic!("Electric Heating cannot be cooling!")
+            }            
         }
     }
 }

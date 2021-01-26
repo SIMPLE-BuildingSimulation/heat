@@ -77,14 +77,13 @@ impl ThermalZone{
             Some(i)=>{
                 // Check consistency
                 if let SimulationStateElement::SpaceHeatingCoolingPowerConsumption(space_index,s) = state[i]{
-                    if space_index != self.index {
-                        panic!("Getting Cooling / Heating for the wrong Space... space_index {}, self.index {}", space_index, self.index);
-                    }
+                    
+                    debug_assert_eq!(space_index, self.index);
                     
                     // Get the kind of heater/cooler
                     let heater_cooler = building.get_space(space_index).unwrap().get_heating_cooling().unwrap();
-                    
-                    return calc_cooling_heating_power(heater_cooler, s)
+                    let p = calc_cooling_heating_power(heater_cooler, s);                    
+                    return p
                                         
                 
                 }else{
@@ -146,6 +145,20 @@ impl ThermalZone{
             panic!("Incorrect StateElement kind allocated for Temperature of Space '{}'", self.name);
         }        
     }
+
+    pub fn set_temperature(&self, temperature: f64, state: &mut SimulationState){
+
+        
+        
+        if let SimulationStateElement::SpaceDryBulbTemperature(i,_) = state[self.temperature_state_index]{
+            if i != self.index {
+                panic!("Incorrect index allocated for Temperature of Space '{}'", self.name);
+            }
+            state[self.temperature_state_index] = SimulationStateElement::SpaceDryBulbTemperature(i,temperature)
+        }else{
+            panic!("Incorrect StateElement kind allocated for Temperature of Space '{}'", self.name);
+        }        
+    }
     
     /// Retrieves the heat capacity of the ThermalZone's air
     pub fn mcp(&self)->f64{
@@ -155,4 +168,7 @@ impl ThermalZone{
 
         self.volume * air_density * air_specific_heat
     }
+
+    
+    
 }

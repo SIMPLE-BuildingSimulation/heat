@@ -256,7 +256,8 @@ impl SimulationModel for ThermalModel{
                 // calculate infiltration
                 
                 // calculate Zone heating/cooling
-                heat_storage[i] += self.zones[i].calc_heating_cooling_power(building, state) * self.dt ;
+                let heating_cooling_power = self.zones[i].calc_heating_cooling_power(building, state);                
+                heat_storage[i] += heating_cooling_power * self.dt ;
 
                 // Calculate people
                 
@@ -470,9 +471,6 @@ mod testing{
         let space_index = building.add_space("Some space".to_string());
         building.set_space_volume(space_index,zone_volume).unwrap();
 
-        //building.add_heating_cooling_to_space(state, space_index, HeatingCoolingKind::IdealHeaterCooler).unwrap();
-        //building.set_space_max_heating_power(space_index, 1500.).unwrap();
-
         // Add substance
         let poly_index = building.add_substance("polyurethane".to_string());
         building.set_substance_properties(poly_index, SubstanceProperties{
@@ -584,6 +582,144 @@ mod testing{
             // Get exact solution.            
             let exp = t_s + (t_o - t_s)*(-time * u * area / zone_mass ).exp();                        
             assert!((exp - found).abs() < 0.05);                                    
+        }
+
+
+    
+    }
+
+    use building_model::heating_cooling::HeatingCoolingKind;
+    use simulation_state::simulation_state_element::SimulationStateElement;
+    #[test]
+    fn test_model_march_with_window_and_heater(){
+
+        
+        let mut state : SimulationState = SimulationState::new();
+        let mut building = Building::new("The Building".to_string()); 
+
+        // Add the space
+        let zone_volume = 40.;
+        let space_index = building.add_space("Some space".to_string());
+        building.set_space_volume(space_index,zone_volume).unwrap();
+
+        let heating_power = 500.;
+        building.add_heating_cooling_to_space(&mut state, space_index, HeatingCoolingKind::IdealHeaterCooler).unwrap();
+        building.set_space_max_heating_power(space_index, heating_power).unwrap();
+        let heating_state_index = building.get_space(space_index).unwrap().get_heating_cooling().unwrap().state_index();
+        state[heating_state_index] = SimulationStateElement::SpaceHeatingCoolingPowerConsumption(space_index,heating_power);
+
+        // Add substance
+        let poly_index = building.add_substance("polyurethane".to_string());
+        building.set_substance_properties(poly_index, SubstanceProperties{
+            thermal_conductivity: 0.0252, // W/m.K            
+            specific_heat_capacity: 2400., // J/kg.K
+            density: 17.5, // kg/m3... reverse engineered from paper
+        }).unwrap();
+
+        // add material
+        let mat_index = building.add_material("20mm Poly".to_string());
+        building.set_material_properties(mat_index, MaterialProperties{
+            thickness: 20./1000.
+        }).unwrap();
+        building.set_material_substance(mat_index,poly_index).unwrap();
+
+        // Add construction
+        let c_index = building.add_construction("The construction".to_string());
+        building.add_material_to_construction(c_index, mat_index).unwrap();
+
+
+        // Create surface geometry
+        // Geometry
+        let mut the_loop = Loop3D::new();
+        let l = 1. as f64;
+        the_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
+        the_loop.push( Point3D::new(l, -l, 0.)).unwrap();
+        the_loop.push( Point3D::new(l, l, 0.)).unwrap();
+        the_loop.push( Point3D::new(-l, l, 0.)).unwrap();
+        the_loop.close().unwrap();
+        
+        let mut p = Polygon3D::new(the_loop).unwrap();
+
+
+        let mut the_inner_loop = Loop3D::new();
+        let l = 0.5 as f64;
+        the_inner_loop.push( Point3D::new(-l, -l, 0.)).unwrap();
+        the_inner_loop.push( Point3D::new(l, -l, 0.)).unwrap();
+        the_inner_loop.push( Point3D::new(l, l, 0.)).unwrap();
+        the_inner_loop.push( Point3D::new(-l, l, 0.)).unwrap();
+        the_inner_loop.close().unwrap();
+        p.cut_hole(the_inner_loop.clone()).unwrap();
+
+        
+
+        // Add surface
+        let surface_index = building.add_surface("Surface".to_string());
+        building.set_surface_construction(surface_index,c_index).unwrap();
+        building.set_surface_polygon(surface_index, p).unwrap();        
+        building.set_surface_front_boundary(surface_index, Boundary::Space(space_index)).unwrap();
+
+        // Add window.        
+        let window_polygon = Polygon3D::new(the_inner_loop).unwrap();
+        let window_index = building.add_fenestration(&mut state, "Window One".to_string(), FenestrationPositions::Binary, FenestrationType::Window);
+        building.set_fenestration_construction(window_index, c_index).unwrap();     
+        building.set_fenestration_polygon(window_index, window_polygon).unwrap();
+        building.set_fenestration_front_boundary(surface_index, Boundary::Space(space_index)).unwrap();
+
+        
+        if let Ok(surf) = building.get_surface(surface_index){
+            match surf.front_boundary(){
+                Boundary::Space(s)=>{
+                    assert_eq!(*s,space_index)
+                },
+                _ => assert!(false) 
+            }
+        }else{
+            assert!(false);
+        }
+
+        // Finished building the Building
+        
+
+        let n : usize = 12;
+        let main_dt = 60. * 60. / n as f64;
+        let model = ThermalModel::new(&building, &mut state, n).unwrap();
+        let construction = building.get_construction(c_index).unwrap();
+
+        // START TESTING.
+        assert!(!model.surfaces[0].is_massive());
+
+        let r = r_value(&building, construction).unwrap() + model.surfaces[0].rs_i() + model.surfaces[0].rs_o();
+        let u = 1./r;
+        let area = 4.0; //the area of both the window and the wall together
+        
+        let t_o = model.zones[0].temperature(&state); // Initial T of the zone
+        
+
+        let t_s : f64 = 30.0; // T of surroundings
+
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_s));
+
+        let dt = main_dt/model.dt_subdivisions() as f64;
+        
+        let mut date = Date{
+            day: 1, hour: 0.0, month: 1
+        };
+
+        // March:
+        for i in 0..3000 {
+            let time = (i as f64)*dt;
+            date.add_seconds(time);
+            
+            let found = model.zones[0].temperature(&state);
+            let zone_mass = model.zones[0].mcp();
+            
+            model.march(date, &weather, &building, &mut state).unwrap();
+            
+            // Get exact solution.            
+            let exp = t_s + heating_power/(u * area) + (t_o - t_s - heating_power/(u * area))*(-time * (u * area ) / zone_mass ).exp();                        
+            //println!("{} vs {}", exp, found);
+            assert!((exp - found).abs() < 1.0 );                                    
         }
 
 

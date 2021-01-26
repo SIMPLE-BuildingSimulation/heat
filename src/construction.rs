@@ -260,7 +260,7 @@ pub fn build_thermal_network(building: &Building, c: &Construction, dt: f64, n_e
 
     #[cfg(debug_assertions)]
     {
-        println!("Checking that k_prime is only full of zeroes... build_thermal_network()");
+        eprintln!("Checking that k_prime is only full of zeroes... build_thermal_network()");
         let (nrows,ncols)=k_prime.size();
         for row in 0..nrows{
             for col in 0..ncols{

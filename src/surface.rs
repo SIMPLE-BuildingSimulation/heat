@@ -283,7 +283,7 @@ impl ThermalSurface {
         return ret;
     }
 
-    /// Marches one timestep
+    /// Marches one timestep. Returns front and back heat flow
     pub fn march(&self, state: &mut SimulationState, t_in: f64, t_out: f64)->(f64,f64){        
         
         let mut temperatures = self.get_node_temperatures(state);
