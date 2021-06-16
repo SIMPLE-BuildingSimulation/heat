@@ -1,2 +1,0 @@
-    Checking finite_difference_thermal_model v0.1.0 (/Users/german/Documents/simple/physics/finite_difference_thermal_model)
-    Finished dev [unoptimized + debuginfo] target(s) in 1.60s
