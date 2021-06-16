@@ -7,17 +7,24 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+calendar = { path = "../../calendar" }
+weather = {path = "../../weather"}
+building_model = {path = "../../building_model"}
 simulation_state = { path = "../../simulation_state" }
 communication_protocols = { path = "../../communication_protocols" }
-calendar = { path = "../../calendar" }
 geometry3d = {path = "../../geometry3d"}
-building_model = {path = "../../building_model"}
 matrix = {path = "../../matrix"}
 convection = {path = "../convection"}
 gas_properties = {path = "../gas_properties"}
-weather = {path = "../../weather"}
 
 [dev-dependencies]
 schedule = { path = "../../schedule" }
 weather = { path = "../../weather" }
 calendar = { path = "../../calendar" }
+
+
+[package.metadata.docs.rs]
+rustdoc-args = [
+    "--html-in-header",
+    "./katex.html",
+]

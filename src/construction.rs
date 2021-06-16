@@ -158,7 +158,13 @@ pub fn get_first_and_last_massive_elements(
 }
 
 /// This function calculates the number of nodes that result
-/// from the construction's discretization.
+/// from the Construction's discretization.
+/// 
+/// For instance, if a construction has only one layer with one
+/// element, then that construction has two nodes (one interior and one 
+/// exterior one). Similarly, if there are two layers but one has no mass, 
+/// then the first one will add only one node because it will be merged
+/// with the exterior film heat transfer coefficient.
 ///
 /// Nodes are placed in the joints between elements, and
 /// the nodes for the Rsi and Rso layers are considered.
@@ -171,7 +177,6 @@ pub fn calc_n_total_nodes(n_elements: &Vec<usize>) -> Result<usize, String> {
     }
 
     // Border case: Only one element.
-
     if n_elements.len() == 1 {
         if n_elements[0] == 0 {
             return Ok(2);
@@ -214,19 +219,65 @@ pub fn calc_n_total_nodes(n_elements: &Vec<usize>) -> Result<usize, String> {
     return Ok(n);
 }
 
-/// Constructions are assumed to be a sandwich where a potentially massive
-/// wall is between two non-mass layers. These non-mass layers can be
-/// Film convections coefficients, some lightweight insulation or something
-/// with negligible thermal mass, or combinations of them (i.e. the film coefficient
-/// will be combined with insulation into a single composite layer).
+/// Constructions are assumed to be a sandwich where zero or more massive
+/// layers are located between two non-mass layers. These non-mass layers will always
+/// include the interior and exterior film convections coefficients, respectively (which is 
+/// why they are called `full_rsi` and `full_rso`, respectively). Additionally, 
+/// they can also include some lightweight insulation or any other material of negligible 
+/// thermal mass. 
 ///
 /// The nodes are placed in between elements. Each element can be represented by the
 /// 2x2 matrix
 ///
-/// #    K = [ -1/R, 1/R; 1/R, -1/R], R being the thermal resistance of the element
-///
-/// But after calculating it, the value of K_prime will be calculated.
-///
+/// ```math 
+/// 
+/// K=\begin{bmatrix} -1/R & 1/R \\
+/// 1/R & -1/R
+/// \end{bmatrix}   ;   R=\frac{thickness}{\lambda}
+/// 
+///```
+/// 
+/// 
+/// The equation to solve is the following:
+/// 
+/// ```math
+/// \overline{C}  \dot{T} + \overline{K}  T = q
+/// ```
+/// 
+/// Where $`\overline{C}`$ and $`\overline{K}`$ are (more or less) matrices representing the 
+/// thermal mass and resistance of each node, respectively; and where `T` and `q` are
+/// vectors representing the Temperature and the heat flow into each node, respectively.
+/// $`\overline{C}`$ and $`\overline{K}`$ are the result of finite difference method.
+/// 
+/// This model also uses finite differences to march through time. When doing this, 
+/// the previous equation can be represented as follows:
+/// 
+/// ```math
+/// \overline{C}  \frac{ (T_{i+1}- T_{i}) } {\Delta t} - \overline{K} T_i = q
+/// ```
+/// 
+/// Hence, the temperatures of one step ($`T_{i+1}`$) can be calculated based on 
+/// the temperatures of the step before $`T_{i}`$ as follows. 
+/// 
+/// ```math
+/// {T_{i+1}}  =   T_i +  \Delta t  \overline{C}^{-1}\overline{K} T_i + \Delta t\overline{C}^{-1}q 
+/// ```
+/// Where $`I_n`$ is the Identity Matrix. Based on that equation, it is convenient to define $`\overline{K}'`$ as follows:
+/// 
+/// ```math
+/// \overline{K}' = \Delta t  \overline{C}^{-1}\overline{K}
+/// ```
+/// 
+/// The value of $`\overline{K}`$ is never stored, as only $`\overline{K}'`$ is really needed for marching 
+/// through time.
+/// 
+/// Also, note that—unless some layer of the Surface is generating heat—all the elements of $`q`$ are Zero
+/// exept the first one and the last one, which are $`\frac{T_{in}}{R_{si}}`$ and $`\frac{T_{out}}{R_{so}}`$, 
+/// respectively. These values are calculated when marching forward in time. However, 
+/// the value of $`\Delta t\overline{C}^{-1}`$ that accompanies $`q`$ in the previous
+/// equation are stored in the values `c_i` and `c_o`, respectively.
+/// 
+/// 
 /// # Aguments
 /// * building: the Building containing the construction and all other data.
 /// * construction: the construction being discretized
@@ -240,8 +291,8 @@ pub fn calc_n_total_nodes(n_elements: &Vec<usize>) -> Result<usize, String> {
 /// * k_prime: the Matrix representing the heat transfer between the nodes... will be filled by this function, and the input should be full of zeros
 /// * full_rsi: R_si + the thermal resistance of all the no-mass layers before the first massive element.
 /// * full_rso: R_so + the thermal resistance of all the no-mass layers after the last massive element.
-/// * c_i:
-/// * c_o:
+/// * c_i: The thermal mass of the most interior node, divided by the timestep
+/// * c_o: The thermal mass of the most exterior node, divided by the timestep
 pub fn build_thermal_network(
     building: &Building,
     c: &Construction,
@@ -255,17 +306,17 @@ pub fn build_thermal_network(
     c_i: &mut f64,
     c_o: &mut f64,
 ) -> Result<(), String> {
+
     // check coherence in input data
     if n_elements.len() != c.n_layers() {
         let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.n_layers(),n_elements.len());
         return Err(err);
     }
 
-    let all_nodes = match calc_n_total_nodes(n_elements) {
-        Ok(v) => v,
-        Err(e) => return Err(e),
-    };
+    // Calculate number of nodes
+    let all_nodes = calc_n_total_nodes(n_elements)?;
 
+    // Check the size of k_prime
     let (rows, cols) = k_prime.size();
     if rows != all_nodes || cols != all_nodes {
         let err = format!(
@@ -274,28 +325,24 @@ pub fn build_thermal_network(
         );
         return Err(err);
     }
-
+    
     #[cfg(debug_assertions)]
     {
-        eprintln!("Checking that k_prime is only full of zeroes... build_thermal_network()");
         let (nrows, ncols) = k_prime.size();
         for row in 0..nrows {
             for col in 0..ncols {
-                assert_eq!(0., k_prime.get(row, col).unwrap());
+                debug_assert_eq!(0., k_prime.get(row, col).unwrap());
             }
         }
     }
 
     // NOW, PROCESS
     ////////////////
-    let (first_massive, last_massive) = match get_first_and_last_massive_elements(n_elements) {
-        Ok(v) => v,
-        Err(e) => return Err(e),
-    };
-
+    let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements)?;
+    
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.
-        // Simple case... return the following:
+        // Simple case... return Zero mass and an R value of 1/R
         let r = r_value(building, c).unwrap() + rs_i + rs_o;
         *full_rsi = r;
         *full_rso = r;
@@ -471,7 +518,7 @@ pub fn build_thermal_network(
                 let old_k_value = k_prime.get(i, j).unwrap();
                 k_prime.set(i, j, old_k_value / mass).unwrap();
             }
-        } // Else, masses are already Zero.
+        } // Else, masses are already Zero.        
     }
 
     // SET C_I AND C_O

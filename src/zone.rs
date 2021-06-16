@@ -93,8 +93,11 @@ impl ThermalZone {
                 if let SimulationStateElement::SpaceLightingPowerConsumption(space_index, s) =
                     state[i]
                 {
-                    if space_index == self.index {
-                        panic!("Getting Lighting for the wrong Space");
+                    if space_index != self.index {
+                        panic!(
+                            "Getting Lighting for the wrong Space (expected {}, found {})",
+                            self.index, space_index
+                        );
                     }
 
                     s
@@ -122,6 +125,7 @@ impl ThermalZone {
                     self.name
                 );
             }
+
             return v;
         } else {
             panic!(
