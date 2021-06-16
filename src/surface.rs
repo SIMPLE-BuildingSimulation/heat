@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use matrix::Matrix;
 
 use building_model::boundary::Boundary;
@@ -11,13 +13,11 @@ use simulation_state::simulation_state_element::SimulationStateElement;
 
 use crate::construction::*;
 
-
 /// This is a Surface from the point of view of our thermal solver.
-/// Since this module only calculate heat transfer (and not short-wave solar 
+/// Since this module only calculate heat transfer (and not short-wave solar
 /// radiation, e.g., light), both building_model::Fenestration and building_model::Surface
 /// are treated in the same way.
 pub struct ThermalSurface {
-
     /// The index of this surface within
     /// the Thermal Model surfaces array
     index: usize,
@@ -26,11 +26,11 @@ pub struct ThermalSurface {
     // building model
     surface_index: usize,
 
-    /// The interior (i.e. front side) convection coefficient
-    rs_i: f64,
+    /// The front side convection coefficient
+    rs_front: f64,
 
-    /// The exterior (i.e. back side) convection coefficient
-    rs_o: f64,
+    /// The back side convection coefficient
+    rs_back: f64,
 
     /// The interior (i.e. front side) resistance before
     /// any layer with mass. It includes the r_si and also
@@ -62,7 +62,6 @@ pub struct ThermalSurface {
     // The location of the first temperature node
     // in the SimulationState
     // front_side_node_index : usize,
-    
     /// The number of nodes after discretizing
     /// the construction
     n_nodes: usize,
@@ -82,25 +81,24 @@ pub struct ThermalSurface {
     area: f64,
 
     /// Is this a Fenestration or a Surface in the original Building model?
-    is_fenestration: bool,
+    pub is_fenestration: bool,
 }
 
 impl ThermalSurface {
-    
     /// Constructs a new ThermalSurface object.
-    /// 
+    ///
     /// # Parameters
     /// * building: the Building object containing the Construction
-    /// * state: the SimulationState element that contains the results 
+    /// * state: the SimulationState element that contains the results
     /// * surface_index: The index of the Surface represented by this surface in the Building object
     /// * construction_index: The index of the Construction of this surface in the Building object
-    /// * dt: the timestep for the model 
+    /// * dt: the timestep for the model
     /// * area: area of the Surface,
-    /// * rs_i: the interior film coefficient,
-    /// * rs_o: the exterior film coefficient,
+    /// * rs_front: the interior film coefficient,
+    /// * rs_back: the exterior film coefficient,
     /// * n_elements: A reference to a Vec<usize> containing the number of nodes in each layer of the construction
     /// * index: The index assigned to this surface within the Thermal Model surfaces array
-    /// * is_fenestration: Is a fenestration?
+    /// * is_fenestration: Is a fenestration?    
     fn new(
         building: &Building,
         state: &mut SimulationState,
@@ -108,19 +106,18 @@ impl ThermalSurface {
         construction_index: usize,
         dt: f64,
         area: f64,
-        rs_i: f64,
-        rs_o: f64,
-        n_elements: &Vec<usize>,
+        rs_front: f64,
+        rs_back: f64,
+        n_elements: &[usize],
         index: usize,
         is_fenestration: bool,
     ) -> Result<Self, String> {
-        
         // Borrow the construction from the Building object
         let construction = building.get_construction(construction_index).unwrap();
 
-        // Calculate number of nodes in that construction. 
+        // Calculate number of nodes in that construction.
         let n_nodes = calc_n_total_nodes(&n_elements)?;
-        
+
         // Push elements to the SimulationState
         for i in 0..n_nodes {
             if is_fenestration {
@@ -137,23 +134,23 @@ impl ThermalSurface {
                 ));
             }
         }
-        
+
         // Build ThermalSurface with some placeholders
         let mut ret = ThermalSurface {
-            surface_index: surface_index,
-            rs_i: rs_i,
-            rs_o: rs_o,
+            surface_index,
+            rs_front,
+            rs_back,
             full_rso: 0.0, // filled when building thermal network
             full_rsi: 0.0, // filled when building thermal network
             c_o: 0.0,      // filled when building thermal network
             c_i: 0.0,      // filled when building thermal network
             k_prime: Matrix::new(0.0, n_nodes, n_nodes), // filled when building thermal network
-            n_nodes: n_nodes,
+            n_nodes,
             massive: true,                  // filled after building the thermal network
             front_boundary: Boundary::None, // filled when setting boundary
             back_boundary: Boundary::None,
-            index: index,
-            area: area,
+            index,
+            area,
             is_fenestration,
         };
 
@@ -163,8 +160,8 @@ impl ThermalSurface {
             &construction,
             dt,
             &n_elements,
-            rs_i,
-            rs_o,
+            rs_front,
+            rs_back,
             &mut ret.k_prime,
             &mut ret.full_rsi,
             &mut ret.full_rso,
@@ -183,7 +180,7 @@ impl ThermalSurface {
         state: &mut SimulationState,
         surface: &Surface,
         dt: f64,
-        n_elements: &Vec<usize>,
+        n_elements: &[usize],
         index: usize,
     ) -> Result<Self, String> {
         let surface_index = ObjectTrait::index(surface);
@@ -196,7 +193,7 @@ impl ThermalSurface {
 
         let area = surface.area().unwrap(); // should not fail because surface is full
 
-        let (rs_i, rs_o) = calc_convection_coefficients(surface);
+        let (rs_front, rs_back) = calc_convection_coefficients(surface);
 
         ThermalSurface::new(
             building,
@@ -205,8 +202,8 @@ impl ThermalSurface {
             construction_index,
             dt,
             area,
-            rs_i,
-            rs_o,
+            rs_front,
+            rs_back,
             n_elements,
             index,
             false, // not a fenestration
@@ -218,7 +215,7 @@ impl ThermalSurface {
         state: &mut SimulationState,
         fenestration: &Fenestration,
         dt: f64,
-        n_elements: &Vec<usize>,
+        n_elements: &[usize],
         index: usize,
     ) -> Result<Self, String> {
         //let fenestration = building.get_fenestration(fenestration_index);
@@ -232,7 +229,7 @@ impl ThermalSurface {
 
         let area = fenestration.area().unwrap(); // should not fail because surface is full
 
-        let (rs_i, rs_o) = calc_convection_coefficients_for_fenestration(fenestration);
+        let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
 
         ThermalSurface::new(
             building,
@@ -241,8 +238,8 @@ impl ThermalSurface {
             construction_index,
             dt,
             area,
-            rs_i,
-            rs_o,
+            rs_front,
+            rs_back,
             n_elements,
             index,
             true, // it is a fenestration
@@ -253,12 +250,12 @@ impl ThermalSurface {
         self.area
     }
 
-    pub fn rs_i(&self) -> f64 {
-        self.rs_i
+    pub fn rs_front(&self) -> f64 {
+        self.rs_front
     }
 
-    pub fn rs_o(&self) -> f64 {
-        self.rs_o
+    pub fn rs_back(&self) -> f64 {
+        self.rs_back
     }
 
     /// Calculates the heat flow out of the layer, based
@@ -279,10 +276,11 @@ impl ThermalSurface {
             q_in = (t_si - t_in) / self.full_rsi;
             q_out = (t_so - t_out) / self.full_rso;
         } else {
-            q_in = (t_si - t_in) / self.rs_i;
-            q_out = (t_so - t_out) / self.rs_o;
+            q_in = (t_si - t_in) / self.rs_front;
+            q_out = (t_so - t_out) / self.rs_back;
         }
-        return (q_in, q_out);
+        // return
+        (q_in, q_out)
     }
 
     /// Checks whether a wall has thermal mass
@@ -290,7 +288,7 @@ impl ThermalSurface {
         self.massive
     }
 
-    fn surface_front_temperature(&self, building:&Building, state:&SimulationState)->f64{
+    fn surface_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         let surf = building.get_surface(self.surface_index).unwrap();
 
         let i = surf.get_first_node_temperature_index().unwrap();
@@ -310,20 +308,23 @@ impl ThermalSurface {
                     self.index
                 );
             }
-            // all Good here
-            return temperature;
+            // all Good here... return
+            temperature
         } else {
             panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
         }
     }
 
-    fn fenestration_front_temperature(&self, building:&Building, state:&SimulationState)->f64{
+    fn fenestration_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         let surf = building.get_fenestration(self.surface_index).unwrap();
 
         let i = surf.get_first_node_temperature_index().unwrap();
 
-        if let SimulationStateElement::FenestrationNodeTemperature(surf_index, node_index, temperature) =
-            state[i]
+        if let SimulationStateElement::FenestrationNodeTemperature(
+            surf_index,
+            node_index,
+            temperature,
+        ) = state[i]
         {
             if surf_index != self.index {
                 panic!(
@@ -337,30 +338,27 @@ impl ThermalSurface {
                     self.index
                 );
             }
-            // all Good here
-            return temperature;
+            // all Good here... return
+            temperature
         } else {
             panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
         }
     }
 
     /// Gets the Front temperature
-    fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-
+    pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         if self.is_fenestration {
             self.fenestration_front_temperature(building, state)
-        }else{
+        } else {
             self.surface_front_temperature(building, state)
         }
     }
 
-
     /// Gets the Back temperature
-    fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-
+    pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         if self.is_fenestration {
             self.fenestration_back_temperature(building, state)
-        }else{
+        } else {
             self.surface_back_temperature(building, state)
         }
     }
@@ -389,8 +387,8 @@ impl ThermalSurface {
                     node_index
                 );
             }
-            // all Good here
-            return temperature;
+            // all Good here... return
+            temperature
         } else {
             panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
         }
@@ -402,8 +400,11 @@ impl ThermalSurface {
 
         let i = surf.get_last_node_temperature_index().unwrap();
 
-        if let SimulationStateElement::FenestrationNodeTemperature(surf_index, node_index, temperature) =
-            state[i]
+        if let SimulationStateElement::FenestrationNodeTemperature(
+            surf_index,
+            node_index,
+            temperature,
+        ) = state[i]
         {
             if surf_index != self.index {
                 panic!(
@@ -420,8 +421,8 @@ impl ThermalSurface {
                     node_index
                 );
             }
-            // all Good here
-            return temperature;
+            // all Good here... return
+            temperature
         } else {
             panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
         }
@@ -434,14 +435,19 @@ impl ThermalSurface {
         state: &mut SimulationState,
         matrix: &Matrix,
     ) {
-        if self.is_fenestration{
+        if self.is_fenestration {
             self.set_fenestration_node_temperatures(building, state, matrix)
-        }else{
+        } else {
             self.set_surface_node_temperatures(building, state, matrix)
         }
     }
 
-    fn set_surface_node_temperatures(&self, building:&Building, state: &mut SimulationState, matrix: &Matrix){
+    fn set_surface_node_temperatures(
+        &self,
+        building: &Building,
+        state: &mut SimulationState,
+        matrix: &Matrix,
+    ) {
         let surf = building.get_surface(self.surface_index).unwrap();
         let ini = surf.get_first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
@@ -466,7 +472,12 @@ impl ThermalSurface {
         }
     }
 
-    fn set_fenestration_node_temperatures(&self, building:&Building, state: &mut SimulationState, matrix: &Matrix){
+    fn set_fenestration_node_temperatures(
+        &self,
+        building: &Building,
+        state: &mut SimulationState,
+        matrix: &Matrix,
+    ) {
         let surf = building.get_fenestration(self.surface_index).unwrap();
         let ini = surf.get_first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
@@ -483,8 +494,9 @@ impl ThermalSurface {
                 }
                 // all Good here
                 let new_t = matrix.get(node_index, 0).unwrap();
-                state[i] =
-                    SimulationStateElement::FenestrationNodeTemperature(surf_index, node_index, new_t);
+                state[i] = SimulationStateElement::FenestrationNodeTemperature(
+                    surf_index, node_index, new_t,
+                );
             } else {
                 panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
             }
@@ -501,7 +513,6 @@ impl ThermalSurface {
         }
     }
 
-    
     fn get_fenestration_node_temperatures(
         &self,
         building: &Building,
@@ -593,8 +604,8 @@ impl ThermalSurface {
         } else {
             let q = (t_out - t_in) / self.full_rsi;
 
-            let t_si = t_in + q * self.rs_i;
-            let t_so = t_out - q * self.rs_o;
+            let t_si = t_in + q * self.rs_front;
+            let t_so = t_out - q * self.rs_back;
 
             temperatures.set(0, 0, t_si).unwrap();
             temperatures.set(self.n_nodes - 1, 0, t_so).unwrap();
@@ -604,7 +615,7 @@ impl ThermalSurface {
         self.set_node_temperatures(building, state, &temperatures);
 
         // return
-        return self.calc_heat_flow(building, state, t_in, t_out);
+        self.calc_heat_flow(building, state, t_in, t_out)
     }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
@@ -828,11 +839,11 @@ mod testing {
         let ts =
             ThermalSurface::from_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
 
-        let (rs_i, rs_o) = calc_convection_coefficients(&surface);
+        let (rs_front, rs_back) = calc_convection_coefficients(&surface);
         assert!(ts.massive);
         assert_eq!(ts.n_nodes, 9);
-        assert_eq!(ts.rs_i, rs_i);
-        assert_eq!(ts.rs_o, rs_o);
+        assert_eq!(ts.rs_front, rs_front);
+        assert_eq!(ts.rs_back, rs_back);
         assert_eq!(ts.area, 4.0);
     }
 
@@ -1796,10 +1807,10 @@ mod testing {
         assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
         let t_in = 10.0;
-        let q_in_ref = (20.0 - t_in) / ts.rs_i;
+        let q_in_ref = (20.0 - t_in) / ts.rs_front;
 
         let t_out = 10.0;
-        let q_out_ref = (20.0 - t_out) / ts.rs_o;
+        let q_out_ref = (20.0 - t_out) / ts.rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_in, t_out);
 
         assert_eq!(q_in, q_in_ref);
@@ -1869,10 +1880,10 @@ mod testing {
         assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
         let t_in = 10.0;
-        let q_in_ref = (20.0 - t_in) / ts.rs_i;
+        let q_in_ref = (20.0 - t_in) / ts.rs_front;
 
         let t_out = 10.0;
-        let q_out_ref = (20.0 - t_out) / ts.rs_o;
+        let q_out_ref = (20.0 - t_out) / ts.rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_in, t_out);
 
         assert_eq!(q_in, q_in_ref);
@@ -2072,7 +2083,7 @@ mod testing {
 
         let r = r_value(&building, c).unwrap();
 
-        let exp_q = (30.0 - 10.0) / (r + ts.rs_i + ts.rs_o);
+        let exp_q = (30.0 - 10.0) / (r + ts.rs_front + ts.rs_back);
         assert!((exp_q - final_qin).abs() < 1E-4);
         assert!((exp_q + final_qout).abs() < 1E-4);
     }
@@ -2159,7 +2170,7 @@ mod testing {
         assert!(q_out < 0.0);
         assert!((q_in + q_out).abs() < 1E-6);
 
-        let exp_q = (30.0 - 10.0) / (r_value(&building, c).unwrap() + ts.rs_i + ts.rs_o);
+        let exp_q = (30.0 - 10.0) / (r_value(&building, c).unwrap() + ts.rs_front + ts.rs_back);
         assert!((exp_q - q_in).abs() < 1E-4);
         assert!((exp_q + q_out).abs() < 1E-4);
     }

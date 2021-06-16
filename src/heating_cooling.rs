@@ -6,7 +6,7 @@ pub fn calc_cooling_heating_power(system: &HeaterCooler, consumption_power: f64)
 
         HeatingCoolingKind::ElectricHeating => {
             if consumption_power >= 0.0 {
-                return consumption_power;
+                consumption_power
             } else {
                 panic!("Electric Heating cannot be cooling!")
             }

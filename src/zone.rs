@@ -72,8 +72,9 @@ impl ThermalZone {
                         .unwrap()
                         .get_heating_cooling()
                         .unwrap();
-                    let p = calc_cooling_heating_power(heater_cooler, s);
-                    return p;
+
+                    // return
+                    calc_cooling_heating_power(heater_cooler, s)
                 } else {
                     panic!("Corrupt SimulationState... incorrect SimulationStateElement... found {} at index {}", state[i].to_string(), i)
                 }
@@ -125,8 +126,8 @@ impl ThermalZone {
                     self.name
                 );
             }
-
-            return v;
+            // return
+            v
         } else {
             panic!(
                 "Incorrect StateElement kind allocated for Temperature of Space '{}'... found {}",
@@ -163,6 +164,7 @@ impl ThermalZone {
         }
     }
 
+    /// Sets the temperature of a zone.
     pub fn set_temperature(
         &self,
         temperature: f64,
@@ -172,7 +174,11 @@ impl ThermalZone {
         let space = building.get_space(self.index).unwrap();
         let t_index = space.get_dry_bulb_temperature_state_index().unwrap();
 
-        if let SimulationStateElement::SpaceDryBulbTemperature(i, _) = state[t_index] {
+        // Get the registered temperature, which becomes the previous temperature
+        if let SimulationStateElement::SpaceDryBulbTemperature(i, _previous_temperature) =
+            state[t_index]
+        {
+            // Check the index.
             if i != self.index {
                 panic!(
                     "Incorrect index allocated for Temperature of Space '{}'",
@@ -180,7 +186,7 @@ impl ThermalZone {
                 );
             }
 
-            state[t_index] = SimulationStateElement::SpaceDryBulbTemperature(i, temperature)
+            state[t_index] = SimulationStateElement::SpaceDryBulbTemperature(i, temperature);
         } else {
             panic!(
                 "Incorrect StateElement kind allocated for Temperature of Space '{}'",
@@ -195,5 +201,27 @@ impl ThermalZone {
         let air_specific_heat = air::specific_heat(); //J/kg.K
 
         self.volume * air_density * air_specific_heat
+    }
+
+    pub fn get_current_internal_heat_loads(
+        &self,
+        building: &Building,
+        state: &SimulationState,
+    ) -> f64 {
+        // heating/cooling (not through air)
+        let heating_cooling = self.calc_heating_cooling_power(building, state);
+
+        // lighting
+        // Calculate lighting
+        let lighting = self.calc_lighting_power(building, state);
+
+        // people
+        let people = 0.;
+
+        // Appliances
+        let appliances = 0.;
+
+        // return
+        lighting + people + appliances + heating_cooling
     }
 }
