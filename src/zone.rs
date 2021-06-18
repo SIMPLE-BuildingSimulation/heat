@@ -54,6 +54,8 @@ impl ThermalZone {
         }
     }
 
+    /// Calculates the amount of heating or cooling being delivered to the
+    /// thermal zone based on the Energy Consumption registered in the SimulationState    
     pub fn calc_heating_cooling_power(&self, building: &Building, state: &SimulationState) -> f64 {
         let space = building.get_space(self.index).unwrap();
 

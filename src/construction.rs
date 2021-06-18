@@ -6,7 +6,7 @@ use matrix::Matrix;
 use building_model::building::Building;
 use building_model::construction::Construction;
 
-/// Calculates the R-value of the Construction.
+/// Calculates the R-value of the Construction (not including surface coefficients).
 /// # Parameters:
 /// * materials: A reference to the vector containing the materials from which this object was built from
 pub fn r_value(building: &Building, construction: &Construction) -> Result<f64, String> {
@@ -30,11 +30,14 @@ pub fn r_value(building: &Building, construction: &Construction) -> Result<f64, 
 }
 
 /// Given a Maximum thickness (max_dx) and a minimum timestep (max_dt), this function
-/// will find a good combination of dt and number of elements in each
+/// will find an arguibly good combination of dt and number of elements in each
 /// layer of the construction.
 ///
 /// This function recursively increases N in order to reduce dt to numbers
 /// that divide main_dt as a while (e.g. main_dt/1, main_dt/2, main_dt/3...)
+/// # WARNING:
+/// This often works, but I apparently did not get the stability/accuracy thing right.
+/// For now, try to use small tsteps
 pub fn discretize_construction(
     building: &Building,
     c: &Construction,
@@ -95,7 +98,6 @@ pub fn discretize_construction(
                     return aux(building, c, main_dt, n + 1, max_dx, min_dt);
                 } else {
                     // otherwise, mark this layer as no-mass
-
                     n_elements.push(0);
                 }
             } else {
@@ -105,8 +107,30 @@ pub fn discretize_construction(
             }
         }
 
-        // return
-        (n, n_elements)
+        // Check stability requirement...
+        // stability is assured by (alpha * dt / dx^2 <= 1/2 )
+        #[cfg(debug_assertions)]
+        {
+            for n_layer in 0..c.n_layers() {
+                let material_index = c.get_layer_index(n_layer).unwrap();
+                let material = building.get_material(material_index).unwrap();
+                let substance_index = material.get_substance_index().unwrap();
+                let substance = building.get_substance(substance_index).unwrap();
+
+                // Calculate the optimum_dx
+                let thickness = material.thickness().unwrap();
+                let alpha = substance.thermal_diffusivity().unwrap();
+                
+                
+                let dt = main_dt / n as f64;
+                let dx = thickness/n_elements[n_layer] as f64;                
+                assert!( alpha * dt / dx / dx <= 0.5 );
+            }
+        }
+        
+        
+        // return, asking for double the subdivisions (for accuracy, not just stability.)
+        (n*2, n_elements)
     }
 
     aux(building, c, main_dt, 1, max_dx, min_dt)
@@ -219,7 +243,7 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 /// Constructions are assumed to be a sandwich where zero or more massive
 /// layers are located between two non-mass layers. These non-mass layers will always
 /// include the interior and exterior film convections coefficients, respectively (which is
-/// why they are called `full_rsi` and `full_rso`, respectively). Additionally,
+/// why they are called `full_rs_front` and `full_rs_back`, respectively). Additionally,
 /// they can also include some lightweight insulation or any other material of negligible
 /// thermal mass.
 ///
@@ -286,8 +310,8 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 /// # Outputs
 ///
 /// * k_prime: the Matrix representing the heat transfer between the nodes... will be filled by this function, and the input should be full of zeros
-/// * full_rsi: R_si + the thermal resistance of all the no-mass layers before the first massive element.
-/// * full_rso: R_so + the thermal resistance of all the no-mass layers after the last massive element.
+/// * full_rs_front: R_si + the thermal resistance of all the no-mass layers before the first massive element.
+/// * full_rs_back: R_so + the thermal resistance of all the no-mass layers after the last massive element.
 /// * c_i: The thermal mass of the most interior node, divided by the timestep
 /// * c_o: The thermal mass of the most exterior node, divided by the timestep
 pub fn build_thermal_network(
@@ -295,11 +319,11 @@ pub fn build_thermal_network(
     c: &Construction,
     dt: f64,
     n_elements: &[usize],
-    rs_i: f64,
-    rs_o: f64,
+    rs_front: f64,
+    rs_back: f64,
     k_prime: &mut Matrix,
-    full_rsi: &mut f64,
-    full_rso: &mut f64,
+    full_rs_front: &mut f64,
+    full_rs_back: &mut f64,
     c_i: &mut f64,
     c_o: &mut f64,
 ) -> Result<(), String> {
@@ -339,9 +363,9 @@ pub fn build_thermal_network(
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.
         // Simple case... return Zero mass and an R value of 1/R
-        let r = r_value(building, c).unwrap() + rs_i + rs_o;
-        *full_rsi = r;
-        *full_rso = r;
+        let r = r_value(building, c).unwrap() + rs_front + rs_back;
+        *full_rs_front = r;
+        *full_rs_back = r;
         k_prime.set(0, 0, -1.0 / r).unwrap();
         k_prime.set(0, 1, 1.0 / r).unwrap();
         k_prime.set(1, 0, 1.0 / r).unwrap();
@@ -353,24 +377,26 @@ pub fn build_thermal_network(
         // Calculate inner and outer surface Resistances
 
         // Everything before the first massive layer
-        *full_rsi = rs_i;
+        *full_rs_front = rs_front;
         for i in 0..first_massive {
             let material_index = c.get_layer_index(i).unwrap();
             let material = building.get_material(material_index).unwrap();
             let substance_index = material.get_substance_index().unwrap();
             let substance = building.get_substance(substance_index).unwrap();
 
-            *full_rsi += material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
+            *full_rs_front +=
+                material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
         }
 
         // Everything after the last massive layer
-        *full_rso = rs_o;
+        *full_rs_back = rs_back;
         for i in last_massive..c.n_layers() {
             let material_index = c.get_layer_index(i).unwrap();
             let material = building.get_material(material_index).unwrap();
             let substance_index = material.get_substance_index().unwrap();
             let substance = building.get_substance(substance_index).unwrap();
-            *full_rso += material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
+            *full_rs_back +=
+                material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
         }
     }
 
@@ -450,15 +476,21 @@ pub fn build_thermal_network(
 
     // ADD RSI AND RSO
     // add r_si to first node
-    if *full_rsi > 0.0 {
+    if *full_rs_front > 0.0 {
         let old_value = k_prime.get(0, 0).unwrap();
-        k_prime.set(0, 0, old_value - 1.0 / (*full_rsi)).unwrap();
+        k_prime
+            .set(0, 0, old_value - 1.0 / (*full_rs_front))
+            .unwrap();
     }
 
-    if *full_rso > 0.0 {
+    if *full_rs_back > 0.0 {
         let old_value = k_prime.get(all_nodes - 1, all_nodes - 1).unwrap();
         k_prime
-            .set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / (*full_rso))
+            .set(
+                all_nodes - 1,
+                all_nodes - 1,
+                old_value - 1.0 / (*full_rs_back),
+            )
             .unwrap();
     }
 

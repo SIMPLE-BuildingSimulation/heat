@@ -27,17 +27,17 @@ pub struct ThermalSurface {
     surface_index: usize,
 
     /// The front side convection coefficient
-    rs_front: f64,
+    pub rs_front: f64,
 
     /// The back side convection coefficient
-    rs_back: f64,
+    pub rs_back: f64,
 
     /// The interior (i.e. front side) resistance before
     /// any layer with mass. It includes the r_si and also
     /// any light-weight material at the front of the construction.
     /// If the first layer in the construction has mass, then this
     /// value will be equal to r_si
-    full_rsi: f64,
+    pub full_rs_front: f64,
 
     /// A coefficient with the rho*Cp*dx/dt of the first
     /// node. This is the right-hand side of the differential
@@ -54,7 +54,7 @@ pub struct ThermalSurface {
     /// any light-weight material at the back of the contruction.
     /// If the first layer in the construction has mass, then
     /// this value will be equal to r_si
-    full_rso: f64,
+    pub full_rs_back: f64,
 
     /// The matrix that represents the thermal network
     k_prime: matrix::Matrix,
@@ -140,10 +140,10 @@ impl ThermalSurface {
             surface_index,
             rs_front,
             rs_back,
-            full_rso: 0.0, // filled when building thermal network
-            full_rsi: 0.0, // filled when building thermal network
-            c_o: 0.0,      // filled when building thermal network
-            c_i: 0.0,      // filled when building thermal network
+            full_rs_back: 0.0,  // filled when building thermal network
+            full_rs_front: 0.0, // filled when building thermal network
+            c_o: 0.0,           // filled when building thermal network
+            c_i: 0.0,           // filled when building thermal network
             k_prime: Matrix::new(0.0, n_nodes, n_nodes), // filled when building thermal network
             n_nodes,
             massive: true,                  // filled after building the thermal network
@@ -163,8 +163,8 @@ impl ThermalSurface {
             rs_front,
             rs_back,
             &mut ret.k_prime,
-            &mut ret.full_rsi,
-            &mut ret.full_rso,
+            &mut ret.full_rs_front,
+            &mut ret.full_rs_back,
             &mut ret.c_i,
             &mut ret.c_o,
         )
@@ -264,8 +264,8 @@ impl ThermalSurface {
         &self,
         building: &Building,
         state: &SimulationState,
-        t_in: f64,
-        t_out: f64,
+        t_front: f64,
+        t_back: f64,
     ) -> (f64, f64) {
         // Positive is going out of the layer.
         let q_in;
@@ -273,11 +273,11 @@ impl ThermalSurface {
         let t_si = self.front_temperature(building, state);
         let t_so = self.back_temperature(building, state);
         if self.massive {
-            q_in = (t_si - t_in) / self.full_rsi;
-            q_out = (t_so - t_out) / self.full_rso;
+            q_in = (t_si - t_front) / self.full_rs_front;
+            q_out = (t_so - t_back) / self.full_rs_back;
         } else {
-            q_in = (t_si - t_in) / self.rs_front;
-            q_out = (t_so - t_out) / self.rs_back;
+            q_in = (t_si - t_front) / self.rs_front;
+            q_out = (t_so - t_back) / self.rs_back;
         }
         // return
         (q_in, q_out)
@@ -505,7 +505,7 @@ impl ThermalSurface {
 
     /// Retrieves the state of the Surface as a Matrix
     /// object.
-    fn get_node_temperatures(&self, building: &Building, state: &SimulationState) -> Matrix {
+    pub fn get_node_temperatures(&self, building: &Building, state: &SimulationState) -> Matrix {
         if self.is_fenestration {
             self.get_fenestration_node_temperatures(building, state)
         } else {
@@ -574,48 +574,61 @@ impl ThermalSurface {
         &self,
         building: &Building,
         state: &mut SimulationState,
-        t_in: f64,
-        t_out: f64,
+        t_front: f64,
+        t_back: f64,
     ) -> (f64, f64) {
         let mut temperatures = self.get_node_temperatures(building, state);
 
+        // println!("T front = {} | T back = {} ", t_front, t_back);
+        // println!(" OLD TEMPS = {}", temperatures);
+
         if self.massive {
-            // Update temperatures... T_i+1 = Ti + K_prime*Ti + {t_in/full_rsi/C_i ... 0,0,0... t_out/full_rso/C_o}
+            // Update temperatures... T_i+1 = Ti + K_prime*Ti + {t_front/full_rs_front/C_i ... 0,0,0... t_back/full_rs_back/C_o}
             //                                     ^^^^^^^^^                    ^^^^^^^^^^^^
             //                        lets call this vector 'a'         These are the F components
             let mut a = self.k_prime.from_prod_n_diag(&temperatures, 3).unwrap(); // k_prime is tri-diagonal
                                                                                   // ... 'a' should be a vector
 
+            // println!(" A_before = {}", a);
+
             // Let's add the F components
             let old_value = a.get(0, 0).unwrap();
-            a.set(0, 0, old_value + t_in / self.full_rsi / self.c_i)
+            a.set(0, 0, old_value + t_front / self.full_rs_front / self.c_i)
                 .unwrap();
 
             let old_value = a.get(self.n_nodes - 1, 0).unwrap();
             a.set(
                 self.n_nodes - 1,
                 0,
-                old_value + t_out / self.full_rso / self.c_o,
+                old_value + t_back / self.full_rs_back / self.c_o,
             )
             .unwrap();
+
+            //println!(" A_after = {}", a);
 
             // Let's add a to the temperatures.
             temperatures.add_to_this(&a).unwrap();
         } else {
-            let q = (t_out - t_in) / self.full_rsi;
+            // full_rs_front is, indeed, the whole R
+            let q = (t_back - t_front) / self.full_rs_front;
 
-            let t_si = t_in + q * self.rs_front;
-            let t_so = t_out - q * self.rs_back;
+            let ts_front = t_front + q * self.rs_front;
+            let ts_back = t_back - q * self.rs_back;
 
-            temperatures.set(0, 0, t_si).unwrap();
-            temperatures.set(self.n_nodes - 1, 0, t_so).unwrap();
+            temperatures.set(0, 0, ts_front).unwrap();
+            temperatures.set(self.n_nodes - 1, 0, ts_back).unwrap();
         }
-
+        // println!(" Temperatures_after = {}", temperatures);
         // Set state
         self.set_node_temperatures(building, state, &temperatures);
 
         // return
-        self.calc_heat_flow(building, state, t_in, t_out)
+        // println!(
+        //     " HeatFlows: {:?}",
+        //     self.calc_heat_flow(building, state, t_front, t_back)
+        // );
+        // println!(" =====\n\n");
+        self.calc_heat_flow(building, state, t_front, t_back)
     }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
@@ -1099,8 +1112,8 @@ mod testing {
         let all_nodes = calc_n_total_nodes(&n_elements).unwrap();
 
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1108,11 +1121,11 @@ mod testing {
             &wall_1,
             dt,
             &n_elements,
-            0.,
-            0.,
+            0., // rs_front
+            0., // rs_back
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
@@ -1131,8 +1144,8 @@ mod testing {
         let mass = rho * cp * dx / dt;
 
         // check coefficients
-        assert_eq!(full_rsi, 0.0); // 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_front, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_back, 0.0); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho * cp * dx / (2.0 * dt));
         assert_eq!(c_o, rho * cp * dx / (2.0 * dt));
 
@@ -1211,8 +1224,8 @@ mod testing {
         let mass1 = rho1 * cp1 * dx1 / dt;
 
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1223,16 +1236,16 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
         .unwrap();
 
         // check coefficients
-        assert_eq!(full_rsi, 0.0); // 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_front, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_back, 0.0); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho0 * cp0 * dx0 / (2.0 * dt));
         assert_eq!(c_o, rho1 * cp1 * dx1 / (2.0 * dt));
 
@@ -1348,8 +1361,8 @@ mod testing {
         let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
 
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1360,8 +1373,8 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
@@ -1369,11 +1382,11 @@ mod testing {
 
         // check coefficients
         assert_eq!(
-            full_rsi,
+            full_rs_front,
             m0.thickness().unwrap() / m0_substance.thermal_conductivity().unwrap()
         ); // 2.0*dt/(rho*cp*dx));
         assert_eq!(
-            full_rso,
+            full_rs_back,
             m0.thickness().unwrap() / m0_substance.thermal_conductivity().unwrap()
         ); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, 0.0);
@@ -1415,8 +1428,8 @@ mod testing {
         let all_nodes = calc_n_total_nodes(&n_nodes).unwrap();
         let r = 2.0 * m0.thickness().unwrap() / m0_substance.thermal_conductivity().unwrap();
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1427,16 +1440,16 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
         .unwrap();
 
         // check coefficients
-        assert_eq!(full_rsi, r);
-        assert_eq!(full_rso, r);
+        assert_eq!(full_rs_front, r);
+        assert_eq!(full_rs_back, r);
         assert_eq!(c_i, 0.);
         assert_eq!(c_o, 0.);
 
@@ -1498,8 +1511,8 @@ mod testing {
         let dx = m0.thickness().unwrap();
 
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1510,17 +1523,17 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
         .unwrap();
 
         // check coefficients
-        assert_eq!(full_rsi, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_front, 0.0); // 2.0*dt/(rho*cp*dx));
         assert_eq!(
-            full_rso,
+            full_rs_back,
             m1.thickness().unwrap() / m1_substance.thermal_conductivity().unwrap()
         ); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho * cp * dx / (2.0 * dt));
@@ -1592,8 +1605,8 @@ mod testing {
         let dx = m0.thickness().unwrap();
 
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1604,8 +1617,8 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
@@ -1614,8 +1627,8 @@ mod testing {
         let rsi = m1.thickness().unwrap() / m1_substance.thermal_conductivity().unwrap();
 
         // check coefficients
-        assert_eq!(full_rsi, rsi); // 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_front, rsi); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_back, 0.0); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho * cp * dx / (2.0 * dt));
         assert_eq!(c_o, rho * cp * dx / (2.0 * dt));
 
@@ -1690,8 +1703,8 @@ mod testing {
         assert_eq!(all_nodes, 4);
 
         let mut k_prime = Matrix::new(0.0, all_nodes, all_nodes);
-        let mut full_rsi = 0.0;
-        let mut full_rso = 0.0;
+        let mut full_rs_front = 0.0;
+        let mut full_rs_back = 0.0;
         let mut c_i = 0.0;
         let mut c_o = 0.0;
         build_thermal_network(
@@ -1702,16 +1715,16 @@ mod testing {
             0.,
             0.,
             &mut k_prime,
-            &mut full_rsi,
-            &mut full_rso,
+            &mut full_rs_front,
+            &mut full_rs_back,
             &mut c_i,
             &mut c_o,
         )
         .unwrap();
 
         // check coefficients
-        assert_eq!(full_rsi, 0.0); // 2.0*dt/(rho*cp*dx));
-        assert_eq!(full_rso, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_front, 0.0); // 2.0*dt/(rho*cp*dx));
+        assert_eq!(full_rs_back, 0.0); // 2.0*dt/(rho*cp*dx));
         assert_eq!(c_i, rho * cp * dx / (2.0 * dt));
         assert_eq!(c_o, rho * cp * dx / (2.0 * dt));
 
@@ -1806,12 +1819,12 @@ mod testing {
         assert_eq!(20.0, temperatures.get(0, 0).unwrap());
         assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
-        let t_in = 10.0;
-        let q_in_ref = (20.0 - t_in) / ts.rs_front;
+        let t_front = 10.0;
+        let q_in_ref = (20.0 - t_front) / ts.rs_front;
 
-        let t_out = 10.0;
-        let q_out_ref = (20.0 - t_out) / ts.rs_back;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_in, t_out);
+        let t_back = 10.0;
+        let q_out_ref = (20.0 - t_back) / ts.rs_back;
+        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -1879,12 +1892,12 @@ mod testing {
         assert_eq!(20.0, temperatures.get(0, 0).unwrap());
         assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
-        let t_in = 10.0;
-        let q_in_ref = (20.0 - t_in) / ts.rs_front;
+        let t_front = 10.0;
+        let q_in_ref = (20.0 - t_front) / ts.rs_front;
 
-        let t_out = 10.0;
-        let q_out_ref = (20.0 - t_out) / ts.rs_back;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_in, t_out);
+        let t_back = 10.0;
+        let q_out_ref = (20.0 - t_back) / ts.rs_back;
+        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -1961,12 +1974,12 @@ mod testing {
         assert_eq!(20.0, temperatures.get(0, 0).unwrap());
         assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
-        let t_in = 10.0;
-        let q_in_ref = (20.0 - t_in) / ts.full_rsi;
+        let t_front = 10.0;
+        let q_in_ref = (20.0 - t_front) / ts.full_rs_front;
 
-        let t_out = 10.0;
-        let q_out_ref = (20.0 - t_out) / ts.full_rso;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_in, t_out);
+        let t_back = 10.0;
+        let q_out_ref = (20.0 - t_back) / ts.full_rs_back;
+        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -2033,8 +2046,14 @@ mod testing {
         let mut counter: usize = 0;
         while q.abs() > 1E-5 {
             let (q_in, q_out) = ts.march(&building, &mut state, 10.0, 10.0);
+            // the same amount of heat needs to leave in each direction
             assert!((q_in - q_out).abs() < 1E-5);
+
+            // q_front is positive
             assert!(q_in >= 0.);
+            assert!(q_out >= 0.);
+
+            // q_in needs to be getting smaller
             assert!(q_in < q);
             q = q_in;
 
