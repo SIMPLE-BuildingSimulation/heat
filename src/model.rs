@@ -81,6 +81,10 @@ impl SimulationModel for ThermalModel {
         // This is the model's dt now. When marching
         let dt = 60. * 60. / (n as f64 * n_subdivisions as f64);
 
+        if n * n_subdivisions < 6 {
+            eprintln!("Number of timesteps per hour (n) is too small in Finite Difference Thermal  Module... try to use 6 or more.");
+        }
+
         /* CREATE SURFACES USING THE MINIMUM TIMESTEP */
         // The rationale here is the following: We find the minimum
         // timestep (or maximum timestep_subdivisions), and that will be the
@@ -176,16 +180,7 @@ impl SimulationModel for ThermalModel {
                 ),
             };
 
-            /* UPDATE ZONES' TEMPERATURE */
-            // This is done analytically.
-            let (a, b, c) = self.calculate_zones_abc(building, state);
-            let t_current = self.get_current_temperatures(building, state);
-            //let mut heat_storage: Vec<f64> = vec![0.0; self.zones.len()];
-            let future_temperatures =
-                self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);                
-            for (i, zone) in self.zones.iter().enumerate() {
-                zone.set_temperature(future_temperatures[i], building, state);
-            }
+            let t_current = self.get_current_zones_temperatures(building, state);            
 
             /* UPDATE SURFACE'S TEMPERATURES */
             for i in 0..self.surfaces.len() {
@@ -194,32 +189,19 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Boundary::Space(z_index) => future_temperatures[z_index], //self.zones[z_index].temperature(building, state),
+                    Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
                     Boundary::Ground => unimplemented!(),
                     Boundary::None => t_out,
                 };
                 let t_back = match s.back_boundary() {
-                    Boundary::Space(z_index) => future_temperatures[z_index], //self.zones[z_index].temperature(building, state),
+                    Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
                     Boundary::Ground => unimplemented!(),
                     Boundary::None => t_out,
                 };
 
                 // Update temperatures
                 let (_q_front, _q_back) = s.march(building, state, t_front, t_back);
-
-                // // Distribute heat flows.
-                // match s.front_boundary() {
-                //     Boundary::Space(z_index) => {
-                //         heat_storage[z_index] += q_front * s.area() * self.dt
-                //     }
-                //     Boundary::Ground | Boundary::None => {}
-                // };
-                // match s.back_boundary() {
-                //     Boundary::Space(z_index) => {
-                //         heat_storage[z_index] += q_back * s.area() * self.dt
-                //     }
-                //     Boundary::Ground | Boundary::None => {}
-                // };
+                
             } // end of iterating surface
 
             // What  if they are open???
@@ -229,12 +211,12 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Boundary::Space(z_index) => future_temperatures[z_index],
+                    Boundary::Space(z_index) => t_current[z_index],
                     Boundary::Ground => unimplemented!(),
                     Boundary::None => t_out,
                 };
                 let t_back = match s.back_boundary() {
-                    Boundary::Space(z_index) => future_temperatures[z_index],
+                    Boundary::Space(z_index) => t_current[z_index],
                     Boundary::Ground => unimplemented!(),
                     Boundary::None => t_out,
                 };
@@ -242,46 +224,21 @@ impl SimulationModel for ThermalModel {
                 // Update temperatures
                 let (_q_front, _q_back) = s.march(building, state, t_front, t_back);
 
-                // // Distribute heat flows.
-                // match s.front_boundary() {
-                //     Boundary::Space(z_index) => {
-                //         heat_storage[z_index] += q_front * s.area() * self.dt
-                //     }
-                //     Boundary::Ground | Boundary::None => {}
-                // };
-                // match s.back_boundary() {
-                //     Boundary::Space(z_index) => {
-                //         heat_storage[z_index] += q_back * s.area() * self.dt
-                //     }
-                //     Boundary::Ground | Boundary::None => {}
-                // };
+                
             } // end of iterating surface
 
-            // update air flows
-            // assume constant during timestep... get a vector with Qs
+            /* UPDATE ZONES' TEMPERATURE */
+            // This is done analytically.
+            let (a, b, c) = self.calculate_zones_abc(building, state);                                                
+            let future_temperatures =
+                self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);                
+            for (i, zone) in self.zones.iter().enumerate() {
+                zone.set_temperature(future_temperatures[i], building, state);
+            }
 
-            // ZONE:
-            // for (i, heat) in heat_storage.iter_mut().enumerate() {
-            //     // calculate air-flow heat transfer
-
-            //     // calculate infiltration
-
-            //     /* Qi */
-            //     // calculate Zone heating/cooling, people, lighting, etc.
-            //     let qi = self.zones[i].get_current_internal_heat_loads(building, state);
-            //     println!("Qi = {}", qi);
-            //     *heat += qi * self.dt;
-
-            //     println!("total_heat = {}", *heat);
-
-            //     // update all zones temperatures
-            //     self.zones[i].consume_heat(*heat, building, state);
-            // } // end of iterating zones
-
-            // println!("NEW ITERATION ----");
+            
         } // End of 'in each sub-timestep-subdivision'
 
-        // panic!("FINISHED FIRST MARCHING");
         Ok(())
     }
 }
@@ -382,7 +339,7 @@ impl ThermalModel {
 
         /* Qi */
         for (i, zone) in self.zones.iter().enumerate() {
-            let qi = zone.get_current_internal_heat_loads(building, state);
+            let qi = zone.get_current_internal_heat_loads(building, state);            
             a[i] += qi;
 
             /* AIR SUPPLY */
@@ -402,20 +359,19 @@ impl ThermalModel {
             b: &mut Vec<f64>,
         ) {
             for surface in surfaces.iter() {
-                let ai = surface.area();
+                let ai = surface.area();                
                 // if front leads to a Zone
                 if let Boundary::Space(z_index) = surface.front_boundary() {
                     let hi = 1./surface.rs_front();
-                    //println!("ai = {} | hi = {}", ai, hi);
-                    let temp = surface.front_temperature(building, state);                    
+                    let temp = surface.front_temperature(building, state);                                        
                     a[z_index] += hi * ai * temp;
                     b[z_index] += hi * ai;
                 }
 
                 // if back leads to a Zone
                 if let Boundary::Space(z_index) = surface.back_boundary() {
-                    let hi = surface.rs_back();
-                    let temp = surface.back_temperature(building, state);
+                    let hi = 1./ surface.rs_back();
+                    let temp = surface.back_temperature(building, state);                    
                     a[z_index] += hi * ai * temp;
                     b[z_index] += hi * ai;
                 }
@@ -427,14 +383,14 @@ impl ThermalModel {
 
         /* AIR MIXTURE WITH OTHER ZONES */
         // unimplemented();
-
+        
         // RETURN
         (a, b, c)
     }
 
     /// Retrieves a vector of the current temperatures of all the Zones as
     /// registered in the Simulation State
-    fn get_current_temperatures(&self, building: &Building, state: &SimulationState) -> Vec<f64> {
+    fn get_current_zones_temperatures(&self, building: &Building, state: &SimulationState) -> Vec<f64> {
         let nzones = self.zones.len();
         // Initialize return
         let mut ret: Vec<f64> = Vec::with_capacity(nzones);
@@ -490,8 +446,7 @@ impl ThermalModel {
         let nzones = self.zones.len();
         // Initialize return
         let mut ret: Vec<f64> = Vec::with_capacity(nzones);
-        for i in 0..nzones {
-            
+        for i in 0..nzones {            
             ret.push(
                 a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
             );
@@ -545,7 +500,7 @@ mod testing {
             .front_temperature(&building, &state);
         let area = model.get_thermal_surface(0).unwrap().area();
         assert_eq!(a[0], area * hi * temp);
-        assert_eq!(b[0], area * hi);        
+        assert_eq!(b[0], area * hi);                
     }
 
     #[test]
@@ -559,17 +514,17 @@ mod testing {
         });
         
 
-        let n: usize = 20;
+        let n: usize = 6;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
-        println!("DT_SUBDIVISIONS = {}", model.dt_subdivisions);
+        //println!("DT_SUBDIVISIONS = {}", model.dt_subdivisions);
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
 
         /* START THE TEST */
         let construction = building.get_construction(0).unwrap();
-        assert!(model.surfaces[0].is_massive());
+        assert!(!model.surfaces[0].is_massive());
 
         let r = r_value(&building, construction).unwrap()
             + model.surfaces[0].rs_front()
@@ -594,8 +549,8 @@ mod testing {
 
         // March:
         let zone_mass = model.zones[0].mcp();        
-        println!("seconds,exp,found");
-        for i in 0..300 {
+        //println!("seconds,exp,found");
+        for i in 0..3000 {
             let time = (i as f64) * main_dt;
             date.add_seconds(time);
 
@@ -607,9 +562,9 @@ mod testing {
             let exp = t_out + (t_start - t_out) * (-time * u * area / zone_mass).exp();            
             //assert!((exp - found).abs() < 0.05);
             let max_error = 0.7;
-            println!("{},{},{}", time,exp, found);
+            // println!("{},{},{}", time,exp, found);
             if (exp - found).abs() > max_error {
-                //assert!((exp - found).abs() < max_error);
+                assert!((exp - found).abs() < max_error);
             }
         }
     }
@@ -630,7 +585,7 @@ mod testing {
 
         // Finished building the Building
 
-        let n: usize = 1;
+        let n: usize = 6;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
@@ -675,8 +630,8 @@ mod testing {
             // Get exact solution.
             let exp = t_s + (t_o - t_s) * (-time * u * area / zone_mass).exp();
             let max_error = 0.7;
+            println!("exp: {} vs found: {}", exp, found);
             if (exp - found).abs() > max_error {
-                println!("exp: {} vs found: {}", exp, found);
                 assert!((exp - found).abs() < max_error);
             }
         }
@@ -699,7 +654,7 @@ mod testing {
 
         // Finished building the Building
 
-        let n: usize = 1;
+        let n: usize = 6;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 

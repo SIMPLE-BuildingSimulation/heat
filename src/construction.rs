@@ -130,7 +130,7 @@ pub fn discretize_construction(
         
         
         // return, asking for double the subdivisions (for accuracy, not just stability.)
-        (n*2, n_elements)
+        (n, n_elements)
     }
 
     aux(building, c, main_dt, 1, max_dx, min_dt)

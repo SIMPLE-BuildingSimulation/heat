@@ -124,13 +124,13 @@ impl ThermalSurface {
                 state.push(SimulationStateElement::FenestrationNodeTemperature(
                     surface_index,
                     i,
-                    20.0,
+                    22.0,
                 ));
             } else {
                 state.push(SimulationStateElement::SurfaceNodeTemperature(
                     surface_index,
                     i,
-                    20.0,
+                    22.0,
                 ));
             }
         }
@@ -622,12 +622,7 @@ impl ThermalSurface {
         // Set state
         self.set_node_temperatures(building, state, &temperatures);
 
-        // return
-        // println!(
-        //     " HeatFlows: {:?}",
-        //     self.calc_heat_flow(building, state, t_front, t_back)
-        // );
-        // println!(" =====\n\n");
+        // return        
         self.calc_heat_flow(building, state, t_front, t_back)
     }
 
@@ -1816,14 +1811,14 @@ mod testing {
         // TEST
         let temperatures = ts.get_node_temperatures(&building, &state);
 
-        assert_eq!(20.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(0, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (20.0 - t_front) / ts.rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (20.0 - t_back) / ts.rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -1889,14 +1884,14 @@ mod testing {
 
         assert!(!ts.massive);
         let temperatures = ts.get_node_temperatures(&building, &state);
-        assert_eq!(20.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(0, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (20.0 - t_front) / ts.rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (20.0 - t_back) / ts.rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -1971,14 +1966,14 @@ mod testing {
 
         assert!(ts.massive);
         let temperatures = ts.get_node_temperatures(&building, &state);
-        assert_eq!(20.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(20.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(0, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (20.0 - t_front) / ts.full_rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.full_rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (20.0 - t_back) / ts.full_rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.full_rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
