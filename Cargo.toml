@@ -23,6 +23,7 @@ weather = { path = "../../weather" }
 calendar = { path = "../../calendar" }
 simple_test_buildings = {path="../../simple_test_buildings"}
 
+# Check https://stackoverflow.com/questions/53127722/how-can-i-activate-features-in-all-my-crates
 
 [package.metadata.docs.rs]
 rustdoc-args = [

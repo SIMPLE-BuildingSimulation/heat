@@ -240,6 +240,7 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
+
 /// Constructions are assumed to be a sandwich where zero or more massive
 /// layers are located between two non-mass layers. These non-mass layers will always
 /// include the interior and exterior film convections coefficients, respectively (which is

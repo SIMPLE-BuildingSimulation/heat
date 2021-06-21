@@ -27,17 +27,17 @@ pub struct ThermalSurface {
     surface_index: usize,
 
     /// The front side convection coefficient
-    pub rs_front: f64,
+    rs_front: f64,
 
     /// The back side convection coefficient
-    pub rs_back: f64,
+    rs_back: f64,
 
     /// The interior (i.e. front side) resistance before
     /// any layer with mass. It includes the r_si and also
     /// any light-weight material at the front of the construction.
     /// If the first layer in the construction has mass, then this
     /// value will be equal to r_si
-    pub full_rs_front: f64,
+    full_rs_front: f64,
 
     /// A coefficient with the rho*Cp*dx/dt of the first
     /// node. This is the right-hand side of the differential
@@ -54,7 +54,7 @@ pub struct ThermalSurface {
     /// any light-weight material at the back of the contruction.
     /// If the first layer in the construction has mass, then
     /// this value will be equal to r_si
-    pub full_rs_back: f64,
+    full_rs_back: f64,
 
     /// The matrix that represents the thermal network
     k_prime: matrix::Matrix,
@@ -82,6 +82,7 @@ pub struct ThermalSurface {
 
     /// Is this a Fenestration or a Surface in the original Building model?
     pub is_fenestration: bool,
+        
 }
 
 impl ThermalSurface {
@@ -117,6 +118,7 @@ impl ThermalSurface {
 
         // Calculate number of nodes in that construction.
         let n_nodes = calc_n_total_nodes(&n_elements)?;
+        
 
         // Push elements to the SimulationState
         for i in 0..n_nodes {
