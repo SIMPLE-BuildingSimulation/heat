@@ -82,7 +82,6 @@ pub struct ThermalSurface {
 
     /// Is this a Fenestration or a Surface in the original Building model?
     pub is_fenestration: bool,
-        
 }
 
 impl ThermalSurface {
@@ -118,7 +117,6 @@ impl ThermalSurface {
 
         // Calculate number of nodes in that construction.
         let n_nodes = calc_n_total_nodes(&n_elements)?;
-        
 
         // Push elements to the SimulationState
         for i in 0..n_nodes {
@@ -454,23 +452,12 @@ impl ThermalSurface {
         let ini = surf.get_first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
 
-        for i in ini..fin {
-            if let SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, _) =
-                state[i]
-            {
-                if surf_index != self.index {
-                    panic!(
-                        "Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'",
-                        self.index
-                    );
-                }
-                // all Good here
-                let new_t = matrix.get(node_index, 0).unwrap();
-                state[i] =
-                    SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, new_t);
-            } else {
-                panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
-            }
+        for (node_index, i) in (ini..fin).enumerate() {
+            let new_t = matrix.get(node_index, 0).unwrap();
+            state.update_value(
+                i,
+                SimulationStateElement::SurfaceNodeTemperature(self.index, node_index, new_t),
+            );
         }
     }
 
@@ -484,24 +471,12 @@ impl ThermalSurface {
         let ini = surf.get_first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
 
-        for i in ini..fin {
-            if let SimulationStateElement::FenestrationNodeTemperature(surf_index, node_index, _) =
-                state[i]
-            {
-                if surf_index != self.index {
-                    panic!(
-                        "Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'",
-                        self.index
-                    );
-                }
-                // all Good here
-                let new_t = matrix.get(node_index, 0).unwrap();
-                state[i] = SimulationStateElement::FenestrationNodeTemperature(
-                    surf_index, node_index, new_t,
-                );
-            } else {
-                panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
-            }
+        for (node_index, i) in (ini..fin).enumerate() {
+            let new_t = matrix.get(node_index, 0).unwrap();
+            state.update_value(
+                i,
+                SimulationStateElement::FenestrationNodeTemperature(self.index, node_index, new_t),
+            );
         }
     }
 
@@ -552,21 +527,13 @@ impl ThermalSurface {
         let surf = building.get_surface(self.surface_index).unwrap();
         let ini = surf.get_first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
-        for i in ini..fin {
-            if let SimulationStateElement::SurfaceNodeTemperature(
-                surf_index,
-                node_index,
-                temperature,
-            ) = state[i]
-            {
-                if surf_index != self.index {
-                    panic!("Incorrect index allocated for Temperature of SurfaceNode... surf_index = {}, self.index = {}", surf_index, self.index);
-                }
-                // all Good here
-                ret.set(node_index, 0, temperature).unwrap();
-            } else {
-                panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'... found '{}'", self.index, state[i].to_string());
+        for (node_index, i) in (ini..fin).enumerate() {
+            if let Err(errmsg) = state[i].differ_only_in_value(
+                SimulationStateElement::SurfaceNodeTemperature(surf.index(), node_index, 123.123),
+            ) {
+                panic!("when get_surface_node_temperatures() | {}", errmsg);
             }
+            ret.set(node_index, 0, state[i].get_value()).unwrap();
         }
         ret
     }
@@ -624,7 +591,7 @@ impl ThermalSurface {
         // Set state
         self.set_node_temperatures(building, state, &temperatures);
 
-        // return        
+        // return
         self.calc_heat_flow(building, state, t_front, t_back)
     }
 

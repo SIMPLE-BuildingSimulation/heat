@@ -9,7 +9,7 @@ use crate::heating_cooling::calc_cooling_heating_power;
 
 pub struct ThermalZone {
     /// The name of the zone
-    name: String,
+    _name: String,
 
     /// The position of this zone within
     /// the Thermal Model zones array
@@ -47,7 +47,7 @@ impl ThermalZone {
         );
 
         ThermalZone {
-            name: format!("ThermalZone::{}", space.name()),
+            _name: format!("ThermalZone::{}", space.name()),
             index: space.index(),
             volume: space.volume().unwrap(),
             surface_indexes: Vec::with_capacity(space.get_surfaces().len()),
@@ -121,49 +121,13 @@ impl ThermalZone {
         let space = building.get_space(self.index).unwrap();
         let t_index = space.get_dry_bulb_temperature_state_index().unwrap();
 
-        if let SimulationStateElement::SpaceDryBulbTemperature(i, v) = state[t_index] {
-            if i != self.index {
-                panic!(
-                    "Incorrect index allocated for Temperature of Space '{}'",
-                    self.name
-                );
-            }
-            // return
-            v
-        } else {
-            panic!(
-                "Incorrect StateElement kind allocated for Temperature of Space '{}'... found {}",
-                self.name,
-                state[t_index].to_string()
-            );
+        if let Err(errmsg) = state[t_index].differ_only_in_value(
+            SimulationStateElement::SpaceDryBulbTemperature(self.index, 123123.),
+        ) {
+            panic!("When retrieving Zone Temperature: {}", errmsg);
         }
-    }
 
-    pub fn consume_heat(
-        &self,
-        accumulated_heat: f64,
-        building: &Building,
-        state: &mut SimulationState,
-    ) {
-        let delta_t = accumulated_heat / self.mcp();
-
-        let space = building.get_space(self.index).unwrap();
-        let t_index = space.get_dry_bulb_temperature_state_index().unwrap();
-
-        if let SimulationStateElement::SpaceDryBulbTemperature(i, v) = state[t_index] {
-            if i != self.index {
-                panic!(
-                    "Incorrect index allocated for Temperature of Space '{}'",
-                    self.name
-                );
-            }
-            state[t_index] = SimulationStateElement::SpaceDryBulbTemperature(i, v + delta_t)
-        } else {
-            panic!(
-                "Incorrect StateElement kind allocated for Temperature of Space '{}'",
-                self.name
-            );
-        }
+        state[t_index].get_value()
     }
 
     /// Sets the temperature of a zone.
@@ -175,26 +139,10 @@ impl ThermalZone {
     ) {
         let space = building.get_space(self.index).unwrap();
         let t_index = space.get_dry_bulb_temperature_state_index().unwrap();
-
-        // Get the registered temperature, which becomes the previous temperature
-        if let SimulationStateElement::SpaceDryBulbTemperature(i, _previous_temperature) =
-            state[t_index]
-        {
-            // Check the index.
-            if i != self.index {
-                panic!(
-                    "Incorrect index allocated for Temperature of Space '{}'",
-                    self.name
-                );
-            }
-
-            state[t_index] = SimulationStateElement::SpaceDryBulbTemperature(i, temperature);
-        } else {
-            panic!(
-                "Incorrect StateElement kind allocated for Temperature of Space '{}'",
-                self.name
-            );
-        }
+        state.update_value(
+            t_index,
+            SimulationStateElement::SpaceDryBulbTemperature(self.index, temperature),
+        );
     }
 
     /// Retrieves the heat capacity of the ThermalZone's air

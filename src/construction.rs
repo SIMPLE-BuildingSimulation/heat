@@ -111,7 +111,7 @@ pub fn discretize_construction(
         // stability is assured by (alpha * dt / dx^2 <= 1/2 )
         #[cfg(debug_assertions)]
         {
-            for n_layer in 0..c.n_layers() {
+            for (n_layer, _) in n_elements.iter().enumerate() {
                 let material_index = c.get_layer_index(n_layer).unwrap();
                 let material = building.get_material(material_index).unwrap();
                 let substance_index = material.get_substance_index().unwrap();
@@ -120,15 +120,13 @@ pub fn discretize_construction(
                 // Calculate the optimum_dx
                 let thickness = material.thickness().unwrap();
                 let alpha = substance.thermal_diffusivity().unwrap();
-                
-                
+
                 let dt = main_dt / n as f64;
-                let dx = thickness/n_elements[n_layer] as f64;                
-                assert!( alpha * dt / dx / dx <= 0.5 );
+                let dx = thickness / n_elements[n_layer] as f64;
+                assert!(alpha * dt / dx / dx <= 0.5);
             }
         }
-        
-        
+
         // return, asking for double the subdivisions (for accuracy, not just stability.)
         (n, n_elements)
     }
@@ -239,7 +237,6 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     // return
     Ok(n)
 }
-
 
 /// Constructions are assumed to be a sandwich where zero or more massive
 /// layers are located between two non-mass layers. These non-mass layers will always
