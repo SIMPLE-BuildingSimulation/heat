@@ -1,4 +1,4 @@
-use crate::surface::*;
+use crate::surface::ThermalSurface;
 use building_model::building::Building;
 use calendar::date::Date;
 use communication_protocols::error_handling::ErrorHandling;
@@ -46,10 +46,9 @@ impl SimulationModel for ThermalModel {
     /// * state: the SimulationState attached to the Building
     /// * n: the number of timesteps per hour taken by the main simulation.
     fn new(building: &Building, state: &mut SimulationState, n: usize) -> Result<Self, String> {
-        /* CREATE ALL ZONES, ONE PER SPACE */
-        let spaces = building.get_spaces();
-        let mut thermal_zones: Vec<ThermalZone> = Vec::with_capacity(spaces.len());
-        for space in spaces {
+        /* CREATE ALL ZONES, ONE PER SPACE */        
+        let mut thermal_zones: Vec<ThermalZone> = Vec::with_capacity(building.spaces.len());
+        for space in building.spaces.iter() {
             // Add the zone to the model... this pushes it to the sate
             // as well
             thermal_zones.push(ThermalZone::from_space(space, state));
@@ -63,12 +62,10 @@ impl SimulationModel for ThermalModel {
         let mut n_subdivisions: usize = 1;
         let main_dt = 60. * 60. / n as f64;
 
-        let constructions = building.get_constructions();
-
         // Store the dts and n_nodes somwehere. Take note of the largest
         // number of subditivions required
-        let mut all_n_elements: Vec<Vec<usize>> = Vec::with_capacity(constructions.len());
-        for construction in constructions {
+        let mut all_n_elements: Vec<Vec<usize>> = Vec::with_capacity(building.constructions.len());
+        for construction in &building.constructions {
             let (mut found_n_subdivisions, n_elements) =
                 discretize_construction(building, construction, main_dt, max_dx, min_dt);
             found_n_subdivisions *= n_subdivisions;
@@ -91,16 +88,15 @@ impl SimulationModel for ThermalModel {
         // dt for the whole model. Some constructions will have a larger
         // dt (due to their discretization scheme), but simulating them
         // with a smaller (i.e. the official) dt is of no harm.
-        let surfaces = building.get_surfaces();
+        
 
         // For the Thermal Model
-        let mut thermal_surfaces: Vec<ThermalSurface> = Vec::with_capacity(surfaces.len());
+        let mut thermal_surfaces: Vec<ThermalSurface> = Vec::with_capacity(building.surfaces.len());
 
-        for i in 0..surfaces.len() {
-            let surface = &surfaces[i];
+        for (i, surface) in building.surfaces.iter().enumerate() {            
             let construction_index = surface.get_construction_index().unwrap();
 
-            let thermal_surface = match ThermalSurface::from_surface(
+            let thermal_surface = match ThermalSurface::new_surface(
                 building,
                 state,
                 surface,
@@ -118,21 +114,19 @@ impl SimulationModel for ThermalModel {
             thermal_surfaces[i].set_front_boundary(*surface.front_boundary());
             thermal_surfaces[i].set_back_boundary(*surface.back_boundary());
         }
-
-        let fenestrations = building.get_fenestrations();
+        
         let mut thermal_fenestrations: Vec<ThermalSurface> =
-            Vec::with_capacity(fenestrations.len());
-        for i in 0..fenestrations.len() {
-            let construction_index = fenestrations[i].get_construction_index().unwrap();
+            Vec::with_capacity(building.fenestrations.len());
+        for (i, fenestration) in building.fenestrations.iter().enumerate() {
+            let construction_index = fenestration.get_construction_index().unwrap();
 
-            let i = thermal_fenestrations.len();
-            let thermal_surface = match ThermalSurface::from_fenestration(
+            let thermal_surface = match ThermalSurface::new_fenestration(
                 building,
                 state,
-                &fenestrations[i],
+                fenestration,
                 dt,
                 &all_n_elements[construction_index],
-                fenestrations[i].index(),
+                fenestration.index(),
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -141,8 +135,8 @@ impl SimulationModel for ThermalModel {
             thermal_fenestrations.push(thermal_surface);
 
             // Match surface and zones
-            thermal_fenestrations[i].set_front_boundary(*fenestrations[i].front_boundary());
-            thermal_fenestrations[i].set_back_boundary(*fenestrations[i].back_boundary());
+            thermal_fenestrations[i].set_front_boundary(*fenestration.front_boundary());
+            thermal_fenestrations[i].set_back_boundary(*fenestration.back_boundary());
         }
 
         Ok(ThermalModel {

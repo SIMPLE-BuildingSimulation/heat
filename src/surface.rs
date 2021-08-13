@@ -13,11 +13,279 @@ use simulation_state::simulation_state_element::SimulationStateElement;
 
 use crate::construction::*;
 
+pub enum ThermalSurface{
+    Fenestration(ThermalSurfaceData),
+    Surface(ThermalSurfaceData),
+    // Floor(ThermalSurfaceData)
+}
+
+impl ThermalSurface{
+    pub fn new_surface(
+        building: &Building,
+        state: &mut SimulationState,
+        surface: &Surface,
+        dt: f64,
+        n_elements: &[usize],
+        index: usize,
+    ) -> Result<Self, String> {
+        let surface_index = ObjectTrait::index(surface);
+
+        // Check if Surface is valid... or else
+        ObjectTrait::is_full(surface).unwrap();
+
+        // this (should not fail because the surface is valid)
+        let construction_index = surface.get_construction_index().unwrap();
+
+        let area = surface.area().unwrap(); // should not fail because surface is full
+
+        let (rs_front, rs_back) = calc_convection_coefficients(surface);
+
+        let data = ThermalSurfaceData::new(
+            building,
+            state,
+            surface_index,
+            construction_index,
+            dt,
+            area,
+            rs_front,
+            rs_back,
+            n_elements,
+            index, 
+            false // not fenestration           
+        )?;
+        Ok(Self::Surface(data))
+    }
+
+    pub fn new_fenestration(
+        building: &Building,
+        state: &mut SimulationState,
+        fenestration: &Fenestration,
+        dt: f64,
+        n_elements: &[usize],
+        index: usize,
+    ) -> Result<Self, String> {
+        //let fenestration = building.get_fenestration(fenestration_index);
+        let fenestration_index = ObjectTrait::index(fenestration);
+
+        // Check if Surface is valid... or else
+        ObjectTrait::is_full(fenestration).unwrap();
+
+        // this (should not fail because the surface is valid)
+        let construction_index = fenestration.get_construction_index().unwrap();
+
+        let area = fenestration.area().unwrap(); // should not fail because surface is full
+
+        let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
+
+        let data = ThermalSurfaceData::new(
+            building,
+            state,
+            fenestration_index,
+            construction_index,
+            dt,
+            area,
+            rs_front,
+            rs_back,
+            n_elements,
+            index,
+            true, // it is a fenestration
+        )?;
+        Ok(Self::Fenestration(data))
+    }
+
+    fn data(&self)->&ThermalSurfaceData{
+        match &self{
+            Self::Surface(d)=>d,
+            Self::Fenestration(d)=>d,
+        }
+    }
+
+    fn mut_data(&mut self)->&mut ThermalSurfaceData{
+        match self{
+            Self::Surface(d)=>d,
+            Self::Fenestration(d)=>d,
+        }
+    }
+
+    pub fn area(&self) -> f64 {
+        self.data().area
+    }
+
+    pub fn rs_front(&self) -> f64 {
+        self.data().rs_front
+    }
+
+    pub fn rs_back(&self) -> f64 {
+        self.data().rs_back
+    }
+
+    pub fn set_front_boundary(&mut self, b: Boundary) {
+        self.mut_data().front_boundary = b;
+    }
+
+    pub fn set_back_boundary(&mut self, b: Boundary) {
+        self.mut_data().back_boundary = b;
+    }
+
+    pub fn front_boundary(&self) -> Boundary {
+        self.data().front_boundary
+    }
+
+    pub fn back_boundary(&self) -> Boundary {
+        self.data().back_boundary
+    }
+
+    /// Checks whether a wall has thermal mass
+    pub fn is_massive(&self) -> bool {
+        self.data().massive
+    }
+
+    pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+        match &self{
+            Self::Surface(d)=>{
+                d.surface_front_temperature(building, state)
+            },
+            Self::Fenestration(d) =>{
+                d.fenestration_front_temperature(building, state)
+            }
+        }
+    }
+
+    pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+        match &self{
+            Self::Surface(d)=>{
+                d.surface_back_temperature(building, state)
+            },
+            Self::Fenestration(d) =>{
+                d.fenestration_back_temperature(building, state)
+            }
+        }
+    }
+
+    pub fn set_node_temperatures(
+        &self,
+        building: &Building,
+        state: &mut SimulationState,
+        matrix: &Matrix,
+    ) {
+        match &self{
+            Self::Surface(d)=>{
+                d.set_surface_node_temperatures(building, state, matrix)
+            },
+            Self::Fenestration(d) =>{
+                d.set_fenestration_node_temperatures(building, state, matrix)
+            }
+        }
+    }
+    
+    /// Retrieves the state of the Surface as a Matrix
+    /// object.
+    pub fn get_node_temperatures(
+        &self,
+        building: &Building,
+        state: &SimulationState,        
+    ) -> Matrix {
+        match &self{
+            Self::Surface(d)=>{
+                d.get_surface_node_temperatures(building, state)
+            },
+            Self::Fenestration(d) =>{
+                d.get_fenestration_node_temperatures(building, state)
+            }
+        }
+    }
+
+    /// Calculates the heat flow out of the layer, based
+    /// on the inside and outside temperatures
+    fn calc_heat_flow(
+        &self,
+        building: &Building,
+        state: &SimulationState,
+        t_front: f64,
+        t_back: f64,
+    ) -> (f64, f64) {
+        // Positive is going out of the layer.
+        let data = self.data();
+        let q_in;
+        let q_out;
+        let t_si = self.front_temperature(building, state);
+        let t_so = self.back_temperature(building, state);
+        if data.massive {
+            q_in = (t_si - t_front) / data.full_rs_front;
+            q_out = (t_so - t_back) / data.full_rs_back;
+        } else {
+            q_in = (t_si - t_front) / data.rs_front;
+            q_out = (t_so - t_back) / data.rs_back;
+        }
+        // return
+        (q_in, q_out)
+    }
+    
+
+    /// Marches one timestep. Returns front and back heat flow    
+    pub fn march(
+        &self,
+        building: &Building,
+        state: &mut SimulationState,
+        t_front: f64,
+        t_back: f64,
+    ) -> (f64, f64) {
+        let mut temperatures = self.get_node_temperatures(building, state);
+        let data = self.data();
+
+        // println!("T front = {} | T back = {} ", t_front, t_back);
+        // println!(" OLD TEMPS = {}", temperatures);
+
+        if data.massive {
+            // Update temperatures... T_i+1 = Ti + K_prime*Ti + {t_front/full_rs_front/C_i ... 0,0,0... t_back/full_rs_back/C_o}
+            //                                     ^^^^^^^^^                    ^^^^^^^^^^^^
+            //                        lets call this vector 'a'         These are the F components
+            let mut a = data.k_prime.from_prod_n_diag(&temperatures, 3).unwrap(); // k_prime is tri-diagonal
+                                                                                  // ... 'a' should be a vector
+
+            // println!(" A_before = {}", a);
+
+            // Let's add the F components
+            let old_value = a.get(0, 0).unwrap();
+            a.set(0, 0, old_value + t_front / data.full_rs_front / data.c_i)
+                .unwrap();
+
+            let old_value = a.get(data.n_nodes - 1, 0).unwrap();
+            a.set(
+                data.n_nodes - 1,
+                0,
+                old_value + t_back / data.full_rs_back / data.c_o,
+            )
+            .unwrap();
+
+            //println!(" A_after = {}", a);
+
+            // Let's add a to the temperatures.
+            temperatures.add_to_this(&a).unwrap();
+        } else {
+            // full_rs_front is, indeed, the whole R
+            let q = (t_back - t_front) / data.full_rs_front;
+
+            let ts_front = t_front + q * data.rs_front;
+            let ts_back = t_back - q * data.rs_back;
+
+            temperatures.set(0, 0, ts_front).unwrap();
+            temperatures.set(data.n_nodes - 1, 0, ts_back).unwrap();
+        }
+        // println!(" Temperatures_after = {}", temperatures);
+        // Set state
+        self.set_node_temperatures(building, state, &temperatures);
+
+        // return
+        self.calc_heat_flow(building, state, t_front, t_back)
+    }
+}
+
 /// This is a Surface from the point of view of our thermal solver.
 /// Since this module only calculate heat transfer (and not short-wave solar
 /// radiation, e.g., light), both building_model::Fenestration and building_model::Surface
 /// are treated in the same way.
-pub struct ThermalSurface {
+pub struct ThermalSurfaceData {
     /// The index of this surface within
     /// the Thermal Model surfaces array
     index: usize,
@@ -79,12 +347,9 @@ pub struct ThermalSurface {
 
     /// The area of the Surface
     area: f64,
-
-    /// Is this a Fenestration or a Surface in the original Building model?
-    pub is_fenestration: bool,
 }
 
-impl ThermalSurface {
+impl ThermalSurfaceData {
     /// Constructs a new ThermalSurface object.
     ///
     /// # Parameters
@@ -136,7 +401,7 @@ impl ThermalSurface {
         }
 
         // Build ThermalSurface with some placeholders
-        let mut ret = ThermalSurface {
+        let mut ret = ThermalSurfaceData {
             surface_index,
             rs_front,
             rs_back,
@@ -150,8 +415,7 @@ impl ThermalSurface {
             front_boundary: Boundary::None, // filled when setting boundary
             back_boundary: Boundary::None,
             index,
-            area,
-            is_fenestration,
+            area,            
         };
 
         // Build the thermal network for this surface
@@ -175,144 +439,37 @@ impl ThermalSurface {
         Ok(ret)
     }
 
-    pub fn from_surface(
-        building: &Building,
-        state: &mut SimulationState,
-        surface: &Surface,
-        dt: f64,
-        n_elements: &[usize],
-        index: usize,
-    ) -> Result<Self, String> {
-        let surface_index = ObjectTrait::index(surface);
+    
 
-        // Check if Surface is valid... or else
-        ObjectTrait::is_full(surface).unwrap();
-
-        // this (should not fail because the surface is valid)
-        let construction_index = surface.get_construction_index().unwrap();
-
-        let area = surface.area().unwrap(); // should not fail because surface is full
-
-        let (rs_front, rs_back) = calc_convection_coefficients(surface);
-
-        ThermalSurface::new(
-            building,
-            state,
-            surface_index,
-            construction_index,
-            dt,
-            area,
-            rs_front,
-            rs_back,
-            n_elements,
-            index,
-            false, // not a fenestration
-        )
-    }
-
-    pub fn from_fenestration(
-        building: &Building,
-        state: &mut SimulationState,
-        fenestration: &Fenestration,
-        dt: f64,
-        n_elements: &[usize],
-        index: usize,
-    ) -> Result<Self, String> {
-        //let fenestration = building.get_fenestration(fenestration_index);
-        let fenestration_index = ObjectTrait::index(fenestration);
-
-        // Check if Surface is valid... or else
-        ObjectTrait::is_full(fenestration).unwrap();
-
-        // this (should not fail because the surface is valid)
-        let construction_index = fenestration.get_construction_index().unwrap();
-
-        let area = fenestration.area().unwrap(); // should not fail because surface is full
-
-        let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
-
-        ThermalSurface::new(
-            building,
-            state,
-            fenestration_index,
-            construction_index,
-            dt,
-            area,
-            rs_front,
-            rs_back,
-            n_elements,
-            index,
-            true, // it is a fenestration
-        )
-    }
-
-    pub fn area(&self) -> f64 {
-        self.area
-    }
-
-    pub fn rs_front(&self) -> f64 {
-        self.rs_front
-    }
-
-    pub fn rs_back(&self) -> f64 {
-        self.rs_back
-    }
-
-    /// Calculates the heat flow out of the layer, based
-    /// on the inside and outside temperatures
-    fn calc_heat_flow(
-        &self,
-        building: &Building,
-        state: &SimulationState,
-        t_front: f64,
-        t_back: f64,
-    ) -> (f64, f64) {
-        // Positive is going out of the layer.
-        let q_in;
-        let q_out;
-        let t_si = self.front_temperature(building, state);
-        let t_so = self.back_temperature(building, state);
-        if self.massive {
-            q_in = (t_si - t_front) / self.full_rs_front;
-            q_out = (t_so - t_back) / self.full_rs_back;
-        } else {
-            q_in = (t_si - t_front) / self.rs_front;
-            q_out = (t_so - t_back) / self.rs_back;
-        }
-        // return
-        (q_in, q_out)
-    }
-
-    /// Checks whether a wall has thermal mass
-    pub fn is_massive(&self) -> bool {
-        self.massive
-    }
+    
 
     fn surface_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         let surf = building.get_surface(self.surface_index).unwrap();
 
         let i = surf.get_first_node_temperature_index().unwrap();
 
-        if let SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, temperature) =
-            state[i]
-        {
-            if surf_index != self.index {
-                panic!(
-                    "Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'",
-                    self.index
-                );
-            }
-            if node_index != 0 {
-                panic!(
-                    "Incorrect index allocated for Front Temperature of of Surface '{}'",
-                    self.index
-                );
-            }
-            // all Good here... return
-            temperature
-        } else {
-            panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
-        }
+        state[i].safe_get_value(SimulationStateElement::SurfaceNodeTemperature(self.index, 0, 123123.))
+
+        // if let SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, temperature) =
+        //     state[i]
+        // {
+        //     if surf_index != self.index {
+        //         panic!(
+        //             "Incorrect index allocated for Temperature of SurfaceNode of Surface '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     if node_index != 0 {
+        //         panic!(
+        //             "Incorrect index allocated for Front Temperature of of Surface '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     // all Good here... return
+        //     temperature
+        // } else {
+        //     panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+        // }
     }
 
     fn fenestration_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
@@ -320,48 +477,49 @@ impl ThermalSurface {
 
         let i = surf.get_first_node_temperature_index().unwrap();
 
-        if let SimulationStateElement::FenestrationNodeTemperature(
-            surf_index,
-            node_index,
-            temperature,
-        ) = state[i]
-        {
-            if surf_index != self.index {
-                panic!(
-                    "Incorrect index allocated for Temperature of FenestrationNodeTemperature of Surface '{}'",
-                    self.index
-                );
-            }
-            if node_index != 0 {
-                panic!(
-                    "Incorrect index allocated for Front Temperature of of Fenestration '{}'",
-                    self.index
-                );
-            }
-            // all Good here... return
-            temperature
-        } else {
-            panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
-        }
+        state[i].safe_get_value(SimulationStateElement::FenestrationNodeTemperature(self.index, 0, 123123.))
+        // if let SimulationStateElement::FenestrationNodeTemperature(
+        //     surf_index,
+        //     node_index,
+        //     temperature,
+        // ) = state[i]
+        // {
+        //     if surf_index != self.index {
+        //         panic!(
+        //             "Incorrect index allocated for Temperature of FenestrationNodeTemperature of Surface '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     if node_index != 0 {
+        //         panic!(
+        //             "Incorrect index allocated for Front Temperature of of Fenestration '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     // all Good here... return
+        //     temperature
+        // } else {
+        //     panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
+        // }
     }
 
-    /// Gets the Front temperature
-    pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        if self.is_fenestration {
-            self.fenestration_front_temperature(building, state)
-        } else {
-            self.surface_front_temperature(building, state)
-        }
-    }
+    // /// Gets the Front temperature
+    // pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    //     if self.is_fenestration {
+    //         self.fenestration_front_temperature(building, state)
+    //     } else {
+    //         self.surface_front_temperature(building, state)
+    //     }
+    // }
 
-    /// Gets the Back temperature
-    pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        if self.is_fenestration {
-            self.fenestration_back_temperature(building, state)
-        } else {
-            self.surface_back_temperature(building, state)
-        }
-    }
+    // /// Gets the Back temperature
+    // pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    //     if self.is_fenestration {
+    //         self.fenestration_back_temperature(building, state)
+    //     } else {
+    //         self.surface_back_temperature(building, state)
+    //     }
+    // }
 
     /// Gets the Back temperature of a surface
     fn surface_back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
@@ -369,29 +527,30 @@ impl ThermalSurface {
 
         let i = surf.get_last_node_temperature_index().unwrap();
 
-        if let SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, temperature) =
-            state[i]
-        {
-            if surf_index != self.index {
-                panic!(
-                    "Incorrect index allocated for Back Temperature of SurfaceNode of Surface '{}'",
-                    self.index
-                );
-            }
-            if node_index != self.n_nodes - 1 {
-                panic!(
-                    "Incorrect index allocated for Back Temperature of Surface '{}' ({})... expected {}, found {}",
-                    self.index,
-                    if self.is_fenestration {"fenestration"}else{"non-fenestration"},
-                    self.n_nodes - 1,
-                    node_index
-                );
-            }
-            // all Good here... return
-            temperature
-        } else {
-            panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
-        }
+        state[i].safe_get_value(SimulationStateElement::SurfaceNodeTemperature(self.index, self.n_nodes - 1, 123.123))
+        // if let SimulationStateElement::SurfaceNodeTemperature(surf_index, node_index, temperature) =
+        //     state[i]
+        // {
+        //     if surf_index != self.index {
+        //         panic!(
+        //             "Incorrect index allocated for Back Temperature of SurfaceNode of Surface '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     if node_index != self.n_nodes - 1 {
+        //         panic!(
+        //             "Incorrect index allocated for Back Temperature of Surface '{}' ({})... expected {}, found {}",
+        //             self.index,
+        //             if self.is_fenestration {"fenestration"}else{"non-fenestration"},
+        //             self.n_nodes - 1,
+        //             node_index
+        //         );
+        //     }
+        //     // all Good here... return
+        //     temperature
+        // } else {
+        //     panic!("Incorrect StateElement kind allocated for Temperature of SurfaceNode of Surface '{}'", self.index);
+        // }
     }
 
     /// Gets the Back temperature of a surface
@@ -399,48 +558,49 @@ impl ThermalSurface {
         let surf = building.get_fenestration(self.surface_index).unwrap();
 
         let i = surf.get_last_node_temperature_index().unwrap();
+        state[i].safe_get_value(SimulationStateElement::FenestrationNodeTemperature(self.index, self.n_nodes - 1, 123.123))
 
-        if let SimulationStateElement::FenestrationNodeTemperature(
-            surf_index,
-            node_index,
-            temperature,
-        ) = state[i]
-        {
-            if surf_index != self.index {
-                panic!(
-                    "Incorrect index allocated for Back Temperature of FenestrationNodeTemperature of Fenestration '{}'",
-                    self.index
-                );
-            }
-            if node_index != self.n_nodes - 1 {
-                panic!(
-                    "Incorrect index allocated for Back Temperature of Fenestration '{}' ({})... expected {}, found {}",
-                    self.index,
-                    if self.is_fenestration {"fenestration"}else{"non-fenestration"},
-                    self.n_nodes - 1,
-                    node_index
-                );
-            }
-            // all Good here... return
-            temperature
-        } else {
-            panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
-        }
+        // if let SimulationStateElement::FenestrationNodeTemperature(
+        //     surf_index,
+        //     node_index,
+        //     temperature,
+        // ) = state[i]
+        // {
+        //     if surf_index != self.index {
+        //         panic!(
+        //             "Incorrect index allocated for Back Temperature of FenestrationNodeTemperature of Fenestration '{}'",
+        //             self.index
+        //         );
+        //     }
+        //     if node_index != self.n_nodes - 1 {
+        //         panic!(
+        //             "Incorrect index allocated for Back Temperature of Fenestration '{}' ({})... expected {}, found {}",
+        //             self.index,
+        //             if self.is_fenestration {"fenestration"}else{"non-fenestration"},
+        //             self.n_nodes - 1,
+        //             node_index
+        //         );
+        //     }
+        //     // all Good here... return
+        //     temperature
+        // } else {
+        //     panic!("Incorrect StateElement kind allocated for Temperature of FenestrationNodeTemperature of Fenestration '{}'", self.index);
+        // }
     }
 
-    /// Sets the node temperatures in the state
-    fn set_node_temperatures(
-        &self,
-        building: &Building,
-        state: &mut SimulationState,
-        matrix: &Matrix,
-    ) {
-        if self.is_fenestration {
-            self.set_fenestration_node_temperatures(building, state, matrix)
-        } else {
-            self.set_surface_node_temperatures(building, state, matrix)
-        }
-    }
+    // Sets the node temperatures in the state
+    // fn set_node_temperatures(
+    //     &self,
+    //     building: &Building,
+    //     state: &mut SimulationState,
+    //     matrix: &Matrix,
+    // ) {
+    //     if self.is_fenestration {
+    //         self.set_fenestration_node_temperatures(building, state, matrix)
+    //     } else {
+    //         self.set_surface_node_temperatures(building, state, matrix)
+    //     }
+    // }
 
     fn set_surface_node_temperatures(
         &self,
@@ -482,13 +642,13 @@ impl ThermalSurface {
 
     /// Retrieves the state of the Surface as a Matrix
     /// object.
-    pub fn get_node_temperatures(&self, building: &Building, state: &SimulationState) -> Matrix {
-        if self.is_fenestration {
-            self.get_fenestration_node_temperatures(building, state)
-        } else {
-            self.get_surface_node_temperatures(building, state)
-        }
-    }
+    // pub fn get_node_temperatures(&self, building: &Building, state: &SimulationState) -> Matrix {
+    //     if self.is_fenestration {
+    //         self.get_fenestration_node_temperatures(building, state)
+    //     } else {
+    //         self.get_surface_node_temperatures(building, state)
+    //     }
+    // }
 
     fn get_fenestration_node_temperatures(
         &self,
@@ -538,78 +698,9 @@ impl ThermalSurface {
         ret
     }
 
-    /// Marches one timestep. Returns front and back heat flow    
-    pub fn march(
-        &self,
-        building: &Building,
-        state: &mut SimulationState,
-        t_front: f64,
-        t_back: f64,
-    ) -> (f64, f64) {
-        let mut temperatures = self.get_node_temperatures(building, state);
+    
 
-        // println!("T front = {} | T back = {} ", t_front, t_back);
-        // println!(" OLD TEMPS = {}", temperatures);
-
-        if self.massive {
-            // Update temperatures... T_i+1 = Ti + K_prime*Ti + {t_front/full_rs_front/C_i ... 0,0,0... t_back/full_rs_back/C_o}
-            //                                     ^^^^^^^^^                    ^^^^^^^^^^^^
-            //                        lets call this vector 'a'         These are the F components
-            let mut a = self.k_prime.from_prod_n_diag(&temperatures, 3).unwrap(); // k_prime is tri-diagonal
-                                                                                  // ... 'a' should be a vector
-
-            // println!(" A_before = {}", a);
-
-            // Let's add the F components
-            let old_value = a.get(0, 0).unwrap();
-            a.set(0, 0, old_value + t_front / self.full_rs_front / self.c_i)
-                .unwrap();
-
-            let old_value = a.get(self.n_nodes - 1, 0).unwrap();
-            a.set(
-                self.n_nodes - 1,
-                0,
-                old_value + t_back / self.full_rs_back / self.c_o,
-            )
-            .unwrap();
-
-            //println!(" A_after = {}", a);
-
-            // Let's add a to the temperatures.
-            temperatures.add_to_this(&a).unwrap();
-        } else {
-            // full_rs_front is, indeed, the whole R
-            let q = (t_back - t_front) / self.full_rs_front;
-
-            let ts_front = t_front + q * self.rs_front;
-            let ts_back = t_back - q * self.rs_back;
-
-            temperatures.set(0, 0, ts_front).unwrap();
-            temperatures.set(self.n_nodes - 1, 0, ts_back).unwrap();
-        }
-        // println!(" Temperatures_after = {}", temperatures);
-        // Set state
-        self.set_node_temperatures(building, state, &temperatures);
-
-        // return
-        self.calc_heat_flow(building, state, t_front, t_back)
-    }
-
-    pub fn set_front_boundary(&mut self, b: Boundary) {
-        self.front_boundary = b;
-    }
-
-    pub fn set_back_boundary(&mut self, b: Boundary) {
-        self.back_boundary = b;
-    }
-
-    pub fn front_boundary(&self) -> Boundary {
-        self.front_boundary
-    }
-
-    pub fn back_boundary(&self) -> Boundary {
-        self.back_boundary
-    }
+    
 } // END OF SURFACE IMPL
 
 /***********/
@@ -814,14 +905,14 @@ mod testing {
         let dt = main_dt / n_subdivisions as f64;
         let mut state: SimulationState = SimulationState::new();
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
+            ThermalSurface::new_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
 
         let (rs_front, rs_back) = calc_convection_coefficients(&surface);
-        assert!(ts.massive);
-        assert_eq!(ts.n_nodes, 9);
-        assert_eq!(ts.rs_front, rs_front);
-        assert_eq!(ts.rs_back, rs_back);
-        assert_eq!(ts.area, 4.0);
+        assert!(ts.data().massive);
+        assert_eq!(ts.data().n_nodes, 9);
+        assert_eq!(ts.data().rs_front, rs_front);
+        assert_eq!(ts.data().rs_back, rs_back);
+        assert_eq!(ts.data().area, 4.0);
     }
 
     #[test]
@@ -1771,8 +1862,8 @@ mod testing {
         let dt = main_dt / n_subdivisions as f64;
         let mut state: SimulationState = SimulationState::new();
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
-        assert!(ts.massive);
+            ThermalSurface::new_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
+        assert!(ts.data().massive);
 
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
@@ -1781,13 +1872,13 @@ mod testing {
         let temperatures = ts.get_node_temperatures(&building, &state);
 
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.data().rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -1844,23 +1935,23 @@ mod testing {
         let dt = main_dt / n_subdivisions as f64;
         let mut state: SimulationState = SimulationState::new();
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
+            ThermalSurface::new_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
 
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
 
         // TEST
 
-        assert!(!ts.massive);
+        assert!(!ts.data().massive);
         let temperatures = ts.get_node_temperatures(&building, &state);
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.data().rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -1926,23 +2017,23 @@ mod testing {
         let dt = main_dt / n_subdivisions as f64;
         let mut state: SimulationState = SimulationState::new();
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
+            ThermalSurface::new_surface(&building, &mut state, &surface, dt, &nodes, 0).unwrap();
 
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
 
         // TEST
 
-        assert!(ts.massive);
+        assert!(ts.data().massive);
         let temperatures = ts.get_node_temperatures(&building, &state);
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-        assert_eq!(22.0, temperatures.get(ts.n_nodes - 1, 0).unwrap());
+        assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.full_rs_front;
+        let q_in_ref = (22.0 - t_front) / ts.data().full_rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.full_rs_back;
+        let q_out_ref = (22.0 - t_back) / ts.data().full_rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -1996,8 +2087,8 @@ mod testing {
 
         let mut state: SimulationState = SimulationState::new();
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, surface, dt, &nodes, 0).unwrap();
-        assert!(ts.massive);
+            ThermalSurface::new_surface(&building, &mut state, surface, dt, &nodes, 0).unwrap();
+        assert!(ts.data().massive);
 
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
@@ -2029,7 +2120,7 @@ mod testing {
 
         // all nodes should be at 10.0 now.
         let temperatures = ts.get_node_temperatures(&building, &state);
-        for i in 0..ts.n_nodes {
+        for i in 0..ts.data().n_nodes {
             let t = temperatures.get(i, 0).unwrap();
             assert!((t - 10.0).abs() < 1E-5);
         }
@@ -2066,7 +2157,7 @@ mod testing {
 
         let r = r_value(&building, c).unwrap();
 
-        let exp_q = (30.0 - 10.0) / (r + ts.rs_front + ts.rs_back);
+        let exp_q = (30.0 - 10.0) / (r + ts.data().rs_front + ts.data().rs_back);
         assert!((exp_q - final_qin).abs() < 1E-4);
         assert!((exp_q + final_qout).abs() < 1E-4);
     }
@@ -2121,8 +2212,8 @@ mod testing {
         let dt = main_dt / n_subdivisions as f64;
 
         let ts =
-            ThermalSurface::from_surface(&building, &mut state, surface, dt, &nodes, 0).unwrap();
-        assert!(!ts.massive);
+            ThermalSurface::new_surface(&building, &mut state, surface, dt, &nodes, 0).unwrap();
+        assert!(!ts.data().massive);
 
         // MAP THE STATE
         building.map_simulation_state(&mut state).unwrap();
@@ -2153,7 +2244,7 @@ mod testing {
         assert!(q_out < 0.0);
         assert!((q_in + q_out).abs() < 1E-6);
 
-        let exp_q = (30.0 - 10.0) / (r_value(&building, c).unwrap() + ts.rs_front + ts.rs_back);
+        let exp_q = (30.0 - 10.0) / (r_value(&building, c).unwrap() + ts.data().rs_front + ts.data().rs_back);
         assert!((exp_q - q_in).abs() < 1E-4);
         assert!((exp_q + q_out).abs() < 1E-4);
     }
