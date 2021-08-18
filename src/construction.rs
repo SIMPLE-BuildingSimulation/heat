@@ -1,33 +1,13 @@
 #![allow(clippy::too_many_arguments)]
+use std::rc::Rc;
 
 use matrix::Matrix;
 
 //use building_model::construction::Construction;
-use building_model::building::Building;
+// use building_model::building::Building;
 use building_model::construction::Construction;
 
-/// Calculates the R-value of the Construction (not including surface coefficients).
-/// # Parameters:
-/// * materials: A reference to the vector containing the materials from which this object was built from
-pub fn r_value(building: &Building, construction: &Construction) -> Result<f64, String> {
-    //let construction = building.get_construction(construction_index).unwrap();
 
-    //let materials = building.get_materials();
-    //let substances = building.get_substances();
-
-    let mut r = 0.0;
-
-    for material_index in construction.layers() {
-        let material = building.get_material(*material_index).unwrap();
-        let substance_index = material.get_substance_index().unwrap();
-        let substance = building.get_substance(substance_index).unwrap();
-        let lambda = substance.thermal_conductivity().unwrap();
-
-        r += material.thickness().unwrap() / lambda;
-    }
-
-    Ok(r)
-}
 
 /// Given a Maximum thickness (max_dx) and a minimum timestep (max_dt), this function
 /// will find an arguibly good combination of dt and number of elements in each
@@ -39,16 +19,16 @@ pub fn r_value(building: &Building, construction: &Construction) -> Result<f64, 
 /// This often works, but I apparently did not get the stability/accuracy thing right.
 /// For now, try to use small tsteps
 pub fn discretize_construction(
-    building: &Building,
-    c: &Construction,
+    /*building: &Building,*/
+    c: &Rc<Construction>,
     main_dt: f64,
     max_dx: f64,
     min_dt: f64,
 ) -> (usize, Vec<usize>) {
     // I could only think of how to make this recursively... so I did this.
     fn aux(
-        building: &Building,
-        c: &Construction,
+        /*building: &Building,*/
+        c: &Rc<Construction>,
         main_dt: f64,
         n: usize,
         max_dx: f64,
@@ -62,16 +42,18 @@ pub fn discretize_construction(
         // meaning, we need to satisfy dx >= sqrt(2 * alpha * dt)
 
         // So, for each layer
-        let mut n_elements: Vec<usize> = Vec::with_capacity(c.n_layers());
+        let n_layers = c.layers.len();
+        let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
 
-        for n_layer in 0..c.n_layers() {
-            let material_index = c.get_layer_index(n_layer).unwrap();
-            let material = building.get_material(material_index).unwrap();
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
+        for n_layer in 0..n_layers {
+            // let material_index = c.get_layer_index(n_layer).unwrap();
+            let material = &c.layers[n_layer];
+            // let substance_index = material.get_substance_index().unwrap();
+            // let substance = building.get_substance(substance_index).unwrap();
+            let substance = &material.substance;
 
             // Calculate the optimum_dx
-            let thickness = material.thickness().unwrap();
+            let thickness = material.thickness;
             let alpha = substance.thermal_diffusivity().unwrap();
             let optimum_dx = (safety * 2.0 * alpha * dt).sqrt();
 
@@ -95,7 +77,7 @@ pub fn discretize_construction(
                 let next_dt = main_dt / ((n + 1) as f64);
                 if next_dt > min_dt {
                     // If there is room for that, do it.
-                    return aux(building, c, main_dt, n + 1, max_dx, min_dt);
+                    return aux(/*building,*/ c, main_dt, n + 1, max_dx, min_dt);
                 } else {
                     // otherwise, mark this layer as no-mass
                     n_elements.push(0);
@@ -112,13 +94,13 @@ pub fn discretize_construction(
         #[cfg(debug_assertions)]
         {
             for (n_layer, _) in n_elements.iter().enumerate() {
-                let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = building.get_material(material_index).unwrap();
-                let substance_index = material.get_substance_index().unwrap();
-                let substance = building.get_substance(substance_index).unwrap();
+                // let material_index = c.get_layer_index(n_layer).unwrap();
+                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+                // let substance_index = material.get_substance_index().unwrap();
+                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
 
                 // Calculate the optimum_dx
-                let thickness = material.thickness().unwrap();
+                let thickness = material.thickness;
                 let alpha = substance.thermal_diffusivity().unwrap();
 
                 let dt = main_dt / n as f64;
@@ -131,7 +113,7 @@ pub fn discretize_construction(
         (n, n_elements)
     }
 
-    aux(building, c, main_dt, 1, max_dx, min_dt)
+    aux(/*building,*/ c, main_dt, 1, max_dx, min_dt)
 }
 
 /// In a discretization scheme, this function finds the
@@ -195,7 +177,7 @@ pub fn get_first_and_last_massive_elements(n_elements: &[usize]) -> Result<(usiz
 pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     // We need somethig to process!
     if n_elements.is_empty() {
-        return Err("Wrong discretization scheme... no elements considered".to_string());
+        return Err("Wrong discretization scheme... it contains no elements".to_string());
     }
 
     // Border case: Only one element.
@@ -313,8 +295,8 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 /// * c_i: The thermal mass of the most interior node, divided by the timestep
 /// * c_o: The thermal mass of the most exterior node, divided by the timestep
 pub fn build_thermal_network(
-    building: &Building,
-    c: &Construction,
+    /*building: &Building,*/
+    c: &Rc<Construction>,
     dt: f64,
     n_elements: &[usize],
     rs_front: f64,
@@ -326,8 +308,8 @@ pub fn build_thermal_network(
     c_o: &mut f64,
 ) -> Result<(), String> {
     // check coherence in input data
-    if n_elements.len() != c.n_layers() {
-        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.n_layers(),n_elements.len());
+    if n_elements.len() != c.layers.len() {
+        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.layers.len(),n_elements.len());
         return Err(err);
     }
 
@@ -361,7 +343,7 @@ pub fn build_thermal_network(
     if first_massive == 0 && last_massive == 0 {
         // no massive layers at all in construction.
         // Simple case... return Zero mass and an R value of 1/R
-        let r = r_value(building, c).unwrap() + rs_front + rs_back;
+        let r = /*r_value(building, c).unwrap()*/c.r_value().unwrap() + rs_front + rs_back;
         *full_rs_front = r;
         *full_rs_back = r;
         k_prime.set(0, 0, -1.0 / r).unwrap();
@@ -377,24 +359,24 @@ pub fn build_thermal_network(
         // Everything before the first massive layer
         *full_rs_front = rs_front;
         for i in 0..first_massive {
-            let material_index = c.get_layer_index(i).unwrap();
-            let material = building.get_material(material_index).unwrap();
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
+            // let material_index = c.get_layer_index(i).unwrap();
+            let material = &c.layers[i];//building.get_material(material_index).unwrap();
+            // let substance_index = material.get_substance_index().unwrap();
+            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
 
             *full_rs_front +=
-                material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
+                material.thickness/*().unwrap()*/ / substance.thermal_conductivity().unwrap();
         }
 
         // Everything after the last massive layer
         *full_rs_back = rs_back;
-        for i in last_massive..c.n_layers() {
-            let material_index = c.get_layer_index(i).unwrap();
-            let material = building.get_material(material_index).unwrap();
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
+        for i in last_massive..c.layers.len() {
+            // let material_index = c.get_layer_index(i).unwrap();
+            let material = &c.layers[i];//building.get_material(material_index).unwrap();
+            // let substance_index = material.get_substance_index().unwrap();
+            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
             *full_rs_back +=
-                material.thickness().unwrap() / substance.thermal_conductivity().unwrap();
+                material.thickness/*().unwrap()*/ / substance.thermal_conductivity().unwrap();
         }
     }
 
@@ -403,22 +385,22 @@ pub fn build_thermal_network(
     let mut n_layer: usize = first_massive;
 
     while n_layer < last_massive {
-        let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = building.get_material(material_index).unwrap();
+        // let material_index = c.get_layer_index(n_layer).unwrap();
+        let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
 
         let m = n_elements[n_layer];
         if m == 0 {
-            // nomass material
+            // no-mass material
             // add up all the R of the no-mass layers that
             // are together
             let mut r = 0.0; // if the material is no mass, then the first value
             while n_layer < last_massive && n_elements[n_layer] == 0 {
-                let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = building.get_material(material_index).unwrap();
-                let dx = material.thickness().unwrap();
+                // let material_index = c.get_layer_index(n_layer).unwrap();
+                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+                let dx = material.thickness;//().unwrap();
 
-                let substance_index = material.get_substance_index().unwrap();
-                let substance = building.get_substance(substance_index).unwrap();
+                // let substance_index = material.get_substance_index().unwrap();
+                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
                 let k = substance.thermal_conductivity().unwrap();
 
                 r += dx / k;
@@ -444,11 +426,11 @@ pub fn build_thermal_network(
             node += 1;
         } else {
             // calc U value
-            let substance_index = material.get_substance_index().unwrap();
-            let substance = building.get_substance(substance_index).unwrap();
+            // let substance_index = material.get_substance_index().unwrap();
+            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
 
             let k = substance.thermal_conductivity().unwrap();
-            let dx = material.thickness().unwrap() / (m as f64);
+            let dx = material.thickness/*().unwrap()*/ / (m as f64);
             let u: f64 = k / dx;
 
             for _ in 0..m {
@@ -496,9 +478,9 @@ pub fn build_thermal_network(
     let mut left_side: Vec<f64> = vec![0.0; all_nodes];
     node = 0;
 
-    for n_layer in 0..c.n_layers() {
-        let layer_index = c.get_layer_index(n_layer).unwrap();
-        let material = building.get_material(layer_index).unwrap();
+    for n_layer in 0..c.layers.len() {
+        // let layer_index = c.get_layer_index(n_layer).unwrap();
+        let material = &c.layers[n_layer];//building.get_material(layer_index).unwrap();
 
         let m = n_elements[n_layer];
 
@@ -506,12 +488,12 @@ pub fn build_thermal_network(
             // if has mass
             for _ in 0..m {
                 // Calc mass
-                let substance_index = material.get_substance_index().unwrap();
-                let substance = building.get_substance(substance_index).unwrap();
+                // let substance_index = material.get_substance_index().unwrap();
+                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
 
                 let rho = substance.density().unwrap();
                 let cp = substance.specific_heat_capacity().unwrap();
-                let dx = material.thickness().unwrap() / (m as f64);
+                let dx = material.thickness/*().unwrap()*/ / (m as f64);
                 let m = rho * cp * dx / dt;
 
                 // Nodes are in the joints between

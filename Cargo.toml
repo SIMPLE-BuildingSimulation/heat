@@ -1,5 +1,5 @@
 [package]
-name = "finite_difference_thermal_model"
+name = "thermal"
 version = "0.1.0"
 authors = ["German Molina <germolinal@gmail.com>"]
 edition = "2018"
@@ -10,7 +10,6 @@ edition = "2018"
 calendar = { path = "../../calendar" }
 weather = {path = "../../weather"}
 building_model = {path = "../../building_model"}
-simulation_state = { path = "../../simulation_state" }
 communication_protocols = { path = "../../communication_protocols" }
 geometry3d = {path = "../../geometry3d"}
 matrix = {path = "../../matrix"}

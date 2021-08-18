@@ -3,16 +3,16 @@ use building_model::building::Building;
 use calendar::date::Date;
 use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
-use simulation_state::simulation_state::SimulationState;
+use building_model::simulation_state::SimulationState;
 use weather::Weather;
 
 use crate::zone::ThermalZone;
 use building_model::boundary::Boundary;
-use building_model::object_trait::ObjectTrait;
 
 use crate::construction::discretize_construction;
 
 pub struct ThermalModel {
+
     /// All the Thermal Zones in the model
     zones: Vec<ThermalZone>,
 
@@ -21,6 +21,7 @@ pub struct ThermalModel {
 
     /// All the Fenestrations in the model
     fenestrations: Vec<ThermalSurface>,
+
     /// The number of steps that this model needs
     /// to take in order to advance one step of the main
     /// simulation.
@@ -32,7 +33,7 @@ pub struct ThermalModel {
 
 impl ErrorHandling for ThermalModel {
     fn module_name() -> &'static str {
-        "Finite Difference Thermal Model"
+        "Thermal model"
     }
 }
 
@@ -67,7 +68,7 @@ impl SimulationModel for ThermalModel {
         let mut all_n_elements: Vec<Vec<usize>> = Vec::with_capacity(building.constructions.len());
         for construction in &building.constructions {
             let (mut found_n_subdivisions, n_elements) =
-                discretize_construction(building, construction, main_dt, max_dx, min_dt);
+                discretize_construction(/*building,*/ construction, main_dt, max_dx, min_dt);
             found_n_subdivisions *= n_subdivisions;
             if found_n_subdivisions > n_subdivisions {
                 n_subdivisions = found_n_subdivisions;
@@ -93,16 +94,16 @@ impl SimulationModel for ThermalModel {
         // For the Thermal Model
         let mut thermal_surfaces: Vec<ThermalSurface> = Vec::with_capacity(building.surfaces.len());
 
-        for (i, surface) in building.surfaces.iter().enumerate() {            
-            let construction_index = surface.get_construction_index().unwrap();
+        for (i, surface) in building.surfaces.iter().enumerate() {                        
+            let construction_index = surface.construction.index().unwrap();
 
             let thermal_surface = match ThermalSurface::new_surface(
-                building,
+                // building,
                 state,
                 surface,
                 dt,
                 &all_n_elements[construction_index],
-                surface.index(),
+                surface.index().unwrap(),
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -111,22 +112,27 @@ impl SimulationModel for ThermalModel {
             thermal_surfaces.push(thermal_surface);
 
             // Match surface and zones
-            thermal_surfaces[i].set_front_boundary(*surface.front_boundary());
-            thermal_surfaces[i].set_back_boundary(*surface.back_boundary());
+            if let Ok(b) = surface.front_boundary(){
+                thermal_surfaces[i].set_front_boundary(b);
+            }
+            if let Ok(b)=surface.back_boundary(){
+                thermal_surfaces[i].set_back_boundary(b);
+            }
+                
         }
         
         let mut thermal_fenestrations: Vec<ThermalSurface> =
             Vec::with_capacity(building.fenestrations.len());
         for (i, fenestration) in building.fenestrations.iter().enumerate() {
-            let construction_index = fenestration.get_construction_index().unwrap();
+            let construction_index = fenestration.construction.index().unwrap();
 
             let thermal_surface = match ThermalSurface::new_fenestration(
-                building,
+                // building,
                 state,
                 fenestration,
                 dt,
                 &all_n_elements[construction_index],
-                fenestration.index(),
+                fenestration.index().unwrap(),
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -135,8 +141,12 @@ impl SimulationModel for ThermalModel {
             thermal_fenestrations.push(thermal_surface);
 
             // Match surface and zones
-            thermal_fenestrations[i].set_front_boundary(*fenestration.front_boundary());
-            thermal_fenestrations[i].set_back_boundary(*fenestration.back_boundary());
+            if let Ok(b) = fenestration.front_boundary(){
+                thermal_fenestrations[i].set_front_boundary(b);
+            }
+            if let Ok(b) = fenestration.back_boundary(){
+                thermal_fenestrations[i].set_back_boundary(b);
+            }
         }
 
         Ok(ThermalModel {
@@ -183,14 +193,18 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
-                    Boundary::Ground => unimplemented!(),
-                    Boundary::None => t_out,
+                    Some(b)=> match b {
+                            Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
+                            Boundary::Ground => unimplemented!(),
+                    },                                
+                    None => t_out    
                 };
                 let t_back = match s.back_boundary() {
-                    Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
-                    Boundary::Ground => unimplemented!(),
-                    Boundary::None => t_out,
+                    Some(b)=> match b {
+                        Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
+                        Boundary::Ground => unimplemented!(),
+                    },
+                    None => t_out,                    
                 };
 
                 // Update temperatures
@@ -204,14 +218,18 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Boundary::Space(z_index) => t_current[z_index],
-                    Boundary::Ground => unimplemented!(),
-                    Boundary::None => t_out,
+                    Some(b)=>match b{
+                        Boundary::Space(z_index) => t_current[z_index],
+                        Boundary::Ground => unimplemented!(),
+                    },
+                    None => t_out                    
                 };
                 let t_back = match s.back_boundary() {
-                    Boundary::Space(z_index) => t_current[z_index],
-                    Boundary::Ground => unimplemented!(),
-                    Boundary::None => t_out,
+                    Some(b)=>match b{
+                        Boundary::Space(z_index) => t_current[z_index],
+                        Boundary::Ground => unimplemented!(),
+                    },
+                    None => t_out                    
                 };
 
                 // Update temperatures
@@ -350,7 +368,7 @@ impl ThermalModel {
             for surface in surfaces.iter() {
                 let ai = surface.area();
                 // if front leads to a Zone
-                if let Boundary::Space(z_index) = surface.front_boundary() {
+                if let Some(Boundary::Space(z_index)) = surface.front_boundary() {
                     let hi = 1. / surface.rs_front();
                     let temp = surface.front_temperature(building, state);
                     a[z_index] += hi * ai * temp;
@@ -358,7 +376,7 @@ impl ThermalModel {
                 }
 
                 // if back leads to a Zone
-                if let Boundary::Space(z_index) = surface.back_boundary() {
+                if let Some(Boundary::Space(z_index)) = surface.back_boundary() {
                     let hi = 1. / surface.rs_back();
                     let temp = surface.back_temperature(building, state);
                     a[z_index] += hi * ai * temp;
@@ -456,7 +474,7 @@ impl ThermalModel {
 #[cfg(test)]
 mod testing {
     use super::*;
-    use crate::construction::*;
+    // use crate::construction::*;
 
     use calendar::date::Date;
     use schedule::constant::ScheduleConstant;
@@ -520,10 +538,10 @@ mod testing {
         building.map_simulation_state(&mut state).unwrap();
 
         /* START THE TEST */
-        let construction = building.get_construction(0).unwrap();
+        let construction = &building.constructions[0];
         assert!(!model.surfaces[0].is_massive());
 
-        let r = r_value(&building, construction).unwrap()
+        let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
 
@@ -559,9 +577,8 @@ mod testing {
             //assert!((exp - found).abs() < 0.05);
             let max_error = 0.7;
             // println!("{},{},{}", time,exp, found);
-            if (exp - found).abs() > max_error {
-                assert!((exp - found).abs() < max_error);
-            }
+            assert!((exp - found).abs() < max_error);
+            
         }
     }
     /// END OF TEST_MODEL_MARCH
@@ -590,10 +607,10 @@ mod testing {
         building.map_simulation_state(&mut state).unwrap();
 
         // START TESTING.
-        let construction = building.get_construction(0).unwrap();
+        let construction = &building.constructions[0];
         assert!(!model.surfaces[0].is_massive());
 
-        let r = r_value(&building, construction).unwrap()
+        let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
         let u = 1. / r;
@@ -615,7 +632,7 @@ mod testing {
         };
 
         // March:
-        for i in 0..30 {
+        for i in 0..80 {
             let time = (i as f64) * dt;
             date.add_seconds(time);
 
@@ -627,17 +644,16 @@ mod testing {
             // Get exact solution.
             let exp = t_s + (t_o - t_s) * (-time * u * area / zone_mass).exp();
             let max_error = 0.7;
-            println!("exp: {} vs found: {}", exp, found);
-            if (exp - found).abs() > max_error {
-                assert!((exp - found).abs() < max_error);
-            }
+            println!("{}, {}", exp, found);
+            assert!((exp - found).abs() < max_error);
+            
         }
     }
 
     #[test]
     fn test_model_march_with_window_and_heater() {
         let mut state = SimulationState::new();
-        let heating_power = 500.;
+        let heating_power = 100.;
         let mut building = get_single_zone_test_building(
             &mut state,
             &Options {
@@ -659,10 +675,10 @@ mod testing {
         building.map_simulation_state(&mut state).unwrap();
 
         // START TESTING.
-        let construction = building.get_construction(0).unwrap();
+        let construction = &building.constructions[0];
         assert!(!model.surfaces[0].is_massive());
 
-        let r = r_value(&building, construction).unwrap()
+        let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
         let u = 1. / r;
@@ -684,7 +700,7 @@ mod testing {
         };
 
         // March:
-        for i in 0..30 {
+        for i in 0..80 {
             let time = (i as f64) * dt;
             date.add_seconds(time);
 
@@ -698,11 +714,11 @@ mod testing {
                 + heating_power / (u * area)
                 + (t_o - t_s - heating_power / (u * area)) * (-time * (u * area) / zone_mass).exp();
 
-            let max_error = 0.5;
-            println!("exp: {} vs found: {}", exp, found);
-            if (exp - found).abs() > max_error {
-                //assert!((exp - found).abs() < max_error);
-            }
+            let max_error = 0.7;
+            // println!("exp: {} vs found: {}", exp, found);
+            println!("{}, {}", exp, found);
+            assert!((exp - found).abs() < max_error);
+            
         }
     }
 }
