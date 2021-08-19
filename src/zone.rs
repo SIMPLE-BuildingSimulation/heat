@@ -4,7 +4,7 @@ use gas_properties::air;
 use building_model::simulation_state::SimulationState;
 use building_model::simulation_state_element::SimulationStateElement;
 
-// use crate::heating_cooling::calc_cooling_heating_power;
+
 
 pub struct ThermalZone {
     /// The name of the zone
@@ -55,12 +55,12 @@ impl ThermalZone {
         }
     }
 
-    /// Calculates the amount of heating or cooling being delivered to the
-    /// thermal zone based on the Energy Consumption registered in the SimulationState    
-    pub fn calc_heating_cooling_power(&self, building: &Building, _state: &SimulationState) -> f64 {
-        let _space = &building.spaces[self.index];
+    // /// Calculates the amount of heating or cooling being delivered to the
+    // /// thermal zone based on the Energy Consumption registered in the SimulationState    
+    // pub fn calc_heating_cooling_power(&self, building: &Building, _state: &SimulationState) -> f64 {
+    //     let _space = &building.spaces[self.index];
 
-        0.0
+        // 0.0
         // match space.get_heating_cooling_state_index() {
         //     // Has a system... let's do something with it
         //     Some(i) => {
@@ -84,7 +84,7 @@ impl ThermalZone {
         //     // Does not have heating or cooling
         //     None => 0.0,
         // }
-    }
+    // }
 
     pub fn calc_lighting_power(&self, building: &Building, _state: &SimulationState) -> f64 {
         let _space = &building.spaces[self.index];
@@ -153,16 +153,14 @@ impl ThermalZone {
         self.volume * air_density * air_specific_heat
     }
 
+    /// Calculates the heat added to a [`ThermalZone`] by lightng, people and appliances
     pub fn get_current_internal_heat_loads(
         &self,
         building: &Building,
         state: &SimulationState,
     ) -> f64 {
-        // heating/cooling (not through air)
-        let heating_cooling = self.calc_heating_cooling_power(building, state);
-
-        // lighting
-        // Calculate lighting
+        
+        // lighting        
         let lighting = self.calc_lighting_power(building, state);
 
         // people
@@ -172,6 +170,6 @@ impl ThermalZone {
         let appliances = 0.;
 
         // return
-        lighting + people + appliances + heating_cooling
+        lighting + people + appliances 
     }
 }
