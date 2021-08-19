@@ -220,6 +220,192 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
+fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usize)->f64{
+    let mut full_rs_front = rs_front;
+    for i in 0..first_massive {
+        // let material_index = c.get_layer_index(i).unwrap();
+        let material = &c.layers[i];//building.get_material(material_index).unwrap();
+        // let substance_index = material.get_substance_index().unwrap();
+        let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+
+        full_rs_front += material.thickness / substance.thermal_conductivity().unwrap();
+    }
+    full_rs_front
+}
+
+fn calc_full_rs_back(c: &Rc<Construction>,rs_back: f64, last_massive: usize)->f64{
+    let mut full_rs_back = rs_back;
+    for i in last_massive..c.layers.len() {        
+        let material = &c.layers[i];        
+        let substance = &material.substance;
+        full_rs_back += material.thickness / substance.thermal_conductivity().unwrap();
+    }
+    full_rs_back
+}
+
+fn calc_c_matrix(
+    construction: &Rc<Construction>,
+    all_nodes: usize,
+    n_elements: &[usize],
+)->Vec<f64>{
+    let mut c_matrix: Vec<f64> = vec![0.0; all_nodes];
+    let mut node = 0;
+
+    for n_layer in 0..construction.layers.len() {
+        // let layer_index = c.get_layer_index(n_layer).unwrap();
+        let material = &construction.layers[n_layer];//building.get_material(layer_index).unwrap();
+
+        let m = n_elements[n_layer];
+
+        if m != 0 {
+            // if has mass
+            for _ in 0..m {
+                // Calc mass
+                // let substance_index = material.get_substance_index().unwrap();
+                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+
+                let rho = substance.density().unwrap();
+                let cp = substance.specific_heat_capacity().unwrap();
+                let dx = material.thickness / (m as f64);
+                let m = rho * cp * dx;// dt;
+
+                // Nodes are in the joints between
+                // finite elements... add half mass from each
+                c_matrix[node] += m / 2.0;
+                c_matrix[node + 1] += m / 2.0;
+
+                // advance node.
+                node += 1;
+            }
+        } else {
+            // else, they are zero already...
+            // still, we need to move forward one
+            // node.
+            if n_layer > 0 && n_elements[n_layer - 1] > 0 {
+                // Only do it if the previous
+                // layer was massive
+                node += 1;
+            }
+        }
+    }
+    c_matrix
+}
+
+fn calc_k_matrix(
+    c: &Rc<Construction>,
+    first_massive: usize,
+    last_massive: usize,
+    n_elements: &[usize],
+    rs_front: f64,
+    rs_back: f64,
+    all_nodes: usize,
+)->Matrix{
+    // initialize k_prime
+    let mut k = Matrix::new(0.0, all_nodes, all_nodes);
+        
+    let full_rs_front = calc_full_rs_front(c, rs_front, first_massive);
+    let full_rs_back = calc_full_rs_back(c, rs_back, last_massive);
+
+    
+    // Calculate what is in between the massive layers
+    let mut node: usize = 0;
+    let mut n_layer: usize = first_massive;
+
+    while n_layer < last_massive {
+        // let material_index = c.get_layer_index(n_layer).unwrap();
+        let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+
+        let m = n_elements[n_layer];
+        if m == 0 {
+            // no-mass material
+            // add up all the R of the no-mass layers that
+            // are together
+            let mut r = 0.0; // if the material is no mass, then the first value
+            while n_layer < last_massive && n_elements[n_layer] == 0 {
+                // let material_index = c.get_layer_index(n_layer).unwrap();
+                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+                let dx = material.thickness;//().unwrap();
+
+                // let substance_index = material.get_substance_index().unwrap();
+                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+                let k = substance.thermal_conductivity().unwrap();
+
+                r += dx / k;
+                n_layer += 1;
+            }
+
+            // update values
+            let u = 1. / r;
+            // top left
+            let old_value = k.get(node, node).unwrap();
+            k.set(node, node, old_value - u).unwrap();
+            // top right
+            let old_value = k.get(node, node + 1).unwrap();
+            k.set(node, node + 1, old_value + u).unwrap();
+            // bottom left
+            let old_value = k.get(node + 1, node).unwrap();
+            k.set(node + 1, node, old_value + u).unwrap();
+            // bottom right
+            let old_value = k.get(node + 1, node + 1).unwrap();
+            k.set(node + 1, node + 1, old_value - u).unwrap();
+
+            // Move one node ahead
+            node += 1;
+        } else {
+            // calc U value
+            // let substance_index = material.get_substance_index().unwrap();
+            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+
+            let lambda = substance.thermal_conductivity().unwrap();
+            let dx = material.thickness / (m as f64);
+            let u = lambda / dx;
+
+            for _ in 0..m {
+                // top left
+                let old_value = k.get(node, node).unwrap();
+                k.set(node, node, old_value - u).unwrap();
+                // top right
+                let old_value = k.get(node, node + 1).unwrap();
+                k.set(node, node + 1, old_value + u).unwrap();
+                // bottom left
+                let old_value = k.get(node + 1, node).unwrap();
+                k.set(node + 1, node, old_value + u).unwrap();
+                // bottom right
+                let old_value = k.get(node + 1, node + 1).unwrap();
+                k.set(node + 1, node + 1, old_value - u).unwrap();
+
+                // advance node.
+                node += 1;
+            }
+            n_layer += 1;
+        }
+    }
+
+    // ADD RSI AND RSO
+    // add r_si to first node
+    if full_rs_front > 0.0 {
+        let old_value = k.get(0, 0).unwrap();
+        k
+            .set(0, 0, old_value - 1.0 / full_rs_front)
+            .unwrap();
+    }
+
+    // rs_o to the last node
+    if full_rs_back > 0.0 {
+        let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();
+        k
+            .set(
+                all_nodes - 1,
+                all_nodes - 1,
+                old_value - 1.0 / full_rs_back,
+            )
+            .unwrap();
+    }
+    // return
+    k
+
+}
+
 /// Constructions are assumed to be a sandwich where zero or more massive
 /// layers are located between two non-mass layers. These non-mass layers will always
 /// include the interior and exterior film convections coefficients, respectively (which is
@@ -242,13 +428,13 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 /// The equation to solve is the following:
 ///
 /// ```math
-/// \overline{C}  \dot{T} + \overline{K}  T = q
+/// \overline{C}  \dot{T} - \overline{K}  T = q
 /// ```
 ///
 /// Where $`\overline{C}`$ and $`\overline{K}`$ are (more or less) matrices representing the
-/// thermal mass and resistance of each node, respectively; and where `T` and `q` are
+/// thermal mass and resistance of each node, respectively; and where $`T`$ and $`q`$ are
 /// vectors representing the Temperature and the heat flow into each node, respectively.
-/// $`\overline{C}`$ and $`\overline{K}`$ are the result of finite difference method.
+/// $`\overline{C}`$ and $`\overline{K}`$ are build through the finite difference method.
 ///
 /// This model also uses finite differences to march through time. When doing this,
 /// the previous equation can be represented as follows:
@@ -296,240 +482,78 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 /// * c_o: The thermal mass of the most exterior node, divided by the timestep
 pub fn build_thermal_network(
     /*building: &Building,*/
-    c: &Rc<Construction>,
+    construction: &Rc<Construction>,
+    first_massive: usize,
+    last_massive: usize,
     dt: f64,
+    all_nodes: usize,
     n_elements: &[usize],
     rs_front: f64,
     rs_back: f64,
-    k_prime: &mut Matrix,
+    given_k_prime: &mut Matrix,
     full_rs_front: &mut f64,
     full_rs_back: &mut f64,
     c_i: &mut f64,
     c_o: &mut f64,
-) -> Result<(), String> {
+) -> Result</*impl Fn(&Matrix, f64, f64)->Matrix*/(), String> {
+    
+    // if this happens, we are trying to build the 
+    // thermal network for a non-massive wall... Which
+    // does not make sense    
+    debug_assert!(first_massive != last_massive);
+    debug_assert_eq!(calc_n_total_nodes(&n_elements).unwrap(), all_nodes);
+
     // check coherence in input data
-    if n_elements.len() != c.layers.len() {
-        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",c.layers.len(),n_elements.len());
+    if n_elements.len() != construction.layers.len() {
+        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",construction.layers.len(),n_elements.len());
         return Err(err);
     }
 
-    // Calculate number of nodes
-    let all_nodes = calc_n_total_nodes(&n_elements)?;
+    // These two statements happen twice... in calc_K() as well.
+    *full_rs_front = calc_full_rs_front(construction, rs_front, first_massive);
+    *full_rs_back = calc_full_rs_back(construction, rs_back, last_massive);
 
-    // Check the size of k_prime
-    let (rows, cols) = k_prime.size();
-    if rows != all_nodes || cols != all_nodes {
-        let err = format!(
-            "Unexpected size of given matrix - found ({},{}) and was expecting ({},{})",
-            rows, cols, all_nodes, all_nodes
-        );
-        return Err(err);
-    }
+    // initialize k_prime as K... we will modify it later
+    // K_prime = dt*inv(C)*K
+    let mut k_prime = calc_k_matrix(
+        construction, 
+        first_massive,
+        last_massive,
+        n_elements,
+        rs_front,
+        rs_back,
+        all_nodes
+    );
 
-    #[cfg(debug_assertions)]
-    {
-        let (nrows, ncols) = k_prime.size();
-        for row in 0..nrows {
-            for col in 0..ncols {
-                debug_assert!(k_prime.get(row, col).unwrap().abs() < f64::EPSILON);
-            }
-        }
-    }
-
-    // NOW, PROCESS
-    ////////////////
-    let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements)?;
-
-    if first_massive == 0 && last_massive == 0 {
-        // no massive layers at all in construction.
-        // Simple case... return Zero mass and an R value of 1/R
-        let r = /*r_value(building, c).unwrap()*/c.r_value().unwrap() + rs_front + rs_back;
-        *full_rs_front = r;
-        *full_rs_back = r;
-        k_prime.set(0, 0, -1.0 / r).unwrap();
-        k_prime.set(0, 1, 1.0 / r).unwrap();
-        k_prime.set(1, 0, 1.0 / r).unwrap();
-        k_prime.set(1, 1, -1.0 / r).unwrap();
-        *c_i = 0.0;
-        *c_o = 0.0;
-        return Ok(());
-    } else {
-        // Calculate inner and outer surface Resistances
-
-        // Everything before the first massive layer
-        *full_rs_front = rs_front;
-        for i in 0..first_massive {
-            // let material_index = c.get_layer_index(i).unwrap();
-            let material = &c.layers[i];//building.get_material(material_index).unwrap();
-            // let substance_index = material.get_substance_index().unwrap();
-            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
-
-            *full_rs_front +=
-                material.thickness/*().unwrap()*/ / substance.thermal_conductivity().unwrap();
-        }
-
-        // Everything after the last massive layer
-        *full_rs_back = rs_back;
-        for i in last_massive..c.layers.len() {
-            // let material_index = c.get_layer_index(i).unwrap();
-            let material = &c.layers[i];//building.get_material(material_index).unwrap();
-            // let substance_index = material.get_substance_index().unwrap();
-            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
-            *full_rs_back +=
-                material.thickness/*().unwrap()*/ / substance.thermal_conductivity().unwrap();
-        }
-    }
-
-    // Calculate what is in between the massive layers
-    let mut node: usize = 0;
-    let mut n_layer: usize = first_massive;
-
-    while n_layer < last_massive {
-        // let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
-
-        let m = n_elements[n_layer];
-        if m == 0 {
-            // no-mass material
-            // add up all the R of the no-mass layers that
-            // are together
-            let mut r = 0.0; // if the material is no mass, then the first value
-            while n_layer < last_massive && n_elements[n_layer] == 0 {
-                // let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
-                let dx = material.thickness;//().unwrap();
-
-                // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
-                let k = substance.thermal_conductivity().unwrap();
-
-                r += dx / k;
-                n_layer += 1;
-            }
-
-            // update values
-            let u = 1. / r;
-            // top left
-            let old_value = k_prime.get(node, node).unwrap();
-            k_prime.set(node, node, old_value - u).unwrap();
-            // top right
-            let old_value = k_prime.get(node, node + 1).unwrap();
-            k_prime.set(node, node + 1, old_value + u).unwrap();
-            // bottom left
-            let old_value = k_prime.get(node + 1, node).unwrap();
-            k_prime.set(node + 1, node, old_value + u).unwrap();
-            // bottom right
-            let old_value = k_prime.get(node + 1, node + 1).unwrap();
-            k_prime.set(node + 1, node + 1, old_value - u).unwrap();
-
-            // Move one node ahead
-            node += 1;
-        } else {
-            // calc U value
-            // let substance_index = material.get_substance_index().unwrap();
-            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
-
-            let k = substance.thermal_conductivity().unwrap();
-            let dx = material.thickness/*().unwrap()*/ / (m as f64);
-            let u: f64 = k / dx;
-
-            for _ in 0..m {
-                // top left
-                let old_value = k_prime.get(node, node).unwrap();
-                k_prime.set(node, node, old_value - u).unwrap();
-                // top right
-                let old_value = k_prime.get(node, node + 1).unwrap();
-                k_prime.set(node, node + 1, old_value + u).unwrap();
-                // bottom left
-                let old_value = k_prime.get(node + 1, node).unwrap();
-                k_prime.set(node + 1, node, old_value + u).unwrap();
-                // bottom right
-                let old_value = k_prime.get(node + 1, node + 1).unwrap();
-                k_prime.set(node + 1, node + 1, old_value - u).unwrap();
-
-                // advance node.
-                node += 1;
-            }
-            n_layer += 1;
-        }
-    }
-
-    // ADD RSI AND RSO
-    // add r_si to first node
-    if *full_rs_front > 0.0 {
-        let old_value = k_prime.get(0, 0).unwrap();
-        k_prime
-            .set(0, 0, old_value - 1.0 / (*full_rs_front))
-            .unwrap();
-    }
-
-    if *full_rs_back > 0.0 {
-        let old_value = k_prime.get(all_nodes - 1, all_nodes - 1).unwrap();
-        k_prime
-            .set(
-                all_nodes - 1,
-                all_nodes - 1,
-                old_value - 1.0 / (*full_rs_back),
-            )
-            .unwrap();
-    }
-
-    // CALCULATE MASSES
-    let mut left_side: Vec<f64> = vec![0.0; all_nodes];
-    node = 0;
-
-    for n_layer in 0..c.layers.len() {
-        // let layer_index = c.get_layer_index(n_layer).unwrap();
-        let material = &c.layers[n_layer];//building.get_material(layer_index).unwrap();
-
-        let m = n_elements[n_layer];
-
-        if m != 0 {
-            // if has mass
-            for _ in 0..m {
-                // Calc mass
-                // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
-
-                let rho = substance.density().unwrap();
-                let cp = substance.specific_heat_capacity().unwrap();
-                let dx = material.thickness/*().unwrap()*/ / (m as f64);
-                let m = rho * cp * dx / dt;
-
-                // Nodes are in the joints between
-                // finite elements... add half mass from each
-                left_side[node] += m / 2.0;
-                left_side[node + 1] += m / 2.0;
-
-                // advance node.
-                node += 1;
-            }
-        } else {
-            // else, they are zero already...
-            // still, we need to move forward one
-            // node.
-            if n_layer > 0 && n_elements[n_layer - 1] > 0 {
-                // Only do it if the previous
-                // layer was massive
-                node += 1;
-            }
-        }
-    }
+    // Calc the masses
+    let c = calc_c_matrix(
+        construction,
+        all_nodes,
+        n_elements
+    );
+    
 
     // DIVIDE ONE BY THE OTHER
-    for (i, mass) in left_side.iter().enumerate() {
+    for (i, mass) in c.iter().enumerate() {
         if *mass != 0.0 {
             // Multiply the whole column by this.
             for j in 0..all_nodes {
                 let old_k_value = k_prime.get(i, j).unwrap();
-                k_prime.set(i, j, old_k_value / mass).unwrap();
+                k_prime.set(i, j, dt * old_k_value / mass).unwrap();
             }
         } // Else, masses are already Zero.
     }
 
     // SET C_I AND C_O
-    *c_i = left_side[0];
-    *c_o = left_side[all_nodes - 1];
+    *c_i = c[0]/dt;
+    *c_o = c[all_nodes - 1]/dt;
 
+    *given_k_prime = k_prime;
+
+    // let clo = move |nodes_temps : &Matrix, temp_in: f64, temp_out: f64|->Matrix{
+    //     Matrix::new(0., 1,1)
+    // };
+
+    // Ok(clo)
     Ok(())
 }

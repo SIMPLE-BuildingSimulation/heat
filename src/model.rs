@@ -545,7 +545,7 @@ mod testing {
             },
         );
 
-        let n: usize = 30;
+        let n: usize = 6;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
@@ -580,7 +580,7 @@ mod testing {
         // March:
         let zone_mass = model.zones[0].mcp();
         //println!("seconds,exp,found");
-        for i in 0..3000 {
+        for i in 0..800 {
             let time = (i as f64) * main_dt;
             date.add_seconds(time);
 
@@ -591,8 +591,8 @@ mod testing {
             // Get exact solution.
             let exp = t_out + (t_start - t_out) * (-time * u * area / zone_mass).exp();
             //assert!((exp - found).abs() < 0.05);
-            let max_error = 0.1;
-            println!("{},{},{}", time,exp, found);
+            let max_error = 0.7;
+            println!("{},{}", exp, found);
             // assert!((exp - found).abs() < max_error);
             
         }
