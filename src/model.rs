@@ -208,7 +208,7 @@ impl SimulationModel for ThermalModel {
                 };
 
                 // Update temperatures
-                let (_q_front, _q_back) = s.march(building, state, t_front, t_back);
+                let (_q_front, _q_back) = s.march(building, state, t_front, t_back, self.dt);
             } // end of iterating surface
 
             // What  if they are open???
@@ -233,7 +233,7 @@ impl SimulationModel for ThermalModel {
                 };
 
                 // Update temperatures
-                let (_q_front, _q_back) = s.march(building, state, t_front, t_back);
+                let (_q_front, _q_back) = s.march(building, state, t_front, t_back, self.dt);
             } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
@@ -545,7 +545,7 @@ mod testing {
             },
         );
 
-        let n: usize = 6;
+        let n: usize = 60;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
@@ -555,7 +555,7 @@ mod testing {
 
         /* START THE TEST */
         let construction = &building.constructions[0];
-        // assert!(!model.surfaces[0].is_massive());
+        // assert!(model.surfaces[0].is_massive());
 
         let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
@@ -592,8 +592,9 @@ mod testing {
             let exp = t_out + (t_start - t_out) * (-time * u * area / zone_mass).exp();
             //assert!((exp - found).abs() < 0.05);
             let max_error = 0.7;
-            println!("{},{}", exp, found);
-            // assert!((exp - found).abs() < max_error);
+            let diff = (exp - found).abs();
+            println!("{},{}, {}", exp, found, diff);
+            // assert!(diff < max_error);
             
         }
     }
@@ -683,7 +684,7 @@ mod testing {
 
         // Finished building the Building
 
-        let n: usize = 30;
+        let n: usize = 60;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 

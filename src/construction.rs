@@ -8,112 +8,209 @@ use matrix::Matrix;
 use building_model::construction::Construction;
 
 
-
-/// Given a Maximum thickness (max_dx) and a minimum timestep (max_dt), this function
-/// will find an arguibly good combination of dt and number of elements in each
+/// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
+/// will find an arguibly good (i.e., stable and accurate) combination of $\\Delta t\$ and number of elements in each
 /// layer of the construction.
 ///
-/// This function recursively increases N in order to reduce dt to numbers
-/// that divide main_dt as a while (e.g. main_dt/1, main_dt/2, main_dt/3...)
-/// # WARNING:
-/// This often works, but I apparently did not get the stability/accuracy thing right.
-/// For now, try to use small tsteps
-pub fn discretize_construction(
-    /*building: &Building,*/
-    c: &Rc<Construction>,
-    main_dt: f64,
+/// This function recursively increases the model's timestep subdivisions (`n`) in order to reduce $`\Delta t`$ to numbers
+/// that respect the restrictions of (1) stability, (2) $`\Delta x_{max}`$, and (3) $`\Delta t_{min}`$. In other words, 
+/// it searches (by testing $`\Delta t_{model}/1`$, $`\Delta t_{model}/2`$, $`\Delta t_{model}/3`$, ... $`\Delta t_{model}/n`$) 
+/// for the minimum `n` that respects this restrictions
+/// 
+/// # The math behind it
+/// 
+/// The first thing to know is that the walls in this module march 
+/// through time using a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) 
+/// (a.k.a., RK4). The second thing to know is that the RK4 method is
+/// more stable than the [Euler method](https://en.wikipedia.org/wiki/Euler_method), 
+/// and thus the restrictions of stability for the Euler method can be considered
+/// to be a conservative restriction for the RK4. Hence, this function uses the 
+/// Euler method restrictions.
+/// 
+/// Now, as explained in the [`build_thermal_network`] documentation, we are solving
+/// the following equation:
+/// 
+/// ```math
+/// \dot{T} = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q
+/// ```
+/// 
+/// And thus the stability of the numerical method will depend on the matrix:
+/// 
+/// ```math
+/// \overline{K}^{\star} =\Delta t \overline{C}^{-1} \overline{K}
+/// ```
+/// 
+/// Specifically, we don't want any of its [eigenvalues](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)
+/// $`\xi_1, \xi_2,\xi_3, ...`$ to be outside of the Euler method's stability region. Since this 
+/// matrix has onle Real eigenvalues, this is equivalent to saying:
+/// 
+/// ```math
+/// -2 < \xi_i < 0 ; \forall i
+/// ```
+/// 
+/// However, finding the eigenvalues for $`\overline{K}^{\star}`$ is far from trivial. So there is
+/// yet another heuristic I am using: I am treating the case of a wall with 1 layer that is subdivided
+/// into a single element as the limit case. I am not sure if this is correct, but most of the instabilities
+/// I identified through Trial and Error corresponded to this case.
+/// 
+/// For this limit case: 
+/// * $`R = \frac{\Delta x}{\lambda}`$
+/// * $`C = \rho  c_p  \Delta x`$
+/// 
+/// thus the value of $`\overline{K}^{\star}`$ is: 
+/// 
+/// ```math
+/// \overline{K}^{\star}=\begin{bmatrix} 
+/// -\frac{\Delta t}{C\times R} - \frac{\Delta t}{C\times R_s} & \frac{\Delta t}{C\times R} \\
+///  \frac{\Delta t}{C\times R} & -\frac{\Delta t}{C\times R} - \frac{\Delta t}{C\times R_s}\\
+/// \end{bmatrix}   
+///```
+/// Note that, in that equation, $`R_{si} = R_{so}`$. The reason for this is that this method
+/// does not know the real values of $`R_{si}`$ and $`R_{so}`$, so it simply using a placeholder
+/// value low enough to cover most general cases (`0.05`).
+/// 
+/// Then, it can be found that the eigenvaues of this case—which we are treating as the limit case—are:
+/// ```math
+/// \xi_1 = -\frac{\Delta t} { R_s \rho c_p \Delta x }
+/// ```
+/// ```math
+/// \xi_2 = \xi_1 - 2 \frac{\Delta t \lambda}{ \rho  c_p  {\Delta x}^2}
+/// ```
+/// Both these values are always negative, so we don't need to worry about
+/// $`\xi_i < 0 `$. Also, it can be noticed that $`\xi_2 < \xi_1`$, meaning that
+/// what we need to comply with for Euler's stability criteria is:
+/// ```math
+/// -\frac{\Delta t} { R_s \rho c_p \Delta x } - 2 \frac{\Delta t \lambda}{ \rho  c_p  {\Delta x}^2} < -2
+/// ```
+/// 
+/// Which means that the chosen $`\Delta x`$ must be greater than the (apparently only) positive
+/// solution to equation:
+/// 
+/// ```math
+/// 0 = 2 {\Delta x}^2 - \left( \frac{\Delta t}{\rho c_p R_s} \right) \Delta x - \frac{2 \Delta t \lambda}{\rho c_p} 
+/// ```
+/// 
+/// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that 
+/// allows complying with this
+pub fn discretize_construction(    
+    construction: &Rc<Construction>,
+    model_dt: f64,
     max_dx: f64,
     min_dt: f64,
 ) -> (usize, Vec<usize>) {
     // I could only think of how to make this recursively... so I did this.
-    fn aux(
-        /*building: &Building,*/
-        c: &Rc<Construction>,
+    fn aux(        
+        construction: &Rc<Construction>,
         main_dt: f64,
         n: usize,
         max_dx: f64,
         min_dt: f64,
     ) -> (usize, Vec<usize>) {
         let dt = main_dt / (n as f64);
-        let safety = 1.5;
-
+        
         // Choose a dx so that dt allows convergence.
         // stability is assured by (alpha * dt / dx^2 <= 1/2 )
-        // meaning, we need to satisfy dx >= sqrt(2 * alpha * dt)
+        // meaning, we need to satisfy dx >= sqrt(0.5 * dt * thermal_cond/( dens * heat_cap  ))
 
         // So, for each layer
-        let n_layers = c.layers.len();
+        let n_layers = construction.layers.len();
         let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
+        const RS: f64 = 0.05;        
 
         for n_layer in 0..n_layers {
-            // let material_index = c.get_layer_index(n_layer).unwrap();
-            let material = &c.layers[n_layer];
-            // let substance_index = material.get_substance_index().unwrap();
-            // let substance = building.get_substance(substance_index).unwrap();
+            let material = &construction.layers[n_layer];
             let substance = &material.substance;
 
-            // Calculate the optimum_dx
+            // Calculate the minimum_dx
             let thickness = material.thickness;
-            let alpha = substance.thermal_diffusivity().unwrap();
-            let optimum_dx = (safety * 2.0 * alpha * dt).sqrt();
-
-            // make all the elements of equal thickness
-            let m = (thickness / optimum_dx).floor();
-
-            let dx: f64;
-            if m == 0. {
-                // The given timestep allows for simulating the whole
-                // layer as a single element (i.e. optimum_dx > dx).
-                // However, dx cannot be greater than thickness, so limit it.
-                dx = thickness;
-            } else {
-                // Layer must be subdivided in m equal parts.
-                dx = thickness / m;
-            }
-
-            if dx > max_dx {
-                // If the found dx is larger than the max allowed d_x, try to change timestep
-                // check if there is room for reducing dt...
+            let k = substance.thermal_conductivity().unwrap();
+            let rho = substance.density().unwrap();
+            let cp = substance.specific_heat_capacity().unwrap();
+                        
+            let a = 2.;
+            let b = -dt/(rho*cp*RS);
+            let c = -2.*dt*k/(rho*cp);
+            let disc = b*b-4.*a*c;
+            // this should never happen...?
+            debug_assert!(disc >= 0.); 
+            
+            // One solution is apparently always negative... 
+            // i.e. it is meaningless
+            debug_assert!((-b - disc.sqrt())/(2.*a) < 0.);
+            
+            // The positive solution is the one we care about
+            let min_dx = (-b + disc.sqrt())/(2.*a);
+                                                        
+            if min_dx > thickness{
+                // This means that this layer cannot comply with the 
+                // given timestep because its thickness leads to a dx that
+                // does not ensure convergence...
+                // check if there is room for reducing dt (hence reducing min_dx)
                 let next_dt = main_dt / ((n + 1) as f64);
                 if next_dt > min_dt {
                     // If there is room for that, do it.
-                    return aux(/*building,*/ c, main_dt, n + 1, max_dx, min_dt);
+                    return aux( construction, main_dt, n + 1, max_dx, min_dt);
                 } else {
                     // otherwise, mark this layer as no-mass
                     n_elements.push(0);
                 }
-            } else {
-                // "dx" is smaller than max_dx, and thus this works
-                // fine.
-                n_elements.push(m as usize)
-            }
+            }else{
+                // subdivide the layer, making all the elements of equal thickness
+                let m = (thickness / min_dx).floor();                                
+                // this case belongs to the other branch of this if/else
+                debug_assert!(m as usize != 0);
+                let dx = thickness / m;                
+                if dx > max_dx {
+                    // If the found dx is larger than the max allowed d_x, try to change timestep
+                    // check if there is room for reducing dt...
+                    let next_dt = main_dt / ((n + 1) as f64);
+                    if next_dt > min_dt {
+                        // If there is room for that, do it.
+                        return aux( construction, main_dt, n + 1, max_dx, min_dt);
+                    } else {
+                        // otherwise, mark this layer as no-mass
+                        n_elements.push(0);
+                    }
+                } else {
+                    // "dx" is smaller than max_dx, and thus this works
+                    // fine.
+                    n_elements.push(m as usize)
+                }
+
+            }                        
         }
 
-        // Check stability requirement...
+        // Check stability requirements...
         // stability is assured by (alpha * dt / dx^2 <= 1/2 )
         #[cfg(debug_assertions)]
         {
             for (n_layer, _) in n_elements.iter().enumerate() {
-                // let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
-                // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+                let material = &construction.layers[n_layer];
+                let substance = &material.substance;
 
                 // Calculate the optimum_dx
                 let thickness = material.thickness;
-                let alpha = substance.thermal_diffusivity().unwrap();
-
+                let k = substance.thermal_conductivity().unwrap();
+                let rho = substance.density().unwrap();
+                let cp = substance.specific_heat_capacity().unwrap();
                 let dt = main_dt / n as f64;
                 let dx = thickness / n_elements[n_layer] as f64;
-                assert!(alpha * dt / dx / dx <= 0.5);
+                
+                // assert!(alpha * dt / dx / dx <= 0.5);
+                let lambda1 = - dt / (RS * rho * cp * dx);
+                let r = dx/k;
+                let lambda2 = lambda1 - 2.*dt / (r * rho * cp * dx);                
+                assert!(lambda1 >= -2.);
+                assert!(lambda1 <= 0.);
+                assert!(lambda2 >= -2.);
+                assert!(lambda2 <= 0.);
             }
         }
 
-        // return, asking for double the subdivisions (for accuracy, not just stability.)
+        // return
         (n, n_elements)
     }
-
-    aux(/*building,*/ c, main_dt, 1, max_dx, min_dt)
+    aux(construction, model_dt, 1, max_dx, min_dt)    
 }
 
 /// In a discretization scheme, this function finds the
@@ -220,7 +317,7 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
-fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usize)->f64{
+pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usize)->f64{
     let mut full_rs_front = rs_front;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
@@ -233,7 +330,7 @@ fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usize)-
     full_rs_front
 }
 
-fn calc_full_rs_back(c: &Rc<Construction>,rs_back: f64, last_massive: usize)->f64{
+pub fn calc_full_rs_back(c: &Rc<Construction>,rs_back: f64, last_massive: usize)->f64{
     let mut full_rs_back = rs_back;
     for i in last_massive..c.layers.len() {        
         let material = &c.layers[i];        
@@ -291,6 +388,47 @@ fn calc_c_matrix(
     c_matrix
 }
 
+/// Calculates the `K` matrix (i.e., the thermal network) for massive constructions
+/// 
+/// Constructions are assumed to be a sandwich where zero or more massive
+/// layers are located between two non-mass layers. These non-mass layers will always
+/// include the interior and exterior film convections coefficients, respectively (which is
+/// why they are called `full_rs_front` and `full_rs_back`, respectively). Additionally,
+/// they can also include some lightweight insulation or any other material of negligible
+/// thermal mass.
+///
+/// This matrix is constructed based ona discretization of the layers of the 
+/// construction; that is, each layer is subdivided into `n` elements all of equal
+/// thickness. One node is placed at the beginning and end of each elements. Each element can 
+/// be represented by the 2x2 matrix
+///
+/// ```math
+/// \overline{K}=\begin{bmatrix} -1/R & 1/R \\
+/// 1/R & -1/R
+/// \end{bmatrix}   ;   R=\frac{thickness}{\lambda}
+///```
+/// 
+/// Hence—ignoring external inputs—the K matrix for a construction subdivided into 3 elements (i.e., 4 nodes) can be written as follows:
+/// ```math
+/// \overline{K}=\begin{bmatrix} 
+/// -1/R_{1\rightarrow2} & 1/R_{1\rightarrow2} & 0 & 0 \\
+/// 1/R_{1\rightarrow2} & -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} & 1/R_{2\rightarrow3} & 0 \\
+/// 0 & 1/R_{2\rightarrow3} & -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} & 1/R_{3\rightarrow4} \\
+/// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4} \\
+/// \end{bmatrix}   
+///```
+/// 
+/// Now, these nodes are also connected to an interior and an exterior temperatures through
+/// interior and exterior convection coefficients (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively). 
+/// This means that the Matrix $`\overline{K}`$ needs to become:
+/// ```math
+/// \overline{K}=\begin{bmatrix} 
+/// -1/R_{1\rightarrow2} - 1/R_{si,full} & 1/R_{1\rightarrow2} & 0 & 0 \\
+/// 1/R_{1\rightarrow2} & -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} & 1/R_{2\rightarrow3} & 0 \\
+/// 0 & 1/R_{2\rightarrow3} & -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} & 1/R_{3\rightarrow4} \\
+/// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4}- 1/R_{so,full} \\
+/// \end{bmatrix}   
+///```
 fn calc_k_matrix(
     c: &Rc<Construction>,
     first_massive: usize,
@@ -406,24 +544,9 @@ fn calc_k_matrix(
 
 }
 
-/// Constructions are assumed to be a sandwich where zero or more massive
-/// layers are located between two non-mass layers. These non-mass layers will always
-/// include the interior and exterior film convections coefficients, respectively (which is
-/// why they are called `full_rs_front` and `full_rs_back`, respectively). Additionally,
-/// they can also include some lightweight insulation or any other material of negligible
-/// thermal mass.
-///
-/// The nodes are placed in between elements. Each element can be represented by the
-/// 2x2 matrix
-///
-/// ```math
-///
-/// K=\begin{bmatrix} -1/R & 1/R \\
-/// 1/R & -1/R
-/// \end{bmatrix}   ;   R=\frac{thickness}{\lambda}
-///
-///```
-///
+/// Builds the necessary data for marching forward through time, solving the 
+/// Ordinary Differential Equation that governs the heat transfer in walls.
+/// 
 ///
 /// The equation to solve is the following:
 ///
@@ -431,57 +554,50 @@ fn calc_k_matrix(
 /// \overline{C}  \dot{T} - \overline{K}  T = q
 /// ```
 ///
-/// Where $`\overline{C}`$ and $`\overline{K}`$ are (more or less) matrices representing the
-/// thermal mass and resistance of each node, respectively; and where $`T`$ and $`q`$ are
-/// vectors representing the Temperature and the heat flow into each node, respectively.
-/// $`\overline{C}`$ and $`\overline{K}`$ are build through the finite difference method.
+/// Where $`\overline{C}`$ and $`\overline{K}`$ are matrices representing the
+/// thermal mass of each node and the thermal network, respectively; and where $`T`$ and $`q`$ are
+/// vectors representing the Temperature and the heat "flow into" each node, respectively.
+/// $`\overline{C}`$ and $`\overline{K}`$ are build based on the finite difference method.
 ///
-/// This model also uses finite differences to march through time. When doing this,
-/// the previous equation can be represented as follows:
-///
-/// ```math
-/// \overline{C}  \frac{ (T_{i+1}- T_{i}) } {\Delta t} - \overline{K} T_i = q
-/// ```
-///
-/// Hence, the temperatures of one step ($`T_{i+1}`$) can be calculated based on
-/// the temperatures of the step before $`T_{i}`$ as follows.
+/// This model uses a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) (a.k.a., RK4)
+/// to march through time. In order to do this, it is convenient to write the equation to solve
+/// as follows:
 ///
 /// ```math
-/// {T_{i+1}}  =   T_i +  \Delta t  \overline{C}^{-1}\overline{K} T_i + \Delta t\overline{C}^{-1}q
+/// \dot{T}  = f(t, T)
 /// ```
-/// Where $`I_n`$ is the Identity Matrix. Based on that equation, it is convenient to define $`\overline{K}'`$ as follows:
-///
+/// 
+/// Where 
 /// ```math
-/// \overline{K}' = \Delta t  \overline{C}^{-1}\overline{K}
+/// f(t,T) = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q
 /// ```
-///
-/// The value of $`\overline{K}`$ is never stored, as only $`\overline{K}'`$ is really needed for marching
-/// through time.
-///
-/// Also, note that—unless some layer of the Surface is generating heat—all the elements of $`q`$ are Zero
+/// 
+/// Note that—unless some layer of the Surface is generating heat—all the elements of $`q`$ are Zero
 /// exept the first one and the last one, which are $`\frac{T_{in}}{R_{si}}`$ and $`\frac{T_{out}}{R_{so}}`$,
-/// respectively. These values are calculated when marching forward in time. However,
-/// the value of $`\Delta t\overline{C}^{-1}`$ that accompanies $`q`$ in the previous
-/// equation are stored in the values `c_i` and `c_o`, respectively.
+/// respectively. 
 ///
-///
-/// # Aguments
-/// * building: the Building containing the construction and all other data.
-/// * construction: the construction being discretized
-/// * dt: the timestep for the model (relevant for pre-processing some elements that will be used when marching forward in time)
-/// * n_elements: The number of elements in each layer of the construction
-/// * rsi: the interior film coefficient
-/// * rso: the exterior film coefficient
-///
-/// # Outputs
-///
-/// * k_prime: the Matrix representing the heat transfer between the nodes... will be filled by this function, and the input should be full of zeros
-/// * full_rs_front: R_si + the thermal resistance of all the no-mass layers before the first massive element.
-/// * full_rs_back: R_so + the thermal resistance of all the no-mass layers after the last massive element.
-/// * c_i: The thermal mass of the most interior node, divided by the timestep
-/// * c_o: The thermal mass of the most exterior node, divided by the timestep
+/// Then, the 4th order Runge-Kutta method allows marching forward through time as follows:
+/// ```math
+///  T_{i+1} = T_i + \frac{k_1 + 2k_2 + 2k_3 + k_4}{6}
+/// ``` 
+/// Where $`k_1`$, $`k_2`$, $`k_3`$ and $`k_4`$ can be calculated based on the 
+/// timestep $`\Delta t`$ as follows:
+/// 
+/// * $`k_1 = \Delta t \times f(t,T)`$
+/// * $`k_2 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_1}{2})`$
+/// * $`k_3 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_2}{2})`$
+/// * $`k_4 = \Delta t \times f(t+\delta t, T+k_3 )`$
+/// 
+/// So, what this method does is to calculate what is needed in order to return a closure that 
+/// calculates $`\Delta t \times f(t,T)`$; that is to say:
+/// ```math
+/// return = \Delta t \times f(t,T) = \Delta t \times \overline{C}^{-1} \overline{K}  T + \Delta t \times \overline{C}^{-1} q
+/// ```
+/// It is worth mentioning that, due to efficiency reasons, the following variables are defined 
+/// within the code:
+/// * $`\overline{K}^{\star} = \Delta t \times \overline{C}^{-1}\overline{K}`$
+/// * $`\overline{C}^{\star} = \Delta t \times \overline{C}^{-1}`$
 pub fn build_thermal_network(
-    /*building: &Building,*/
     construction: &Rc<Construction>,
     first_massive: usize,
     last_massive: usize,
@@ -490,12 +606,9 @@ pub fn build_thermal_network(
     n_elements: &[usize],
     rs_front: f64,
     rs_back: f64,
-    given_k_prime: &mut Matrix,
-    full_rs_front: &mut f64,
-    full_rs_back: &mut f64,
-    c_i: &mut f64,
-    c_o: &mut f64,
-) -> Result</*impl Fn(&Matrix, f64, f64)->Matrix*/(), String> {
+    full_rs_front: f64,
+    full_rs_back: f64,    
+) -> Result<impl Fn(&Matrix, f64, f64)->Matrix, String> {
     
     // if this happens, we are trying to build the 
     // thermal network for a non-massive wall... Which
@@ -508,10 +621,6 @@ pub fn build_thermal_network(
         let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",construction.layers.len(),n_elements.len());
         return Err(err);
     }
-
-    // These two statements happen twice... in calc_K() as well.
-    *full_rs_front = calc_full_rs_front(construction, rs_front, first_massive);
-    *full_rs_back = calc_full_rs_back(construction, rs_back, last_massive);
 
     // initialize k_prime as K... we will modify it later
     // K_prime = dt*inv(C)*K
@@ -533,27 +642,52 @@ pub fn build_thermal_network(
     );
     
 
-    // DIVIDE ONE BY THE OTHER
+    // DIVIDE ONE BY THE OTHER to make K_prime
+    let mut c_prime: Vec<f64> = Vec::with_capacity(all_nodes);
     for (i, mass) in c.iter().enumerate() {
         if *mass != 0.0 {
-            // Multiply the whole column by this.
+            // Multiply the whole column K by this.
             for j in 0..all_nodes {
                 let old_k_value = k_prime.get(i, j).unwrap();
                 k_prime.set(i, j, dt * old_k_value / mass).unwrap();
             }
-        } // Else, masses are already Zero.
+            c_prime.push(dt / mass);
+        } else{
+            unreachable!()
+        }
     }
-
+    
     // SET C_I AND C_O
-    *c_i = c[0]/dt;
-    *c_o = c[all_nodes - 1]/dt;
+    // *c_i = c[0]/dt;
+    // *c_o = c[all_nodes - 1]/dt;
 
-    *given_k_prime = k_prime;
+    // *given_k_prime = k_prime;
 
-    // let clo = move |nodes_temps : &Matrix, temp_in: f64, temp_out: f64|->Matrix{
-    //     Matrix::new(0., 1,1)
-    // };
+    let clo = move |nodes_temps : &Matrix, t_front: f64, t_back: f64|->Matrix{
+        // Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T
+        // But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime
+        // --> Calculate: k_i = c_prime * q + k_prime * T
+        
+        let mut k_i =  k_prime.from_prod_n_diag(nodes_temps, 3).unwrap();
 
-    // Ok(clo)
-    Ok(())
+        // if we are generating heat in any layer (e.g., radiant floor) this 
+        // would need to change...
+        let old_value = k_i.get(0, 0).unwrap();
+        k_i.set(0, 0, old_value + c_prime[0]*t_front / full_rs_front )
+            .unwrap();
+
+        let old_value = k_i.get(all_nodes - 1, 0).unwrap();
+        k_i.set(
+            all_nodes - 1,
+            0,
+            old_value + c_prime[all_nodes - 1] *t_back / full_rs_back ,
+        )
+        .unwrap();
+
+        // return
+        k_i
+    };
+
+    Ok(clo)
+    // Ok(())
 }
