@@ -185,6 +185,8 @@ impl SimulationModel for ThermalModel {
             };
 
             let t_current = self.get_current_zones_temperatures(building, state);
+            // let (a_before, b_before, c_before) = self.calculate_zones_abc(building, state);
+            // let t_current = self.estimate_zones_future_temperatures(&t_current, &a_before, &b_before, &c_before, self.dt);
 
             /* UPDATE SURFACE'S TEMPERATURES */
             for i in 0..self.surfaces.len() {
@@ -233,7 +235,7 @@ impl SimulationModel for ThermalModel {
                 };
 
                 // Update temperatures
-                let (_q_front, _q_back) = s.march(building, state, t_front, t_back, self.dt);
+                s.march(building, state, t_front, t_back, self.dt);
             } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
@@ -591,10 +593,10 @@ mod testing {
             // Get exact solution.
             let exp = t_out + (t_start - t_out) * (-time * u * area / zone_mass).exp();
             //assert!((exp - found).abs() < 0.05);
-            let max_error = 0.7;
+            let max_error = 0.15;
             let diff = (exp - found).abs();
             println!("{},{}, {}", exp, found, diff);
-            // assert!(diff < max_error);
+            assert!(diff < max_error);
             
         }
     }
@@ -660,9 +662,9 @@ mod testing {
 
             // Get exact solution.
             let exp = t_s + (t_o - t_s) * (-time * u * area / zone_mass).exp();
-            let max_error = 0.1;
+            let max_error = 0.15;
             // println!("{}, {}", exp, found);
-            // assert!((exp - found).abs() < max_error);
+            assert!((exp - found).abs() < max_error);
             
         }
     }
@@ -684,7 +686,7 @@ mod testing {
 
         // Finished building the Building
 
-        let n: usize = 60;
+        let n: usize = 20;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
@@ -721,7 +723,7 @@ mod testing {
         };
 
         // March:
-        for i in 0..3000 {
+        for i in 0..800 {
             let time = (i as f64) * dt;
             date.add_seconds(time);
 
@@ -735,10 +737,9 @@ mod testing {
                 + heating_power / (u * area)
                 + (t_o - t_s - heating_power / (u * area)) * (-time * (u * area) / zone_mass).exp();
 
-            let max_error = 0.1;
-            // println!("exp: {} vs found: {}", exp, found);
+            let max_error = 0.55;            
             println!("{}, {}", exp, found);
-            // assert!((exp - found).abs() < max_error);
+            assert!((exp - found).abs() < max_error);
             
         }
     }
