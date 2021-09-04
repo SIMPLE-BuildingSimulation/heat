@@ -1,3 +1,23 @@
+/*
+MIT License
+Copyright (c) 2021 Germán Molina
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 use crate::surface::ThermalSurface;
 use building_model::building::Building;
 use calendar::date::Date;
@@ -499,6 +519,65 @@ mod testing {
     use weather::synthetic_weather::SyntheticWeather;
     use building_model::simulation_state_element::SimulationStateElement;
     use simple_test_buildings::*;
+    use gas_properties::air;
+
+    /// A single-zone test model with walls assumed to have
+    /// no mass. It has a closed solution, which is nice.
+    /// 
+    /// There is no sun.
+    #[derive(Default)]
+    struct SingleZoneTestModel{
+        /// volume of the zone (m3)
+        zone_volume: f64,
+
+        /// Facade area (m2)
+        surface_area: f64,
+
+        /// the R-value of the facade
+        facade_r: f64,
+
+        /// Infiltration rate (m3/s)
+        infiltration_rate: f64,
+
+        /// Heating power (Watts)
+        heating_power: f64,
+
+        /// Temperature outside of the zone
+        temp_out: f64,
+
+        /// Temperature at the beginning
+        temp_start: f64,
+
+        
+    }
+
+    impl SingleZoneTestModel {
+        fn get_closed_solution(&self)->Box<impl Fn(f64)->f64>{
+            // heat balance in the form
+            // of C*dT/dt = A - B*T
+            let rho = air::density(); //kg/m3
+            let cp = air::specific_heat(); //J/kg.K
+            let u = 1./self.facade_r;
+
+            let c = self.zone_volume * rho * cp;
+
+            let mut a = self.heating_power + self.temp_out * u * self.surface_area + self.infiltration_rate * cp * self.temp_out ;
+            a/=c;
+
+            let mut b = u * self.surface_area + self.infiltration_rate*cp;
+            b /= c;
+
+            let k1 = self.temp_start - a/b;
+
+            let f = move |t: f64|->f64{
+                a/b + k1*(-b*t).exp()
+            };
+
+            Box::new(f)            
+        }
+    }
+
+
 
     #[test]
     fn test_calculate_zones_abc() {
@@ -536,12 +615,14 @@ mod testing {
 
     #[test]
     fn test_very_simple_march() {
+        let zone_volume = 40.;
+        let surface_area = 4.;
         let mut state = SimulationState::new();
         let mut building = get_single_zone_test_building(
             &mut state,
             &Options {
-                zone_volume: 40.,
-                surface_area: 4.,
+                zone_volume,
+                surface_area,
                 material_is_massive: Some(false),
                 ..Default::default()
             },
@@ -563,12 +644,21 @@ mod testing {
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
 
-        let u = 1. / r;
-        let area = model.surfaces[0].area();
 
         let t_start = model.zones[0].temperature(&building, &state); // Initial T of the zone
 
         let t_out: f64 = 30.0; // T of surroundings
+
+        // test model
+        let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area,
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
@@ -580,8 +670,7 @@ mod testing {
         };
 
         // March:
-        let zone_mass = model.zones[0].mcp();
-        //println!("seconds,exp,found");
+        
         for i in 0..800 {
             let time = (i as f64) * main_dt;
             date.add_seconds(time);
@@ -591,7 +680,8 @@ mod testing {
             model.march(date, &weather, &building, &mut state).unwrap();
 
             // Get exact solution.
-            let exp = t_out + (t_start - t_out) * (-time * u * area / zone_mass).exp();
+            let exp = exp_fn(time);
+
             //assert!((exp - found).abs() < 0.05);
             let max_error = 0.15;
             let diff = (exp - found).abs();
@@ -604,21 +694,24 @@ mod testing {
 
     #[test]
     fn test_march_with_window() {
+        let surface_area = 4.;
+        let window_area = 1.;
+        let zone_volume = 40.;
+
         let mut state = SimulationState::new();
         let mut building = get_single_zone_test_building(
             &mut state,
             &Options {
-                zone_volume: 40.,
-                surface_area: 4.,
-                window_area: 1.,
+                zone_volume,
+                surface_area,
+                window_area,
                 material_is_massive: Some(false),
                 ..Default::default()
             },
         );
 
         // Finished building the Building
-
-        let n: usize = 30;
+        let n: usize = 6;
         let main_dt = 60. * 60. / n as f64;
         let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
 
@@ -632,17 +725,15 @@ mod testing {
         let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
-        let u = 1. / r;
-        let area = 4.0; //the area of both the window and the wall together
+        
+        let t_start = model.zones[0].temperature(&building, &state); // Initial T of the zone
 
-        let t_o = model.zones[0].temperature(&building, &state); // Initial T of the zone
-
-        let t_s: f64 = 30.0; // T of surroundings
+        let t_out: f64 = 30.0; // T of surroundings
 
         let mut weather = SyntheticWeather::new();
-        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_s));
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
-        let dt = main_dt; // / model.dt_subdivisions() as f64;
+        let dt = main_dt; 
 
         let mut date = Date {
             day: 1,
@@ -650,20 +741,30 @@ mod testing {
             month: 1,
         };
 
+         // test model
+         let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area, // the window is a hole on the wall... does not add area
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
+
         // March:
-        for i in 0..3000 {
+        for i in 0..80 {
             let time = (i as f64) * dt;
             date.add_seconds(time);
 
-            let found = model.zones[0].temperature(&building, &state);
-            let zone_mass = model.zones[0].mcp();
+            let found = model.zones[0].temperature(&building, &state);            
 
             model.march(date, &weather, &building, &mut state).unwrap();
 
-            // Get exact solution.
-            let exp = t_s + (t_o - t_s) * (-time * u * area / zone_mass).exp();
+            // Get exact solution.            
+            let exp = exp_fn(time);
             let max_error = 0.15;
-            // println!("{}, {}", exp, found);
+            println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
             
         }
@@ -671,13 +772,16 @@ mod testing {
 
     #[test]
     fn test_model_march_with_window_and_heater() {
-        let mut state = SimulationState::new();
+        let surface_area = 4.;
+        let zone_volume = 40.;
         let heating_power = 100.;
+        
+        let mut state = SimulationState::new();        
         let mut building = get_single_zone_test_building(
             &mut state,
             &Options {
-                zone_volume: 40.,
-                surface_area: 4.,
+                zone_volume,
+                surface_area,
                 heating_power,
                 material_is_massive: Some(false),
                 ..Default::default()
@@ -704,15 +808,27 @@ mod testing {
         let r = construction.r_value().unwrap()
             + model.surfaces[0].rs_front()
             + model.surfaces[0].rs_back();
-        let u = 1. / r;
-        let area = 4.0; //the area of both the window and the wall together
 
-        let t_o = model.zones[0].temperature(&building, &state); // Initial T of the zone
 
-        let t_s: f64 = 30.0; // T of surroundings
+
+        let t_start = model.zones[0].temperature(&building, &state); // Initial T of the zone
+        let t_out: f64 = 30.0; // T of surroundings
+
+        // test model
+        let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area, // the window is a hole on the wall... does not add area
+            heating_power,
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
+
 
         let mut weather = SyntheticWeather::new();
-        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_s));
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
         let dt = main_dt; // / model.dt_subdivisions() as f64;
 
@@ -727,15 +843,12 @@ mod testing {
             let time = (i as f64) * dt;
             date.add_seconds(time);
 
-            let zone_mass = model.zones[0].mcp();
             let found = model.zones[0].temperature(&building, &state);
 
             model.march(date, &weather, &building, &mut state).unwrap();
 
             // Get exact solution.
-            let exp = t_s
-                + heating_power / (u * area)
-                + (t_o - t_s - heating_power / (u * area)) * (-time * (u * area) / zone_mass).exp();
+            let exp = exp_fn(time);
 
             let max_error = 0.55;            
             println!("{}, {}", exp, found);
