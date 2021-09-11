@@ -62,6 +62,10 @@ impl SimulationModel for ThermalModel {
 
     /// Creates a new ThermalModel from a Building.
     ///
+    /// WE ASSUME THAT THE ZONES IN THIS MODEL AND THE SPACES
+    /// IN THE BUILDING ARE IN THE SAME ORDER, AND HAVE A ONE-TO-ONE
+    /// RELATIONSHIP
+    /// 
     /// # Inputs:
     /// * building: the Building that the model represents
     /// * state: the SimulationState attached to the Building
@@ -371,26 +375,54 @@ impl ThermalModel {
         // Heating/Cooling
         for hvac in building.hvacs.iter(){
             for target_space in hvac.target_spaces(){
-                let power_index = hvac.heating_cooling_consumption_index().unwrap();
-                let consumption = state[power_index].get_value();
+                
+                let consumption = hvac.heating_cooling_consumption(state).expect("HVAC has not heating/cooling state");
                 let heating_cooling = calc_cooling_heating_power(hvac, consumption);                
                 a[*target_space] += heating_cooling;
             }
+            // heating through air supply?
+        }
+
+        // Heating/Cooling
+        for luminaire in building.luminaires.iter(){
+            if let Ok(target_space) = luminaire.target_space() {                
+                let consumption = luminaire.power_consumption(state).expect("Luminaire has no Power Consumption state");                
+                a[target_space] += consumption;
+            }                        
         }
 
         // Other 
-        for (i, zone) in self.zones.iter().enumerate() {
+        for (i, zone) in self.zones.iter().enumerate() {                        
             
-            // lighting, people, appliances
-            let qi = zone.get_current_internal_heat_loads(building, state);
-            a[i] += qi;
-
-            /* HEATING */
-
-            /* AIR SUPPLY */
-
             /* INFILTRATION AND VENTILATION */
+            // ... should we always asume that the Cp for
+            // outside and inside are equal?  I will
+            // assume them different... profiling can 
+            // tell us if this makes the program slow.
+            let space = &building.spaces[i];            
+            // let t_zone = space.dry_bulb_temperature(state).expect("Zone has no Temperature!");                         
+            let cp_zone = gas_properties::air::specific_heat();
 
+            // infiltration from outside
+            if let Some(t_inf_inwards) = space.infiltration_temperature(state){
+                let m_inf = space.infiltration_volume(state).expect("Space has infiltration temperature but not volume");            
+                let cp_inf_inwards = gas_properties::air::specific_heat();
+                a[i] += m_inf * cp_inf_inwards * t_inf_inwards;
+                b[i] += m_inf * cp_zone;
+            }
+
+            
+            // ventilation
+            if let Some(t_vent_inwards) = space.ventilation_temperature(state){
+                let m_vent = space.ventilation_volume(state).expect("Space has ventilation temperature but not volume");            
+                let cp_vent_inwards = gas_properties::air::specific_heat();
+                a[i] += m_vent * cp_vent_inwards * t_vent_inwards;
+                b[i] += m_vent * cp_zone;
+            }
+
+
+            // Mixing with other zones
+            
             /* CAPACITANCE */
             c[i] = zone.mcp();
         }
@@ -542,6 +574,9 @@ mod testing {
         /// Heating power (Watts)
         heating_power: f64,
 
+        /// Lighting power (Watts)
+        lighting_power: f64,
+
         /// Temperature outside of the zone
         temp_out: f64,
 
@@ -561,7 +596,11 @@ mod testing {
 
             let c = self.zone_volume * rho * cp;
 
-            let mut a = self.heating_power + self.temp_out * u * self.surface_area + self.infiltration_rate * cp * self.temp_out ;
+            let mut a =     
+                    self.heating_power 
+                    + self.lighting_power 
+                    + self.temp_out * u * self.surface_area + self.infiltration_rate * cp * self.temp_out ;
+
             a/=c;
 
             let mut b = u * self.surface_area + self.infiltration_rate*cp;
@@ -584,7 +623,7 @@ mod testing {
         let mut state = SimulationState::new();
         let mut building = get_single_zone_test_building(
             &mut state,
-            &Options {
+            &SingleZoneTestBuildingOptions {
                 zone_volume: 40.,
                 surface_area: 4.,
                 material_is_massive: Some(false),
@@ -620,7 +659,7 @@ mod testing {
         let mut state = SimulationState::new();
         let mut building = get_single_zone_test_building(
             &mut state,
-            &Options {
+            &SingleZoneTestBuildingOptions {
                 zone_volume,
                 surface_area,
                 material_is_massive: Some(false),
@@ -701,7 +740,7 @@ mod testing {
         let mut state = SimulationState::new();
         let mut building = get_single_zone_test_building(
             &mut state,
-            &Options {
+            &SingleZoneTestBuildingOptions {
                 zone_volume,
                 surface_area,
                 window_area,
@@ -770,6 +809,94 @@ mod testing {
         }
     }
 
+
+    #[test]
+    fn test_model_march_with_window_and_luminaire() {
+        let surface_area = 4.;
+        let zone_volume = 40.;
+        let lighting_power = 100.;
+        
+        let mut state = SimulationState::new();        
+        let mut building = get_single_zone_test_building(
+            &mut state,
+            &SingleZoneTestBuildingOptions {
+                zone_volume,
+                surface_area,
+                lighting_power,
+                material_is_massive: Some(false),
+                ..Default::default()
+            },
+        );
+
+        // Finished building the Building
+
+        let n: usize = 20;
+        let main_dt = 60. * 60. / n as f64;
+        let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
+
+        // MAP THE STATE
+        building.map_simulation_state(&mut state).unwrap();
+
+        // turn the lights on
+        let lum_state_i = building.luminaires[0].power_consumption_index().unwrap();
+        state.update_value(lum_state_i, SimulationStateElement::LuminairePowerConsumption(0, lighting_power));
+
+        // START TESTING.
+        let construction = &building.constructions[0];
+        // assert!(!model.surfaces[0].is_massive());
+
+        let r = construction.r_value().unwrap()
+            + model.surfaces[0].rs_front()
+            + model.surfaces[0].rs_back();
+
+
+
+        let t_start = model.zones[0].temperature(&building, &state); // Initial T of the zone
+        let t_out: f64 = 30.0; // T of surroundings
+
+        // test model
+        let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area, // the window is a hole on the wall... does not add area
+            lighting_power,
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
+
+
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
+
+        let dt = main_dt; // / model.dt_subdivisions() as f64;
+
+        let mut date = Date {
+            day: 1,
+            hour: 0.0,
+            month: 1,
+        };
+
+        // March:
+        for i in 0..800 {
+            let time = (i as f64) * dt;
+            date.add_seconds(time);
+
+            let found = model.zones[0].temperature(&building, &state);
+
+            model.march(date, &weather, &building, &mut state).unwrap();
+
+            // Get exact solution.
+            let exp = exp_fn(time);
+
+            let max_error = 0.55;            
+            println!("{}, {}", exp, found);
+            assert!((exp - found).abs() < max_error);
+            
+        }
+    }
+
     #[test]
     fn test_model_march_with_window_and_heater() {
         let surface_area = 4.;
@@ -779,7 +906,7 @@ mod testing {
         let mut state = SimulationState::new();        
         let mut building = get_single_zone_test_building(
             &mut state,
-            &Options {
+            &SingleZoneTestBuildingOptions {
                 zone_volume,
                 surface_area,
                 heating_power,
@@ -822,6 +949,97 @@ mod testing {
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
+
+
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
+
+        let dt = main_dt; // / model.dt_subdivisions() as f64;
+
+        let mut date = Date {
+            day: 1,
+            hour: 0.0,
+            month: 1,
+        };
+
+        // March:
+        for i in 0..800 {
+            let time = (i as f64) * dt;
+            date.add_seconds(time);
+
+            let found = model.zones[0].temperature(&building, &state);
+
+            model.march(date, &weather, &building, &mut state).unwrap();
+
+            // Get exact solution.
+            let exp = exp_fn(time);
+
+            let max_error = 0.55;            
+            println!("{}, {}", exp, found);
+            assert!((exp - found).abs() < max_error);
+            
+        }
+    }
+
+
+    #[test]
+    fn test_model_march_with_window_heater_and_infiltration() {
+        let surface_area = 4.;
+        let zone_volume = 40.;
+        let heating_power = 100.;
+        let infiltration_rate = 0.1;
+        
+        let mut state = SimulationState::new();        
+        let mut building = get_single_zone_test_building(
+            &mut state,
+            &SingleZoneTestBuildingOptions {
+                zone_volume,
+                surface_area,
+                heating_power,
+                infiltration_rate,
+                material_is_massive: Some(false),
+                ..Default::default()
+            },
+        );
+
+        // Finished building the Building
+
+        let n: usize = 20;
+        let main_dt = 60. * 60. / n as f64;
+        let model = ThermalModel::new(&mut building, &mut state, n).unwrap();
+
+        // MAP THE STATE
+        building.map_simulation_state(&mut state).unwrap();
+
+        // turn the heater on
+        let hvac_state_i = building.hvacs[0].heating_cooling_consumption_index().unwrap();
+        state.update_value(hvac_state_i, SimulationStateElement::HeatingCoolingPowerConsumption(0, heating_power));
+
+        // START TESTING.
+        let construction = &building.constructions[0];
+        // assert!(!model.surfaces[0].is_massive());
+
+        let r = construction.r_value().unwrap()
+            + model.surfaces[0].rs_front()
+            + model.surfaces[0].rs_back();
+
+
+
+        let t_start = model.zones[0].temperature(&building, &state); // Initial T of the zone
+        let t_out: f64 = 30.0; // T of surroundings
+
+        // test model
+        let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area, // the window is a hole on the wall... does not add area
+            heating_power,
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            infiltration_rate,
             .. SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();

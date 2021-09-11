@@ -3,12 +3,13 @@ name = "thermal"
 version = "0.1.0"
 authors = ["German Molina <germolinal@gmail.com>"]
 edition = "2018"
+license = "MIT"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 
 [dependencies]
-calendar = { path = "../calendar" }
-weather = {path = "../weather"}
+calendar = { git = "https://github.com/SIMPLE-BuildingSimulation/calendar.git" }
+weather = { git = "https://github.com/SIMPLE-BuildingSimulation/weather.git" }
 building_model = {path = "../building_model"}
 communication_protocols = { path = "../communication_protocols" }
 geometry3d = {path = "../geometry3d"}
@@ -17,9 +18,7 @@ convection = {path = "../convection"}
 gas_properties = {path = "../gas_properties"}
 
 [dev-dependencies]
-schedule = { path = "../schedule" }
-weather = { path = "../weather" }
-calendar = { path = "../calendar" }
+schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }
 simple_test_buildings = {path="../simple_test_buildings"}
 
 # Check https://stackoverflow.com/questions/53127722/how-can-i-activate-features-in-all-my-crates
