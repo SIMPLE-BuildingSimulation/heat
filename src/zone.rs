@@ -18,6 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+use std::rc::Rc;
+
 use building_model::building::Building;
 use building_model::space::Space;
 use gas_properties::air;
@@ -34,11 +36,7 @@ pub struct ThermalZone {
     /// the Thermal Model zones array
     index: usize,
 
-    /// The position of the surfaces with which
-    /// this zone is in contact in the Thermal Model
-    /// surfaces array
-    surface_indexes: Vec<usize>,
-
+    
     /// volume of the zone
     volume: f64,
     // The index containing the temperature of this
@@ -58,9 +56,9 @@ impl ThermalZone {
     /// This function creates a new ThermalZone from a Space.
     /// It will copy the index of the space, so it should be used
     /// by iterating the spaces in a building (so there is no mismatch).
-    pub fn from_space(space: &Space, state: &mut SimulationState) -> Self {
-        let space_index = space.index().unwrap();
-
+    pub fn from_space(space: &Rc<Space>, state: &mut SimulationState) -> Self {
+        let space_index = *space.index().unwrap();
+        let volume = *space.volume().unwrap();
         // Add Space Temperature state
         state.push(
             // start, by default, at 22.0 C
@@ -70,15 +68,10 @@ impl ThermalZone {
         ThermalZone {
             _name: format!("ThermalZone::{}", space.name),
             index: space_index,
-            volume: space.volume().unwrap(),
-            surface_indexes: Vec::with_capacity(space.surfaces.len()),
+            volume,
         }
     }
 
-
-    pub fn push_surface(&mut self, s: usize) {
-        self.surface_indexes.push(s);
-    }
 
     pub fn temperature(&self, building: &Building, state: &SimulationState) -> f64 {
         let space = &building.spaces[self.index];

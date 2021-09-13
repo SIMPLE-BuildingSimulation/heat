@@ -48,7 +48,7 @@ impl ThermalSurface{
         n_elements: &[usize],
         index: usize,
     ) -> Result<Self, String> {
-        let surface_index = surface.index().unwrap();
+        let surface_index = *surface.index().unwrap();
 
         
         // this (should not fail because the surface is valid)
@@ -83,7 +83,7 @@ impl ThermalSurface{
         index: usize,
     ) -> Result<Self, String> {
         //let fenestration = building.get_fenestration(fenestration_index);
-        let fenestration_index = fenestration.index().unwrap();
+        let fenestration_index = *fenestration.index().unwrap();
 
         
         // this (should not fail because the surface is valid)
@@ -143,12 +143,12 @@ impl ThermalSurface{
         self.mut_data().back_boundary = Some(b);
     }
 
-    pub fn front_boundary(&self) -> Option<Boundary> {
-        self.data().front_boundary
+    pub fn front_boundary(&self) -> &Option<Boundary> {
+        &self.data().front_boundary
     }
 
-    pub fn back_boundary(&self) -> Option<Boundary> {
-        self.data().back_boundary
+    pub fn back_boundary(&self) -> &Option<Boundary> {
+        &self.data().back_boundary
     }
 
     /// Checks whether a wall has thermal mass
@@ -744,7 +744,7 @@ impl ThermalSurfaceData {
         let fin = ini + self.n_nodes;
         for (node_index, i) in (ini..fin).enumerate() {
             if let Err(errmsg) = state[i].differ_only_in_value(
-                SimulationStateElement::SurfaceNodeTemperature(surf.index().unwrap(), node_index, 123.123),
+                SimulationStateElement::SurfaceNodeTemperature(*surf.index().unwrap(), node_index, 123.123),
             ) {
                 panic!("when get_surface_node_temperatures() | {}", errmsg);
             }

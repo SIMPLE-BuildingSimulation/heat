@@ -119,7 +119,7 @@ impl SimulationModel for ThermalModel {
         let mut thermal_surfaces: Vec<ThermalSurface> = Vec::with_capacity(building.surfaces.len());
 
         for (i, surface) in building.surfaces.iter().enumerate() {                        
-            let construction_index = surface.construction.index().unwrap();
+            let construction_index = *surface.construction.index().unwrap();
 
             let thermal_surface = match ThermalSurface::new_surface(
                 // building,
@@ -127,7 +127,7 @@ impl SimulationModel for ThermalModel {
                 surface,
                 dt,
                 &all_n_elements[construction_index],
-                surface.index().unwrap(),
+                *surface.index().unwrap(),
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -137,10 +137,10 @@ impl SimulationModel for ThermalModel {
 
             // Match surface and zones
             if let Ok(b) = surface.front_boundary(){
-                thermal_surfaces[i].set_front_boundary(b);
+                thermal_surfaces[i].set_front_boundary(b.clone());
             }
             if let Ok(b)=surface.back_boundary(){
-                thermal_surfaces[i].set_back_boundary(b);
+                thermal_surfaces[i].set_back_boundary(b.clone());
             }
                 
         }
@@ -148,7 +148,7 @@ impl SimulationModel for ThermalModel {
         let mut thermal_fenestrations: Vec<ThermalSurface> =
             Vec::with_capacity(building.fenestrations.len());
         for (i, fenestration) in building.fenestrations.iter().enumerate() {
-            let construction_index = fenestration.construction.index().unwrap();
+            let construction_index = *fenestration.construction.index().unwrap();
 
             let thermal_surface = match ThermalSurface::new_fenestration(
                 // building,
@@ -156,7 +156,7 @@ impl SimulationModel for ThermalModel {
                 fenestration,
                 dt,
                 &all_n_elements[construction_index],
-                fenestration.index().unwrap(),
+                *fenestration.index().unwrap(),
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -166,10 +166,10 @@ impl SimulationModel for ThermalModel {
 
             // Match surface and zones
             if let Ok(b) = fenestration.front_boundary(){
-                thermal_fenestrations[i].set_front_boundary(b);
+                thermal_fenestrations[i].set_front_boundary(b.clone());
             }
             if let Ok(b) = fenestration.back_boundary(){
-                thermal_fenestrations[i].set_back_boundary(b);
+                thermal_fenestrations[i].set_back_boundary(b.clone());
             }
         }
 
@@ -220,14 +220,14 @@ impl SimulationModel for ThermalModel {
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
                     Some(b)=> match b {
-                            Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
+                            Boundary::Space(z_index) => t_current[*z_index], //self.zones[z_index].temperature(building, state),
                             Boundary::Ground => unimplemented!(),
                     },                                
                     None => t_out    
                 };
                 let t_back = match s.back_boundary() {
                     Some(b)=> match b {
-                        Boundary::Space(z_index) => t_current[z_index], //self.zones[z_index].temperature(building, state),
+                        Boundary::Space(z_index) => t_current[*z_index], //self.zones[z_index].temperature(building, state),
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,                    
@@ -245,14 +245,14 @@ impl SimulationModel for ThermalModel {
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
                     Some(b)=>match b{
-                        Boundary::Space(z_index) => t_current[z_index],
+                        Boundary::Space(z_index) => t_current[*z_index],
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out                    
                 };
                 let t_back = match s.back_boundary() {
                     Some(b)=>match b{
-                        Boundary::Space(z_index) => t_current[z_index],
+                        Boundary::Space(z_index) => t_current[*z_index],
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out                    
@@ -375,10 +375,10 @@ impl ThermalModel {
         // Heating/Cooling
         for hvac in building.hvacs.iter(){
             for target_space in hvac.target_spaces(){
-                
+                let target_space_index = *target_space.index().unwrap();
                 let consumption = hvac.heating_cooling_consumption(state).expect("HVAC has not heating/cooling state");
                 let heating_cooling = calc_cooling_heating_power(hvac, consumption);                
-                a[*target_space] += heating_cooling;
+                a[target_space_index] += heating_cooling;
             }
             // heating through air supply?
         }
@@ -386,8 +386,9 @@ impl ThermalModel {
         // Heating/Cooling
         for luminaire in building.luminaires.iter(){
             if let Ok(target_space) = luminaire.target_space() {                
+                let target_space_index = *target_space.index().unwrap();
                 let consumption = luminaire.power_consumption(state).expect("Luminaire has no Power Consumption state");                
-                a[target_space] += consumption;
+                a[target_space_index] += consumption;
             }                        
         }
 
@@ -441,16 +442,16 @@ impl ThermalModel {
                 if let Some(Boundary::Space(z_index)) = surface.front_boundary() {
                     let hi = 1. / surface.rs_front();
                     let temp = surface.front_temperature(building, state);
-                    a[z_index] += hi * ai * temp;
-                    b[z_index] += hi * ai;
+                    a[*z_index] += hi * ai * temp;
+                    b[*z_index] += hi * ai;
                 }
 
                 // if back leads to a Zone
                 if let Some(Boundary::Space(z_index)) = surface.back_boundary() {
                     let hi = 1. / surface.rs_back();
                     let temp = surface.back_temperature(building, state);
-                    a[z_index] += hi * ai * temp;
-                    b[z_index] += hi * ai;
+                    a[*z_index] += hi * ai * temp;
+                    b[*z_index] += hi * ai;
                 }
             }
         }
