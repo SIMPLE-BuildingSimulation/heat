@@ -23,9 +23,9 @@ use std::rc::Rc;
 
 use matrix::Matrix;
 
-//use building_model::construction::Construction;
-// use building_model::building::Building;
-use building_model::construction::Construction;
+//use simple_model::construction::Construction;
+// use simple_model::model::SimpleModel;
+use simple_model::construction::Construction;
 
 
 /// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
@@ -341,9 +341,9 @@ pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usi
     let mut full_rs_front = rs_front;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
-        let material = &c.layers[i];//building.get_material(material_index).unwrap();
+        let material = &c.layers[i];//model.get_material(material_index).unwrap();
         // let substance_index = material.get_substance_index().unwrap();
-        let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+        let substance = &material.substance;//model.get_substance(substance_index).unwrap();
 
         full_rs_front += material.thickness / substance.thermal_conductivity().unwrap();
     }
@@ -370,7 +370,7 @@ fn calc_c_matrix(
 
     for n_layer in 0..construction.layers.len() {
         // let layer_index = c.get_layer_index(n_layer).unwrap();
-        let material = &construction.layers[n_layer];//building.get_material(layer_index).unwrap();
+        let material = &construction.layers[n_layer];//model.get_material(layer_index).unwrap();
 
         let m = n_elements[n_layer];
 
@@ -379,7 +379,7 @@ fn calc_c_matrix(
             for _ in 0..m {
                 // Calc mass
                 // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+                let substance = &material.substance;//model.get_substance(substance_index).unwrap();
 
                 let rho = substance.density().unwrap();
                 let cp = substance.specific_heat_capacity().unwrap();
@@ -471,7 +471,7 @@ fn calc_k_matrix(
 
     while n_layer < last_massive {
         // let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+        let material = &c.layers[n_layer];//model.get_material(material_index).unwrap();
 
         let m = n_elements[n_layer];
         if m == 0 {
@@ -481,11 +481,11 @@ fn calc_k_matrix(
             let mut r = 0.0; // if the material is no mass, then the first value
             while n_layer < last_massive && n_elements[n_layer] == 0 {
                 // let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = &c.layers[n_layer];//building.get_material(material_index).unwrap();
+                let material = &c.layers[n_layer];//model.get_material(material_index).unwrap();
                 let dx = material.thickness;//().unwrap();
 
                 // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+                let substance = &material.substance;//model.get_substance(substance_index).unwrap();
                 let k = substance.thermal_conductivity().unwrap();
 
                 r += dx / k;
@@ -512,7 +512,7 @@ fn calc_k_matrix(
         } else {
             // calc U value
             // let substance_index = material.get_substance_index().unwrap();
-            let substance = &material.substance;//building.get_substance(substance_index).unwrap();
+            let substance = &material.substance;//model.get_substance(substance_index).unwrap();
 
             let lambda = substance.thermal_conductivity().unwrap();
             let dx = material.thickness / (m as f64);

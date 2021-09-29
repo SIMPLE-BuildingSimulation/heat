@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use building_model::heating_cooling::{HeaterCooler, HeatingCoolingKind};
+use simple_model::heating_cooling::{HeaterCooler, HeatingCoolingKind};
 
 pub fn calc_cooling_heating_power(system: &HeaterCooler, consumption_power: f64) -> f64 {
     match system.kind {

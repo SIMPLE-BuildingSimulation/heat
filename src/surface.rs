@@ -22,13 +22,13 @@ SOFTWARE.
 use std::rc::Rc;
 use matrix::Matrix;
 
-use building_model::construction::Construction;
-use building_model::boundary::Boundary;
-use building_model::building::Building;
-use building_model::fenestration::Fenestration;
-use building_model::surface::Surface;
-use building_model::simulation_state::SimulationState;
-use building_model::simulation_state_element::SimulationStateElement;
+use simple_model::construction::Construction;
+use simple_model::boundary::Boundary;
+use simple_model::model::SimpleModel;
+use simple_model::fenestration::Fenestration;
+use simple_model::surface::Surface;
+use simple_model::simulation_state::SimulationState;
+use simple_model::simulation_state_element::SimulationStateElement;
 use convection::*;
 
 use crate::construction::*;
@@ -41,7 +41,7 @@ pub enum ThermalSurface{
 
 impl ThermalSurface{
     pub fn new_surface(
-        // building: &Building,
+        // model: &SimpleModel,
         state: &mut SimulationState,
         surface: &Surface,
         dt: f64,
@@ -59,7 +59,7 @@ impl ThermalSurface{
         let (rs_front, rs_back) = calc_convection_coefficients(surface);
 
         let data = ThermalSurfaceData::new(
-            // building,
+            // model,
             state,
             surface_index,
             construction,
@@ -75,14 +75,14 @@ impl ThermalSurface{
     }
 
     pub fn new_fenestration(
-        // building: &Building,
+        // model: &SimpleModel,
         state: &mut SimulationState,
         fenestration: &Fenestration,
         dt: f64,
         n_elements: &[usize],
         index: usize,
     ) -> Result<Self, String> {
-        //let fenestration = building.get_fenestration(fenestration_index);
+        //let fenestration = model.get_fenestration(fenestration_index);
         let fenestration_index = *fenestration.index().unwrap();
 
         
@@ -94,7 +94,7 @@ impl ThermalSurface{
         let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
 
         let data = ThermalSurfaceData::new(
-            // building,
+            // model,
             state,
             fenestration_index,
             construction,
@@ -156,40 +156,40 @@ impl ThermalSurface{
         self.data().massive
     }
 
-    pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    pub fn front_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
         match &self{
             Self::Surface(d)=>{
-                d.surface_front_temperature(building, state)
+                d.surface_front_temperature(model, state)
             },
             Self::Fenestration(d) =>{
-                d.fenestration_front_temperature(building, state)
+                d.fenestration_front_temperature(model, state)
             }
         }
     }
 
-    pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    pub fn back_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
         match &self{
             Self::Surface(d)=>{
-                d.surface_back_temperature(building, state)
+                d.surface_back_temperature(model, state)
             },
             Self::Fenestration(d) =>{
-                d.fenestration_back_temperature(building, state)
+                d.fenestration_back_temperature(model, state)
             }
         }
     }
 
     pub fn set_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &mut SimulationState,
         matrix: &Matrix,
     ) {
         match &self{
             Self::Surface(d)=>{
-                d.set_surface_node_temperatures(building, state, matrix)
+                d.set_surface_node_temperatures(model, state, matrix)
             },
             Self::Fenestration(d) =>{
-                d.set_fenestration_node_temperatures(building, state, matrix)
+                d.set_fenestration_node_temperatures(model, state, matrix)
             }
         }
     }
@@ -198,15 +198,15 @@ impl ThermalSurface{
     /// object.
     pub fn get_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &SimulationState,        
     ) -> Matrix {
         match &self{
             Self::Surface(d)=>{
-                d.get_surface_node_temperatures(building, state)
+                d.get_surface_node_temperatures(model, state)
             },
             Self::Fenestration(d) =>{
-                d.get_fenestration_node_temperatures(building, state)
+                d.get_fenestration_node_temperatures(model, state)
             }
         }
     }
@@ -215,7 +215,7 @@ impl ThermalSurface{
     /// on the inside and outside temperatures
     fn calc_heat_flow(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &SimulationState,
         t_front: f64,
         t_back: f64,
@@ -224,8 +224,8 @@ impl ThermalSurface{
         let data = self.data();
         let q_in;
         let q_out;
-        let t_si = self.front_temperature(building, state);
-        let t_so = self.back_temperature(building, state);
+        let t_si = self.front_temperature(model, state);
+        let t_so = self.back_temperature(model, state);
         if data.massive {
             q_in = (t_si - t_front) / data.full_rs_front;
             q_out = (t_so - t_back) / data.full_rs_back;
@@ -241,13 +241,13 @@ impl ThermalSurface{
     /// Marches one timestep. Returns front and back heat flow    
     pub fn march(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &mut SimulationState,
         t_front: f64,
         t_back: f64,
         _dt: f64,
     ) -> (f64, f64) {
-        let mut temperatures = self.get_node_temperatures(building, state);
+        let mut temperatures = self.get_node_temperatures(model, state);
         let data = self.data();
 
         // println!("T front = {} | T back = {} ", t_front, t_back);
@@ -308,16 +308,16 @@ impl ThermalSurface{
         }
         // println!(" Temperatures_after = {}", temperatures);
         // Set state
-        self.set_node_temperatures(building, state, &temperatures);
+        self.set_node_temperatures(model, state, &temperatures);
 
         // return
-        self.calc_heat_flow(building, state, t_front, t_back)
+        self.calc_heat_flow(model, state, t_front, t_back)
     }
 }
 
 /// This is a Surface from the point of view of our thermal solver.
 /// Since this module only calculate heat transfer (and not short-wave solar
-/// radiation, e.g., light), both building_model::Fenestration and building_model::Surface
+/// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
 /// are treated in the same way.
 pub struct ThermalSurfaceData {
     /// The index of this surface within
@@ -325,7 +325,7 @@ pub struct ThermalSurfaceData {
     index: usize,
 
     // A reference to the original Surface in the
-    // building model
+    // model model
     surface_index: usize,
 
     /// The front side convection coefficient
@@ -393,10 +393,10 @@ impl ThermalSurfaceData {
     /// Constructs a new ThermalSurface object.
     ///
     /// # Parameters
-    /// * building: the Building object containing the Construction
+    /// * model: the SimpleModel object containing the Construction
     /// * state: the SimulationState element that contains the results
-    /// * surface_index: The index of the Surface represented by this surface in the Building object
-    /// * construction_index: The index of the Construction of this surface in the Building object
+    /// * surface_index: The index of the Surface represented by this surface in the SimpleModel object
+    /// * construction_index: The index of the Construction of this surface in the SimpleModel object
     /// * dt: the timestep for the model
     /// * area: area of the Surface,
     /// * rs_front: the interior film coefficient,
@@ -405,7 +405,7 @@ impl ThermalSurfaceData {
     /// * index: The index assigned to this surface within the Thermal Model surfaces array
     /// * is_fenestration: Is a fenestration?    
     fn new(
-        // building: &Building,
+        // model: &SimpleModel,
         state: &mut SimulationState,
         surface_index: usize,
         construction: &Rc<Construction>,
@@ -448,9 +448,9 @@ impl ThermalSurfaceData {
             total_r : construction.r_value().unwrap() + rs_front + rs_back, 
             full_rs_front : calc_full_rs_front(construction, rs_front, first_massive),
             full_rs_back : calc_full_rs_back(construction, rs_back, last_massive),
-            // c_o: 0.0,           // filled when building thermal network
-            // c_i: 0.0,           // filled when building thermal network
-            // k_prime: Matrix::new(0.0, n_nodes, n_nodes), // filled when building thermal network
+            // c_o: 0.0,           // filled when model thermal network
+            // c_i: 0.0,           // filled when model thermal network
+            // k_prime: Matrix::new(0.0, n_nodes, n_nodes), // filled when model thermal network
             n_nodes,
             massive: true,        
             front_boundary: None, // filled when setting boundary
@@ -498,8 +498,8 @@ impl ThermalSurfaceData {
 
     
 
-    fn surface_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        let surf = &building.surfaces[self.surface_index];
+    fn surface_front_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
+        let surf = &model.surfaces[self.surface_index];
 
         let i = surf.first_node_temperature_index().unwrap();
 
@@ -527,8 +527,8 @@ impl ThermalSurfaceData {
         // }
     }
 
-    fn fenestration_front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        let surf = &building.fenestrations[self.surface_index];
+    fn fenestration_front_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
+        let surf = &model.fenestrations[self.surface_index];
 
         let i = surf.first_node_temperature_index().unwrap();
 
@@ -559,26 +559,26 @@ impl ThermalSurfaceData {
     }
 
     // /// Gets the Front temperature
-    // pub fn front_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    // pub fn front_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
     //     if self.is_fenestration {
-    //         self.fenestration_front_temperature(building, state)
+    //         self.fenestration_front_temperature(model, state)
     //     } else {
-    //         self.surface_front_temperature(building, state)
+    //         self.surface_front_temperature(model, state)
     //     }
     // }
 
     // /// Gets the Back temperature
-    // pub fn back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
+    // pub fn back_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
     //     if self.is_fenestration {
-    //         self.fenestration_back_temperature(building, state)
+    //         self.fenestration_back_temperature(model, state)
     //     } else {
-    //         self.surface_back_temperature(building, state)
+    //         self.surface_back_temperature(model, state)
     //     }
     // }
 
     /// Gets the Back temperature of a surface
-    fn surface_back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        let surf = &building.surfaces[self.surface_index];
+    fn surface_back_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
+        let surf = &model.surfaces[self.surface_index];
 
         let i = surf.last_node_temperature_index().unwrap();
 
@@ -609,8 +609,8 @@ impl ThermalSurfaceData {
     }
 
     /// Gets the Back temperature of a surface
-    fn fenestration_back_temperature(&self, building: &Building, state: &SimulationState) -> f64 {
-        let surf = &building.fenestrations[self.surface_index];
+    fn fenestration_back_temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
+        let surf = &model.fenestrations[self.surface_index];
 
         let i = surf.last_node_temperature_index().unwrap();
         state[i].safe_get_value(SimulationStateElement::FenestrationNodeTemperature(self.index, self.n_nodes - 1, 123.123))
@@ -646,24 +646,24 @@ impl ThermalSurfaceData {
     // Sets the node temperatures in the state
     // fn set_node_temperatures(
     //     &self,
-    //     building: &Building,
+    //     model: &SimpleModel,
     //     state: &mut SimulationState,
     //     matrix: &Matrix,
     // ) {
     //     if self.is_fenestration {
-    //         self.set_fenestration_node_temperatures(building, state, matrix)
+    //         self.set_fenestration_node_temperatures(model, state, matrix)
     //     } else {
-    //         self.set_surface_node_temperatures(building, state, matrix)
+    //         self.set_surface_node_temperatures(model, state, matrix)
     //     }
     // }
 
     fn set_surface_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &mut SimulationState,
         matrix: &Matrix,
     ) {
-        let surf = &building.surfaces[self.surface_index];
+        let surf = &model.surfaces[self.surface_index];
         let ini = surf.first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
 
@@ -678,11 +678,11 @@ impl ThermalSurfaceData {
 
     fn set_fenestration_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &mut SimulationState,
         matrix: &Matrix,
     ) {
-        let surf = &building.fenestrations[self.surface_index];
+        let surf = &model.fenestrations[self.surface_index];
         let ini = surf.first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
 
@@ -697,21 +697,21 @@ impl ThermalSurfaceData {
 
     /// Retrieves the state of the Surface as a Matrix
     /// object.
-    // pub fn get_node_temperatures(&self, building: &Building, state: &SimulationState) -> Matrix {
+    // pub fn get_node_temperatures(&self, model: &SimpleModel, state: &SimulationState) -> Matrix {
     //     if self.is_fenestration {
-    //         self.get_fenestration_node_temperatures(building, state)
+    //         self.get_fenestration_node_temperatures(model, state)
     //     } else {
-    //         self.get_surface_node_temperatures(building, state)
+    //         self.get_surface_node_temperatures(model, state)
     //     }
     // }
 
     fn get_fenestration_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &SimulationState,
     ) -> Matrix {
         let mut ret = Matrix::new(0.0, self.n_nodes, 1);
-        let surf = &building.fenestrations[self.surface_index];
+        let surf = &model.fenestrations[self.surface_index];
         let ini = surf.first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
         for i in ini..fin {
@@ -735,11 +735,11 @@ impl ThermalSurfaceData {
 
     fn get_surface_node_temperatures(
         &self,
-        building: &Building,
+        model: &SimpleModel,
         state: &SimulationState,
     ) -> Matrix {
         let mut ret = Matrix::new(0.0, self.n_nodes, 1);
-        let surf = &building.surfaces[self.surface_index];
+        let surf = &model.surfaces[self.surface_index];
         let ini = surf.first_node_temperature_index().unwrap();
         let fin = ini + self.n_nodes;
         for (node_index, i) in (ini..fin).enumerate() {
@@ -768,23 +768,23 @@ mod testing {
     use geometry3d::loop3d::Loop3D;
     use geometry3d::point3d::Point3D;
     use geometry3d::polygon3d::Polygon3D;
-    use building_model::substance::Substance;
-    use building_model::material::Material;
-    use building_model::construction::Construction;
+    use simple_model::substance::Substance;
+    use simple_model::material::Material;
+    use simple_model::construction::Construction;
 
-    fn add_polyurethane(building: &mut Building) -> Rc<Substance> {
+    fn add_polyurethane(model: &mut SimpleModel) -> Rc<Substance> {
 
         let mut poly = Substance::new("polyurethane".to_string());
         poly   .set_density(17.5)// kg/m3... reverse engineered from paper
                     .set_specific_heat_capacity(2400.)// J/kg.K
                     .set_thermal_conductivity(0.0252);// W/m.K
 
-        let ret = building.add_substance(poly);                        
+        let ret = model.add_substance(poly);                        
         assert_eq!(ret.thermal_diffusivity().unwrap(), 0.6E-6);        
         ret
     }
 
-    fn add_brickwork(building: &mut Building) -> Rc<Substance> {
+    fn add_brickwork(model: &mut SimpleModel) -> Rc<Substance> {
         let mut brickwork = Substance::new("brickwork".to_string());
 
         brickwork   .set_density(1700.)// kg/m3... reverse engineered from paper
@@ -792,85 +792,85 @@ mod testing {
                     .set_thermal_conductivity(0.816);// W/m.K
 
         
-        let ret = building.add_substance(brickwork);                        
+        let ret = model.add_substance(brickwork);                        
             
         assert_eq!(ret.thermal_diffusivity().unwrap(), 0.6E-6);
         
         ret
     }
 
-    fn add_material(building: &mut Building, substance: &Rc<Substance>, thickness: f64) -> Rc<Material> {
+    fn add_material(model: &mut SimpleModel, substance: &Rc<Substance>, thickness: f64) -> Rc<Material> {
         let mat = Material::new("123123".to_string(), Rc::clone(substance), thickness);
         
-        building.add_material(mat)
+        model.add_material(mat)
     }
 
-    // fn get_wall_1() -> Building {
-    //     let mut building = Building::new("The Building".to_string());
+    // fn get_wall_1() -> SimpleModel {
+    //     let mut model = SimpleModel::new("The SimpleModel".to_string());
 
     //     /* SUBSTANCES */
 
     //     // Add polyurethane Substance
-    //     let poly = add_polyurethane(&mut building);
+    //     let poly = add_polyurethane(&mut model);
 
     //     /* MATERIAL */
     //     let m0_thickness = 200.0 / 1000. as f64;
-    //     let m0 = add_material(&mut building, &poly, m0_thickness);
+    //     let m0 = add_material(&mut model, &poly, m0_thickness);
 
     //     /* WALL 1 */
     //     let mut c0 = Construction::new("Wall 1".to_string());
     //     c0.layers.push(m0);
 
-    //     building.add_construction(c0);
+    //     model.add_construction(c0);
         
 
-    //     building
+    //     model
     // }
 
-    // fn get_wall_2() -> Building {
-    //     let mut building = Building::new("The Building".to_string());
+    // fn get_wall_2() -> SimpleModel {
+    //     let mut model = SimpleModel::new("The SimpleModel".to_string());
 
     //     /* SUBSTANCES */
     //     // Add polyurethane Substance
-    //     let poly = add_polyurethane(&mut building);
+    //     let poly = add_polyurethane(&mut model);
 
     //     // Add brickwork
-    //     let brickwork = add_brickwork(&mut building);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* MATERIALS */
     //     let m0_thickness = 200.0 / 1000. as f64;
-    //     let m0 = add_material(&mut building, &poly, m0_thickness);
+    //     let m0 = add_material(&mut model, &poly, m0_thickness);
 
     //     let m1_thickness = 110.0 / 1000. as f64;
-    //     let m1 = add_material(&mut building, &brickwork, m1_thickness);
+    //     let m1 = add_material(&mut model, &brickwork, m1_thickness);
 
     //     /* WALL */
 
     //     let mut c0 = Construction::new("Wall 2".to_string());
     //     c0.layers.push(m0);
     //     c0.layers.push(m1);
-    //     building.add_construction(c0);
+    //     model.add_construction(c0);
         
 
-    //     building
+    //     model
     // }
 
-    // fn get_wall_3() -> Building {
-    //     let mut building = Building::new("The Building".to_string());
+    // fn get_wall_3() -> SimpleModel {
+    //     let mut model = SimpleModel::new("The SimpleModel".to_string());
 
     //     /* SUBSTANCES */
     //     // Add polyurethane Substance
-    //     let poly = add_polyurethane(&mut building);
+    //     let poly = add_polyurethane(&mut model);
 
     //     // Add brickwork
-    //     let brickwork = add_brickwork(&mut building);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* MATERIALS */
     //     let poly_mat_thickness = 20.0 / 1000. as f64;
-    //     let poly_mat = add_material(&mut building, &poly, poly_mat_thickness);
+    //     let poly_mat = add_material(&mut model, &poly, poly_mat_thickness);
 
     //     let brickwork_mat_thickness = 220.0 / 1000. as f64;
-    //     let brickwork_mat = add_material(&mut building, &brickwork, brickwork_mat_thickness);
+    //     let brickwork_mat = add_material(&mut model, &brickwork, brickwork_mat_thickness);
 
     //     /* WALL 3 */
 
@@ -878,26 +878,26 @@ mod testing {
     //     c0.layers.push(Rc::clone(&poly_mat)); // clone it
     //     c0.layers.push(brickwork_mat); // move it
     //     c0.layers.push(poly_mat); // now we can move it
-    //     building.add_construction(c0);
+    //     model.add_construction(c0);
         
-    //     building
+    //     model
     // }
 
     #[test]
     fn test_new() {
-        let mut building = Building::new("A building".to_string());
+        let mut model = SimpleModel::new("A model".to_string());
 
         /* SUBSTANCES */
         // Add polyurethane Substance
-        let poly = add_polyurethane(&mut building);
+        let poly = add_polyurethane(&mut model);
 
         let m0_thickness = 200.0 / 1000. as f64;
-        let m0 = add_material(&mut building, &poly, m0_thickness);
+        let m0 = add_material(&mut model, &poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
         c0.layers.push(Rc::clone(&m0));
-        let c0 = building.add_construction(c0);
+        let c0 = model.add_construction(c0);
         
 
         /* GEOMETRY */
@@ -912,7 +912,7 @@ mod testing {
 
         /* SURFACE */
         let s = Surface::new("Surface".to_string(), p, Rc::clone(&c0));        
-        let surface = building.add_surface(s);
+        let surface = model.add_surface(s);
 
         // This should result in a dt of 300, with 8 layers of 0.25m thick.
         let main_dt = 300.0;
@@ -999,18 +999,18 @@ mod testing {
 
     // #[test]
     // fn test_wall_brickwork() {
-    //     let mut building = Building::new("The building".to_string());
+    //     let mut model = SimpleModel::new("The model".to_string());
 
     //     // Add brickwork
-    //     let brickwork = add_brickwork(&mut building);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* WALL 1: Single layer, with mass. */
     //     let brickwork_200_thickness = 200.0 / 1000. as f64;
-    //     let brickwork_200 = add_material(&mut building, &brickwork, brickwork_200_thickness);
+    //     let brickwork_200 = add_material(&mut model, &brickwork, brickwork_200_thickness);
 
     //     let mut wall_1 = Construction::new("Wall 1".to_string());
     //     wall_1.layers.push(Rc::clone(&brickwork_200));
-    //     let wall_1 = building.add_construction(wall_1);
+    //     let wall_1 = model.add_construction(wall_1);
 
     //     let dt = 156.0;
     //     let n_elements: Vec<usize> = vec![4];
@@ -1022,7 +1022,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         //&building,
+    //         //&model,
     //         &wall_1,
     //         dt,
     //         &n_elements,
@@ -1096,23 +1096,23 @@ mod testing {
 
     // #[test]
     // fn test_wall_2() {
-    //     let building = get_wall_2();
+    //     let model = get_wall_2();
     //     let c0_index = 0;
-    //     let c0 = &building.constructions[c0_index];
+    //     let c0 = &model.constructions[c0_index];
 
     //     let m0_index = 0;
-    //     let m0 = &building.materials[m0_index];
+    //     let m0 = &model.materials[m0_index];
     //     //let m0_thickness = m0.thickness;
 
     //     // let m0_substance_index = m0.get_substance_index().unwrap();
-    //     let m0_substance = &m0.substance;//building.get_substance(m0_substance_index).unwrap();
+    //     let m0_substance = &m0.substance;//model.get_substance(m0_substance_index).unwrap();
 
     //     let m1_index = 1;
-    //     let m1 = &building.materials[m1_index];//).unwrap();
+    //     let m1 = &model.materials[m1_index];//).unwrap();
     //     //let m1_thickness = m1.thickness;
 
     //     // let m1_substance_index = m1.get_substance_index().unwrap();
-    //     let m1_substance = &m1.substance;//building.get_substance(m1_substance_index).unwrap();
+    //     let m1_substance = &m1.substance;//model.get_substance(m1_substance_index).unwrap();
 
     //     let dt = 156.0;
     //     let n_nodes: Vec<usize> = vec![3, 3];
@@ -1134,7 +1134,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         // &building,
+    //         // &model,
     //         &c0,
     //         dt,
     //         &n_nodes,
@@ -1251,13 +1251,13 @@ mod testing {
 
     // #[test]
     // fn test_wall_1() {
-    //     let building = get_wall_1();
+    //     let model = get_wall_1();
 
     //     let c0_index = 0;
-    //     let c0 = &building.constructions[c0_index];
+    //     let c0 = &model.constructions[c0_index];
 
     //     let m0_index = 0;
-    //     let m0 = &building.materials[m0_index];
+    //     let m0 = &model.materials[m0_index];
     //     let m0_substance = &m0.substance;
 
     //     let dt = 156.0;
@@ -1270,7 +1270,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         // &building,
+    //         // &model,
     //         &c0,
     //         dt,
     //         &n_nodes,
@@ -1311,21 +1311,21 @@ mod testing {
 
     // #[test]
     // fn test_double_wall_1() {
-    //     let mut building = get_wall_1();
+    //     let mut model = get_wall_1();
 
     //     let c0_index = 0;
     //     let m0_index = 0;
 
     //     // add second layer
-    //     building
+    //     model
     //         .add_material_to_construction(c0_index, m0_index)
     //         .unwrap();
 
-    //     let c0 = building.get_construction(c0_index).unwrap();
-    //     let m0 = building.get_material(m0_index).unwrap();
+    //     let c0 = model.get_construction(c0_index).unwrap();
+    //     let m0 = model.get_material(m0_index).unwrap();
 
     //     let m0_substance_index = m0.get_substance_index().unwrap();
-    //     let m0_substance = building.get_substance(m0_substance_index).unwrap();
+    //     let m0_substance = model.get_substance(m0_substance_index).unwrap();
 
     //     let dt = 156.0;
     //     let n_nodes: Vec<usize> = vec![0, 0];
@@ -1337,7 +1337,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         &building,
+    //         &model,
     //         &c0,
     //         dt,
     //         &n_nodes,
@@ -1372,24 +1372,24 @@ mod testing {
 
     // #[test]
     // fn test_wall_5() {
-    //     let mut building = Building::new("A building".to_string());
+    //     let mut model = SimpleModel::new("A model".to_string());
 
     //     /* SUBSTANCES */
-    //     let poly = add_polyurethane(&mut building);
-    //     let brickwork = add_brickwork(&mut building);
+    //     let poly = add_polyurethane(&mut model);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* MATERIALS */
     //     let m0_thickness = 200.0 / 1000. as f64;
-    //     let m0 = add_material(&mut building, &poly, m0_thickness);
+    //     let m0 = add_material(&mut model, &poly, m0_thickness);
 
     //     let m1_thickness = 200.0 / 1000. as f64;
-    //     let m1 = add_material(&mut building, &brickwork, m1_thickness);
+    //     let m1 = add_material(&mut model, &brickwork, m1_thickness);
 
     //     /* WALL */
     //     let mut c0 = Construction::new("Wall 2".to_string());
     //     c0.layers.push(Rc::clone(&m0));
     //     c0.layers.push(Rc::clone(&m1));
-    //     let c0 = building.add_construction(c0);
+    //     let c0 = model.add_construction(c0);
 
     //     let m0_substance = &m0.substance;        
     //     let m1_substance = &m1.substance;
@@ -1410,7 +1410,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         // &building,
+    //         // &model,
     //         &c0,
     //         dt,
     //         &n_nodes,
@@ -1453,26 +1453,26 @@ mod testing {
 
     // #[test]
     // fn test_wall_6() {
-    //     let mut building = Building::new("A building".to_string());
+    //     let mut model = SimpleModel::new("A model".to_string());
 
     //     /* SUBSTANCES */
 
-    //     let poly = add_polyurethane(&mut building);
-    //     let brickwork = add_brickwork(&mut building);
+    //     let poly = add_polyurethane(&mut model);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* MATERIALS */
 
     //     let m0_thickness = 200.0 / 1000.;
-    //     let m0 = add_material(&mut building, &brickwork, m0_thickness);
+    //     let m0 = add_material(&mut model, &brickwork, m0_thickness);
 
     //     let m1_thickness = 200.0 / 1000.;
-    //     let m1 = add_material(&mut building, &poly, m1_thickness);
+    //     let m1 = add_material(&mut model, &poly, m1_thickness);
 
     //     /* WALL */
     //     let mut c0 = Construction::new("Wall".to_string());
     //     c0.layers.push(Rc::clone(&m0));
     //     c0.layers.push(Rc::clone(&m1));
-    //     let c0 = building.add_construction(c0);
+    //     let c0 = model.add_construction(c0);
 
         
     //     let m0_substance = &m0.substance;
@@ -1494,7 +1494,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         // &building,
+    //         // &model,
     //         &c0,
     //         first_massive,
     //         last_massive,
@@ -1539,20 +1539,20 @@ mod testing {
 
     // #[test]
     // fn test_wall_7() {
-    //     let mut building = Building::new("A building".to_string());
+    //     let mut model = SimpleModel::new("A model".to_string());
 
     //     /* SUBSTANCES */
 
-    //     let poly = add_polyurethane(&mut building);
-    //     let brickwork = add_brickwork(&mut building);
+    //     let poly = add_polyurethane(&mut model);
+    //     let brickwork = add_brickwork(&mut model);
 
     //     /* MATERIALS */
 
     //     let m0_thickness = 200.0 / 1000.;
-    //     let m0 = add_material(&mut building, &brickwork, m0_thickness);
+    //     let m0 = add_material(&mut model, &brickwork, m0_thickness);
 
     //     let m1_thickness = 200.0 / 1000.;
-    //     let m1 = add_material(&mut building, &poly, m1_thickness);
+    //     let m1 = add_material(&mut model, &poly, m1_thickness);
 
     //     /* WALL */
 
@@ -1561,7 +1561,7 @@ mod testing {
     //     c0.layers.push(Rc::clone(&m1));
     //     c0.layers.push(Rc::clone(&m1));
     //     c0.layers.push(Rc::clone(&m0));
-    //     let c0 = building.add_construction(c0);        
+    //     let c0 = model.add_construction(c0);        
         
     //     let m0_substance = &m0.substance;
     //     let m1_substance = &m1.substance;
@@ -1581,7 +1581,7 @@ mod testing {
     //     let mut c_i = 0.0;
     //     let mut c_o = 0.0;
     //     build_thermal_network(
-    //         // &building,
+    //         // &model,
     //         &c0,
     //         dt,
     //         &n_nodes,
@@ -1632,21 +1632,21 @@ mod testing {
 
     #[test]
     fn test_calc_heat_flow_with_mass() {
-        let mut building = Building::new("A building".to_string());
+        let mut model = SimpleModel::new("A model".to_string());
 
         /* SUBSTANCES */
 
-        let poly = add_polyurethane(&mut building);
+        let poly = add_polyurethane(&mut model);
 
         /* MATERIALS */
 
         let m0_thickness = 200.0 / 1000. as f64;
-        let m0 = add_material(&mut building, &poly, m0_thickness);
+        let m0 = add_material(&mut model, &poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
         c0.layers.push(Rc::clone(&m0));
-        let c0 = building.add_construction(c0);
+        let c0 = model.add_construction(c0);
 
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
@@ -1660,7 +1660,7 @@ mod testing {
 
         /* SURFACE */
         let surface = Surface::new("Surface".to_string(), p, Rc::clone(&c0));
-        let surface = building.add_surface(surface);
+        let surface = model.add_surface(surface);
         
 
         /* TEST */        
@@ -1678,10 +1678,10 @@ mod testing {
         assert!(ts.data().massive);
 
         // MAP THE STATE
-        building.map_simulation_state(&mut state).unwrap();
+        model.map_simulation_state(&mut state).unwrap();
 
         // TEST
-        let temperatures = ts.get_node_temperatures(&building, &state);
+        let temperatures = ts.get_node_temperatures(&model, &state);
 
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
@@ -1691,7 +1691,7 @@ mod testing {
 
         let t_back = 10.0;
         let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
+        let (q_in, q_out) = ts.calc_heat_flow(&model, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -1699,20 +1699,20 @@ mod testing {
 
     #[test]
     fn test_calc_heat_flow_no_mass() {
-        let mut building = Building::new("A building".to_string());
+        let mut model = SimpleModel::new("A model".to_string());
 
         /* SUBSTANCES */
 
-        let poly = add_polyurethane(&mut building);
+        let poly = add_polyurethane(&mut model);
 
         /* MATERIALS */
         let m0_thickness = 200.0 / 1000.;
-        let m0 = add_material(&mut building, &poly, m0_thickness);
+        let m0 = add_material(&mut model, &poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
         c0.layers.push(Rc::clone(&m0));
-        let c0 = building.add_construction(c0);
+        let c0 = model.add_construction(c0);
 
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
@@ -1726,7 +1726,7 @@ mod testing {
 
         /* SURFACE */
         let surface = Surface::new("Surface".to_string(), p, Rc::clone(&c0));
-        let surface = building.add_surface(surface);
+        let surface = model.add_surface(surface);
 
         /* TEST */
         
@@ -1741,12 +1741,12 @@ mod testing {
             ThermalSurface::new_surface( &mut state, &surface, dt, &nodes, 0).unwrap();
 
         // MAP THE STATE
-        building.map_simulation_state(&mut state).unwrap();
+        model.map_simulation_state(&mut state).unwrap();
 
         // TEST
 
         assert!(!ts.data().massive);
-        let temperatures = ts.get_node_temperatures(&building, &state);
+        let temperatures = ts.get_node_temperatures(&model, &state);
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
@@ -1755,7 +1755,7 @@ mod testing {
 
         let t_back = 10.0;
         let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
+        let (q_in, q_out) = ts.calc_heat_flow(&model, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -1765,22 +1765,22 @@ mod testing {
     fn test_calc_heat_flow_mixed_mass() {
         // THIRD TEST -- WITH ONE NO-MASS LAYER IN THE EXTERIOR AND ONE IN THE INTERIOR
 
-        let mut building = Building::new("Some building".to_string());
+        let mut model = SimpleModel::new("Some model".to_string());
 
         /* SUBSTANCES */
-        let poly = add_polyurethane(&mut building);
-        let brickwork = add_brickwork(&mut building);
+        let poly = add_polyurethane(&mut model);
+        let brickwork = add_brickwork(&mut model);
 
         /* MATERIALS */
-        let m1 = add_material(&mut building, &poly, 20. / 1000.);
-        let m2 = add_material(&mut building, &brickwork, 220. / 1000.);
+        let m1 = add_material(&mut model, &poly, 20. / 1000.);
+        let m2 = add_material(&mut model, &brickwork, 220. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
         c.layers.push(Rc::clone(&m1));
         c.layers.push(Rc::clone(&m2));
         c.layers.push(Rc::clone(&m1));
-        let c = building.add_construction(c);
+        let c = model.add_construction(c);
 
         /* GEOMETRY */
 
@@ -1795,7 +1795,7 @@ mod testing {
 
         /* SURFACE */
         let s = Surface::new("Surface 1".to_string(), p, Rc::clone(&c));
-        let surface = building.add_surface(s);
+        let surface = model.add_surface(s);
         
 
         /* TEST */        
@@ -1810,12 +1810,12 @@ mod testing {
             ThermalSurface::new_surface( &mut state, &surface, dt, &nodes, 0).unwrap();
 
         // MAP THE STATE
-        building.map_simulation_state(&mut state).unwrap();
+        model.map_simulation_state(&mut state).unwrap();
 
         // TEST
 
         assert!(ts.data().massive);
-        let temperatures = ts.get_node_temperatures(&building, &state);
+        let temperatures = ts.get_node_temperatures(&model, &state);
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
@@ -1824,7 +1824,7 @@ mod testing {
 
         let t_back = 10.0;
         let q_out_ref = (22.0 - t_back) / ts.data().full_rs_back;
-        let (q_in, q_out) = ts.calc_heat_flow(&building, &state, t_front, t_back);
+        let (q_in, q_out) = ts.calc_heat_flow(&model, &state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
         assert_eq!(q_out, q_out_ref);
@@ -1832,18 +1832,18 @@ mod testing {
 
     #[test]
     fn test_march_massive() {
-        let mut building = Building::new("Some building".to_string());
+        let mut model = SimpleModel::new("Some model".to_string());
 
         /* SUBSTANCES */
-        let brickwork = add_brickwork(&mut building);
+        let brickwork = add_brickwork(&mut model);
 
         /* MATERIALS */
-        let m1 = add_material(&mut building, &brickwork, 20. / 1000.);
+        let m1 = add_material(&mut model, &brickwork, 20. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
         c.layers.push(Rc::clone(&m1));
-        let c = building.add_construction(c);
+        let c = model.add_construction(c);
         
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
@@ -1857,7 +1857,7 @@ mod testing {
 
         /* SURFACE */
         let s = Surface::new("Surface 1".to_string(), p, Rc::clone(&c));
-        let surface = building.add_surface(s);
+        let surface = model.add_surface(s);
 
         // FIRST TEST -- 10 degrees on each side
         let main_dt = 300.0;
@@ -1872,7 +1872,7 @@ mod testing {
         assert!(ts.data().massive);
 
         // MAP THE STATE
-        building.map_simulation_state(&mut state).unwrap();
+        model.map_simulation_state(&mut state).unwrap();
 
         // TEST
 
@@ -1880,7 +1880,7 @@ mod testing {
         let mut q: f64 = 9999000009.0;        
         let mut counter: usize = 0;
         while q.abs() > 1E-5 {
-            let (q_in, q_out) = ts.march(&building, &mut state, 10.0, 10.0, dt);
+            let (q_in, q_out) = ts.march(&model, &mut state, 10.0, 10.0, dt);
             // the same amount of heat needs to leave in each direction
             println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
             // assert!((q_in - q_out).abs() < 1E-5);
@@ -1901,7 +1901,7 @@ mod testing {
         }
 
         // all nodes should be at 10.0 now.
-        let temperatures = ts.get_node_temperatures(&building, &state);
+        let temperatures = ts.get_node_temperatures(&model, &state);
         for i in 0..ts.data().n_nodes {
             let t = temperatures.get(i, 0).unwrap();
             assert!((t - 10.0).abs() < 1E-5);
@@ -1919,7 +1919,7 @@ mod testing {
         let mut final_qin: f64 = -12312.;
         let mut final_qout: f64 = 123123123.;
         while change.abs() > 1E-10 {
-            let (q_in, q_out) = ts.march(&building, &mut state, 10.0, 30.0, dt);
+            let (q_in, q_out) = ts.march(&model, &mut state, 10.0, 30.0, dt);
             final_qin = q_in;
             final_qout = q_out;
 
@@ -1946,18 +1946,18 @@ mod testing {
 
     #[test]
     fn test_march_nomass() {
-        let mut building = Building::new("A building".to_string());
+        let mut model = SimpleModel::new("A model".to_string());
 
         /* SUBSTANCE */
-        let polyurethane = add_polyurethane(&mut building);
+        let polyurethane = add_polyurethane(&mut model);
 
         /* MATERIAL */
-        let m1 = add_material(&mut building, &polyurethane, 3. / 1000.);
+        let m1 = add_material(&mut model, &polyurethane, 3. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("Construction".to_string());
         c.layers.push(Rc::clone(&m1));
-        let c = building.add_construction(c);
+        let c = model.add_construction(c);
         
         
         /* GEOMETRY */
@@ -1972,7 +1972,7 @@ mod testing {
 
         /* SURFACE */
         let s = Surface::new("WALL".to_string(), p, Rc::clone(&c));        
-        let surface = building.add_surface(s);
+        let surface = model.add_surface(s);
         let mut state: SimulationState = SimulationState::new();
 
         /* TEST */
@@ -1990,16 +1990,16 @@ mod testing {
         assert!(!ts.data().massive);
 
         // MAP THE STATE
-        building.map_simulation_state(&mut state).unwrap();
+        model.map_simulation_state(&mut state).unwrap();
 
         // TEST
         
         // Try marching until q_in and q_out are zero.
 
-        let (q_in, q_out) = ts.march(&building, &mut state, 10.0, 10.0, dt);
+        let (q_in, q_out) = ts.march(&model, &mut state, 10.0, 10.0, dt);
 
         // this should show instantaneous update. So,
-        let temperatures = ts.get_node_temperatures(&building, &state);
+        let temperatures = ts.get_node_temperatures(&model, &state);
         assert_eq!(temperatures.get(0, 0).unwrap(), 10.0);
         assert_eq!(temperatures.get(1, 0).unwrap(), 10.0);
         assert_eq!(q_in, 0.0);
@@ -2010,7 +2010,7 @@ mod testing {
         // outside to inside. I.E. q_in = (30-10)/R,
         // q_out = -(30-10)/R
 
-        let (q_in, q_out) = ts.march(&building, &mut state, 10.0, 30.0, dt);
+        let (q_in, q_out) = ts.march(&model, &mut state, 10.0, 30.0, dt);
 
         // Expecting
         assert!(q_in > 0.0);

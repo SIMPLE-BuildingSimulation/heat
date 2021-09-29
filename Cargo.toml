@@ -8,18 +8,19 @@ license = "MIT"
 
 
 [dependencies]
+simple_model = {git = "https://github.com/SIMPLE-BuildingSimulation/simple_model.git"}
+# simple_model = {path = "../simple_model"}
 calendar = { git = "https://github.com/SIMPLE-BuildingSimulation/calendar.git" }
 weather = { git = "https://github.com/SIMPLE-BuildingSimulation/weather.git" }
-building_model = {path = "../building_model"}
-communication_protocols = { path = "../communication_protocols" }
-geometry3d = {path = "../geometry3d"}
+geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git"}
+communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
 matrix = {path = "../matrix"}
 convection = {path = "../convection"}
 gas_properties = {path = "../gas_properties"}
 
 [dev-dependencies]
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }
-simple_test_buildings = {path="../simple_test_buildings"}
+simple_test_models = {git="https://github.com/SIMPLE-BuildingSimulation/simple_test_models.git"}
 
 # Check https://stackoverflow.com/questions/53127722/how-can-i-activate-features-in-all-my-crates
 
