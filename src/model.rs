@@ -1022,6 +1022,7 @@ mod testing {
     }
 
 
+    /*
     #[test]
     fn test_model_march_with_window_heater_and_infiltration() {
         let surface_area = 4.;
@@ -1117,4 +1118,5 @@ mod testing {
             
         }
     }
+    */
 }
