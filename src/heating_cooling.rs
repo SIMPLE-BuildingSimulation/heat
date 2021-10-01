@@ -17,19 +17,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+use simple_model::simulation_state::SimulationState;
+use std::rc::Rc;
+use simple_model::hvac::cast_hvac;
+use simple_model::hvac::{HVACKind, HVAC};
+use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
+use simple_model::hvac::electric_heater::ElectricHeater;
 
-use simple_model::heating_cooling::{HeaterCooler, HeatingCoolingKind};
-
-pub fn calc_cooling_heating_power(system: &HeaterCooler, consumption_power: f64) -> f64 {
-    match system.kind {
-        HeatingCoolingKind::IdealHeaterCooler => consumption_power,
-
-        HeatingCoolingKind::ElectricHeating => {
-            if consumption_power >= 0.0 {
-                consumption_power
-            } else {
-                panic!("Electric Heating cannot be cooling!")
+/// Retrieves a `Vec<(usize, f64)>` containing the amount of heat (the `f64` in W) going into 
+/// each space (of index `usize`)
+pub fn calc_cooling_heating_power(system: &Rc<dyn HVAC>, state: &SimulationState ) -> Vec<(usize,f64)> {
+    
+    match system.kind() {
+        HVACKind::IdealHeaterCooler => {
+            let a = &**system;
+            let system = cast_hvac::<IdealHeaterCooler>(a).unwrap();
+            let mut ret = Vec::new();
+            for space in &system.target_spaces{
+                let index = space.index().unwrap();
+                let consumption_power = system.heating_cooling_consumption(state).expect("HVAC has not heating/cooling state");
+                ret.push((*index,consumption_power))
             }
+            ret
+            
+        },
+        HVACKind::ElectricHeater => {
+            let a = &**system;
+            let system = cast_hvac::<ElectricHeater>(a).unwrap();
+            let mut ret = Vec::new();
+            if let Ok(space) = system.target_space(){
+                let index = space.index().unwrap();
+                let consumption_power = system.heating_cooling_consumption(state).expect("HVAC has not heating/cooling state");
+                ret.push((*index,consumption_power))
+            }
+            ret
+            
         }
     }
 }

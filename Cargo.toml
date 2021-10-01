@@ -14,9 +14,9 @@ calendar = { git = "https://github.com/SIMPLE-BuildingSimulation/calendar.git" }
 weather = { git = "https://github.com/SIMPLE-BuildingSimulation/weather.git" }
 geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git"}
 communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
-matrix = {path = "../matrix"}
-convection = {path = "../convection"}
-gas_properties = {path = "../gas_properties"}
+matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
+convection = {git = "https://github.com/SIMPLE-BuildingSimulation/convection.git"}
+gas_properties = {git = "https://github.com/SIMPLE-BuildingSimulation/gas_properties.git"}
 
 [dev-dependencies]
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }

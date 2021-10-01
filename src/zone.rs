@@ -20,10 +20,9 @@ SOFTWARE.
 
 use std::rc::Rc;
 
-use simple_model::model::SimpleModel;
 use simple_model::space::Space;
 use gas_properties::air;
-use simple_model::simulation_state::SimulationState;
+use simple_model::simulation_state::SimulationStateHeader;
 use simple_model::simulation_state_element::SimulationStateElement;
 
 
@@ -31,35 +30,26 @@ use simple_model::simulation_state_element::SimulationStateElement;
 pub struct ThermalZone {
     
     /// The `Space` that this [`Thermal Zone`] represents
-    reference_space: Rc<Space>,
+    pub reference_space: Rc<Space>,
 
     
     /// volume of the zone
     volume: f64,
-    // The index containing the temperature of this
-    // Zone in the SimulationState
-    //temperature_state_index : usize,
-
-    // The index of the state of the heating/cooling in
-    // the SimulationState
-    //heating_cooling_state_index: Option<usize>,
-
-    // The index of the state of the luminaire in
-    // the SimulationState
-    //luminaire_state_index: Option<usize>,
+    
 }
 
 impl ThermalZone {
     /// This function creates a new ThermalZone from a Space.
     /// It will copy the index of the space, so it should be used
     /// by iterating the spaces in a model (so there is no mismatch).
-    pub fn from_space(space: &Rc<Space>, state: &mut SimulationState, space_index: usize) -> Self {
+    pub fn from_space(space: &Rc<Space>, state: &mut SimulationStateHeader, space_index: usize) -> Self {
         
         let volume = *space.volume().unwrap();
         // Add Space Temperature state
         let state_index = state.push(
             // start, by default, at 22.0 C
-            SimulationStateElement::SpaceDryBulbTemperature(space_index, 22.0),
+            SimulationStateElement::SpaceDryBulbTemperature(space_index), 
+            22.0
         );
         space.set_dry_bulb_temperature_index(state_index);
 
@@ -67,30 +57,6 @@ impl ThermalZone {
             reference_space: Rc::clone(space),
             volume,
         }
-    }
-
-
-    pub fn temperature(&self, model: &SimpleModel, state: &SimulationState) -> f64 {
-        if let Some(temp) = self.reference_space.dry_bulb_temperature(state) {
-            temp
-        }else{
-            panic!("When retrieving temperature of Thermal Zone: reference space has no temperature field assigned.")
-        }
-    }
-
-    /// Sets the temperature of a zone.
-    pub fn set_temperature(
-        &self,
-        temperature: f64,
-        model: &SimpleModel,
-        state: &mut SimulationState,
-    ) {
-        let space = &model.spaces[self.index];
-        let t_index = space.dry_bulb_temperature_index().unwrap();
-        state.update_value(
-            t_index,
-            SimulationStateElement::SpaceDryBulbTemperature(self.index, temperature),
-        );
     }
 
     /// Retrieves the heat capacity of the ThermalZone's air

@@ -1,0 +1,32 @@
+name: TestAndDeployDoc
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose    
+    - name: Build doc
+      run: cargo doc --document-private-items
+    - name: Set Index
+      run: echo '<meta http-equiv=refresh content=0;url=thermal/index.html>' > target/doc/index.html
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.5
+      with:
+        branch: gh-pages # The branch the action should deploy to.
+        folder: target/doc/ # The folder the action should deploy.
+
