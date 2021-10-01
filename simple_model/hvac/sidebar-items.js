@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["HVACKind","A collection of elements heating and cooling systems"]],"fn":[["cast_hvac",""],["cast_mut_hvac",""]],"mod":[["electric_heater",""],["ideal_heater_cooler",""]],"trait":[["HVAC","Shared functions for all objects in the [`HVAC`] group"]]});

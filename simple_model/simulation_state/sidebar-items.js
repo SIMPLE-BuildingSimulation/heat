@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SimulationStateHeader","The SimulationState is a Vector of SimulationStateElement objects. It is intended to be a quick-to-clone structure."]],"type":[["SimulationState",""]]});

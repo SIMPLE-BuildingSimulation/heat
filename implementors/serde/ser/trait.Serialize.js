@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["calendar"] = [{"text":"impl <a class=\"trait\" href=\"serde/ser/trait.Serialize.html\" title=\"trait serde::ser::Serialize\">Serialize</a> for <a class=\"struct\" href=\"calendar/date/struct.Date.html\" title=\"struct calendar::date::Date\">Date</a>","synthetic":false,"types":["calendar::date::Date"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

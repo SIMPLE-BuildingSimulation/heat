@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ReadMode","An `enum` indicating which kind of file  are we reading."],["TokenType",""]],"struct":[["Scanner",""],["Token",""]]});

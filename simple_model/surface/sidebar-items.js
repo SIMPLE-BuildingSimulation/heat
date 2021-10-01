@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Surface","A fixed surface in the building (or surroundings). This can be of any Construction, transparent or not."]]});

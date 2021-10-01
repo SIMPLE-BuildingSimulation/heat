@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["thermal"] = [{"text":"impl <a class=\"trait\" href=\"communication_protocols/simulation_model/trait.SimulationModel.html\" title=\"trait communication_protocols::simulation_model::SimulationModel\">SimulationModel</a> for <a class=\"struct\" href=\"thermal/model/struct.ThermalModel.html\" title=\"struct thermal::model::ThermalModel\">ThermalModel</a>","synthetic":false,"types":["thermal::model::ThermalModel"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

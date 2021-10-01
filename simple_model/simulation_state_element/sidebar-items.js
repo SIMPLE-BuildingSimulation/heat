@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["SimulationStateElement","The idea is to have a cheap-to-clone (or copy?) structure"]],"type":[["StateElementField",""]]});

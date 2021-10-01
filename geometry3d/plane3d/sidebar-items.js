@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Plane3D","Describes a plane based on a [`Point3D`] (`P`) contained in the plane and a [`Vector3D`] (`N`) normal to the plane."]]});

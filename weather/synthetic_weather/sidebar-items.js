@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SyntheticWeather","A Factory of CurrentWeather objects. Each element is a Schedule that produces the data."]]});

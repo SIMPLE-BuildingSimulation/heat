@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Date","An extremely simple Date object. We don’t need anything else, I think. It does not consider years at all! Days and Months are counted from 1  (e.g. January is 1, not 0)"]]});

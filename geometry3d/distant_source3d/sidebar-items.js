@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DistantSource3D","Represents a solid angle pointing from any [`Point3D`] in the scene towards a certain `direction` (i.e., a [`Vector3D`]). So, this is not really a surface because it is at an infinite distance from any point."]]});

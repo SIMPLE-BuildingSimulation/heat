@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["building_state_macro","calendar","communication_protocols","convection","gas_properties","geometry3d","matrix","proc_macro2","quote","schedule","serde","serde_derive","simple_model","syn","thermal","unicode_xid","weather"];

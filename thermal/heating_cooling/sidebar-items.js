@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["calc_cooling_heating_power","Retrieves a `Vec<(usize, f64)>` containing the amount of heat (the `f64` in W) going into  each space (of index `usize`)"]]});

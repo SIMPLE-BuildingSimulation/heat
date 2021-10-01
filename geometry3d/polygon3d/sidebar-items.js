@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Polygon3D",""]]});

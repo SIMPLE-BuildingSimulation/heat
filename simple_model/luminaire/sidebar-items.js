@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Luminaire","A Luminaire"]]});

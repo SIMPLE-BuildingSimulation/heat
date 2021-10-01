@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ThermalSurface",""]],"struct":[["ThermalSurfaceData","This is a Surface from the point of view of our thermal solver. Since this module only calculate heat transfer (and not short-wave solar radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface are treated in the same way."]]});

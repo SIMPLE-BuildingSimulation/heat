@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Sphere3D","A Full or Partial sphere in three dimensions, centered at the origin"]]});
