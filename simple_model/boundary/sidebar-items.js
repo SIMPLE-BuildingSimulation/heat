@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["Boundary","Represents the boundary of a `Surface`"]]});

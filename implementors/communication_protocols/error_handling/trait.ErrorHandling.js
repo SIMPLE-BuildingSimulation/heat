@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["thermal"] = [{"text":"impl <a class=\"trait\" href=\"communication_protocols/error_handling/trait.ErrorHandling.html\" title=\"trait communication_protocols::error_handling::ErrorHandling\">ErrorHandling</a> for <a class=\"struct\" href=\"thermal/model/struct.ThermalModel.html\" title=\"struct thermal::model::ThermalModel\">ThermalModel</a>","synthetic":false,"types":["thermal::model::ThermalModel"]}];
+implementors["thermal"] = [{"text":"impl ErrorHandling for <a class=\"struct\" href=\"thermal/model/struct.ThermalModel.html\" title=\"struct thermal::model::ThermalModel\">ThermalModel</a>","synthetic":false,"types":["thermal::model::ThermalModel"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

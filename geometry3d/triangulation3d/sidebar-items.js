@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["is_convex",""]],"struct":[["Triangulation3D","A set of [`Triangle3D`] that, together, cover completely a [`Polygon3D`]."]]});

@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["PointInTriangle",""]],"fn":[["intersect_triangle","Intersects a [`Ray3D`] in local coordinates with Triangle described by the [`Point3D`] `a`, `b`, and `c`."]],"struct":[["Triangle3D",""]]});

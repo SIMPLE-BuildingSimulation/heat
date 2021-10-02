@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Space","Represents a space within a building. This will often be a room, but it might also be half a room"]]});

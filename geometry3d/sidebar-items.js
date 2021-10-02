@@ -1,1 +1,0 @@
-initSidebarItems({"macro":[["gamma",""]],"mod":[["cylinder3d",""],["disk3d",""],["distant_source3d",""],["intersect_trait",""],["loop3d",""],["plane3d",""],["point3d",""],["polygon3d",""],["ray3d",""],["round_error",""],["segment3d",""],["sphere3d",""],["transform",""],["triangle3d",""],["triangulation3d",""],["vector3d",""]]});

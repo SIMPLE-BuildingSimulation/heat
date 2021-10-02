@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Cylinder3D","A Cylinder of radius `radius` aligned witht the Z axis, starting at a Z value of `zmin` and ending at `zmax`."]]});

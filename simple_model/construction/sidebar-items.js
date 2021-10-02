@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Construction","An object representing a multilayer Construction; that is to say, an array of Materials"]]});

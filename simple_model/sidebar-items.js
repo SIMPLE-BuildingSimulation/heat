@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["boundary",""],["construction",""],["fenestration",""],["hvac",""],["infiltration",""],["luminaire",""],["material",""],["model",""],["scanner",""],["simulation_state",""],["simulation_state_element",""],["space",""],["substance",""],["surface",""]]});

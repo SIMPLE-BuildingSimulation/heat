@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Material","The representation of a physical layer-Material. That is to say, a layer of a certain thickness made of a certain Substance"]]});

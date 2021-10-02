@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ApproxFloat","Contains a `Float` value as well as an error interval."]]});
