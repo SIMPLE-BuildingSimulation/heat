@@ -21,7 +21,7 @@ jobs:
     - name: Run tests
       run: cargo test --verbose    
     - name: Build doc
-      run: cargo doc --document-private-items
+      run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doccargo doc --document-private-items --no-deps
     - name: Set Index
       run: echo '<meta http-equiv=refresh content=0;url=thermal/index.html>' > target/doc/index.html
     - name: Deploy

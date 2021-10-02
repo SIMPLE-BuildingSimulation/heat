@@ -6,7 +6,7 @@ Some features:
 
 * Walls are modelled through Finite Difference method, and the solution is found through a [Runge-Kutta method](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods)
 * Materials are described as they are, the module will choose which ones should be considered no-mass
-* The temperature of thermal zones are updated through [an analytical equation](https://simple-buildingsimulation.github.io/thermal/model/struct.ThermalModel.html#method.calculate_zones_abc)
+* The temperature of thermal zones are updated through [an analytical equation](https://simple-buildingsimulation.github.io/thermal/thermal/model/struct.ThermalModel.html#method.calculate_zones_abc)
 
 Some To Do's (we would love your help)
 
