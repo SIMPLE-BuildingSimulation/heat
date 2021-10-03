@@ -1022,14 +1022,15 @@ mod testing {
     }
 
 
-    /*
+    
     #[test]
     fn test_model_march_with_window_heater_and_infiltration() {
         let surface_area = 4.;
         let zone_volume = 40.;
         let heating_power = 100.;
         let infiltration_rate = 0.1;
-        
+        let t_out: f64 = 30.0; // T of surroundings
+
         let mut state_header = SimulationStateHeader::new();        
         let  simple_model = get_single_zone_test_building(
             // &mut state,
@@ -1049,8 +1050,14 @@ mod testing {
         let main_dt = 60. * 60. / n as f64;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
+        // Set infiltration                
+        let inf_vol_index = state_header.push(SimulationStateElement::SpaceInfiltrationVolume(0), infiltration_rate);
+        simple_model.spaces[0].set_infiltration_volume_index(inf_vol_index);
+        let inf_temp_index = state_header.push(SimulationStateElement::SpaceInfiltrationTemperature(0), t_out);
+        simple_model.spaces[0].set_infiltration_temperature_index(inf_temp_index);
+
         // MAP THE STATE
-        // model.map_simulation_state(&mut state).unwrap();
+        
         let mut state = state_header.take_values().unwrap();
 
         // turn the heater on
@@ -1058,8 +1065,9 @@ mod testing {
         let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
         state[hvac_state_i] = heating_power;
 
-        // Set infiltration
-        assert!(false);
+        
+        
+        
 
         // START TESTING.
         let construction = &simple_model.constructions[0];
@@ -1073,7 +1081,7 @@ mod testing {
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
-        let t_out: f64 = 30.0; // T of surroundings
+        
 
         // test model
         let tester = SingleZoneTestModel{
@@ -1118,5 +1126,5 @@ mod testing {
             
         }
     }
-    */
+    
 }
