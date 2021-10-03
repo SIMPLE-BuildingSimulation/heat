@@ -1154,6 +1154,14 @@
 <span id="1120">1120</span>
 <span id="1121">1121</span>
 <span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
 </pre><pre class="rust">
 <span class="comment">/*
 MIT License
@@ -2179,103 +2187,111 @@ SOFTWARE.
     }
 
 
-    <span class="comment">/*
-    #[test]
-    fn test_model_march_with_window_heater_and_infiltration() {
-        let surface_area = 4.;
-        let zone_volume = 40.;
-        let heating_power = 100.;
-        let infiltration_rate = 0.1;
-        
-        let mut state_header = SimulationStateHeader::new();        
-        let  simple_model = get_single_zone_test_building(
-            // &amp;mut state,
-            &amp;SingleZoneTestBuildingOptions {
-                zone_volume,
-                surface_area,
-                heating_power,
-                infiltration_rate,
-                material_is_massive: Some(false),
-                ..Default::default()
+    
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_model_march_with_window_heater_and_infiltration</span>() {
+        <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="number">4.</span>;
+        <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
+        <span class="kw">let</span> <span class="ident">heating_power</span> <span class="op">=</span> <span class="number">100.</span>;
+        <span class="kw">let</span> <span class="ident">infiltration_rate</span> <span class="op">=</span> <span class="number">0.1</span>;
+        <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();        
+        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+            <span class="comment">// &amp;mut state,</span>
+            <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
+                <span class="ident">zone_volume</span>,
+                <span class="ident">surface_area</span>,
+                <span class="ident">heating_power</span>,
+                <span class="ident">infiltration_rate</span>,
+                <span class="ident">material_is_massive</span>: <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
+                ..<span class="ident">Default::default</span>()
             },
         );
 
-        // Finished model the SimpleModel
+        <span class="comment">// Finished model the SimpleModel</span>
 
-        let n: usize = 20;
-        let main_dt = 60. * 60. / n as f64;
-        let thermal_model = ThermalModel::new(&amp;simple_model, &amp;mut state_header, n).unwrap();
+        <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">20</span>;
+        <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
 
-        // MAP THE STATE
-        // model.map_simulation_state(&amp;mut state).unwrap();
-        let mut state = state_header.take_values().unwrap();
+        <span class="comment">// Set infiltration                </span>
+        <span class="kw">let</span> <span class="ident">inf_vol_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::SpaceInfiltrationVolume</span>(<span class="number">0</span>), <span class="ident">infiltration_rate</span>);
+        <span class="ident">simple_model</span>.<span class="ident">spaces</span>[<span class="number">0</span>].<span class="ident">set_infiltration_volume_index</span>(<span class="ident">inf_vol_index</span>);
+        <span class="kw">let</span> <span class="ident">inf_temp_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::SpaceInfiltrationTemperature</span>(<span class="number">0</span>), <span class="ident">t_out</span>);
+        <span class="ident">simple_model</span>.<span class="ident">spaces</span>[<span class="number">0</span>].<span class="ident">set_infiltration_temperature_index</span>(<span class="ident">inf_temp_index</span>);
 
-        // turn the heater on
-        let heater = cast_hvac::&lt;ElectricHeater&gt;(&amp;*simple_model.hvacs[0]).unwrap();
-        let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
-        state[hvac_state_i] = heating_power;
+        <span class="comment">// MAP THE STATE</span>
+        
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
 
-        // Set infiltration
-        assert!(false);
+        <span class="comment">// turn the heater on</span>
+        <span class="kw">let</span> <span class="ident">heater</span> <span class="op">=</span> <span class="ident">cast_hvac</span>::<span class="op">&lt;</span><span class="ident">ElectricHeater</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">simple_model</span>.<span class="ident">hvacs</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">hvac_state_i</span> <span class="op">=</span> <span class="ident">heater</span>.<span class="ident">heating_cooling_consumption_index</span>().<span class="ident">unwrap</span>();
+        <span class="ident">state</span>[<span class="ident">hvac_state_i</span>] <span class="op">=</span> <span class="ident">heating_power</span>;
 
-        // START TESTING.
-        let construction = &amp;simple_model.constructions[0];
-        // assert!(!model.surfaces[0].is_massive());
+        
+        
+        
 
-        let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+        <span class="comment">// START TESTING.</span>
+        <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
+        <span class="comment">// assert!(!model.surfaces[0].is_massive());</span>
+
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
+            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
+            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
 
 
-        // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&amp;state).unwrap(); 
-        let t_out: f64 = 30.0; // T of surroundings
+        <span class="comment">// Initial T of the zone</span>
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        
 
-        // test model
-        let tester = SingleZoneTestModel{
-            zone_volume,
-            surface_area, // the window is a hole on the wall... does not add area
-            heating_power,
-            facade_r: r,
-            temp_out: t_out,
-            temp_start: t_start,
-            infiltration_rate,
-            .. SingleZoneTestModel::default()
+        <span class="comment">// test model</span>
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+            <span class="ident">zone_volume</span>,
+            <span class="ident">surface_area</span>, <span class="comment">// the window is a hole on the wall... does not add area</span>
+            <span class="ident">heating_power</span>,
+            <span class="ident">facade_r</span>: <span class="ident">r</span>,
+            <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
+            <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
+            <span class="ident">infiltration_rate</span>,
+            .. <span class="ident">SingleZoneTestModel::default</span>()
         };
-        let exp_fn = tester.get_closed_solution();
+        <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
 
 
-        let mut weather = SyntheticWeather::new();
-        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
+        <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
 
-        let dt = main_dt; // / model.dt_subdivisions() as f64;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span>; <span class="comment">// / model.dt_subdivisions() as f64;</span>
 
-        let mut date = Date {
-            day: 1,
-            hour: 0.0,
-            month: 1,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">Date</span> {
+            <span class="ident">day</span>: <span class="number">1</span>,
+            <span class="ident">hour</span>: <span class="number">0.0</span>,
+            <span class="ident">month</span>: <span class="number">1</span>,
         };
 
-        // March:
-        for i in 0..800 {
-            let time = (i as f64) * dt;
-            date.add_seconds(time);
+        <span class="comment">// March:</span>
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">800</span> {
+            <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="op">*</span> <span class="ident">dt</span>;
+            <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&amp;state).unwrap();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
 
-            thermal_model.march(date, &amp;weather, &amp;simple_model, &amp;mut state).unwrap();
+            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
 
-            // Get exact solution.
-            let exp = exp_fn(time);
+            <span class="comment">// Get exact solution.</span>
+            <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            let max_error = 0.55;            
-            println!(&quot;{}, {}&quot;, exp, found);
-            assert!((exp - found).abs() &lt; max_error);
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;            
+            <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
+            <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
             
         }
     }
-    */</span>
+    
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
