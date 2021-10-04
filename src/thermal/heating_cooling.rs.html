@@ -89,6 +89,8 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
 </pre><pre class="rust">
 <span class="comment">/*
 MIT License
@@ -116,9 +118,11 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident">simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler</span>;
 <span class="kw">use</span> <span class="ident">simple_model::hvac::electric_heater::ElectricHeater</span>;
 
-<span class="doccomment">/// Retrieves a `Vec&lt;(usize, f64)&gt;` containing the amount of heat (the `f64` in W) going into </span>
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
+
+<span class="doccomment">/// Retrieves a `Vec&lt;(usize, Float)&gt;` containing the amount of heat (the `Float` in W) going into </span>
 <span class="doccomment">/// each space (of index `usize`)</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">system</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">HVAC</span><span class="op">&gt;</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span> ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>,<span class="ident">f64</span>)<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">system</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">HVAC</span><span class="op">&gt;</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span> ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>,<span class="ident">Float</span>)<span class="op">&gt;</span> {
     
     <span class="kw">match</span> <span class="ident">system</span>.<span class="ident">kind</span>() {
         <span class="ident">HVACKind::IdealHeaterCooler</span> <span class="op">=</span><span class="op">&gt;</span> {

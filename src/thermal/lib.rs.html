@@ -62,6 +62,20 @@
 <span id="28">28</span>
 <span id="29">29</span>
 <span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
 </pre><pre class="rust">
 <span class="comment">/*
 MIT License
@@ -83,10 +97,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
+
+
 <span class="doccomment">//! A Finite Difference-based Thermal simulation module</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! It uses finite differences for marching forward in time and also</span>
 <span class="doccomment">//! for calculating the heat transfer through walls.</span>
+
+
+<span class="doccomment">/// The kind of Floating point number used in the</span>
+<span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
+<span class="doccomment">/// and `f64` is used otherwise.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)]</span>
+<span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f32</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
+<span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f64</span>;
+
+
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">construction</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">heating_cooling</span>;

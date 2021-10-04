@@ -1078,10 +1078,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
 
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
 <span class="kw">use</span> <span class="ident">simple_model::construction::Construction</span>;
 <span class="kw">use</span> <span class="ident">simple_model::boundary::Boundary</span>;
 <span class="kw">use</span> <span class="ident">simple_model::fenestration::Fenestration</span>;
@@ -1103,7 +1103,7 @@ SOFTWARE.
         <span class="comment">// model: &amp;SimpleModel,</span>
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">surface</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Surface</span><span class="op">&gt;</span>,
-        <span class="ident">dt</span>: <span class="ident">f64</span>,
+        <span class="ident">dt</span>: <span class="ident">Float</span>,
         <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
         <span class="comment">// index: usize,</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
@@ -1134,7 +1134,7 @@ SOFTWARE.
         <span class="comment">// model: &amp;SimpleModel,</span>
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">fenestration</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Fenestration</span><span class="op">&gt;</span>,
-        <span class="ident">dt</span>: <span class="ident">f64</span>,
+        <span class="ident">dt</span>: <span class="ident">Float</span>,
         <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
         <span class="comment">// index: usize,</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
@@ -1178,17 +1178,17 @@ SOFTWARE.
     }
 
     <span class="doccomment">/// Gets the `area` of the surface</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">area</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">area</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">data</span>().<span class="ident">area</span>
     }
 
     <span class="doccomment">/// Gets the `rs_front`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rs_front</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rs_front</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">data</span>().<span class="ident">rs_front</span>
     }
 
     <span class="doccomment">/// Gets the `rs_back`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rs_back</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rs_back</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">data</span>().<span class="ident">rs_back</span>
     }
 
@@ -1213,7 +1213,7 @@ SOFTWARE.
         <span class="self">self</span>.<span class="ident">data</span>().<span class="ident">massive</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">front_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">front_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>{
             <span class="self">Self</span><span class="ident">::Surface</span>(<span class="ident">s</span>,<span class="kw">_</span>)<span class="op">=</span><span class="op">&gt;</span>{
                 <span class="ident">s</span>.<span class="ident">first_node_temperature</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Trying to get front temperature from Surface without first_node state index&quot;</span>)
@@ -1224,7 +1224,7 @@ SOFTWARE.
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">back_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">back_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>{
             <span class="self">Self</span><span class="ident">::Surface</span>(<span class="ident">s</span>,<span class="kw">_</span>)<span class="op">=</span><span class="op">&gt;</span>{
                 <span class="ident">s</span>.<span class="ident">last_node_temperature</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Trying to get back temperature from Surface without last_node state index&quot;</span>)
@@ -1291,9 +1291,9 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">calc_heat_flow</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,        
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
-        <span class="ident">t_front</span>: <span class="ident">f64</span>,
-        <span class="ident">t_back</span>: <span class="ident">f64</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">f64</span>, <span class="ident">f64</span>) {
+        <span class="ident">t_front</span>: <span class="ident">Float</span>,
+        <span class="ident">t_back</span>: <span class="ident">Float</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Float</span>, <span class="ident">Float</span>) {
         <span class="comment">// Positive is going out of the layer.</span>
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>();
         <span class="kw">let</span> <span class="ident">q_in</span>;
@@ -1316,10 +1316,10 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">march</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,        
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationState</span>,
-        <span class="ident">t_front</span>: <span class="ident">f64</span>,
-        <span class="ident">t_back</span>: <span class="ident">f64</span>,
-        <span class="ident">_dt</span>: <span class="ident">f64</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">f64</span>, <span class="ident">f64</span>) {
+        <span class="ident">t_front</span>: <span class="ident">Float</span>,
+        <span class="ident">t_back</span>: <span class="ident">Float</span>,
+        <span class="ident">_dt</span>: <span class="ident">Float</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Float</span>, <span class="ident">Float</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_node_temperatures</span>( <span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>();
 
@@ -1396,14 +1396,14 @@ SOFTWARE.
 
     
     <span class="doccomment">/// The front side convection coefficient</span>
-    <span class="ident">rs_front</span>: <span class="ident">f64</span>,
+    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The back side convection coefficient</span>
-    <span class="ident">rs_back</span>: <span class="ident">f64</span>,
+    <span class="ident">rs_back</span>: <span class="ident">Float</span>,
 
-    <span class="ident">total_r</span> : <span class="ident">f64</span>,
+    <span class="ident">total_r</span> : <span class="ident">Float</span>,
 
-    <span class="ident">kt4_func</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">f64</span>, <span class="ident">f64</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">kt4_func</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 
 
     <span class="doccomment">/// The interior (i.e. front side) resistance before</span>
@@ -1411,14 +1411,14 @@ SOFTWARE.
     <span class="doccomment">/// any light-weight material at the front of the construction.</span>
     <span class="doccomment">/// If the first layer in the construction has mass, then this</span>
     <span class="doccomment">/// value will be equal to r_si</span>
-    <span class="ident">full_rs_front</span>: <span class="ident">f64</span>,
+    <span class="ident">full_rs_front</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The exterior (i.e. back side) resistance after</span>
     <span class="doccomment">/// the last layer with mass. It includes the r_so and also</span>
     <span class="doccomment">/// any light-weight material at the back of the contruction.</span>
     <span class="doccomment">/// If the first layer in the construction has mass, then</span>
     <span class="doccomment">/// this value will be equal to r_si</span>
-    <span class="ident">full_rs_back</span>: <span class="ident">f64</span>,
+    <span class="ident">full_rs_back</span>: <span class="ident">Float</span>,
 
     <span class="comment">// The location of the first temperature node</span>
     <span class="comment">// in the SimulationState</span>
@@ -1439,7 +1439,7 @@ SOFTWARE.
     <span class="ident">back_boundary</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Boundary</span><span class="op">&gt;</span>,
 
     <span class="doccomment">/// The area of the Surface</span>
-    <span class="ident">area</span>: <span class="ident">f64</span>,
+    <span class="ident">area</span>: <span class="ident">Float</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ThermalSurfaceData</span> {
@@ -1448,10 +1448,10 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">new</span>(        
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>,        
         <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
-        <span class="ident">dt</span>: <span class="ident">f64</span>,
-        <span class="ident">area</span>: <span class="ident">f64</span>,
-        <span class="ident">rs_front</span>: <span class="ident">f64</span>,
-        <span class="ident">rs_back</span>: <span class="ident">f64</span>,
+        <span class="ident">dt</span>: <span class="ident">Float</span>,
+        <span class="ident">area</span>: <span class="ident">Float</span>,
+        <span class="ident">rs_front</span>: <span class="ident">Float</span>,
+        <span class="ident">rs_back</span>: <span class="ident">Float</span>,
         <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
         <span class="ident">is_fenestration</span>: <span class="ident">bool</span>,
@@ -1567,12 +1567,12 @@ SOFTWARE.
         
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">brickwork</span>);                        
             
-        <span class="macro">assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">thermal_diffusivity</span>().<span class="ident">unwrap</span>(), <span class="number">0.6E-6</span>);
+        <span class="macro">assert!</span>((<span class="ident">ret</span>.<span class="ident">thermal_diffusivity</span>().<span class="ident">unwrap</span>() <span class="op">-</span> <span class="number">0.6E-6</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.00000001</span>);
         
         <span class="ident">ret</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">add_material</span>(<span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimpleModel</span>, <span class="ident">substance</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Substance</span><span class="op">&gt;</span>, <span class="ident">thickness</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Material</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">add_material</span>(<span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimpleModel</span>, <span class="ident">substance</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Substance</span><span class="op">&gt;</span>, <span class="ident">thickness</span>: <span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Material</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">mat</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;123123&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Rc::clone</span>(<span class="ident">substance</span>), <span class="ident">thickness</span>);
         
         <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">mat</span>)
@@ -1588,7 +1588,7 @@ SOFTWARE.
         <span class="comment">// Add polyurethane Substance</span>
         <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="ident">add_polyurethane</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">model</span>);
 
-        <span class="kw">let</span> <span class="ident">m0_thickness</span> <span class="op">=</span> <span class="number">200.0</span> <span class="op">/</span> <span class="number">1000.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">m0_thickness</span> <span class="op">=</span> <span class="number">200.0</span> <span class="op">/</span> <span class="number">1000.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">add_material</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">model</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="ident">m0_thickness</span>);
 
         <span class="comment">/* CONSTRUCTION */</span>
@@ -1599,7 +1599,7 @@ SOFTWARE.
 
         <span class="comment">/* GEOMETRY */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -1617,7 +1617,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">1.</span>;
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span>
             <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c0</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span>
             <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
@@ -1704,7 +1704,7 @@ SOFTWARE.
 
         <span class="comment">/* MATERIALS */</span>
 
-        <span class="kw">let</span> <span class="ident">m0_thickness</span> <span class="op">=</span> <span class="number">200.0</span> <span class="op">/</span> <span class="number">1000.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">m0_thickness</span> <span class="op">=</span> <span class="number">200.0</span> <span class="op">/</span> <span class="number">1000.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">add_material</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">model</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="ident">m0_thickness</span>);
 
         <span class="comment">/* CONSTRUCTION */</span>
@@ -1714,7 +1714,7 @@ SOFTWARE.
 
         <span class="comment">/* GEOMETRY */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -1735,7 +1735,7 @@ SOFTWARE.
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span>
             <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c0</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
 
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span>
             <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
@@ -1780,7 +1780,7 @@ SOFTWARE.
 
         <span class="comment">/* GEOMETRY */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -1798,7 +1798,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">80.</span>;
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span> <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c0</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
 
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
 
@@ -1847,7 +1847,7 @@ SOFTWARE.
         <span class="comment">/* GEOMETRY */</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -1866,7 +1866,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">65.</span>;
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span> <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
 
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
 
@@ -1908,7 +1908,7 @@ SOFTWARE.
         
         <span class="comment">/* GEOMETRY */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -1925,7 +1925,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">max_dx</span> <span class="op">=</span> <span class="ident">m1</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="number">2.0</span>;
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">1.0</span>;
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span> <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
@@ -1938,12 +1938,12 @@ SOFTWARE.
         <span class="comment">// TEST</span>
 
         <span class="comment">// Try marching until q_in and q_out are zero.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">9999000009.0</span>;        
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">9999000009.0</span>;        
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">while</span> <span class="ident">q</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1E-5</span> {
+        <span class="kw">while</span> <span class="ident">q</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">0.00015</span> {
             <span class="kw">let</span> (<span class="ident">q_in</span>, <span class="ident">q_out</span>) <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">march</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="number">10.0</span>, <span class="number">10.0</span>, <span class="ident">dt</span>);
             <span class="comment">// the same amount of heat needs to leave in each direction</span>
-            <span class="macro">println!</span>(<span class="string">&quot;q_in = {}, q_out = {} | diff = {}&quot;</span>, <span class="ident">q_in</span>, <span class="ident">q_out</span>, (<span class="ident">q_in</span> <span class="op">-</span> <span class="ident">q_out</span>).<span class="ident">abs</span>());
+            <span class="comment">// println!(&quot;q_in = {}, q_out = {} | diff = {}&quot;, q_in, q_out, (q_in - q_out).abs());</span>
             <span class="comment">// assert!((q_in - q_out).abs() &lt; 1E-5);</span>
             
 
@@ -1956,8 +1956,8 @@ SOFTWARE.
             <span class="ident">q</span> <span class="op">=</span> <span class="ident">q_in</span>;
 
             <span class="ident">counter</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="kw">if</span> <span class="ident">counter</span> <span class="op">&gt;</span> <span class="number">99999</span> {
-                <span class="macro">panic!</span>(<span class="string">&quot;Exceded number of iterations&quot;</span>)
+            <span class="kw">if</span> <span class="ident">counter</span> <span class="op">&gt;</span> <span class="number">9999999</span> {
+                <span class="macro">panic!</span>(<span class="string">&quot;Exceded number of iterations... q.abs() = {}&quot;</span>, <span class="ident">q</span>.<span class="ident">abs</span>())
             }
         }
 
@@ -1965,7 +1965,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">get_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>);
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">ts</span>.<span class="ident">data</span>().<span class="ident">n_nodes</span> {
             <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>((<span class="ident">t</span> <span class="op">-</span> <span class="number">10.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-5</span>);
+            <span class="macro">assert!</span>((<span class="ident">t</span> <span class="op">-</span> <span class="number">10.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.00015</span>);
         }
 
         <span class="comment">// SECOND TEST -- 10 degrees in and 30 out.</span>
@@ -1974,11 +1974,11 @@ SOFTWARE.
         <span class="comment">// q_out = -(30-10)/R</span>
 
         <span class="comment">// March until q converges</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">change</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">99.0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">change</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">99.0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">previous_q</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="op">-</span><span class="number">125.0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qin</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="op">-</span><span class="number">12312.</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qout</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">123123123.</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">previous_q</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="op">-</span><span class="number">125.0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qin</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="op">-</span><span class="number">12312.</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qout</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">123123123.</span>;
         <span class="kw">while</span> <span class="ident">change</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1E-10</span> {
             <span class="kw">let</span> (<span class="ident">q_in</span>, <span class="ident">q_out</span>) <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">march</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="number">10.0</span>, <span class="number">30.0</span>, <span class="ident">dt</span>);
             <span class="ident">final_qin</span> <span class="op">=</span> <span class="ident">q_in</span>;
@@ -1996,13 +1996,13 @@ SOFTWARE.
         <span class="comment">// Expecting</span>
         <span class="macro">assert!</span>(<span class="ident">final_qin</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
         <span class="macro">assert!</span>(<span class="ident">final_qout</span> <span class="op">&lt;</span> <span class="number">0.0</span>);
-        <span class="macro">assert!</span>((<span class="ident">final_qin</span> <span class="op">+</span> <span class="ident">final_qout</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-6</span>);
+        <span class="macro">assert!</span>((<span class="ident">final_qin</span> <span class="op">+</span> <span class="ident">final_qout</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.00033</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">exp_q</span> <span class="op">=</span> (<span class="number">30.0</span> <span class="op">-</span> <span class="number">10.0</span>) <span class="op">/</span> (<span class="ident">r</span> <span class="op">+</span> <span class="ident">ts</span>.<span class="ident">data</span>().<span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">ts</span>.<span class="ident">data</span>().<span class="ident">rs_back</span>);
-        <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">-</span> <span class="ident">final_qin</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-4</span>);
-        <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">+</span> <span class="ident">final_qout</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-4</span>);
+        <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">-</span> <span class="ident">final_qin</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.00033</span>);
+        <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">+</span> <span class="ident">final_qout</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.00033</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2023,7 +2023,7 @@ SOFTWARE.
         
         <span class="comment">/* GEOMETRY */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="number">1.</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -2045,7 +2045,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">100.0</span>;
         <span class="kw">let</span> (<span class="ident">n_subdivisions</span>, <span class="ident">nodes</span>) <span class="op">=</span> <span class="ident">discretize_construction</span>( <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
 
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">f64</span>;
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>;
 
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new_surface</span>( <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">nodes</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">ts</span>.<span class="ident">data</span>().<span class="ident">massive</span>);

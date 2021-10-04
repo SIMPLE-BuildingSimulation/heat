@@ -125,7 +125,7 @@ SOFTWARE.
 */</span>
 
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
 <span class="kw">use</span> <span class="ident">simple_model::space::Space</span>;
 <span class="kw">use</span> <span class="ident">gas_properties::air</span>;
 <span class="kw">use</span> <span class="ident">simple_model::simulation_state::SimulationStateHeader</span>;
@@ -140,7 +140,7 @@ SOFTWARE.
 
     
     <span class="doccomment">/// volume of the zone</span>
-    <span class="ident">volume</span>: <span class="ident">f64</span>,
+    <span class="ident">volume</span>: <span class="ident">Float</span>,
     
 }
 
@@ -166,7 +166,7 @@ SOFTWARE.
     }
 
     <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">air_density</span> <span class="op">=</span> <span class="ident">air::density</span>(); <span class="comment">//kg/m3</span>
         <span class="kw">let</span> <span class="ident">air_specific_heat</span> <span class="op">=</span> <span class="ident">air::specific_heat</span>(); <span class="comment">//J/kg.K</span>
 

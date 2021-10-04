@@ -745,6 +745,7 @@
 <span id="711">711</span>
 <span id="712">712</span>
 <span id="713">713</span>
+<span id="714">714</span>
 </pre><pre class="rust">
 <span class="comment">/*
 MIT License
@@ -766,7 +767,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
+
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
 
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
@@ -862,19 +864,19 @@ SOFTWARE.
 <span class="doccomment">/// allows complying with this</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">discretize_construction</span>(    
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
-    <span class="ident">model_dt</span>: <span class="ident">f64</span>,
-    <span class="ident">max_dx</span>: <span class="ident">f64</span>,
-    <span class="ident">min_dt</span>: <span class="ident">f64</span>,
+    <span class="ident">model_dt</span>: <span class="ident">Float</span>,
+    <span class="ident">max_dx</span>: <span class="ident">Float</span>,
+    <span class="ident">min_dt</span>: <span class="ident">Float</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
     <span class="comment">// I could only think of how to make this recursively... so I did this.</span>
     <span class="kw">fn</span> <span class="ident">aux</span>(        
         <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
-        <span class="ident">main_dt</span>: <span class="ident">f64</span>,
+        <span class="ident">main_dt</span>: <span class="ident">Float</span>,
         <span class="ident">n</span>: <span class="ident">usize</span>,
-        <span class="ident">max_dx</span>: <span class="ident">f64</span>,
-        <span class="ident">min_dt</span>: <span class="ident">f64</span>,
+        <span class="ident">max_dx</span>: <span class="ident">Float</span>,
+        <span class="ident">min_dt</span>: <span class="ident">Float</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>);
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>);
         
         <span class="comment">// Choose a dx so that dt allows convergence.</span>
         <span class="comment">// stability is assured by (alpha * dt / dx^2 &lt;= 1/2 )</span>
@@ -883,7 +885,7 @@ SOFTWARE.
         <span class="comment">// So, for each layer</span>
         <span class="kw">let</span> <span class="ident">n_layers</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">n_layers</span>);
-        <span class="kw">const</span> <span class="ident">RS</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">0.05</span>;        
+        <span class="kw">const</span> <span class="ident">RS</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.05</span>;        
 
         <span class="kw">for</span> <span class="ident">n_layer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_layers</span> {
             <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];
@@ -914,7 +916,7 @@ SOFTWARE.
                 <span class="comment">// given timestep because its thickness leads to a dx that</span>
                 <span class="comment">// does not ensure convergence...</span>
                 <span class="comment">// check if there is room for reducing dt (hence reducing min_dx)</span>
-                <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>);
+                <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">Float</span>);
                 <span class="kw">if</span> <span class="ident">next_dt</span> <span class="op">&gt;</span> <span class="ident">min_dt</span> {
                     <span class="comment">// If there is room for that, do it.</span>
                     <span class="kw">return</span> <span class="ident">aux</span>( <span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
@@ -931,7 +933,7 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">dx</span> <span class="op">&gt;</span> <span class="ident">max_dx</span> {
                     <span class="comment">// If the found dx is larger than the max allowed d_x, try to change timestep</span>
                     <span class="comment">// check if there is room for reducing dt...</span>
-                    <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>);
+                    <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">Float</span>);
                     <span class="kw">if</span> <span class="ident">next_dt</span> <span class="op">&gt;</span> <span class="ident">min_dt</span> {
                         <span class="comment">// If there is room for that, do it.</span>
                         <span class="kw">return</span> <span class="ident">aux</span>( <span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
@@ -961,8 +963,8 @@ SOFTWARE.
                 <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">density</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>;
-                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="kw">as</span> <span class="ident">f64</span>;
+                <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
+                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="kw">as</span> <span class="ident">Float</span>;
                 
                 <span class="comment">// assert!(alpha * dt / dx / dx &lt;= 0.5);</span>
                 <span class="kw">let</span> <span class="ident">lambda1</span> <span class="op">=</span> <span class="op">-</span> <span class="ident">dt</span> <span class="op">/</span> (<span class="ident">RS</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>);
@@ -1085,7 +1087,7 @@ SOFTWARE.
     <span class="prelude-val">Ok</span>(<span class="ident">n</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_front</span>: <span class="ident">f64</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">f64</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_front</span>: <span class="ident">Float</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span>{
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">rs_front</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">first_massive</span> {
         <span class="comment">// let material_index = c.get_layer_index(i).unwrap();</span>
@@ -1098,7 +1100,7 @@ SOFTWARE.
     <span class="ident">full_rs_front</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_back</span>: <span class="ident">f64</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">f64</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_back</span>: <span class="ident">Float</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span>{
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">rs_back</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">last_massive</span>..<span class="ident">c</span>.<span class="ident">layers</span>.<span class="ident">len</span>() {        
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">layers</span>[<span class="ident">i</span>];        
@@ -1112,8 +1114,8 @@ SOFTWARE.
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>{
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_matrix</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">all_nodes</span>];
+)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_matrix</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">all_nodes</span>];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="number">0</span>;
 
     <span class="kw">for</span> <span class="ident">n_layer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>() {
@@ -1131,7 +1133,7 @@ SOFTWARE.
 
                 <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">density</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">f64</span>);
+                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">Float</span>);
                 <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>;<span class="comment">// dt;</span>
 
                 <span class="comment">// Nodes are in the joints between</span>
@@ -1202,8 +1204,8 @@ SOFTWARE.
     <span class="ident">first_massive</span>: <span class="ident">usize</span>,
     <span class="ident">last_massive</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-    <span class="ident">rs_front</span>: <span class="ident">f64</span>,
-    <span class="ident">rs_back</span>: <span class="ident">f64</span>,
+    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
+    <span class="ident">rs_back</span>: <span class="ident">Float</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
 )<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>{
     <span class="comment">// initialize k_prime</span>
@@ -1263,7 +1265,7 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;<span class="comment">//model.get_substance(substance_index).unwrap();</span>
 
             <span class="kw">let</span> <span class="ident">lambda</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">f64</span>);
+            <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">Float</span>);
             <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">lambda</span> <span class="op">/</span> <span class="ident">dx</span>;
 
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">m</span> {
@@ -1369,14 +1371,14 @@ SOFTWARE.
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">first_massive</span>: <span class="ident">usize</span>,
     <span class="ident">last_massive</span>: <span class="ident">usize</span>,
-    <span class="ident">dt</span>: <span class="ident">f64</span>,
+    <span class="ident">dt</span>: <span class="ident">Float</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-    <span class="ident">rs_front</span>: <span class="ident">f64</span>,
-    <span class="ident">rs_back</span>: <span class="ident">f64</span>,
-    <span class="ident">full_rs_front</span>: <span class="ident">f64</span>,
-    <span class="ident">full_rs_back</span>: <span class="ident">f64</span>,    
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">f64</span>, <span class="ident">f64</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
+    <span class="ident">rs_back</span>: <span class="ident">Float</span>,
+    <span class="ident">full_rs_front</span>: <span class="ident">Float</span>,
+    <span class="ident">full_rs_back</span>: <span class="ident">Float</span>,    
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     
     <span class="comment">// if this happens, we are trying to build the </span>
     <span class="comment">// thermal network for a non-massive wall... Which</span>
@@ -1411,7 +1413,7 @@ SOFTWARE.
     
 
     <span class="comment">// DIVIDE ONE BY THE OTHER to make K_prime</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_prime</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">all_nodes</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_prime</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">all_nodes</span>);
     <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">mass</span>) <span class="kw">in</span> <span class="ident">c</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
         <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">mass</span> <span class="op">!</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="comment">// Multiply the whole column K by this.</span>
@@ -1431,7 +1433,7 @@ SOFTWARE.
 
     <span class="comment">// *given_k_prime = k_prime;</span>
 
-    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span> : <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">t_front</span>: <span class="ident">f64</span>, <span class="ident">t_back</span>: <span class="ident">f64</span><span class="op">|</span><span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>{
+    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span> : <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span><span class="op">|</span><span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>{
         <span class="comment">// Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T</span>
         <span class="comment">// But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime</span>
         <span class="comment">// --&gt; Calculate: k_i = c_prime * q + k_prime * T</span>
