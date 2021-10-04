@@ -19,7 +19,7 @@ SOFTWARE.
 */
 
 use std::rc::Rc;
-
+use crate::Float;
 use simple_model::space::Space;
 use gas_properties::air;
 use simple_model::simulation_state::SimulationStateHeader;
@@ -34,7 +34,7 @@ pub struct ThermalZone {
 
     
     /// volume of the zone
-    volume: f64,
+    volume: Float,
     
 }
 
@@ -60,7 +60,7 @@ impl ThermalZone {
     }
 
     /// Retrieves the heat capacity of the ThermalZone's air
-    pub fn mcp(&self) -> f64 {
+    pub fn mcp(&self) -> Float {
         let air_density = air::density(); //kg/m3
         let air_specific_heat = air::specific_heat(); //J/kg.K
 

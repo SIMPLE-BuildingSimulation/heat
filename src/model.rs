@@ -17,7 +17,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+use crate::Float;
 use crate::surface::ThermalSurface;
 use simple_model::model::SimpleModel;
 use calendar::date::Date;
@@ -52,7 +52,7 @@ pub struct ThermalModel {
     dt_subdivisions: usize,
 
     /// The model's dt (i.e., main_dt / self.dt_subdivisions)
-    dt: f64,
+    dt: Float,
 }
 
 impl ErrorHandling for ThermalModel {
@@ -111,7 +111,7 @@ impl SimulationModel for ThermalModel {
         let min_dt = 60.; // 60 seconds
 
         let mut n_subdivisions: usize = 1;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
 
         // Store the dts and n_nodes somwehere. Take note of the largest
         // number of subditivions required
@@ -127,7 +127,7 @@ impl SimulationModel for ThermalModel {
         }
 
         // This is the model's dt now. When marching
-        let dt = 60. * 60. / (n as f64 * n_subdivisions as f64);
+        let dt = 60. * 60. / (n as Float * n_subdivisions as Float);
 
         if n * n_subdivisions < 6 {
             eprintln!("Number of timesteps per hour (n) is too small in Finite Difference Thermal  Module... try to use 6 or more.");
@@ -385,7 +385,7 @@ impl ThermalModel {
         &self,
         model: &SimpleModel,
         state: &SimulationState,
-    ) -> (Vec<f64>, Vec<f64>, Vec<f64>) {        
+    ) -> (Vec<Float>, Vec<Float>, Vec<Float>) {        
         let nzones = self.zones.len();
         // Initialize vectors containing a and b
         let mut a = vec![0.0; nzones];
@@ -451,8 +451,8 @@ impl ThermalModel {
         fn iterate_surfaces(
             surfaces: &[ThermalSurface],            
             state: &SimulationState,
-            a: &mut Vec<f64>,
-            b: &mut Vec<f64>,
+            a: &mut Vec<Float>,
+            b: &mut Vec<Float>,
         ) {
             for surface in surfaces.iter() {
                 let ai = surface.area();
@@ -491,10 +491,10 @@ impl ThermalModel {
     fn get_current_zones_temperatures(
         &self,        
         state: &SimulationState,
-    ) -> Vec<f64> {
+    ) -> Vec<Float> {
         let nzones = self.zones.len();
         // Initialize return
-        let mut ret: Vec<f64> = Vec::with_capacity(nzones);
+        let mut ret: Vec<Float> = Vec::with_capacity(nzones);
         for zone in self.zones.iter() {
             let t_current = zone.reference_space.dry_bulb_temperature(state).unwrap();
             ret.push(t_current);
@@ -509,15 +509,15 @@ impl ThermalModel {
     #[allow(dead_code)]
     fn estimate_zones_mean_future_temperatures(
         &self,
-        t_current: &[f64],
-        a: &[f64],
-        b: &[f64],
-        c: &[f64],
-        future_time: f64,
-    ) -> Vec<f64> {
+        t_current: &[Float],
+        a: &[Float],
+        b: &[Float],
+        c: &[Float],
+        future_time: Float,
+    ) -> Vec<Float> {
         let nzones = self.zones.len();
         // Initialize return
-        let mut ret: Vec<f64> = Vec::with_capacity(nzones);
+        let mut ret: Vec<Float> = Vec::with_capacity(nzones);
 
         for i in 0..self.zones.len() {
             let current_temp = t_current[i];
@@ -538,15 +538,15 @@ impl ThermalModel {
     /// `t_current` as calculated by `get_current_temperatures`.
     fn estimate_zones_future_temperatures(
         &self,
-        t_current: &[f64],
-        a: &[f64],
-        b: &[f64],
-        c: &[f64],
-        future_time: f64,
-    ) -> Vec<f64> {
+        t_current: &[Float],
+        a: &[Float],
+        b: &[Float],
+        c: &[Float],
+        future_time: Float,
+    ) -> Vec<Float> {
         let nzones = self.zones.len();
         // Initialize return
-        let mut ret: Vec<f64> = Vec::with_capacity(nzones);
+        let mut ret: Vec<Float> = Vec::with_capacity(nzones);
         for i in 0..nzones {
             ret.push(
                 a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
@@ -582,34 +582,34 @@ mod testing {
     #[derive(Default)]
     struct SingleZoneTestModel{
         /// volume of the zone (m3)
-        zone_volume: f64,
+        zone_volume: Float,
 
         /// Facade area (m2)
-        surface_area: f64,
+        surface_area: Float,
 
         /// the R-value of the facade
-        facade_r: f64,
+        facade_r: Float,
 
         /// Infiltration rate (m3/s)
-        infiltration_rate: f64,
+        infiltration_rate: Float,
 
         /// Heating power (Watts)
-        heating_power: f64,
+        heating_power: Float,
 
         /// Lighting power (Watts)
-        lighting_power: f64,
+        lighting_power: Float,
 
         /// Temperature outside of the zone
-        temp_out: f64,
+        temp_out: Float,
 
         /// Temperature at the beginning
-        temp_start: f64,
+        temp_start: Float,
 
         
     }
 
     impl SingleZoneTestModel {
-        fn get_closed_solution(&self)->Box<impl Fn(f64)->f64>{
+        fn get_closed_solution(&self)->Box<impl Fn(Float)->Float>{
             // heat balance in the form
             // of C*dT/dt = A - B*T
             let rho = air::density(); //kg/m3
@@ -630,7 +630,7 @@ mod testing {
 
             let k1 = self.temp_start - a/b;
 
-            let f = move |t: f64|->f64{
+            let f = move |t: Float|->Float{
                 a/b + k1*(-b*t).exp()
             };
 
@@ -691,7 +691,7 @@ mod testing {
         );
 
         let n: usize = 60;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         let mut state = state_header.take_values().unwrap();
@@ -712,7 +712,7 @@ mod testing {
         // Initial T of the zone
         let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
 
-        let t_out: f64 = 30.0; // T of surroundings
+        let t_out: Float = 30.0; // T of surroundings
 
         // test model
         let tester = SingleZoneTestModel{
@@ -737,7 +737,7 @@ mod testing {
         // March:
         
         for i in 0..800 {
-            let time = (i as f64) * main_dt;
+            let time = (i as Float) * main_dt;
             date.add_seconds(time);
 
             let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
@@ -777,7 +777,7 @@ mod testing {
 
         // Finished model the SimpleModel
         let n: usize = 6;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         let mut state = state_header.take_values().unwrap();
@@ -796,7 +796,7 @@ mod testing {
         // Initial T of the zone
         let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
 
-        let t_out: f64 = 30.0; // T of surroundings
+        let t_out: Float = 30.0; // T of surroundings
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
@@ -822,7 +822,7 @@ mod testing {
 
         // March:
         for i in 0..80 {
-            let time = (i as f64) * dt;
+            let time = (i as Float) * dt;
             date.add_seconds(time);
 
             let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
@@ -860,7 +860,7 @@ mod testing {
         // Finished model the SimpleModel
 
         let n: usize = 20;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         let mut state = state_header.take_values().unwrap();
@@ -886,7 +886,7 @@ mod testing {
         // Initial T of the zone
         let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
 
-        let t_out: f64 = 30.0; // T of surroundings
+        let t_out: Float = 30.0; // T of surroundings
 
         // test model
         let tester = SingleZoneTestModel{
@@ -904,7 +904,7 @@ mod testing {
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
-        let dt = main_dt; // / model.dt_subdivisions() as f64;
+        let dt = main_dt; // / model.dt_subdivisions() as Float;
 
         let mut date = Date {
             day: 1,
@@ -914,7 +914,7 @@ mod testing {
 
         // March:
         for i in 0..800 {
-            let time = (i as f64) * dt;
+            let time = (i as Float) * dt;
             date.add_seconds(time);
 
             let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
@@ -952,7 +952,7 @@ mod testing {
         // Finished model the SimpleModel
 
         let n: usize = 20;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         let mut state = state_header.take_values().unwrap();
@@ -976,7 +976,7 @@ mod testing {
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
-        let t_out: f64 = 30.0; // T of surroundings
+        let t_out: Float = 30.0; // T of surroundings
 
         // test model
         let tester = SingleZoneTestModel{
@@ -994,7 +994,7 @@ mod testing {
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
-        let dt = main_dt; // / model.dt_subdivisions() as f64;
+        let dt = main_dt; // / model.dt_subdivisions() as Float;
 
         let mut date = Date {
             day: 1,
@@ -1004,7 +1004,7 @@ mod testing {
 
         // March:
         for i in 0..800 {
-            let time = (i as f64) * dt;
+            let time = (i as Float) * dt;
             date.add_seconds(time);
 
             let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
@@ -1029,7 +1029,7 @@ mod testing {
         let zone_volume = 40.;
         let heating_power = 100.;
         let infiltration_rate = 0.1;
-        let t_out: f64 = 30.0; // T of surroundings
+        let t_out: Float = 30.0; // T of surroundings
 
         let mut state_header = SimulationStateHeader::new();        
         let  simple_model = get_single_zone_test_building(
@@ -1047,7 +1047,7 @@ mod testing {
         // Finished model the SimpleModel
 
         let n: usize = 20;
-        let main_dt = 60. * 60. / n as f64;
+        let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         // Set infiltration                
@@ -1100,7 +1100,7 @@ mod testing {
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
-        let dt = main_dt; // / model.dt_subdivisions() as f64;
+        let dt = main_dt; // / model.dt_subdivisions() as Float;
 
         let mut date = Date {
             day: 1,
@@ -1110,7 +1110,7 @@ mod testing {
 
         // March:
         for i in 0..800 {
-            let time = (i as f64) * dt;
+            let time = (i as Float) * dt;
             date.add_seconds(time);
 
             let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();

@@ -24,9 +24,11 @@ use simple_model::hvac::{HVACKind, HVAC};
 use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
 use simple_model::hvac::electric_heater::ElectricHeater;
 
-/// Retrieves a `Vec<(usize, f64)>` containing the amount of heat (the `f64` in W) going into 
+use crate::Float;
+
+/// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into 
 /// each space (of index `usize`)
-pub fn calc_cooling_heating_power(system: &Rc<dyn HVAC>, state: &SimulationState ) -> Vec<(usize,f64)> {
+pub fn calc_cooling_heating_power(system: &Rc<dyn HVAC>, state: &SimulationState ) -> Vec<(usize,Float)> {
     
     match system.kind() {
         HVACKind::IdealHeaterCooler => {

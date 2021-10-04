@@ -18,7 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#![allow(clippy::too_many_arguments)]
+use crate::Float;
+
 use std::rc::Rc;
 
 use matrix::Matrix;
@@ -114,19 +115,19 @@ use simple_model::construction::Construction;
 /// allows complying with this
 pub fn discretize_construction(    
     construction: &Rc<Construction>,
-    model_dt: f64,
-    max_dx: f64,
-    min_dt: f64,
+    model_dt: Float,
+    max_dx: Float,
+    min_dt: Float,
 ) -> (usize, Vec<usize>) {
     // I could only think of how to make this recursively... so I did this.
     fn aux(        
         construction: &Rc<Construction>,
-        main_dt: f64,
+        main_dt: Float,
         n: usize,
-        max_dx: f64,
-        min_dt: f64,
+        max_dx: Float,
+        min_dt: Float,
     ) -> (usize, Vec<usize>) {
-        let dt = main_dt / (n as f64);
+        let dt = main_dt / (n as Float);
         
         // Choose a dx so that dt allows convergence.
         // stability is assured by (alpha * dt / dx^2 <= 1/2 )
@@ -135,7 +136,7 @@ pub fn discretize_construction(
         // So, for each layer
         let n_layers = construction.layers.len();
         let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
-        const RS: f64 = 0.05;        
+        const RS: Float = 0.05;        
 
         for n_layer in 0..n_layers {
             let material = &construction.layers[n_layer];
@@ -166,7 +167,7 @@ pub fn discretize_construction(
                 // given timestep because its thickness leads to a dx that
                 // does not ensure convergence...
                 // check if there is room for reducing dt (hence reducing min_dx)
-                let next_dt = main_dt / ((n + 1) as f64);
+                let next_dt = main_dt / ((n + 1) as Float);
                 if next_dt > min_dt {
                     // If there is room for that, do it.
                     return aux( construction, main_dt, n + 1, max_dx, min_dt);
@@ -183,7 +184,7 @@ pub fn discretize_construction(
                 if dx > max_dx {
                     // If the found dx is larger than the max allowed d_x, try to change timestep
                     // check if there is room for reducing dt...
-                    let next_dt = main_dt / ((n + 1) as f64);
+                    let next_dt = main_dt / ((n + 1) as Float);
                     if next_dt > min_dt {
                         // If there is room for that, do it.
                         return aux( construction, main_dt, n + 1, max_dx, min_dt);
@@ -213,8 +214,8 @@ pub fn discretize_construction(
                 let k = substance.thermal_conductivity().unwrap();
                 let rho = substance.density().unwrap();
                 let cp = substance.specific_heat_capacity().unwrap();
-                let dt = main_dt / n as f64;
-                let dx = thickness / n_elements[n_layer] as f64;
+                let dt = main_dt / n as Float;
+                let dx = thickness / n_elements[n_layer] as Float;
                 
                 // assert!(alpha * dt / dx / dx <= 0.5);
                 let lambda1 = - dt / (RS * rho * cp * dx);
@@ -337,7 +338,7 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
-pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usize)->f64{
+pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: Float, first_massive: usize)->Float{
     let mut full_rs_front = rs_front;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
@@ -350,7 +351,7 @@ pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: f64, first_massive: usi
     full_rs_front
 }
 
-pub fn calc_full_rs_back(c: &Rc<Construction>,rs_back: f64, last_massive: usize)->f64{
+pub fn calc_full_rs_back(c: &Rc<Construction>,rs_back: Float, last_massive: usize)->Float{
     let mut full_rs_back = rs_back;
     for i in last_massive..c.layers.len() {        
         let material = &c.layers[i];        
@@ -364,8 +365,8 @@ fn calc_c_matrix(
     construction: &Rc<Construction>,
     all_nodes: usize,
     n_elements: &[usize],
-)->Vec<f64>{
-    let mut c_matrix: Vec<f64> = vec![0.0; all_nodes];
+)->Vec<Float>{
+    let mut c_matrix: Vec<Float> = vec![0.0; all_nodes];
     let mut node = 0;
 
     for n_layer in 0..construction.layers.len() {
@@ -383,7 +384,7 @@ fn calc_c_matrix(
 
                 let rho = substance.density().unwrap();
                 let cp = substance.specific_heat_capacity().unwrap();
-                let dx = material.thickness / (m as f64);
+                let dx = material.thickness / (m as Float);
                 let m = rho * cp * dx;// dt;
 
                 // Nodes are in the joints between
@@ -454,8 +455,8 @@ fn calc_k_matrix(
     first_massive: usize,
     last_massive: usize,
     n_elements: &[usize],
-    rs_front: f64,
-    rs_back: f64,
+    rs_front: Float,
+    rs_back: Float,
     all_nodes: usize,
 )->Matrix{
     // initialize k_prime
@@ -515,7 +516,7 @@ fn calc_k_matrix(
             let substance = &material.substance;//model.get_substance(substance_index).unwrap();
 
             let lambda = substance.thermal_conductivity().unwrap();
-            let dx = material.thickness / (m as f64);
+            let dx = material.thickness / (m as Float);
             let u = lambda / dx;
 
             for _ in 0..m {
@@ -621,14 +622,14 @@ pub fn build_thermal_network(
     construction: &Rc<Construction>,
     first_massive: usize,
     last_massive: usize,
-    dt: f64,
+    dt: Float,
     all_nodes: usize,
     n_elements: &[usize],
-    rs_front: f64,
-    rs_back: f64,
-    full_rs_front: f64,
-    full_rs_back: f64,    
-) -> Result<impl Fn(&Matrix, f64, f64)->Matrix, String> {
+    rs_front: Float,
+    rs_back: Float,
+    full_rs_front: Float,
+    full_rs_back: Float,    
+) -> Result<impl Fn(&Matrix, Float, Float)->Matrix, String> {
     
     // if this happens, we are trying to build the 
     // thermal network for a non-massive wall... Which
@@ -663,7 +664,7 @@ pub fn build_thermal_network(
     
 
     // DIVIDE ONE BY THE OTHER to make K_prime
-    let mut c_prime: Vec<f64> = Vec::with_capacity(all_nodes);
+    let mut c_prime: Vec<Float> = Vec::with_capacity(all_nodes);
     for (i, mass) in c.iter().enumerate() {
         if *mass != 0.0 {
             // Multiply the whole column K by this.
@@ -683,7 +684,7 @@ pub fn build_thermal_network(
 
     // *given_k_prime = k_prime;
 
-    let clo = move |nodes_temps : &Matrix, t_front: f64, t_back: f64|->Matrix{
+    let clo = move |nodes_temps : &Matrix, t_front: Float, t_back: Float|->Matrix{
         // Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T
         // But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime
         // --> Calculate: k_i = c_prime * q + k_prime * T

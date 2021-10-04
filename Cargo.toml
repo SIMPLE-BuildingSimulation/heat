@@ -29,3 +29,7 @@ rustdoc-args = [
     "--html-in-header",
     "./katex.html",
 ]
+
+[features]
+default = []
+float = ["simple_model/float", "convection/float", "matrix/float", "gas_properties/float", "weather/float", "calendar/float", "geometry3d/float", "simple_test_models/float"]

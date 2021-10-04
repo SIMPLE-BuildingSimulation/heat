@@ -18,10 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 use std::rc::Rc;
 use matrix::Matrix;
 
+use crate::Float;
 use simple_model::construction::Construction;
 use simple_model::boundary::Boundary;
 use simple_model::fenestration::Fenestration;
@@ -43,7 +43,7 @@ impl ThermalSurface{
         // model: &SimpleModel,
         state: &mut SimulationStateHeader,
         surface: &Rc<Surface>,
-        dt: f64,
+        dt: Float,
         n_elements: &[usize],
         // index: usize,
     ) -> Result<Self, String> {
@@ -74,7 +74,7 @@ impl ThermalSurface{
         // model: &SimpleModel,
         state: &mut SimulationStateHeader,
         fenestration: &Rc<Fenestration>,
-        dt: f64,
+        dt: Float,
         n_elements: &[usize],
         // index: usize,
     ) -> Result<Self, String> {
@@ -118,17 +118,17 @@ impl ThermalSurface{
     }
 
     /// Gets the `area` of the surface
-    pub fn area(&self) -> f64 {
+    pub fn area(&self) -> Float {
         self.data().area
     }
 
     /// Gets the `rs_front`
-    pub fn rs_front(&self) -> f64 {
+    pub fn rs_front(&self) -> Float {
         self.data().rs_front
     }
 
     /// Gets the `rs_back`
-    pub fn rs_back(&self) -> f64 {
+    pub fn rs_back(&self) -> Float {
         self.data().rs_back
     }
 
@@ -153,7 +153,7 @@ impl ThermalSurface{
         self.data().massive
     }
 
-    pub fn front_temperature(&self, state: &SimulationState) -> f64 {
+    pub fn front_temperature(&self, state: &SimulationState) -> Float {
         match &self{
             Self::Surface(s,_)=>{
                 s.first_node_temperature(state).expect("Trying to get front temperature from Surface without first_node state index")
@@ -164,7 +164,7 @@ impl ThermalSurface{
         }
     }
 
-    pub fn back_temperature(&self, state: &SimulationState) -> f64 {
+    pub fn back_temperature(&self, state: &SimulationState) -> Float {
         match &self{
             Self::Surface(s,_)=>{
                 s.last_node_temperature(state).expect("Trying to get back temperature from Surface without last_node state index")
@@ -231,9 +231,9 @@ impl ThermalSurface{
     fn calc_heat_flow(
         &self,        
         state: &SimulationState,
-        t_front: f64,
-        t_back: f64,
-    ) -> (f64, f64) {
+        t_front: Float,
+        t_back: Float,
+    ) -> (Float, Float) {
         // Positive is going out of the layer.
         let data = self.data();
         let q_in;
@@ -256,10 +256,10 @@ impl ThermalSurface{
     pub fn march(
         &self,        
         state: &mut SimulationState,
-        t_front: f64,
-        t_back: f64,
-        _dt: f64,
-    ) -> (f64, f64) {
+        t_front: Float,
+        t_back: Float,
+        _dt: Float,
+    ) -> (Float, Float) {
         let mut temperatures = self.get_node_temperatures( state);
         let data = self.data();
 
@@ -336,14 +336,14 @@ pub struct ThermalSurfaceData {
 
     
     /// The front side convection coefficient
-    rs_front: f64,
+    rs_front: Float,
 
     /// The back side convection coefficient
-    rs_back: f64,
+    rs_back: Float,
 
-    total_r : f64,
+    total_r : Float,
 
-    kt4_func: Option<Box<dyn Fn(&Matrix, f64, f64)->Matrix>>,
+    kt4_func: Option<Box<dyn Fn(&Matrix, Float, Float)->Matrix>>,
 
 
     /// The interior (i.e. front side) resistance before
@@ -351,14 +351,14 @@ pub struct ThermalSurfaceData {
     /// any light-weight material at the front of the construction.
     /// If the first layer in the construction has mass, then this
     /// value will be equal to r_si
-    full_rs_front: f64,
+    full_rs_front: Float,
 
     /// The exterior (i.e. back side) resistance after
     /// the last layer with mass. It includes the r_so and also
     /// any light-weight material at the back of the contruction.
     /// If the first layer in the construction has mass, then
     /// this value will be equal to r_si
-    full_rs_back: f64,
+    full_rs_back: Float,
 
     // The location of the first temperature node
     // in the SimulationState
@@ -379,7 +379,7 @@ pub struct ThermalSurfaceData {
     back_boundary: Option<Boundary>,
 
     /// The area of the Surface
-    area: f64,
+    area: Float,
 }
 
 impl ThermalSurfaceData {
@@ -388,10 +388,10 @@ impl ThermalSurfaceData {
     fn new(        
         state: &mut SimulationStateHeader,        
         construction: &Rc<Construction>,
-        dt: f64,
-        area: f64,
-        rs_front: f64,
-        rs_back: f64,
+        dt: Float,
+        area: Float,
+        rs_front: Float,
+        rs_back: Float,
         n_elements: &[usize],
         ref_surface_index: usize,
         is_fenestration: bool,
@@ -507,12 +507,12 @@ mod testing {
         
         let ret = model.add_substance(brickwork);                        
             
-        assert_eq!(ret.thermal_diffusivity().unwrap(), 0.6E-6);
+        assert!((ret.thermal_diffusivity().unwrap() - 0.6E-6).abs() < 0.00000001);
         
         ret
     }
 
-    fn add_material(model: &mut SimpleModel, substance: &Rc<Substance>, thickness: f64) -> Rc<Material> {
+    fn add_material(model: &mut SimpleModel, substance: &Rc<Substance>, thickness: Float) -> Rc<Material> {
         let mat = Material::new("123123".to_string(), Rc::clone(substance), thickness);
         
         model.add_material(mat)
@@ -528,7 +528,7 @@ mod testing {
         // Add polyurethane Substance
         let poly = add_polyurethane(&mut model);
 
-        let m0_thickness = 200.0 / 1000. as f64;
+        let m0_thickness = 200.0 / 1000. as Float;
         let m0 = add_material(&mut model, &poly, m0_thickness);
 
         /* CONSTRUCTION */
@@ -539,7 +539,7 @@ mod testing {
 
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -557,7 +557,7 @@ mod testing {
         let min_dt = 1.;
         let (n_subdivisions, nodes) =
             discretize_construction( &c0, main_dt, max_dx, min_dt);
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
         let mut state_header = SimulationStateHeader::new();
         let ts =
             ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
@@ -644,7 +644,7 @@ mod testing {
 
         /* MATERIALS */
 
-        let m0_thickness = 200.0 / 1000. as f64;
+        let m0_thickness = 200.0 / 1000. as Float;
         let m0 = add_material(&mut model, &poly, m0_thickness);
 
         /* CONSTRUCTION */
@@ -654,7 +654,7 @@ mod testing {
 
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -675,7 +675,7 @@ mod testing {
         let (n_subdivisions, nodes) =
             discretize_construction( &c0, main_dt, max_dx, min_dt);
 
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
         let mut state_header = SimulationStateHeader::new();
         let ts =
             ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
@@ -720,7 +720,7 @@ mod testing {
 
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -738,7 +738,7 @@ mod testing {
         let min_dt = 80.;
         let (n_subdivisions, nodes) = discretize_construction( &c0, main_dt, max_dx, min_dt);
 
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
         let mut state_header = SimulationStateHeader::new();
         let ts = ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
 
@@ -787,7 +787,7 @@ mod testing {
         /* GEOMETRY */
 
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -806,7 +806,7 @@ mod testing {
         let min_dt = 65.;
         let (n_subdivisions, nodes) = discretize_construction( &c, main_dt, max_dx, min_dt);
 
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
         let mut state_header = SimulationStateHeader::new();
         let ts = ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
 
@@ -848,7 +848,7 @@ mod testing {
         
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -865,7 +865,7 @@ mod testing {
         let max_dx = m1.thickness / 2.0;
         let min_dt = 1.0;
         let (n_subdivisions, nodes) = discretize_construction( &c, main_dt, max_dx, min_dt);
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
 
         let mut state_header = SimulationStateHeader::new();
         let ts = ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
@@ -878,12 +878,12 @@ mod testing {
         // TEST
 
         // Try marching until q_in and q_out are zero.
-        let mut q: f64 = 9999000009.0;        
+        let mut q: Float = 9999000009.0;        
         let mut counter: usize = 0;
-        while q.abs() > 1E-5 {
+        while q.abs() > 0.00015 {
             let (q_in, q_out) = ts.march( &mut state, 10.0, 10.0, dt);
             // the same amount of heat needs to leave in each direction
-            println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
+            // println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
             // assert!((q_in - q_out).abs() < 1E-5);
             
 
@@ -896,8 +896,8 @@ mod testing {
             q = q_in;
 
             counter += 1;
-            if counter > 99999 {
-                panic!("Exceded number of iterations")
+            if counter > 9999999 {
+                panic!("Exceded number of iterations... q.abs() = {}", q.abs())
             }
         }
 
@@ -905,7 +905,7 @@ mod testing {
         let temperatures = ts.get_node_temperatures(&state);
         for i in 0..ts.data().n_nodes {
             let t = temperatures.get(i, 0).unwrap();
-            assert!((t - 10.0).abs() < 1E-5);
+            assert!((t - 10.0).abs() < 0.00015);
         }
 
         // SECOND TEST -- 10 degrees in and 30 out.
@@ -914,11 +914,11 @@ mod testing {
         // q_out = -(30-10)/R
 
         // March until q converges
-        let mut change: f64 = 99.0;
+        let mut change: Float = 99.0;
         let mut counter: usize = 0;
-        let mut previous_q: f64 = -125.0;
-        let mut final_qin: f64 = -12312.;
-        let mut final_qout: f64 = 123123123.;
+        let mut previous_q: Float = -125.0;
+        let mut final_qin: Float = -12312.;
+        let mut final_qout: Float = 123123123.;
         while change.abs() > 1E-10 {
             let (q_in, q_out) = ts.march( &mut state, 10.0, 30.0, dt);
             final_qin = q_in;
@@ -936,13 +936,13 @@ mod testing {
         // Expecting
         assert!(final_qin > 0.0);
         assert!(final_qout < 0.0);
-        assert!((final_qin + final_qout).abs() < 1E-6);
+        assert!((final_qin + final_qout).abs() < 0.00033);
 
         let r = c.r_value().unwrap();
 
         let exp_q = (30.0 - 10.0) / (r + ts.data().rs_front + ts.data().rs_back);
-        assert!((exp_q - final_qin).abs() < 1E-4);
-        assert!((exp_q + final_qout).abs() < 1E-4);
+        assert!((exp_q - final_qin).abs() < 0.00033);
+        assert!((exp_q + final_qout).abs() < 0.00033);
     }
 
     #[test]
@@ -963,7 +963,7 @@ mod testing {
         
         /* GEOMETRY */
         let mut the_loop = Loop3D::new();
-        let l = 1. as f64;
+        let l = 1. as Float;
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
@@ -985,7 +985,7 @@ mod testing {
         let min_dt = 100.0;
         let (n_subdivisions, nodes) = discretize_construction( &c, main_dt, max_dx, min_dt);
 
-        let dt = main_dt / n_subdivisions as f64;
+        let dt = main_dt / n_subdivisions as Float;
 
         let ts = ThermalSurface::new_surface( &mut state_header, &surface, dt, &nodes).unwrap();
         assert!(!ts.data().massive);
