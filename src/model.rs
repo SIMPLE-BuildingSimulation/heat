@@ -18,17 +18,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 use crate::Float;
-use crate::surface::ThermalSurface;
 use simple_model::model::SimpleModel;
 use calendar::date::Date;
 use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
 use simple_model::simulation_state::{SimulationState, SimulationStateHeader};
+use weather::Weather;
+
+use crate::surface::ThermalSurface;
 use simple_model::simulation_state_element::SimulationStateElement;
 use simple_model::hvac::*;
 use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
 use simple_model::hvac::electric_heater::ElectricHeater;
-use weather::Weather;
 
 use crate::zone::ThermalZone;
 use simple_model::boundary::Boundary;
@@ -38,21 +39,21 @@ use crate::construction::discretize_construction;
 pub struct ThermalModel {
 
     /// All the Thermal Zones in the model
-    zones: Vec<ThermalZone>,
+    pub zones: Vec<ThermalZone>,
 
     /// All the surfaces in the model
-    surfaces: Vec<ThermalSurface>,
+    pub surfaces: Vec<ThermalSurface>,
 
     /// All the Fenestrations in the model
-    fenestrations: Vec<ThermalSurface>,
+    pub fenestrations: Vec<ThermalSurface>,
 
     /// The number of steps that this model needs
     /// to take in order to advance one step of the main
     /// simulation.
-    dt_subdivisions: usize,
+    pub dt_subdivisions: usize,
 
     /// The model's dt (i.e., main_dt / self.dt_subdivisions)
-    dt: Float,
+    pub dt: Float,
 }
 
 impl ErrorHandling for ThermalModel {
@@ -209,12 +210,12 @@ impl SimulationModel for ThermalModel {
     /// `self.dt` seconds in each of them.
     fn march(
         &self,
-        date: Date,
+        mut date: Date,
         weather: &dyn Weather,
         model: &SimpleModel,
         state: &mut SimulationState,
     ) -> Result<(), String> {
-        let mut date = date;
+        
 
         // Iterate through all the sub-subdivitions
         for _ in 0..self.dt_subdivisions {
