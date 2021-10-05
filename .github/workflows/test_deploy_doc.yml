@@ -20,10 +20,10 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose    
-    - name: Build Float
-      run: cargo build --verbose --features float
-    - name: Run tests Float
-      run: cargo test --verbose  --features float
+    # - name: Build Float
+    #   run: cargo build --verbose --features float
+    # - name: Run tests Float
+    #   run: cargo test --verbose  --features float
     - name: Build doc
       run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps
     - name: Set Index
