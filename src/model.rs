@@ -118,7 +118,7 @@ impl SimulationModel for ThermalModel {
         let mut all_n_elements: Vec<Vec<usize>> = Vec::with_capacity(model.constructions.len());
         for construction in &model.constructions {
             let (mut found_n_subdivisions, n_elements) =
-                discretize_construction(/*model,*/ construction, main_dt, max_dx, min_dt);
+                discretize_construction(construction, main_dt, max_dx, min_dt);
             found_n_subdivisions *= n_subdivisions;
             if found_n_subdivisions > n_subdivisions {
                 n_subdivisions = found_n_subdivisions;
