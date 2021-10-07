@@ -113,6 +113,10 @@ use simple_model::construction::Construction;
 /// 
 /// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that 
 /// allows complying with this
+/// 
+/// All that said, the value for $`\Delta t`$ actually used by the final model is
+/// actually half of what these equations use. This is because what we are using 
+/// is a heuristic and I want to be safe... ish
 pub fn discretize_construction(    
     construction: &Rc<Construction>,
     model_dt: Float,
