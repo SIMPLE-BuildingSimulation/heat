@@ -15,11 +15,11 @@ jobs:
     steps:
     - name: setup
       run: |
-      rustup component add llvm-tools-preview
-      rustup default nightly
-      cargo install grcov
-      export RUSTFLAGS="-Zinstrument-coverage"
-      export LLVM_PROFILE_FILE="thermal-%p-%m.profraw"
+        rustup component add llvm-tools-preview
+        rustup default nightly
+        cargo install grcov
+        export RUSTFLAGS="-Zinstrument-coverage"
+        export LLVM_PROFILE_FILE="thermal-%p-%m.profraw"
 
   build:
     steps:
