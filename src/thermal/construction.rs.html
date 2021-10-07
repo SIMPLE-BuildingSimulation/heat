@@ -746,6 +746,10 @@
 <span id="712">712</span>
 <span id="713">713</span>
 <span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
 </pre><pre class="rust">
 <span class="comment">/*
 MIT License
@@ -862,6 +866,10 @@ SOFTWARE.
 <span class="doccomment">/// </span>
 <span class="doccomment">/// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that </span>
 <span class="doccomment">/// allows complying with this</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// All that said, the value for $`\Delta t`$ actually used by the final model is</span>
+<span class="doccomment">/// actually half of what these equations use. This is because what we are using </span>
+<span class="doccomment">/// is a heuristic and I want to be safe... ish</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">discretize_construction</span>(    
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">model_dt</span>: <span class="ident">Float</span>,
