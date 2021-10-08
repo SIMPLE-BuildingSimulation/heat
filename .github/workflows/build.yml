@@ -1,6 +1,10 @@
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-name: CI
+name: Build
 
 jobs:
   build_and_test:
