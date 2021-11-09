@@ -14,8 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: report
-      run: |
-        pwd
+      run: |        
         ls
   setup:
     runs-on: ubuntu-latest
