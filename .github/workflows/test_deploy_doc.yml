@@ -40,6 +40,7 @@ jobs:
   docs:    
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v1
     - name: Go to dir
       run: cd $GITHUB_WORKSPACE
     - name: Build doc
