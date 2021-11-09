@@ -1,8 +1,8 @@
 # Welcome to SIMPLE's Thermal Simulation Module
 
-![build badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/build.yml/badge.svg)
-![docs badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/docs.yml/badge.svg)
-![tests badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/tests.yml/badge.svg)
+![build badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/build.yaml/badge.svg)
+![docs badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/docs.yaml/badge.svg)
+![tests badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/tests.yaml/badge.svg)
 ![coverage badge](https://github.com/SIMPLE-BuildingSimulation/thermal/blob/main/coverage/badges/plastic.svg)
 
 
