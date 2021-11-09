@@ -10,10 +10,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  setup_coverage:
+  coverage:
     runs-on: ubuntu-latest
     steps:
-    - name: setup_coverage
+    - uses: actions/checkout@v1   
+    - name: coverage
       run: |
         curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
         rustup component add llvm-tools-preview

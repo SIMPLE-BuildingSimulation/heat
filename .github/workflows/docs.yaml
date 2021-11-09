@@ -9,19 +9,20 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-jobs:     
-  clippy:
-    runs-on: ubuntu-latest        
-    steps: 
-    - uses: actions/checkout@v1   
-    - name: clippy
-      run: cargo clippy > clippy_output.txt            
+jobs:       
   format:
     runs-on: ubuntu-latest        
     steps: 
     - uses: actions/checkout@v1   
     - name: format
-      run: cargo fmt        
+      run: cargo fmt 
+  clippy:
+    runs-on: ubuntu-latest  
+    needs: [format]      
+    steps: 
+    - uses: actions/checkout@v1   
+    - name: clippy
+      run: cargo clippy > clippy_output.txt                   
   docs:    
     runs-on: ubuntu-latest
     needs: [clippy]
