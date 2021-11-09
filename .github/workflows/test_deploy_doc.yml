@@ -66,6 +66,6 @@ jobs:
     - uses: actions/checkout@v1   
     - name: clippy
       run: |
-      cargo fmt
-      cargo clippy > clippy_output.txt
+        cargo fmt
+        cargo clippy > clippy_output.txt
   
