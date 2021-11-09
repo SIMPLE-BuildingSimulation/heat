@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: report
       run: |        
-        ls
+        ls -all
   setup:
     runs-on: ubuntu-latest
     steps:
