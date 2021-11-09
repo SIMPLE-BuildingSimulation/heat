@@ -61,7 +61,7 @@ jobs:
     - name: get coverage
       run: grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing -o ./coverage/
   clippy:
-  runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest    
     steps: 
     - uses: actions/checkout@v1   
     - name: clippy
