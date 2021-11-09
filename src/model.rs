@@ -18,21 +18,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 use crate::Float;
-use simple_model::model::SimpleModel;
 use calendar::date::Date;
 use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
-use simple_model::simulation_state::{SimulationState, SimulationStateHeader};
 use weather::Weather;
 
 use crate::surface::ThermalSurface;
-use simple_model::simulation_state_element::SimulationStateElement;
-use simple_model::hvac::*;
-use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
-use simple_model::hvac::electric_heater::ElectricHeater;
+use simple_model::{
+    SimpleModel, 
+    SimulationState, SimulationStateHeader,    
+    Boundary,
+};
+// use simple_model::simulation_state_element::SimulationStateElement;
+// use simple_model::hvac::*;
+// use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
+// use simple_model::hvac::electric_heater::ElectricHeater;
+// use simple_model::boundary::Boundary;
 
 use crate::zone::ThermalZone;
-use simple_model::boundary::Boundary;
 use crate::heating_cooling::calc_cooling_heating_power;
 use crate::construction::discretize_construction;
 
@@ -66,37 +69,13 @@ impl SimulationModel for ThermalModel {
     type Type = Self;
 
     /// Creates a new ThermalModel from a SimpleModel.
-    ///
-    /// WE ASSUME THAT THE ZONES IN THIS MODEL AND THE SPACES
-    /// IN THE BUILDING ARE IN THE SAME ORDER, AND HAVE A ONE-TO-ONE
-    /// RELATIONSHIP
-    /// 
+    ///    
     /// # Inputs:
     /// * model: the SimpleModel that the model represents
     /// * state: the SimulationState attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
     fn new(model: &SimpleModel, state: &mut SimulationStateHeader, n: usize) -> Result<Self, String> {
-        /* PROCESS LUMINAIRES */
-        for (i, luminaire) in model.luminaires.iter().enumerate(){
-            let element = state.push(SimulationStateElement::LuminairePowerConsumption(i), 0.0);
-            luminaire.set_power_consumption_index(element);
-        }
-        /* PROCESS ALL THE HVACS */
-        for (i,hvac) in model.hvacs.iter().enumerate() {
-            // Add the zone to the model... this pushes it to the sate
-            // as well
-            let element = state.push(SimulationStateElement::HeatingCoolingPowerConsumption(i), 0.0);
-            match hvac.kind(){
-                HVACKind::IdealHeaterCooler=>{
-                    let s = cast_hvac::<IdealHeaterCooler>(&**hvac)?;
-                    s.set_heating_cooling_consumption_index(element);
-                },
-                HVACKind::ElectricHeater=>{
-                    let s = cast_hvac::<ElectricHeater>(&**hvac)?;
-                    s.set_heating_cooling_consumption_index(element);
-                }
-            }
-        }
+        
 
         /* CREATE ALL ZONES, ONE PER SPACE */        
         let mut thermal_zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
@@ -573,9 +552,11 @@ mod testing {
     
     use simple_test_models::*;
     use gas_properties::air;
-    use simple_model::hvac::cast_hvac;
-    use simple_model::hvac::electric_heater::ElectricHeater;
-
+    use simple_model::{
+        HVAC, 
+        SimulationStateElement
+    };
+    
     /// A single-zone test model with walls assumed to have
     /// no mass. It has a closed solution, which is nice.
     /// 
@@ -643,8 +624,8 @@ mod testing {
 
     #[test]
     fn test_calculate_zones_abc() {
-        let mut state_header = SimulationStateHeader::new();
-        let  simple_model = get_single_zone_test_building(
+        
+        let  (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume: 40.,
@@ -679,9 +660,8 @@ mod testing {
     #[test]
     fn test_very_simple_march() {
         let zone_volume = 40.;
-        let surface_area = 4.;
-        let mut state_header = SimulationStateHeader::new();
-        let  simple_model = get_single_zone_test_building(
+        let surface_area = 4.;        
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -764,8 +744,8 @@ mod testing {
         let window_area = 1.;
         let zone_volume = 40.;
 
-        let mut state_header = SimulationStateHeader::new();
-        let  simple_model = get_single_zone_test_building(
+        
+        let  (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -846,8 +826,8 @@ mod testing {
         let zone_volume = 40.;
         let lighting_power = 100.;
         
-        let mut state_header = SimulationStateHeader::new();        
-        let  simple_model = get_single_zone_test_building(
+        
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -938,8 +918,8 @@ mod testing {
         let zone_volume = 40.;
         let heating_power = 100.;
         
-        let mut state_header = SimulationStateHeader::new();        
-        let  simple_model = get_single_zone_test_building(
+        
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -961,9 +941,11 @@ mod testing {
         // model.map_simulation_state(&mut state).unwrap();
 
         // turn the heater on
-        let heater = cast_hvac::<ElectricHeater>(&*simple_model.hvacs[0]).unwrap();
-        let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
-        state[hvac_state_i] = heating_power;
+        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0]{
+            let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
+            state[hvac_state_i] = heating_power;
+        }
+        
 
         // START TESTING.
         let construction = &simple_model.constructions[0];
@@ -1032,8 +1014,7 @@ mod testing {
         let infiltration_rate = 0.1;
         let t_out: Float = 30.0; // T of surroundings
 
-        let mut state_header = SimulationStateHeader::new();        
-        let  simple_model = get_single_zone_test_building(
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -1062,14 +1043,11 @@ mod testing {
         let mut state = state_header.take_values().unwrap();
 
         // turn the heater on
-        let heater = cast_hvac::<ElectricHeater>(&*simple_model.hvacs[0]).unwrap();
-        let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
-        state[hvac_state_i] = heating_power;
-
-        
-        
-        
-
+        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0]{
+            let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
+            state[hvac_state_i] = heating_power;
+        }
+    
         // START TESTING.
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());

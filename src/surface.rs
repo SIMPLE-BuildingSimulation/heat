@@ -22,12 +22,14 @@ use std::rc::Rc;
 use matrix::Matrix;
 
 use crate::Float;
-use simple_model::construction::Construction;
-use simple_model::boundary::Boundary;
-use simple_model::fenestration::Fenestration;
-use simple_model::surface::Surface;
-use simple_model::simulation_state::{SimulationStateHeader, SimulationState};
-use simple_model::simulation_state_element::SimulationStateElement;
+use simple_model::{
+    Construction,
+    Boundary,
+    Fenestration,
+    Surface,
+    SimulationStateHeader, SimulationState, SimulationStateElement
+};
+
 use convection::*;
 
 use crate::construction::*;
@@ -477,13 +479,18 @@ impl ThermalSurfaceData {
 #[cfg(test)]
 mod testing {
     use super::*;
-    use geometry3d::loop3d::Loop3D;
-    use geometry3d::point3d::Point3D;
-    use geometry3d::polygon3d::Polygon3D;
-    use simple_model::substance::Substance;
-    use simple_model::material::Material;
-    use simple_model::construction::Construction;
-    use simple_model::model::SimpleModel;
+    use geometry3d::{
+        Loop3D,
+        Point3D,
+        Polygon3D,        
+    };
+    
+    use simple_model::{
+        Substance,
+        Material, 
+        Construction,
+        SimpleModel
+    };    
 
     fn add_polyurethane(model: &mut SimpleModel) -> Rc<Substance> {
 
@@ -533,7 +540,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
-        c0.layers.push(Rc::clone(&m0));
+        c0.materials.push(Rc::clone(&m0));
         let c0 = model.add_construction(c0);
         
 
@@ -649,7 +656,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
-        c0.layers.push(Rc::clone(&m0));
+        c0.materials.push(Rc::clone(&m0));
         let c0 = model.add_construction(c0);
 
         /* GEOMETRY */
@@ -715,7 +722,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
-        c0.layers.push(Rc::clone(&m0));
+        c0.materials.push(Rc::clone(&m0));
         let c0 = model.add_construction(c0);
 
         /* GEOMETRY */
@@ -779,9 +786,9 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
-        c.layers.push(Rc::clone(&m1));
-        c.layers.push(Rc::clone(&m2));
-        c.layers.push(Rc::clone(&m1));
+        c.materials.push(Rc::clone(&m1));
+        c.materials.push(Rc::clone(&m2));
+        c.materials.push(Rc::clone(&m1));
         let c = model.add_construction(c);
 
         /* GEOMETRY */
@@ -843,7 +850,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
-        c.layers.push(Rc::clone(&m1));
+        c.materials.push(Rc::clone(&m1));
         let c = model.add_construction(c);
         
         /* GEOMETRY */
@@ -957,7 +964,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c = Construction::new("Construction".to_string());
-        c.layers.push(Rc::clone(&m1));
+        c.materials.push(Rc::clone(&m1));
         let c = model.add_construction(c);
         
         

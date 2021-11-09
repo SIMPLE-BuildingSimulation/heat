@@ -24,9 +24,8 @@ use std::rc::Rc;
 
 use matrix::Matrix;
 
-//use simple_model::construction::Construction;
-// use simple_model::model::SimpleModel;
-use simple_model::construction::Construction;
+
+use simple_model::Construction;
 
 
 /// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
@@ -134,12 +133,12 @@ pub fn discretize_construction(
         // meaning, we need to satisfy dx >= sqrt(0.5 * dt * thermal_cond/( dens * heat_cap  ))
 
         // So, for each layer
-        let n_layers = construction.layers.len();
+        let n_layers = construction.materials.len();
         let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
         const RS: Float = 0.05;        
 
         for n_layer in 0..n_layers {
-            let material = &construction.layers[n_layer];
+            let material = &construction.materials[n_layer];
             let substance = &material.substance;
 
             // Calculate the minimum_dx
@@ -206,7 +205,7 @@ pub fn discretize_construction(
         #[cfg(debug_assertions)]
         {
             for (n_layer, _) in n_elements.iter().enumerate() {
-                let material = &construction.layers[n_layer];
+                let material = &construction.materials[n_layer];
                 let substance = &material.substance;
 
                 // Calculate the optimum_dx
@@ -342,7 +341,7 @@ pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: Float, first_massive: u
     let mut full_rs_front = rs_front;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
-        let material = &c.layers[i];//model.get_material(material_index).unwrap();
+        let material = &c.materials[i];//model.get_material(material_index).unwrap();
         // let substance_index = material.get_substance_index().unwrap();
         let substance = &material.substance;//model.get_substance(substance_index).unwrap();
 
@@ -353,8 +352,8 @@ pub fn calc_full_rs_front(c: &Rc<Construction>,rs_front: Float, first_massive: u
 
 pub fn calc_full_rs_back(c: &Rc<Construction>,rs_back: Float, last_massive: usize)->Float{
     let mut full_rs_back = rs_back;
-    for i in last_massive..c.layers.len() {        
-        let material = &c.layers[i];        
+    for i in last_massive..c.materials.len() {        
+        let material = &c.materials[i];        
         let substance = &material.substance;
         full_rs_back += material.thickness / substance.thermal_conductivity().unwrap();
     }
@@ -369,9 +368,9 @@ fn calc_c_matrix(
     let mut c_matrix: Vec<Float> = vec![0.0; all_nodes];
     let mut node = 0;
 
-    for n_layer in 0..construction.layers.len() {
+    for n_layer in 0..construction.materials.len() {
         // let layer_index = c.get_layer_index(n_layer).unwrap();
-        let material = &construction.layers[n_layer];//model.get_material(layer_index).unwrap();
+        let material = &construction.materials[n_layer];//model.get_material(layer_index).unwrap();
 
         let m = n_elements[n_layer];
 
@@ -472,7 +471,7 @@ fn calc_k_matrix(
 
     while n_layer < last_massive {
         // let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = &c.layers[n_layer];//model.get_material(material_index).unwrap();
+        let material = &c.materials[n_layer];//model.get_material(material_index).unwrap();
 
         let m = n_elements[n_layer];
         if m == 0 {
@@ -482,7 +481,7 @@ fn calc_k_matrix(
             let mut r = 0.0; // if the material is no mass, then the first value
             while n_layer < last_massive && n_elements[n_layer] == 0 {
                 // let material_index = c.get_layer_index(n_layer).unwrap();
-                let material = &c.layers[n_layer];//model.get_material(material_index).unwrap();
+                let material = &c.materials[n_layer];//model.get_material(material_index).unwrap();
                 let dx = material.thickness;//().unwrap();
 
                 // let substance_index = material.get_substance_index().unwrap();
@@ -638,8 +637,8 @@ pub fn build_thermal_network(
     debug_assert_eq!(calc_n_total_nodes(&n_elements).unwrap(), all_nodes);
 
     // check coherence in input data
-    if n_elements.len() != construction.layers.len() {
-        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",construction.layers.len(),n_elements.len());
+    if n_elements.len() != construction.materials.len() {
+        let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",construction.materials.len(),n_elements.len());
         return Err(err);
     }
 

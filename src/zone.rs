@@ -20,10 +20,11 @@ SOFTWARE.
 
 use std::rc::Rc;
 use crate::Float;
-use simple_model::space::Space;
+use simple_model::{
+    Space, 
+    SimulationStateElement, SimulationStateHeader
+};
 use gas_properties::air;
-use simple_model::simulation_state::SimulationStateHeader;
-use simple_model::simulation_state_element::SimulationStateElement;
 
 
 

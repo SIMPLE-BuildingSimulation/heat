@@ -17,23 +17,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-use simple_model::simulation_state::SimulationState;
-use std::rc::Rc;
-use simple_model::hvac::cast_hvac;
-use simple_model::hvac::{HVACKind, HVAC};
-use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
-use simple_model::hvac::electric_heater::ElectricHeater;
+use simple_model::SimulationState;
+// use std::rc::Rc;
+
+use simple_model::{
+    hvac::HVAC,
+    // hvac::IdealHeaterCooler,
+    // hvac::ElectricHeater,
+};
 
 use crate::Float;
 
 /// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into 
 /// each space (of index `usize`)
-pub fn calc_cooling_heating_power(system: &Rc<dyn HVAC>, state: &SimulationState ) -> Vec<(usize,Float)> {
+pub fn calc_cooling_heating_power(system: &HVAC, state: &SimulationState ) -> Vec<(usize,Float)> {
     
-    match system.kind() {
-        HVACKind::IdealHeaterCooler => {
-            let a = &**system;
-            let system = cast_hvac::<IdealHeaterCooler>(a).unwrap();
+    match system {
+        HVAC::IdealHeaterCooler(system) => {
+            // let a = &**system;
+            // let system = cast_hvac::<IdealHeaterCooler>(a).unwrap();
             let mut ret = Vec::new();
             for space in &system.target_spaces{
                 let index = space.index().unwrap();
@@ -43,9 +45,9 @@ pub fn calc_cooling_heating_power(system: &Rc<dyn HVAC>, state: &SimulationState
             ret
             
         },
-        HVACKind::ElectricHeater => {
-            let a = &**system;
-            let system = cast_hvac::<ElectricHeater>(a).unwrap();
+        HVAC::ElectricHeater(system) => {
+            // let a = &**system;
+            // let system = cast_hvac::<ElectricHeater>(a).unwrap();
             let mut ret = Vec::new();
             if let Ok(space) = system.target_space(){
                 let index = space.index().unwrap();
