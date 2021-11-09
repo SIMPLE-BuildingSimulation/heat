@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -32,7 +32,7 @@
   });
 </script>
 
-<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../thermal/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
+<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../thermal/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1294,29 +1294,7 @@
 <span id="1260">1260</span>
 <span id="1261">1261</span>
 <span id="1262">1262</span>
-<span id="1263">1263</span>
-<span id="1264">1264</span>
-<span id="1265">1265</span>
-<span id="1266">1266</span>
-<span id="1267">1267</span>
-<span id="1268">1268</span>
-<span id="1269">1269</span>
-<span id="1270">1270</span>
-<span id="1271">1271</span>
-<span id="1272">1272</span>
-<span id="1273">1273</span>
-<span id="1274">1274</span>
-<span id="1275">1275</span>
-<span id="1276">1276</span>
-<span id="1277">1277</span>
-<span id="1278">1278</span>
-<span id="1279">1279</span>
-<span id="1280">1280</span>
-<span id="1281">1281</span>
-<span id="1282">1282</span>
-<span id="1283">1283</span>
-</pre><pre class="rust">
-<span class="comment">/*
+</pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1335,27 +1313,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
-<span class="kw">use</span> <span class="ident">simple_model::model::SimpleModel</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
 <span class="kw">use</span> <span class="ident">calendar::date::Date</span>;
 <span class="kw">use</span> <span class="ident">communication_protocols::error_handling::ErrorHandling</span>;
 <span class="kw">use</span> <span class="ident">communication_protocols::simulation_model::SimulationModel</span>;
-<span class="kw">use</span> <span class="ident">simple_model::simulation_state</span>::{<span class="ident">SimulationState</span>, <span class="ident">SimulationStateHeader</span>};
 <span class="kw">use</span> <span class="ident">weather::Weather</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::surface::ThermalSurface</span>;
-<span class="kw">use</span> <span class="ident">simple_model::simulation_state_element::SimulationStateElement</span>;
-<span class="kw">use</span> <span class="ident">simple_model::hvac</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler</span>;
-<span class="kw">use</span> <span class="ident">simple_model::hvac::electric_heater::ElectricHeater</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::surface::ThermalSurface</span>;
+<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Boundary</span>, <span class="ident">SimpleModel</span>, <span class="ident">SimulationState</span>, <span class="ident">SimulationStateHeader</span>};
+<span class="comment">// use simple_model::simulation_state_element::SimulationStateElement;</span>
+<span class="comment">// use simple_model::hvac::*;</span>
+<span class="comment">// use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;</span>
+<span class="comment">// use simple_model::hvac::electric_heater::ElectricHeater;</span>
+<span class="comment">// use simple_model::boundary::Boundary;</span>
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::zone::ThermalZone</span>;
-<span class="kw">use</span> <span class="ident">simple_model::boundary::Boundary</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::heating_cooling::calc_cooling_heating_power</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::construction::discretize_construction</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::construction::discretize_construction</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::heating_cooling::calc_cooling_heating_power</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::zone::ThermalZone</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThermalModel</span> {
-
     <span class="doccomment">/// All the Thermal Zones in the model</span>
     <span class="kw">pub</span> <span class="ident">zones</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalZone</span><span class="op">&gt;</span>,
 
@@ -1384,41 +1360,19 @@ SOFTWARE.
     <span class="kw">type</span> <span class="ident">Type</span> <span class="op">=</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Creates a new ThermalModel from a SimpleModel.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// WE ASSUME THAT THE ZONES IN THIS MODEL AND THE SPACES</span>
-    <span class="doccomment">/// IN THE BUILDING ARE IN THE SAME ORDER, AND HAVE A ONE-TO-ONE</span>
-    <span class="doccomment">/// RELATIONSHIP</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///    </span>
     <span class="doccomment">/// # Inputs:</span>
     <span class="doccomment">/// * model: the SimpleModel that the model represents</span>
     <span class="doccomment">/// * state: the SimulationState attached to the SimpleModel</span>
     <span class="doccomment">/// * n: the number of timesteps per hour taken by the main simulation.</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="comment">/* PROCESS LUMINAIRES */</span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">luminaire</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">luminaires</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(){
-            <span class="kw">let</span> <span class="ident">element</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::LuminairePowerConsumption</span>(<span class="ident">i</span>), <span class="number">0.0</span>);
-            <span class="ident">luminaire</span>.<span class="ident">set_power_consumption_index</span>(<span class="ident">element</span>);
-        }
-        <span class="comment">/* PROCESS ALL THE HVACS */</span>
-        <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">hvac</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">hvacs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="comment">// Add the zone to the model... this pushes it to the sate</span>
-            <span class="comment">// as well</span>
-            <span class="kw">let</span> <span class="ident">element</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::HeatingCoolingPowerConsumption</span>(<span class="ident">i</span>), <span class="number">0.0</span>);
-            <span class="kw">match</span> <span class="ident">hvac</span>.<span class="ident">kind</span>(){
-                <span class="ident">HVACKind::IdealHeaterCooler</span><span class="op">=</span><span class="op">&gt;</span>{
-                    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">cast_hvac</span>::<span class="op">&lt;</span><span class="ident">IdealHeaterCooler</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">hvac</span>)<span class="question-mark">?</span>;
-                    <span class="ident">s</span>.<span class="ident">set_heating_cooling_consumption_index</span>(<span class="ident">element</span>);
-                },
-                <span class="ident">HVACKind::ElectricHeater</span><span class="op">=</span><span class="op">&gt;</span>{
-                    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">cast_hvac</span>::<span class="op">&lt;</span><span class="ident">ElectricHeater</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">hvac</span>)<span class="question-mark">?</span>;
-                    <span class="ident">s</span>.<span class="ident">set_heating_cooling_consumption_index</span>(<span class="ident">element</span>);
-                }
-            }
-        }
-
-        <span class="comment">/* CREATE ALL ZONES, ONE PER SPACE */</span>        
+    <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
+        <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>,
+        <span class="ident">n</span>: <span class="ident">usize</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="comment">/* CREATE ALL ZONES, ONE PER SPACE */</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_zones</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalZone</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">spaces</span>.<span class="ident">len</span>());
-        <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">space</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">spaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">space</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">spaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="comment">// Add the zone to the model... this pushes it to the sate</span>
             <span class="comment">// as well</span>
             <span class="ident">thermal_zones</span>.<span class="ident">push</span>(<span class="ident">ThermalZone::from_space</span>(<span class="ident">space</span>, <span class="ident">state</span>, <span class="ident">i</span>));
@@ -1460,19 +1414,18 @@ SOFTWARE.
         <span class="comment">// dt for the whole model. Some constructions will have a larger</span>
         <span class="comment">// dt (due to their discretization scheme), but simulating them</span>
         <span class="comment">// with a smaller (i.e. the official) dt is of no harm.</span>
-        
 
         <span class="comment">// For the Thermal Model</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_surfaces</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalSurface</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">len</span>());
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">surface</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {                        
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">surface</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">let</span> <span class="ident">construction_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">surface</span>.<span class="ident">construction</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
 
-            <span class="kw">let</span> <span class="ident">thermal_surface</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ThermalSurface::new_surface</span>(                
+            <span class="kw">let</span> <span class="ident">thermal_surface</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ThermalSurface::new_surface</span>(
                 <span class="ident">state</span>,
                 <span class="ident">surface</span>,
                 <span class="ident">dt</span>,
-                <span class="kw-2">&amp;</span><span class="ident">all_n_elements</span>[<span class="ident">construction_index</span>],                
+                <span class="kw-2">&amp;</span><span class="ident">all_n_elements</span>[<span class="ident">construction_index</span>],
             ) {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>,
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
@@ -1481,25 +1434,24 @@ SOFTWARE.
             <span class="ident">thermal_surfaces</span>.<span class="ident">push</span>(<span class="ident">thermal_surface</span>);
 
             <span class="comment">// Match surface and zones</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">front_boundary</span>(){
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">front_boundary</span>() {
                 <span class="ident">thermal_surfaces</span>[<span class="ident">i</span>].<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>)<span class="op">=</span><span class="ident">surface</span>.<span class="ident">back_boundary</span>(){
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">back_boundary</span>() {
                 <span class="ident">thermal_surfaces</span>[<span class="ident">i</span>].<span class="ident">set_back_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
             }
-                
         }
-        
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_fenestrations</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalSurface</span><span class="op">&gt;</span> <span class="op">=</span>
             <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">len</span>());
         <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">fenestration</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">let</span> <span class="ident">construction_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">fenestration</span>.<span class="ident">construction</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
 
-            <span class="kw">let</span> <span class="ident">thermal_surface</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ThermalSurface::new_fenestration</span>(                
+            <span class="kw">let</span> <span class="ident">thermal_surface</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ThermalSurface::new_fenestration</span>(
                 <span class="ident">state</span>,
                 <span class="ident">fenestration</span>,
                 <span class="ident">dt</span>,
-                <span class="kw-2">&amp;</span><span class="ident">all_n_elements</span>[<span class="ident">construction_index</span>],                
+                <span class="kw-2">&amp;</span><span class="ident">all_n_elements</span>[<span class="ident">construction_index</span>],
             ) {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>,
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
@@ -1508,10 +1460,10 @@ SOFTWARE.
             <span class="ident">thermal_fenestrations</span>.<span class="ident">push</span>(<span class="ident">thermal_surface</span>);
 
             <span class="comment">// Match surface and zones</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">fenestration</span>.<span class="ident">front_boundary</span>(){
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">fenestration</span>.<span class="ident">front_boundary</span>() {
                 <span class="ident">thermal_fenestrations</span>[<span class="ident">i</span>].<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">fenestration</span>.<span class="ident">back_boundary</span>(){
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">fenestration</span>.<span class="ident">back_boundary</span>() {
                 <span class="ident">thermal_fenestrations</span>[<span class="ident">i</span>].<span class="ident">set_back_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
             }
         }
@@ -1535,8 +1487,6 @@ SOFTWARE.
         <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationState</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-        
-
         <span class="comment">// Iterate through all the sub-subdivitions</span>
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dt_subdivisions</span> {
             <span class="comment">// advance in time</span>
@@ -1562,22 +1512,22 @@ SOFTWARE.
 
                 <span class="comment">// find t_in and t_out of surface.</span>
                 <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">front_boundary</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>)<span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
-                            <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()], 
-                            <span class="ident">Boundary::Ground</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
-                    },                                
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>    
+                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
+                        <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
+                        <span class="ident">Boundary::Ground</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
+                    },
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>,
                 };
                 <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">back_boundary</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>)<span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()], <span class="comment">//self.zones[z_index].temperature(model, state),</span>
                         <span class="ident">Boundary::Ground</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
                     },
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>,                    
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>,
                 };
 
                 <span class="comment">// Update temperatures</span>
-                <span class="kw">let</span> (<span class="ident">_q_front</span>, <span class="ident">_q_back</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">march</span>( <span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="self">self</span>.<span class="ident">dt</span>);
+                <span class="kw">let</span> (<span class="ident">_q_front</span>, <span class="ident">_q_back</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="self">self</span>.<span class="ident">dt</span>);
             } <span class="comment">// end of iterating surface</span>
 
             <span class="comment">// What  if they are open???</span>
@@ -1587,22 +1537,22 @@ SOFTWARE.
 
                 <span class="comment">// find t_in and t_out of surface.</span>
                 <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">front_boundary</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>)<span class="op">=</span><span class="op">&gt;</span><span class="kw">match</span> <span class="ident">b</span>{
+                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
                         <span class="ident">Boundary::Ground</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
                     },
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>                    
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>,
                 };
                 <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">back_boundary</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>)<span class="op">=</span><span class="op">&gt;</span><span class="kw">match</span> <span class="ident">b</span>{
+                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
                         <span class="ident">Boundary::Ground</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
                     },
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>                    
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t_out</span>,
                 };
 
                 <span class="comment">// Update temperatures</span>
-                <span class="ident">s</span>.<span class="ident">march</span>( <span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="self">self</span>.<span class="ident">dt</span>);
+                <span class="ident">s</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="self">self</span>.<span class="ident">dt</span>);
             } <span class="comment">// end of iterating surface</span>
 
             <span class="comment">/* UPDATE ZONES&#39; TEMPERATURE */</span>
@@ -1611,7 +1561,8 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">future_temperatures</span> <span class="op">=</span>
                 <span class="self">self</span>.<span class="ident">estimate_zones_future_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">t_current</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="self">self</span>.<span class="ident">dt</span>);
             <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                <span class="ident">zone</span>.<span class="ident">reference_space</span>.<span class="ident">set_dry_bulb_temperature</span>(<span class="ident">state</span>, <span class="ident">future_temperatures</span>[<span class="ident">i</span>]);
+                <span class="ident">zone</span>.<span class="ident">reference_space</span>
+                    .<span class="ident">set_dry_bulb_temperature</span>(<span class="ident">state</span>, <span class="ident">future_temperatures</span>[<span class="ident">i</span>]);
             }
         } <span class="comment">// End of &#39;in each sub-timestep-subdivision&#39;</span>
 
@@ -1706,71 +1657,73 @@ SOFTWARE.
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>) {        
+    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
         <span class="comment">// Initialize vectors containing a and b</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
 
-        
         <span class="comment">/* Qi */</span>
         <span class="comment">// Heating/Cooling</span>
-        <span class="kw">for</span> <span class="ident">hvac</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">hvacs</span>.<span class="ident">iter</span>(){
-            <span class="kw">for</span> (<span class="ident">target_space_index</span>, <span class="ident">heating_cooling</span>) <span class="kw">in</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">hvac</span>, <span class="ident">state</span>){
+        <span class="kw">for</span> <span class="ident">hvac</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">hvacs</span>.<span class="ident">iter</span>() {
+            <span class="kw">for</span> (<span class="ident">target_space_index</span>, <span class="ident">heating_cooling</span>) <span class="kw">in</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">hvac</span>, <span class="ident">state</span>) {
                 <span class="ident">a</span>[<span class="ident">target_space_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">heating_cooling</span>;
             }
             <span class="comment">// heating through air supply?</span>
         }
 
         <span class="comment">// Heating/Cooling</span>
-        <span class="kw">for</span> <span class="ident">luminaire</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">luminaires</span>.<span class="ident">iter</span>(){
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">target_space</span>) <span class="op">=</span> <span class="ident">luminaire</span>.<span class="ident">target_space</span>() {                
+        <span class="kw">for</span> <span class="ident">luminaire</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">luminaires</span>.<span class="ident">iter</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">target_space</span>) <span class="op">=</span> <span class="ident">luminaire</span>.<span class="ident">target_space</span>() {
                 <span class="kw">let</span> <span class="ident">target_space_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">target_space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">consumption</span> <span class="op">=</span> <span class="ident">luminaire</span>.<span class="ident">power_consumption</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Luminaire has no Power Consumption state&quot;</span>);                
+                <span class="kw">let</span> <span class="ident">consumption</span> <span class="op">=</span> <span class="ident">luminaire</span>
+                    .<span class="ident">power_consumption</span>(<span class="ident">state</span>)
+                    .<span class="ident">expect</span>(<span class="string">&quot;Luminaire has no Power Consumption state&quot;</span>);
                 <span class="ident">a</span>[<span class="ident">target_space_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">consumption</span>;
-            }                        
+            }
         }
 
-        <span class="comment">// Other </span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {                        
-            
+        <span class="comment">// Other</span>
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="comment">/* INFILTRATION AND VENTILATION */</span>
             <span class="comment">// ... should we always asume that the Cp for</span>
             <span class="comment">// outside and inside are equal?  I will</span>
-            <span class="comment">// assume them different... profiling can </span>
+            <span class="comment">// assume them different... profiling can</span>
             <span class="comment">// tell us if this makes the program slow.</span>
-            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">spaces</span>[<span class="ident">i</span>];            
-            <span class="comment">// let t_zone = space.dry_bulb_temperature(state).expect(&quot;Zone has no Temperature!&quot;);                         </span>
+            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">spaces</span>[<span class="ident">i</span>];
+            <span class="comment">// let t_zone = space.dry_bulb_temperature(state).expect(&quot;Zone has no Temperature!&quot;);</span>
             <span class="kw">let</span> <span class="ident">cp_zone</span> <span class="op">=</span> <span class="ident">gas_properties::air::specific_heat</span>();
 
             <span class="comment">// infiltration from outside</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_inf_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">infiltration_temperature</span>(<span class="ident">state</span>){
-                <span class="kw">let</span> <span class="ident">m_inf</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">infiltration_volume</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Space has infiltration temperature but not volume&quot;</span>);            
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_inf_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">infiltration_temperature</span>(<span class="ident">state</span>) {
+                <span class="kw">let</span> <span class="ident">m_inf</span> <span class="op">=</span> <span class="ident">space</span>
+                    .<span class="ident">infiltration_volume</span>(<span class="ident">state</span>)
+                    .<span class="ident">expect</span>(<span class="string">&quot;Space has infiltration temperature but not volume&quot;</span>);
                 <span class="kw">let</span> <span class="ident">cp_inf_inwards</span> <span class="op">=</span> <span class="ident">gas_properties::air::specific_heat</span>();
                 <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">m_inf</span> <span class="op">*</span> <span class="ident">cp_inf_inwards</span> <span class="op">*</span> <span class="ident">t_inf_inwards</span>;
                 <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">m_inf</span> <span class="op">*</span> <span class="ident">cp_zone</span>;
             }
 
-            
             <span class="comment">// ventilation</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_vent_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">ventilation_temperature</span>(<span class="ident">state</span>){
-                <span class="kw">let</span> <span class="ident">m_vent</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">ventilation_volume</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Space has ventilation temperature but not volume&quot;</span>);            
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_vent_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">ventilation_temperature</span>(<span class="ident">state</span>) {
+                <span class="kw">let</span> <span class="ident">m_vent</span> <span class="op">=</span> <span class="ident">space</span>
+                    .<span class="ident">ventilation_volume</span>(<span class="ident">state</span>)
+                    .<span class="ident">expect</span>(<span class="string">&quot;Space has ventilation temperature but not volume&quot;</span>);
                 <span class="kw">let</span> <span class="ident">cp_vent_inwards</span> <span class="op">=</span> <span class="ident">gas_properties::air::specific_heat</span>();
                 <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">m_vent</span> <span class="op">*</span> <span class="ident">cp_vent_inwards</span> <span class="op">*</span> <span class="ident">t_vent_inwards</span>;
                 <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">m_vent</span> <span class="op">*</span> <span class="ident">cp_zone</span>;
             }
 
-
             <span class="comment">// Mixing with other zones</span>
-            
+
             <span class="comment">/* CAPACITANCE */</span>
             <span class="ident">c</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">zone</span>.<span class="ident">mcp</span>();
         }
 
         <span class="comment">/* SURFACES */</span>
         <span class="kw">fn</span> <span class="ident">iterate_surfaces</span>(
-            <span class="ident">surfaces</span>: <span class="kw-2">&amp;</span>[<span class="ident">ThermalSurface</span>],            
+            <span class="ident">surfaces</span>: <span class="kw-2">&amp;</span>[<span class="ident">ThermalSurface</span>],
             <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
             <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>,
             <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>,
@@ -1809,10 +1762,7 @@ SOFTWARE.
 
     <span class="doccomment">/// Retrieves a vector of the current temperatures of all the Zones as</span>
     <span class="doccomment">/// registered in the Simulation State</span>
-    <span class="kw">fn</span> <span class="ident">get_current_zones_temperatures</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,        
-        <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_current_zones_temperatures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
         <span class="comment">// Initialize return</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
@@ -1890,18 +1840,17 @@ SOFTWARE.
     <span class="kw">use</span> <span class="ident">calendar::date::Date</span>;
     <span class="kw">use</span> <span class="ident">schedule::constant::ScheduleConstant</span>;
     <span class="kw">use</span> <span class="ident">weather::synthetic_weather::SyntheticWeather</span>;
-    
-    <span class="kw">use</span> <span class="ident">simple_test_models</span>::<span class="kw-2">*</span>;
+
     <span class="kw">use</span> <span class="ident">gas_properties::air</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::hvac::cast_hvac</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::hvac::electric_heater::ElectricHeater</span>;
+    <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationStateElement</span>, <span class="ident">HVAC</span>};
+    <span class="kw">use</span> <span class="ident">simple_test_models</span>::<span class="kw-2">*</span>;
 
     <span class="doccomment">/// A single-zone test model with walls assumed to have</span>
     <span class="doccomment">/// no mass. It has a closed solution, which is nice.</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// There is no sun.</span>
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">SingleZoneTestModel</span>{
+    <span class="kw">struct</span> <span class="ident">SingleZoneTestModel</span> {
         <span class="doccomment">/// volume of the zone (m3)</span>
         <span class="ident">zone_volume</span>: <span class="ident">Float</span>,
 
@@ -1925,46 +1874,39 @@ SOFTWARE.
 
         <span class="doccomment">/// Temperature at the beginning</span>
         <span class="ident">temp_start</span>: <span class="ident">Float</span>,
-
-        
     }
 
     <span class="kw">impl</span> <span class="ident">SingleZoneTestModel</span> {
-        <span class="kw">fn</span> <span class="ident">get_closed_solution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="ident">Float</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
+        <span class="kw">fn</span> <span class="ident">get_closed_solution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span><span class="op">&gt;</span> {
             <span class="comment">// heat balance in the form</span>
             <span class="comment">// of C*dT/dt = A - B*T</span>
             <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">air::density</span>(); <span class="comment">//kg/m3</span>
             <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">air::specific_heat</span>(); <span class="comment">//J/kg.K</span>
-            <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="number">1.</span><span class="op">/</span><span class="self">self</span>.<span class="ident">facade_r</span>;
+            <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">facade_r</span>;
 
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zone_volume</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span>;
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span>     
-                    <span class="self">self</span>.<span class="ident">heating_power</span> 
-                    <span class="op">+</span> <span class="self">self</span>.<span class="ident">lighting_power</span> 
-                    <span class="op">+</span> <span class="self">self</span>.<span class="ident">temp_out</span> <span class="op">*</span> <span class="ident">u</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">surface_area</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">infiltration_rate</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">temp_out</span> ;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">heating_power</span>
+                <span class="op">+</span> <span class="self">self</span>.<span class="ident">lighting_power</span>
+                <span class="op">+</span> <span class="self">self</span>.<span class="ident">temp_out</span> <span class="op">*</span> <span class="ident">u</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">surface_area</span>
+                <span class="op">+</span> <span class="self">self</span>.<span class="ident">infiltration_rate</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">temp_out</span>;
 
-            <span class="ident">a</span><span class="op">/</span><span class="op">=</span><span class="ident">c</span>;
+            <span class="ident">a</span> <span class="op">/</span><span class="op">=</span> <span class="ident">c</span>;
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">surface_area</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">infiltration_rate</span><span class="kw-2">*</span><span class="ident">cp</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">surface_area</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">infiltration_rate</span> <span class="op">*</span> <span class="ident">cp</span>;
             <span class="ident">b</span> <span class="op">/</span><span class="op">=</span> <span class="ident">c</span>;
 
-            <span class="kw">let</span> <span class="ident">k1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">temp_start</span> <span class="op">-</span> <span class="ident">a</span><span class="op">/</span><span class="ident">b</span>;
+            <span class="kw">let</span> <span class="ident">k1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">temp_start</span> <span class="op">-</span> <span class="ident">a</span> <span class="op">/</span> <span class="ident">b</span>;
 
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">t</span>: <span class="ident">Float</span><span class="op">|</span><span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span>{
-                <span class="ident">a</span><span class="op">/</span><span class="ident">b</span> <span class="op">+</span> <span class="ident">k1</span><span class="kw-2">*</span>(<span class="op">-</span><span class="ident">b</span><span class="kw-2">*</span><span class="ident">t</span>).<span class="ident">exp</span>()
-            };
+            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">t</span>: <span class="ident">Float</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> { <span class="ident">a</span> <span class="op">/</span> <span class="ident">b</span> <span class="op">+</span> <span class="ident">k1</span> <span class="op">*</span> (<span class="op">-</span><span class="ident">b</span> <span class="op">*</span> <span class="ident">t</span>).<span class="ident">exp</span>() };
 
-            <span class="ident">Box::new</span>(<span class="ident">f</span>)            
+            <span class="ident">Box::new</span>(<span class="ident">f</span>)
         }
     }
 
-
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_calculate_zones_abc</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>: <span class="number">40.</span>,
@@ -1975,7 +1917,7 @@ SOFTWARE.
         );
 
         <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="op">&amp;</span> <span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
         <span class="comment">// MAP THE STATE</span>
         <span class="comment">// model.map_simulation_state(&amp;mut state).unwrap();</span>
@@ -2000,8 +1942,7 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">test_very_simple_march</span>() {
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
         <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="number">4.</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>,
@@ -2029,20 +1970,22 @@ SOFTWARE.
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
-
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
         <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>,
             <span class="ident">facade_r</span>: <span class="ident">r</span>,
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
 
@@ -2056,14 +1999,19 @@ SOFTWARE.
         };
 
         <span class="comment">// March:</span>
-        
+
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">800</span> {
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">main_dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
@@ -2073,7 +2021,6 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>();
             <span class="macro">println!</span>(<span class="string">&quot;{},{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, <span class="ident">diff</span>);
             <span class="macro">assert!</span>(<span class="ident">diff</span> <span class="op">&lt;</span> <span class="ident">max_error</span>);
-            
         }
     }
     <span class="doccomment">/// END OF TEST_MODEL_MARCH</span>
@@ -2084,8 +2031,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">window_area</span> <span class="op">=</span> <span class="number">1.</span>;
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>,
@@ -2113,16 +2059,19 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
-        
+
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
         <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
 
-        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span>; 
+        <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">Date</span> {
             <span class="ident">day</span>: <span class="number">1</span>,
@@ -2130,14 +2079,14 @@ SOFTWARE.
             <span class="ident">month</span>: <span class="number">1</span>,
         };
 
-         <span class="comment">// test model</span>
-         <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="comment">// test model</span>
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>, <span class="comment">// the window is a hole on the wall... does not add area</span>
             <span class="ident">facade_r</span>: <span class="ident">r</span>,
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
 
@@ -2146,28 +2095,30 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="comment">// Get exact solution.            </span>
+            <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
             <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.15</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
-            
         }
     }
-
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_model_march_with_window_and_luminaire</span>() {
         <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="number">4.</span>;
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
         <span class="kw">let</span> <span class="ident">lighting_power</span> <span class="op">=</span> <span class="number">100.</span>;
-        
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();        
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>,
@@ -2190,7 +2141,9 @@ SOFTWARE.
         <span class="comment">// model.map_simulation_state(&amp;mut state).unwrap();</span>
 
         <span class="comment">// turn the lights on</span>
-        <span class="kw">let</span> <span class="ident">lum_state_i</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">luminaires</span>[<span class="number">0</span>].<span class="ident">power_consumption_index</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">lum_state_i</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">luminaires</span>[<span class="number">0</span>]
+            .<span class="ident">power_consumption_index</span>()
+            .<span class="ident">unwrap</span>();
         <span class="comment">// state.update_value(lum_state_i, SimulationStateElement::LuminairePowerConsumption(0, lighting_power));</span>
         <span class="ident">state</span>[<span class="ident">lum_state_i</span>] <span class="op">=</span> <span class="ident">lighting_power</span>;
 
@@ -2202,25 +2155,25 @@ SOFTWARE.
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
-
-
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
         <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>, <span class="comment">// the window is a hole on the wall... does not add area</span>
             <span class="ident">lighting_power</span>,
             <span class="ident">facade_r</span>: <span class="ident">r</span>,
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
-
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
         <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
@@ -2238,17 +2191,21 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;            
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
-            
         }
     }
 
@@ -2257,9 +2214,8 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="number">4.</span>;
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
         <span class="kw">let</span> <span class="ident">heating_power</span> <span class="op">=</span> <span class="number">100.</span>;
-        
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();        
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>,
@@ -2281,9 +2237,10 @@ SOFTWARE.
         <span class="comment">// model.map_simulation_state(&amp;mut state).unwrap();</span>
 
         <span class="comment">// turn the heater on</span>
-        <span class="kw">let</span> <span class="ident">heater</span> <span class="op">=</span> <span class="ident">cast_hvac</span>::<span class="op">&lt;</span><span class="ident">ElectricHeater</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">simple_model</span>.<span class="ident">hvacs</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">hvac_state_i</span> <span class="op">=</span> <span class="ident">heater</span>.<span class="ident">heating_cooling_consumption_index</span>().<span class="ident">unwrap</span>();
-        <span class="ident">state</span>[<span class="ident">hvac_state_i</span>] <span class="op">=</span> <span class="ident">heating_power</span>;
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">HVAC::ElectricHeater</span>(<span class="ident">heater</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">hvacs</span>[<span class="number">0</span>] {
+            <span class="kw">let</span> <span class="ident">hvac_state_i</span> <span class="op">=</span> <span class="ident">heater</span>.<span class="ident">heating_cooling_consumption_index</span>().<span class="ident">unwrap</span>();
+            <span class="ident">state</span>[<span class="ident">hvac_state_i</span>] <span class="op">=</span> <span class="ident">heating_power</span>;
+        }
 
         <span class="comment">// START TESTING.</span>
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
@@ -2293,24 +2250,24 @@ SOFTWARE.
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
-
-
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
         <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>, <span class="comment">// the window is a hole on the wall... does not add area</span>
             <span class="ident">heating_power</span>,
             <span class="ident">facade_r</span>: <span class="ident">r</span>,
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
-
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
         <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
@@ -2328,22 +2285,24 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;            
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
-            
         }
     }
 
-
-    
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_model_march_with_window_heater_and_infiltration</span>() {
         <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="number">4.</span>;
@@ -2352,8 +2311,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">infiltration_rate</span> <span class="op">=</span> <span class="number">0.1</span>;
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();        
-        <span class="kw">let</span>  <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
+        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>,
@@ -2371,24 +2329,27 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
 
-        <span class="comment">// Set infiltration                </span>
-        <span class="kw">let</span> <span class="ident">inf_vol_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::SpaceInfiltrationVolume</span>(<span class="number">0</span>), <span class="ident">infiltration_rate</span>);
+        <span class="comment">// Set infiltration</span>
+        <span class="kw">let</span> <span class="ident">inf_vol_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SpaceInfiltrationVolume</span>(<span class="number">0</span>),
+            <span class="ident">infiltration_rate</span>,
+        );
         <span class="ident">simple_model</span>.<span class="ident">spaces</span>[<span class="number">0</span>].<span class="ident">set_infiltration_volume_index</span>(<span class="ident">inf_vol_index</span>);
-        <span class="kw">let</span> <span class="ident">inf_temp_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(<span class="ident">SimulationStateElement::SpaceInfiltrationTemperature</span>(<span class="number">0</span>), <span class="ident">t_out</span>);
+        <span class="kw">let</span> <span class="ident">inf_temp_index</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SpaceInfiltrationTemperature</span>(<span class="number">0</span>),
+            <span class="ident">t_out</span>,
+        );
         <span class="ident">simple_model</span>.<span class="ident">spaces</span>[<span class="number">0</span>].<span class="ident">set_infiltration_temperature_index</span>(<span class="ident">inf_temp_index</span>);
 
         <span class="comment">// MAP THE STATE</span>
-        
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// turn the heater on</span>
-        <span class="kw">let</span> <span class="ident">heater</span> <span class="op">=</span> <span class="ident">cast_hvac</span>::<span class="op">&lt;</span><span class="ident">ElectricHeater</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">simple_model</span>.<span class="ident">hvacs</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">hvac_state_i</span> <span class="op">=</span> <span class="ident">heater</span>.<span class="ident">heating_cooling_consumption_index</span>().<span class="ident">unwrap</span>();
-        <span class="ident">state</span>[<span class="ident">hvac_state_i</span>] <span class="op">=</span> <span class="ident">heating_power</span>;
-
-        
-        
-        
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">HVAC::ElectricHeater</span>(<span class="ident">heater</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">hvacs</span>[<span class="number">0</span>] {
+            <span class="kw">let</span> <span class="ident">hvac_state_i</span> <span class="op">=</span> <span class="ident">heater</span>.<span class="ident">heating_cooling_consumption_index</span>().<span class="ident">unwrap</span>();
+            <span class="ident">state</span>[<span class="ident">hvac_state_i</span>] <span class="op">=</span> <span class="ident">heating_power</span>;
+        }
 
         <span class="comment">// START TESTING.</span>
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
@@ -2398,14 +2359,14 @@ SOFTWARE.
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
-
-
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
-        
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>, <span class="comment">// the window is a hole on the wall... does not add area</span>
             <span class="ident">heating_power</span>,
@@ -2413,10 +2374,9 @@ SOFTWARE.
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
             <span class="ident">infiltration_rate</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
-
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
         <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
@@ -2434,38 +2394,34 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;            
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
-            
         }
     }
 
-    
-    <span class="kw">use</span> <span class="ident">simple_model::space::Space</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::substance::Substance</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::material::Material</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::construction::Construction</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::surface::Surface</span>;
+    <span class="kw">use</span> <span class="ident">geometry3d</span>::{<span class="ident">Loop3D</span>, <span class="ident">Point3D</span>, <span class="ident">Polygon3D</span>};
+    <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Construction</span>, <span class="ident">Material</span>, <span class="ident">Space</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>};
     <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-    <span class="kw">use</span> <span class="ident">geometry3d::point3d::Point3D</span>;
-    <span class="kw">use</span> <span class="ident">geometry3d::loop3d::Loop3D</span>;
-    <span class="kw">use</span> <span class="ident">geometry3d::polygon3d::Polygon3D</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">another_test</span>(){
+    <span class="kw">fn</span> <span class="ident">another_test</span>() {
         <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
-        <span class="kw">let</span> <span class="ident">surface_area</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="number">4.</span>;
-        
-        
+        <span class="kw">let</span> <span class="ident">surface_area</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">4.</span>;
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">SimpleModel::new</span>(<span class="string">&quot;The SimpleModel&quot;</span>.<span class="ident">to_string</span>());
 
         <span class="comment">/*************** */</span>
@@ -2476,15 +2432,14 @@ SOFTWARE.
         <span class="ident">space</span>.<span class="ident">set_volume</span>(<span class="ident">zone_volume</span>);
         <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">add_space</span>(<span class="ident">space</span>);
 
-        
-
         <span class="comment">/******************* */</span>
         <span class="comment">/* ADD THE SUBSTANCE */</span>
         <span class="comment">/******************* */</span>
-        
+
         <span class="comment">// First material</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substance1</span> <span class="op">=</span> <span class="ident">Substance::new</span>(<span class="string">&quot;Substance 1&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">substance1</span>.<span class="ident">set_density</span>(<span class="number">2400.</span>)
+        <span class="ident">substance1</span>
+            .<span class="ident">set_density</span>(<span class="number">2400.</span>)
             .<span class="ident">set_thermal_conductivity</span>(<span class="number">1.63</span>)
             .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>);
         <span class="kw">let</span> <span class="ident">substance1</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">substance1</span>);
@@ -2498,18 +2453,17 @@ SOFTWARE.
         <span class="comment">// let substance2 = Rc::new(substance2);</span>
         <span class="comment">// let material2 = Material::new(&quot;Layer 2&quot;.to_string(), substance2, 0.025);</span>
         <span class="comment">// let material2 = Rc::new(material2);</span>
-        
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;The construction&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">push</span>(<span class="ident">material1</span>);
-        <span class="comment">// construction.layers.push(material2);</span>
+        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material1</span>);
 
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
-        
+
         <span class="comment">/****************** */</span>
         <span class="comment">/* SURFACE GEOMETRY */</span>
         <span class="comment">/****************** */</span>
         <span class="comment">// Wall</span>
-    
+
         <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> (<span class="ident">surface_area</span> <span class="op">/</span> <span class="number">4.</span>).<span class="ident">sqrt</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
         <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
@@ -2520,18 +2474,16 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon3D::new</span>(<span class="ident">the_loop</span>).<span class="ident">unwrap</span>();
 
-        
-
         <span class="comment">/***************** */</span>
         <span class="comment">/* ACTUAL SURFACES */</span>
         <span class="comment">/***************** */</span>
-        <span class="comment">// Add surface    </span>
+        <span class="comment">// Add surface</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">surface</span> <span class="op">=</span> <span class="ident">Surface::new</span>(<span class="string">&quot;Surface&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">p</span>, <span class="ident">construction</span>);
         <span class="ident">surface</span>.<span class="ident">set_front_boundary</span>(<span class="ident">Boundary::Space</span>(<span class="ident">Rc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">space</span>)));
         <span class="ident">simple_model</span>.<span class="ident">add_surface</span>(<span class="ident">surface</span>);
 
         <span class="comment">/* TEST */</span>
-        
+
         <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
         <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
@@ -2550,20 +2502,22 @@ SOFTWARE.
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
             <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
 
-
         <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>(); 
+        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+            .<span class="ident">reference_space</span>
+            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
 
         <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span>{
+        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
             <span class="ident">zone_volume</span>,
             <span class="ident">surface_area</span>,
             <span class="ident">facade_r</span>: <span class="ident">r</span>,
             <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
             <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            .. <span class="ident">SingleZoneTestModel::default</span>()
+            ..<span class="ident">SingleZoneTestModel::default</span>()
         };
         <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
 
@@ -2577,14 +2531,19 @@ SOFTWARE.
         };
 
         <span class="comment">// March:</span>
-        
+
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">800</span> {
             <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">main_dt</span>;
             <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>].<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
+                .<span class="ident">reference_space</span>
+                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
-            <span class="ident">thermal_model</span>.<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>).<span class="ident">unwrap</span>();
+            <span class="ident">thermal_model</span>
+                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
@@ -2594,12 +2553,10 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>();
             <span class="macro">println!</span>(<span class="string">&quot;{},{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, <span class="ident">diff</span>);
             <span class="comment">// assert!(diff &lt; max_error);</span>
-            
         }
     }
-    
 }
-</pre></div>
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

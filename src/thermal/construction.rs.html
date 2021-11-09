@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;construction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>construction.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;construction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>construction.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -32,7 +32,7 @@
   });
 </script>
 
-<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../thermal/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../thermal/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -731,27 +731,7 @@
 <span id="697">697</span>
 <span id="698">698</span>
 <span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
-<span id="712">712</span>
-<span id="713">713</span>
-<span id="714">714</span>
-<span id="715">715</span>
-<span id="716">716</span>
-<span id="717">717</span>
-<span id="718">718</span>
-</pre><pre class="rust">
-<span class="comment">/*
+</pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -771,70 +751,67 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Float</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
 
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
 
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
 
-<span class="comment">//use simple_model::construction::Construction;</span>
-<span class="comment">// use simple_model::model::SimpleModel;</span>
-<span class="kw">use</span> <span class="ident">simple_model::construction::Construction</span>;
-
+<span class="kw">use</span> <span class="ident">simple_model::Construction</span>;
 
 <span class="doccomment">/// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function</span>
 <span class="doccomment">/// will find an arguibly good (i.e., stable and accurate) combination of $\\Delta t\$ and number of elements in each</span>
 <span class="doccomment">/// layer of the construction.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This function recursively increases the model&#39;s timestep subdivisions (`n`) in order to reduce $`\Delta t`$ to numbers</span>
-<span class="doccomment">/// that respect the restrictions of (1) stability, (2) $`\Delta x_{max}`$, and (3) $`\Delta t_{min}`$. In other words, </span>
-<span class="doccomment">/// it searches (by testing $`\Delta t_{model}/1`$, $`\Delta t_{model}/2`$, $`\Delta t_{model}/3`$, ... $`\Delta t_{model}/n`$) </span>
+<span class="doccomment">/// that respect the restrictions of (1) stability, (2) $`\Delta x_{max}`$, and (3) $`\Delta t_{min}`$. In other words,</span>
+<span class="doccomment">/// it searches (by testing $`\Delta t_{model}/1`$, $`\Delta t_{model}/2`$, $`\Delta t_{model}/3`$, ... $`\Delta t_{model}/n`$)</span>
 <span class="doccomment">/// for the minimum `n` that respects this restrictions</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// # The math behind it</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// The first thing to know is that the walls in this module march </span>
-<span class="doccomment">/// through time using a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The first thing to know is that the walls in this module march</span>
+<span class="doccomment">/// through time using a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods)</span>
 <span class="doccomment">/// (a.k.a., RK4). The second thing to know is that the RK4 method is</span>
-<span class="doccomment">/// more stable than the [Euler method](https://en.wikipedia.org/wiki/Euler_method), </span>
+<span class="doccomment">/// more stable than the [Euler method](https://en.wikipedia.org/wiki/Euler_method),</span>
 <span class="doccomment">/// and thus the restrictions of stability for the Euler method can be considered</span>
-<span class="doccomment">/// to be a conservative restriction for the RK4. Hence, this function uses the </span>
+<span class="doccomment">/// to be a conservative restriction for the RK4. Hence, this function uses the</span>
 <span class="doccomment">/// Euler method restrictions.</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Now, as explained in the [`build_thermal_network`] documentation, we are solving</span>
 <span class="doccomment">/// the following equation:</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// \dot{T} = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// And thus the stability of the numerical method will depend on the matrix:</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// \overline{K}^{\star} =\Delta t \overline{C}^{-1} \overline{K}</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Specifically, we don&#39;t want any of its [eigenvalues](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)</span>
-<span class="doccomment">/// $`\xi_1, \xi_2,\xi_3, ...`$ to be outside of the Euler method&#39;s stability region. Since this </span>
+<span class="doccomment">/// $`\xi_1, \xi_2,\xi_3, ...`$ to be outside of the Euler method&#39;s stability region. Since this</span>
 <span class="doccomment">/// matrix has onle Real eigenvalues, this is equivalent to saying:</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// -2 &lt; \xi_i &lt; 0 ; \forall i</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// However, finding the eigenvalues for $`\overline{K}^{\star}`$ is far from trivial. So there is</span>
 <span class="doccomment">/// yet another heuristic I am using: I am treating the case of a wall with 1 layer that is subdivided</span>
 <span class="doccomment">/// into a single element as the limit case. I am not sure if this is correct, but most of the instabilities</span>
 <span class="doccomment">/// I identified through Trial and Error corresponded to this case.</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// For this limit case: </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For this limit case:</span>
 <span class="doccomment">/// * $`R = \frac{\Delta x}{\lambda}`$</span>
 <span class="doccomment">/// * $`C = \rho  c_p  \Delta x`$</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// thus the value of $`\overline{K}^{\star}`$ is: </span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// thus the value of $`\overline{K}^{\star}`$ is:</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
-<span class="doccomment">/// \overline{K}^{\star}=\begin{bmatrix} </span>
+<span class="doccomment">/// \overline{K}^{\star}=\begin{bmatrix}</span>
 <span class="doccomment">/// -\frac{\Delta t}{C\times R} - \frac{\Delta t}{C\times R_s} &amp; \frac{\Delta t}{C\times R} \\</span>
 <span class="doccomment">///  \frac{\Delta t}{C\times R} &amp; -\frac{\Delta t}{C\times R} - \frac{\Delta t}{C\times R_s}\\</span>
 <span class="doccomment">/// \end{bmatrix}   </span>
@@ -842,7 +819,7 @@ SOFTWARE.
 <span class="doccomment">/// Note that, in that equation, $`R_{si} = R_{so}`$. The reason for this is that this method</span>
 <span class="doccomment">/// does not know the real values of $`R_{si}`$ and $`R_{so}`$, so it simply using a placeholder</span>
 <span class="doccomment">/// value low enough to cover most general cases (`0.05`).</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Then, it can be found that the eigenvaues of this case—which we are treating as the limit case—are:</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// \xi_1 = -\frac{\Delta t} { R_s \rho c_p \Delta x }</span>
@@ -856,28 +833,28 @@ SOFTWARE.
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// -\frac{\Delta t} { R_s \rho c_p \Delta x } - 2 \frac{\Delta t \lambda}{ \rho  c_p  {\Delta x}^2} &lt; -2</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Which means that the chosen $`\Delta x`$ must be greater than the (apparently only) positive</span>
 <span class="doccomment">/// solution to equation:</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
-<span class="doccomment">/// 0 = 2 {\Delta x}^2 - \left( \frac{\Delta t}{\rho c_p R_s} \right) \Delta x - \frac{2 \Delta t \lambda}{\rho c_p} </span>
+<span class="doccomment">/// 0 = 2 {\Delta x}^2 - \left( \frac{\Delta t}{\rho c_p R_s} \right) \Delta x - \frac{2 \Delta t \lambda}{\rho c_p}</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that</span>
 <span class="doccomment">/// allows complying with this</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// All that said, the value for $`\Delta t`$ actually used by the final model is</span>
-<span class="doccomment">/// actually half of what these equations use. This is because what we are using </span>
+<span class="doccomment">/// actually half of what these equations use. This is because what we are using</span>
 <span class="doccomment">/// is a heuristic and I want to be safe... ish</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">discretize_construction</span>(    
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">discretize_construction</span>(
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">model_dt</span>: <span class="ident">Float</span>,
     <span class="ident">max_dx</span>: <span class="ident">Float</span>,
     <span class="ident">min_dt</span>: <span class="ident">Float</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
     <span class="comment">// I could only think of how to make this recursively... so I did this.</span>
-    <span class="kw">fn</span> <span class="ident">aux</span>(        
+    <span class="kw">fn</span> <span class="ident">aux</span>(
         <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
         <span class="ident">main_dt</span>: <span class="ident">Float</span>,
         <span class="ident">n</span>: <span class="ident">usize</span>,
@@ -885,18 +862,18 @@ SOFTWARE.
         <span class="ident">min_dt</span>: <span class="ident">Float</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>);
-        
+
         <span class="comment">// Choose a dx so that dt allows convergence.</span>
         <span class="comment">// stability is assured by (alpha * dt / dx^2 &lt;= 1/2 )</span>
         <span class="comment">// meaning, we need to satisfy dx &gt;= sqrt(0.5 * dt * thermal_cond/( dens * heat_cap  ))</span>
 
         <span class="comment">// So, for each layer</span>
-        <span class="kw">let</span> <span class="ident">n_layers</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> <span class="ident">n_layers</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">n_layers</span>);
-        <span class="kw">const</span> <span class="ident">RS</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.05</span>;        
+        <span class="kw">const</span> <span class="ident">RS</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.05</span>;
 
         <span class="kw">for</span> <span class="ident">n_layer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_layers</span> {
-            <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];
+            <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>];
             <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;
 
             <span class="comment">// Calculate the minimum_dx</span>
@@ -904,47 +881,47 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">density</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
-                        
+
             <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="number">2.</span>;
-            <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="op">-</span><span class="ident">dt</span><span class="op">/</span>(<span class="ident">rho</span><span class="kw-2">*</span><span class="ident">cp</span><span class="kw-2">*</span><span class="ident">RS</span>);
-            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="op">-</span><span class="number">2.</span><span class="kw-2">*</span><span class="ident">dt</span><span class="kw-2">*</span><span class="ident">k</span><span class="op">/</span>(<span class="ident">rho</span><span class="kw-2">*</span><span class="ident">cp</span>);
-            <span class="kw">let</span> <span class="ident">disc</span> <span class="op">=</span> <span class="ident">b</span><span class="kw-2">*</span><span class="ident">b</span><span class="op">-</span><span class="number">4.</span><span class="kw-2">*</span><span class="ident">a</span><span class="kw-2">*</span><span class="ident">c</span>;
+            <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="op">-</span><span class="ident">dt</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">RS</span>);
+            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">dt</span> <span class="op">*</span> <span class="ident">k</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span>);
+            <span class="kw">let</span> <span class="ident">disc</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">b</span> <span class="op">-</span> <span class="number">4.</span> <span class="op">*</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">c</span>;
             <span class="comment">// this should never happen...?</span>
-            <span class="macro">debug_assert!</span>(<span class="ident">disc</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>); 
-            
-            <span class="comment">// One solution is apparently always negative... </span>
+            <span class="macro">debug_assert!</span>(<span class="ident">disc</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>);
+
+            <span class="comment">// One solution is apparently always negative...</span>
             <span class="comment">// i.e. it is meaningless</span>
-            <span class="macro">debug_assert!</span>((<span class="op">-</span><span class="ident">b</span> <span class="op">-</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>())<span class="op">/</span>(<span class="number">2.</span><span class="kw-2">*</span><span class="ident">a</span>) <span class="op">&lt;</span> <span class="number">0.</span>);
-            
+            <span class="macro">debug_assert!</span>((<span class="op">-</span><span class="ident">b</span> <span class="op">-</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a</span>) <span class="op">&lt;</span> <span class="number">0.</span>);
+
             <span class="comment">// The positive solution is the one we care about</span>
-            <span class="kw">let</span> <span class="ident">min_dx</span> <span class="op">=</span> (<span class="op">-</span><span class="ident">b</span> <span class="op">+</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>())<span class="op">/</span>(<span class="number">2.</span><span class="kw-2">*</span><span class="ident">a</span>);
-                                                        
-            <span class="kw">if</span> <span class="ident">min_dx</span> <span class="op">&gt;</span> <span class="ident">thickness</span>{
-                <span class="comment">// This means that this layer cannot comply with the </span>
+            <span class="kw">let</span> <span class="ident">min_dx</span> <span class="op">=</span> (<span class="op">-</span><span class="ident">b</span> <span class="op">+</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a</span>);
+
+            <span class="kw">if</span> <span class="ident">min_dx</span> <span class="op">&gt;</span> <span class="ident">thickness</span> {
+                <span class="comment">// This means that this layer cannot comply with the</span>
                 <span class="comment">// given timestep because its thickness leads to a dx that</span>
                 <span class="comment">// does not ensure convergence...</span>
                 <span class="comment">// check if there is room for reducing dt (hence reducing min_dx)</span>
                 <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">Float</span>);
                 <span class="kw">if</span> <span class="ident">next_dt</span> <span class="op">&gt;</span> <span class="ident">min_dt</span> {
                     <span class="comment">// If there is room for that, do it.</span>
-                    <span class="kw">return</span> <span class="ident">aux</span>( <span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
+                    <span class="kw">return</span> <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
                 } <span class="kw">else</span> {
                     <span class="comment">// otherwise, mark this layer as no-mass</span>
                     <span class="ident">n_elements</span>.<span class="ident">push</span>(<span class="number">0</span>);
                 }
-            }<span class="kw">else</span>{
+            } <span class="kw">else</span> {
                 <span class="comment">// subdivide the layer, making all the elements of equal thickness</span>
-                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> (<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">min_dx</span>).<span class="ident">floor</span>();                                
+                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> (<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">min_dx</span>).<span class="ident">floor</span>();
                 <span class="comment">// this case belongs to the other branch of this if/else</span>
                 <span class="macro">debug_assert!</span>(<span class="ident">m</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
-                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">m</span>;                
+                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">m</span>;
                 <span class="kw">if</span> <span class="ident">dx</span> <span class="op">&gt;</span> <span class="ident">max_dx</span> {
                     <span class="comment">// If the found dx is larger than the max allowed d_x, try to change timestep</span>
                     <span class="comment">// check if there is room for reducing dt...</span>
                     <span class="kw">let</span> <span class="ident">next_dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> ((<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">Float</span>);
                     <span class="kw">if</span> <span class="ident">next_dt</span> <span class="op">&gt;</span> <span class="ident">min_dt</span> {
                         <span class="comment">// If there is room for that, do it.</span>
-                        <span class="kw">return</span> <span class="ident">aux</span>( <span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
+                        <span class="kw">return</span> <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">main_dt</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
                     } <span class="kw">else</span> {
                         <span class="comment">// otherwise, mark this layer as no-mass</span>
                         <span class="ident">n_elements</span>.<span class="ident">push</span>(<span class="number">0</span>);
@@ -954,8 +931,7 @@ SOFTWARE.
                     <span class="comment">// fine.</span>
                     <span class="ident">n_elements</span>.<span class="ident">push</span>(<span class="ident">m</span> <span class="kw">as</span> <span class="ident">usize</span>)
                 }
-
-            }                        
+            }
         }
 
         <span class="comment">// Check stability requirements...</span>
@@ -963,7 +939,7 @@ SOFTWARE.
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
         {
             <span class="kw">for</span> (<span class="ident">n_layer</span>, <span class="kw">_</span>) <span class="kw">in</span> <span class="ident">n_elements</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];
+                <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>];
                 <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;
 
                 <span class="comment">// Calculate the optimum_dx</span>
@@ -973,11 +949,11 @@ SOFTWARE.
                 <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
                 <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="kw">as</span> <span class="ident">Float</span>;
-                
+
                 <span class="comment">// assert!(alpha * dt / dx / dx &lt;= 0.5);</span>
-                <span class="kw">let</span> <span class="ident">lambda1</span> <span class="op">=</span> <span class="op">-</span> <span class="ident">dt</span> <span class="op">/</span> (<span class="ident">RS</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>);
-                <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">dx</span><span class="op">/</span><span class="ident">k</span>;
-                <span class="kw">let</span> <span class="ident">lambda2</span> <span class="op">=</span> <span class="ident">lambda1</span> <span class="op">-</span> <span class="number">2.</span><span class="kw-2">*</span><span class="ident">dt</span> <span class="op">/</span> (<span class="ident">r</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>);                
+                <span class="kw">let</span> <span class="ident">lambda1</span> <span class="op">=</span> <span class="op">-</span><span class="ident">dt</span> <span class="op">/</span> (<span class="ident">RS</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>);
+                <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">dx</span> <span class="op">/</span> <span class="ident">k</span>;
+                <span class="kw">let</span> <span class="ident">lambda2</span> <span class="op">=</span> <span class="ident">lambda1</span> <span class="op">-</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">dt</span> <span class="op">/</span> (<span class="ident">r</span> <span class="op">*</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>);
                 <span class="macro">assert!</span>(<span class="ident">lambda1</span> <span class="op">&gt;</span><span class="op">=</span> <span class="op">-</span><span class="number">2.</span>);
                 <span class="macro">assert!</span>(<span class="ident">lambda1</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.</span>);
                 <span class="macro">assert!</span>(<span class="ident">lambda2</span> <span class="op">&gt;</span><span class="op">=</span> <span class="op">-</span><span class="number">2.</span>);
@@ -988,7 +964,7 @@ SOFTWARE.
         <span class="comment">// return</span>
         (<span class="ident">n</span>, <span class="ident">n_elements</span>)
     }
-    <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>)    
+    <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>)
 }
 
 <span class="doccomment">/// In a discretization scheme, this function finds the</span>
@@ -1095,23 +1071,23 @@ SOFTWARE.
     <span class="prelude-val">Ok</span>(<span class="ident">n</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_front</span>: <span class="ident">Float</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">rs_front</span>: <span class="ident">Float</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">rs_front</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">first_massive</span> {
         <span class="comment">// let material_index = c.get_layer_index(i).unwrap();</span>
-        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">layers</span>[<span class="ident">i</span>];<span class="comment">//model.get_material(material_index).unwrap();</span>
-        <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
-        <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;<span class="comment">//model.get_substance(substance_index).unwrap();</span>
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">i</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
+                                        <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
+        <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
 
         <span class="ident">full_rs_front</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
     }
     <span class="ident">full_rs_front</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,<span class="ident">rs_back</span>: <span class="ident">Float</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Float</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">rs_back</span>: <span class="ident">Float</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">rs_back</span>;
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">last_massive</span>..<span class="ident">c</span>.<span class="ident">layers</span>.<span class="ident">len</span>() {        
-        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">layers</span>[<span class="ident">i</span>];        
+    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">last_massive</span>..<span class="ident">c</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">i</span>];
         <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;
         <span class="ident">full_rs_back</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
     }
@@ -1122,13 +1098,13 @@ SOFTWARE.
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_matrix</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">all_nodes</span>];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="number">0</span>;
 
-    <span class="kw">for</span> <span class="ident">n_layer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>() {
+    <span class="kw">for</span> <span class="ident">n_layer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
         <span class="comment">// let layer_index = c.get_layer_index(n_layer).unwrap();</span>
-        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];<span class="comment">//model.get_material(layer_index).unwrap();</span>
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(layer_index).unwrap();</span>
 
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>];
 
@@ -1137,12 +1113,12 @@ SOFTWARE.
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">m</span> {
                 <span class="comment">// Calc mass</span>
                 <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
-                <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;<span class="comment">//model.get_substance(substance_index).unwrap();</span>
+                <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
 
                 <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">density</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">Float</span>);
-                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>;<span class="comment">// dt;</span>
+                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>; <span class="comment">// dt;</span>
 
                 <span class="comment">// Nodes are in the joints between</span>
                 <span class="comment">// finite elements... add half mass from each</span>
@@ -1167,7 +1143,7 @@ SOFTWARE.
 }
 
 <span class="doccomment">/// Calculates the `K` matrix (i.e., the thermal network) for massive constructions</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Constructions are assumed to be a sandwich where zero or more massive</span>
 <span class="doccomment">/// layers are located between two non-mass layers. These non-mass layers will always</span>
 <span class="doccomment">/// include the interior and exterior film convections coefficients, respectively (which is</span>
@@ -1175,9 +1151,9 @@ SOFTWARE.
 <span class="doccomment">/// they can also include some lightweight insulation or any other material of negligible</span>
 <span class="doccomment">/// thermal mass.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This matrix is constructed based ona discretization of the layers of the </span>
+<span class="doccomment">/// This matrix is constructed based ona discretization of the layers of the</span>
 <span class="doccomment">/// construction; that is, each layer is subdivided into `n` elements all of equal</span>
-<span class="doccomment">/// thickness. One node is placed at the beginning and end of each elements. Each element can </span>
+<span class="doccomment">/// thickness. One node is placed at the beginning and end of each elements. Each element can</span>
 <span class="doccomment">/// be represented by the 2x2 matrix</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```math</span>
@@ -1185,22 +1161,22 @@ SOFTWARE.
 <span class="doccomment">/// 1/R &amp; -1/R</span>
 <span class="doccomment">/// \end{bmatrix}   ;   R=\frac{thickness}{\lambda}</span>
 <span class="doccomment">///```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Hence—ignoring external inputs—the K matrix for a construction subdivided into 3 elements (i.e., 4 nodes) can be written as follows:</span>
 <span class="doccomment">/// ```math</span>
-<span class="doccomment">/// \overline{K}=\begin{bmatrix} </span>
+<span class="doccomment">/// \overline{K}=\begin{bmatrix}</span>
 <span class="doccomment">/// -1/R_{1\rightarrow2} &amp; 1/R_{1\rightarrow2} &amp; 0 &amp; 0 \\</span>
 <span class="doccomment">/// 1/R_{1\rightarrow2} &amp; -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} &amp; 1/R_{2\rightarrow3} &amp; 0 \\</span>
 <span class="doccomment">/// 0 &amp; 1/R_{2\rightarrow3} &amp; -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} &amp; 1/R_{3\rightarrow4} \\</span>
 <span class="doccomment">/// 0 &amp; 0 &amp; 1/R_{3\rightarrow4} &amp; -1/R_{3\rightarrow4} \\</span>
 <span class="doccomment">/// \end{bmatrix}   </span>
 <span class="doccomment">///```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Now, these nodes are also connected to an interior and an exterior temperatures through</span>
-<span class="doccomment">/// interior and exterior convection coefficients (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively). </span>
+<span class="doccomment">/// interior and exterior convection coefficients (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).</span>
 <span class="doccomment">/// This means that the Matrix $`\overline{K}`$ needs to become:</span>
 <span class="doccomment">/// ```math</span>
-<span class="doccomment">/// \overline{K}=\begin{bmatrix} </span>
+<span class="doccomment">/// \overline{K}=\begin{bmatrix}</span>
 <span class="doccomment">/// -1/R_{1\rightarrow2} - 1/R_{si,full} &amp; 1/R_{1\rightarrow2} &amp; 0 &amp; 0 \\</span>
 <span class="doccomment">/// 1/R_{1\rightarrow2} &amp; -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} &amp; 1/R_{2\rightarrow3} &amp; 0 \\</span>
 <span class="doccomment">/// 0 &amp; 1/R_{2\rightarrow3} &amp; -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} &amp; 1/R_{3\rightarrow4} \\</span>
@@ -1215,21 +1191,20 @@ SOFTWARE.
     <span class="ident">rs_front</span>: <span class="ident">Float</span>,
     <span class="ident">rs_back</span>: <span class="ident">Float</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
-)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>{
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
     <span class="comment">// initialize k_prime</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">all_nodes</span>, <span class="ident">all_nodes</span>);
-        
+
     <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>, <span class="ident">rs_front</span>, <span class="ident">first_massive</span>);
     <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>, <span class="ident">rs_back</span>, <span class="ident">last_massive</span>);
 
-    
     <span class="comment">// Calculate what is in between the massive layers</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_layer</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">first_massive</span>;
 
     <span class="kw">while</span> <span class="ident">n_layer</span> <span class="op">&lt;</span> <span class="ident">last_massive</span> {
         <span class="comment">// let material_index = c.get_layer_index(n_layer).unwrap();</span>
-        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];<span class="comment">//model.get_material(material_index).unwrap();</span>
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
 
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>];
         <span class="kw">if</span> <span class="ident">m</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -1239,11 +1214,11 @@ SOFTWARE.
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="number">0.0</span>; <span class="comment">// if the material is no mass, then the first value</span>
             <span class="kw">while</span> <span class="ident">n_layer</span> <span class="op">&lt;</span> <span class="ident">last_massive</span> <span class="op">&amp;&amp;</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="comment">// let material_index = c.get_layer_index(n_layer).unwrap();</span>
-                <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">layers</span>[<span class="ident">n_layer</span>];<span class="comment">//model.get_material(material_index).unwrap();</span>
-                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span>;<span class="comment">//().unwrap();</span>
+                <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
+                <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span>; <span class="comment">//().unwrap();</span>
 
                 <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
-                <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;<span class="comment">//model.get_substance(substance_index).unwrap();</span>
+                <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
                 <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
 
                 <span class="ident">r</span> <span class="op">+</span><span class="op">=</span> <span class="ident">dx</span> <span class="op">/</span> <span class="ident">k</span>;
@@ -1270,7 +1245,7 @@ SOFTWARE.
         } <span class="kw">else</span> {
             <span class="comment">// calc U value</span>
             <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
-            <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;<span class="comment">//model.get_substance(substance_index).unwrap();</span>
+            <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
 
             <span class="kw">let</span> <span class="ident">lambda</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> (<span class="ident">m</span> <span class="kw">as</span> <span class="ident">Float</span>);
@@ -1301,30 +1276,22 @@ SOFTWARE.
     <span class="comment">// add r_si to first node</span>
     <span class="kw">if</span> <span class="ident">full_rs_front</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k</span>
-            .<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_front</span>)
-            .<span class="ident">unwrap</span>();
+        <span class="ident">k</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_front</span>).<span class="ident">unwrap</span>();
     }
 
     <span class="comment">// rs_o to the last node</span>
     <span class="kw">if</span> <span class="ident">full_rs_back</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k</span>
-            .<span class="ident">set</span>(
-                <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>,
-                <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>,
-                <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_back</span>,
-            )
+        <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_back</span>)
             .<span class="ident">unwrap</span>();
     }
     <span class="comment">// return</span>
     <span class="ident">k</span>
-
 }
 
-<span class="doccomment">/// Builds the necessary data for marching forward through time, solving the </span>
+<span class="doccomment">/// Builds the necessary data for marching forward through time, solving the</span>
 <span class="doccomment">/// Ordinary Differential Equation that governs the heat transfer in walls.</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The equation to solve is the following:</span>
 <span class="doccomment">///</span>
@@ -1344,34 +1311,34 @@ SOFTWARE.
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// \dot{T}  = f(t, T)</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// Where </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Where</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// f(t,T) = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Note that—unless some layer of the Surface is generating heat—all the elements of $`q`$ are Zero</span>
 <span class="doccomment">/// exept the first one and the last one, which are $`\frac{T_{in}}{R_{si}}`$ and $`\frac{T_{out}}{R_{so}}`$,</span>
-<span class="doccomment">/// respectively. </span>
+<span class="doccomment">/// respectively.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Then, the 4th order Runge-Kutta method allows marching forward through time as follows:</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">///  T_{i+1} = T_i + \frac{k_1 + 2k_2 + 2k_3 + k_4}{6}</span>
-<span class="doccomment">/// ``` </span>
-<span class="doccomment">/// Where $`k_1`$, $`k_2`$, $`k_3`$ and $`k_4`$ can be calculated based on the </span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Where $`k_1`$, $`k_2`$, $`k_3`$ and $`k_4`$ can be calculated based on the</span>
 <span class="doccomment">/// timestep $`\Delta t`$ as follows:</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// * $`k_1 = \Delta t \times f(t,T)`$</span>
 <span class="doccomment">/// * $`k_2 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_1}{2})`$</span>
 <span class="doccomment">/// * $`k_3 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_2}{2})`$</span>
 <span class="doccomment">/// * $`k_4 = \Delta t \times f(t+\delta t, T+k_3 )`$</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// So, what this method does is to calculate what is needed in order to return a closure that </span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// So, what this method does is to calculate what is needed in order to return a closure that</span>
 <span class="doccomment">/// calculates $`\Delta t \times f(t,T)`$; that is to say:</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// return = \Delta t \times f(t,T) = \Delta t \times \overline{C}^{-1} \overline{K}  T + \Delta t \times \overline{C}^{-1} q</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// It is worth mentioning that, due to efficiency reasons, the following variables are defined </span>
+<span class="doccomment">/// It is worth mentioning that, due to efficiency reasons, the following variables are defined</span>
 <span class="doccomment">/// within the code:</span>
 <span class="doccomment">/// * $`\overline{K}^{\star} = \Delta t \times \overline{C}^{-1}\overline{K}`$</span>
 <span class="doccomment">/// * $`\overline{C}^{\star} = \Delta t \times \overline{C}^{-1}`$</span>
@@ -1385,40 +1352,34 @@ SOFTWARE.
     <span class="ident">rs_front</span>: <span class="ident">Float</span>,
     <span class="ident">rs_back</span>: <span class="ident">Float</span>,
     <span class="ident">full_rs_front</span>: <span class="ident">Float</span>,
-    <span class="ident">full_rs_back</span>: <span class="ident">Float</span>,    
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    
-    <span class="comment">// if this happens, we are trying to build the </span>
+    <span class="ident">full_rs_back</span>: <span class="ident">Float</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="comment">// if this happens, we are trying to build the</span>
     <span class="comment">// thermal network for a non-massive wall... Which</span>
-    <span class="comment">// does not make sense    </span>
+    <span class="comment">// does not make sense</span>
     <span class="macro">debug_assert!</span>(<span class="ident">first_massive</span> <span class="op">!</span><span class="op">=</span> <span class="ident">last_massive</span>);
     <span class="macro">debug_assert_eq!</span>(<span class="ident">calc_n_total_nodes</span>(<span class="kw-2">&amp;</span><span class="ident">n_elements</span>).<span class="ident">unwrap</span>(), <span class="ident">all_nodes</span>);
 
     <span class="comment">// check coherence in input data</span>
-    <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>() {
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})&quot;</span>,<span class="ident">construction</span>.<span class="ident">layers</span>.<span class="ident">len</span>(),<span class="ident">n_elements</span>.<span class="ident">len</span>());
+    <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})&quot;</span>,<span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>(),<span class="ident">n_elements</span>.<span class="ident">len</span>());
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
     }
 
     <span class="comment">// initialize k_prime as K... we will modify it later</span>
     <span class="comment">// K_prime = dt*inv(C)*K</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k_prime</span> <span class="op">=</span> <span class="ident">calc_k_matrix</span>(
-        <span class="ident">construction</span>, 
+        <span class="ident">construction</span>,
         <span class="ident">first_massive</span>,
         <span class="ident">last_massive</span>,
         <span class="ident">n_elements</span>,
         <span class="ident">rs_front</span>,
         <span class="ident">rs_back</span>,
-        <span class="ident">all_nodes</span>
+        <span class="ident">all_nodes</span>,
     );
 
     <span class="comment">// Calc the masses</span>
-    <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">calc_c_matrix</span>(
-        <span class="ident">construction</span>,
-        <span class="ident">all_nodes</span>,
-        <span class="ident">n_elements</span>
-    );
-    
+    <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">calc_c_matrix</span>(<span class="ident">construction</span>, <span class="ident">all_nodes</span>, <span class="ident">n_elements</span>);
 
     <span class="comment">// DIVIDE ONE BY THE OTHER to make K_prime</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_prime</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">all_nodes</span>);
@@ -1430,35 +1391,35 @@ SOFTWARE.
                 <span class="ident">k_prime</span>.<span class="ident">set</span>(<span class="ident">i</span>, <span class="ident">j</span>, <span class="ident">dt</span> <span class="op">*</span> <span class="ident">old_k_value</span> <span class="op">/</span> <span class="ident">mass</span>).<span class="ident">unwrap</span>();
             }
             <span class="ident">c_prime</span>.<span class="ident">push</span>(<span class="ident">dt</span> <span class="op">/</span> <span class="ident">mass</span>);
-        } <span class="kw">else</span>{
+        } <span class="kw">else</span> {
             <span class="macro">unreachable!</span>()
         }
     }
-    
+
     <span class="comment">// SET C_I AND C_O</span>
     <span class="comment">// *c_i = c[0]/dt;</span>
     <span class="comment">// *c_o = c[all_nodes - 1]/dt;</span>
 
     <span class="comment">// *given_k_prime = k_prime;</span>
 
-    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span> : <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span><span class="op">|</span><span class="op">-</span><span class="op">&gt;</span><span class="ident">Matrix</span>{
+    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
         <span class="comment">// Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T</span>
         <span class="comment">// But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime</span>
         <span class="comment">// --&gt; Calculate: k_i = c_prime * q + k_prime * T</span>
-        
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k_i</span> <span class="op">=</span>  <span class="ident">k_prime</span>.<span class="ident">from_prod_n_diag</span>(<span class="ident">nodes_temps</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
 
-        <span class="comment">// if we are generating heat in any layer (e.g., radiant floor) this </span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k_i</span> <span class="op">=</span> <span class="ident">k_prime</span>.<span class="ident">from_prod_n_diag</span>(<span class="ident">nodes_temps</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
+
+        <span class="comment">// if we are generating heat in any layer (e.g., radiant floor) this</span>
         <span class="comment">// would need to change...</span>
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_i</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k_i</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="number">0</span>]<span class="kw-2">*</span><span class="ident">t_front</span> <span class="op">/</span> <span class="ident">full_rs_front</span> )
+        <span class="ident">k_i</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="number">0</span>] <span class="op">*</span> <span class="ident">t_front</span> <span class="op">/</span> <span class="ident">full_rs_front</span>)
             .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_i</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="ident">k_i</span>.<span class="ident">set</span>(
             <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>,
             <span class="number">0</span>,
-            <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>] <span class="kw-2">*</span><span class="ident">t_back</span> <span class="op">/</span> <span class="ident">full_rs_back</span> ,
+            <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">*</span> <span class="ident">t_back</span> <span class="op">/</span> <span class="ident">full_rs_back</span>,
         )
         .<span class="ident">unwrap</span>();
 
@@ -1469,7 +1430,7 @@ SOFTWARE.
     <span class="prelude-val">Ok</span>(<span class="ident">clo</span>)
     <span class="comment">// Ok(())</span>
 }
-</pre></div>
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>
