@@ -16,7 +16,6 @@ jobs:
     - uses: actions/checkout@v1   
     - name: format
       run: cargo fmt          
-    - uses: actions/checkout@v1   
     - name: clippy
       run: cargo clippy > clippy_output.txt                       
     - name: Push changes
