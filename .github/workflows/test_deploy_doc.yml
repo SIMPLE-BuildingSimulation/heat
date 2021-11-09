@@ -10,20 +10,44 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  setup:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+    - name: setup
+      run: |
+        rustup component add llvm-tools-preview
+        rustup default nightly
+        cargo install grcov
+        export RUSTFLAGS="-Zinstrument-coverage"
+        export LLVM_PROFILE_FILE="thermal-%p-%m.profraw"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
     - name: Build
       run: cargo build --verbose
+  build_float:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build Float
+      run: cargo build --verbose --features float --features simple_test_models/float
+  test:
+    runs-on: ubuntu-latest 
+    needs: build
+    steps:
     - name: Run tests
-      run: cargo test --verbose    
-    # - name: Build Float
-    #   run: cargo build --verbose --features float --features simple_test_models/float
-    # - name: Run tests Float
-    #   run: cargo test --verbose  --features float --features simple_test_models/float
+      run: cargo test --verbose 
+  # test_float:
+  #   runs-on: ubuntu-latest
+  #   needs: build_float
+  #   steps:     
+  #   - name: Run tests Float
+  #     run: cargo test --verbose  --features float --features simple_test_models/float
+  docs:    
+    runs-on: ubuntu-latest
+    steps:
     - name: Build doc
       run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps
     - name: Set Index
@@ -33,4 +57,9 @@ jobs:
       with:
         branch: gh-pages # The branch the action should deploy to.
         folder: target/doc/ # The folder the action should deploy.
-
+  coverage: 
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps: 
+    - name: get coverage
+      run: grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing -o ./coverage/

@@ -2,3 +2,4 @@
 Cargo.lock
 check.txt
 .DS_Store
+*.profraw

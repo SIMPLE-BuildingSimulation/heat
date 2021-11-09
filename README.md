@@ -1,5 +1,9 @@
 # Welcome to SIMPLE's Thermal Simulation Module
 
+![build badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/test_deploy_doc.yml/bage.svg)
+![coverage badge](https://github.com/SIMPLE-BuildingSimulation/thermal/blob/main/coverage/badges/plastic.svg)
+
+
 This module reads a [SIMPLE model](https://github.com/SIMPLE-BuildingSimulation/simple_model) and estimates the temperatures. **It is still under development**. Check the documentation [Here](https://simple-buildingsimulation.github.io/thermal/)
 
 Some features:

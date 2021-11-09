@@ -107,11 +107,13 @@ impl SimulationModel for ThermalModel {
         }
 
         // This is the model's dt now. When marching
-        let dt = 60. * 60. / (n as Float * n_subdivisions as Float);
+        let mut dt = 60. * 60. / (n as Float * n_subdivisions as Float);
 
-        if n * n_subdivisions < 6 {
-            eprintln!("Number of timesteps per hour (n) is too small in Finite Difference Thermal  Module... try to use 6 or more.");
-        }
+        // safety..?
+        dt *= 0.5;
+        n_subdivisions *= 2;
+
+        println!("There are {} Subdivisions (dt = {}s)", n_subdivisions, dt);
 
         /* CREATE SURFACES USING THE MINIMUM TIMESTEP */
         // The rationale here is the following: We find the minimum
@@ -1102,6 +1104,161 @@ mod testing {
             let max_error = 0.55;            
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
+            
+        }
+    }
+
+    
+    use simple_model::{
+        Space, 
+        Substance, 
+        Material,
+        Construction,
+        Surface
+    };
+    use geometry3d::{
+        Point3D,
+        Loop3D,
+        Polygon3D
+    };
+    use std::rc::Rc;
+    
+
+    #[test]
+    fn another_test(){
+        let n: usize = 1;
+        let zone_volume = 40.;
+        let surface_area : Float = 4.;
+        
+        
+        let mut simple_model = SimpleModel::new("The SimpleModel".to_string());
+
+        /*************** */
+        /* ADD THE SPACE */
+        /*************** */
+
+        let mut space = Space::new("Some space".to_string());
+        space.set_volume(zone_volume);
+        let space = simple_model.add_space(space);
+
+        
+
+        /******************* */
+        /* ADD THE SUBSTANCE */
+        /******************* */
+        
+        // First material
+        let mut substance1 = Substance::new("Substance 1".to_string());
+        substance1.set_density(2400.)
+            .set_thermal_conductivity(1.63)
+            .set_specific_heat_capacity(800.);
+        let substance1 = Rc::new(substance1);
+        let material1 = Material::new("Layer 1".to_string(), substance1, 0.1);
+        let material1 = Rc::new(material1);
+
+        // let mut substance2 = Substance::new("substance 2".to_string());
+        // substance2.set_density(30.)
+        //     .set_thermal_conductivity(0.035)
+        //     .set_specific_heat_capacity(1300.);
+        // let substance2 = Rc::new(substance2);
+        // let material2 = Material::new("Layer 2".to_string(), substance2, 0.025);
+        // let material2 = Rc::new(material2);
+        
+        let mut construction = Construction::new("The construction".to_string());
+        construction.materials.push(material1);
+        
+
+        let construction = simple_model.add_construction(construction);
+        
+        /****************** */
+        /* SURFACE GEOMETRY */
+        /****************** */
+        // Wall
+    
+        let l = (surface_area / 4.).sqrt();
+        let mut the_loop = Loop3D::new();
+        the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
+        the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
+        the_loop.push(Point3D::new(l, l, 0.)).unwrap();
+        the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
+        the_loop.close().unwrap();
+
+        let p = Polygon3D::new(the_loop).unwrap();
+
+        
+
+        /***************** */
+        /* ACTUAL SURFACES */
+        /***************** */
+        // Add surface    
+        let mut surface = Surface::new("Surface".to_string(), p, construction);
+        surface.set_front_boundary(Boundary::Space(Rc::clone(&space)));
+        simple_model.add_surface(surface);
+
+        /* TEST */
+        
+        let main_dt = 60. * 60. / n as Float;
+        let mut state_header = SimulationStateHeader::new();
+        let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+
+        let mut state = state_header.take_values().unwrap();
+
+        //println!("DT_SUBDIVISIONS = {}", model.dt_subdivisions);
+        // MAP THE STATE
+        // model.map_simulation_state(&mut state_).unwrap();
+
+        /* START THE TEST */
+        let construction = &simple_model.constructions[0];
+        // assert!(model.surfaces[0].is_massive());
+
+        let r = construction.r_value().unwrap()
+            + thermal_model.surfaces[0].rs_front()
+            + thermal_model.surfaces[0].rs_back();
+
+
+        // Initial T of the zone
+        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+
+        let t_out: Float = 30.0; // T of surroundings
+
+        // test model
+        let tester = SingleZoneTestModel{
+            zone_volume,
+            surface_area,
+            facade_r: r,
+            temp_out: t_out,
+            temp_start: t_start,
+            .. SingleZoneTestModel::default()
+        };
+        let exp_fn = tester.get_closed_solution();
+
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
+
+        let mut date = Date {
+            day: 1,
+            hour: 0.0,
+            month: 1,
+        };
+
+        // March:
+        
+        for i in 0..800 {
+            let time = (i as Float) * main_dt;
+            date.add_seconds(time);
+
+            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+
+            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+
+            // Get exact solution.
+            let exp = exp_fn(time);
+
+            //assert!((exp - found).abs() < 0.05);
+            // let max_error = 0.15;
+            let diff = (exp - found).abs();
+            println!("{},{}, {}", exp, found, diff);
+            // assert!(diff < max_error);
             
         }
     }
