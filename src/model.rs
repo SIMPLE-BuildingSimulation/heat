@@ -24,23 +24,18 @@ use communication_protocols::simulation_model::SimulationModel;
 use weather::Weather;
 
 use crate::surface::ThermalSurface;
-use simple_model::{
-    SimpleModel, 
-    SimulationState, SimulationStateHeader,    
-    Boundary,
-};
+use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 // use simple_model::simulation_state_element::SimulationStateElement;
 // use simple_model::hvac::*;
 // use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
 // use simple_model::hvac::electric_heater::ElectricHeater;
 // use simple_model::boundary::Boundary;
 
-use crate::zone::ThermalZone;
-use crate::heating_cooling::calc_cooling_heating_power;
 use crate::construction::discretize_construction;
+use crate::heating_cooling::calc_cooling_heating_power;
+use crate::zone::ThermalZone;
 
 pub struct ThermalModel {
-
     /// All the Thermal Zones in the model
     pub zones: Vec<ThermalZone>,
 
@@ -74,12 +69,14 @@ impl SimulationModel for ThermalModel {
     /// * model: the SimpleModel that the model represents
     /// * state: the SimulationState attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
-    fn new(model: &SimpleModel, state: &mut SimulationStateHeader, n: usize) -> Result<Self, String> {
-        
-
-        /* CREATE ALL ZONES, ONE PER SPACE */        
+    fn new(
+        model: &SimpleModel,
+        state: &mut SimulationStateHeader,
+        n: usize,
+    ) -> Result<Self, String> {
+        /* CREATE ALL ZONES, ONE PER SPACE */
         let mut thermal_zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
-        for (i,space) in model.spaces.iter().enumerate() {
+        for (i, space) in model.spaces.iter().enumerate() {
             // Add the zone to the model... this pushes it to the sate
             // as well
             thermal_zones.push(ThermalZone::from_space(space, state, i));
@@ -121,19 +118,18 @@ impl SimulationModel for ThermalModel {
         // dt for the whole model. Some constructions will have a larger
         // dt (due to their discretization scheme), but simulating them
         // with a smaller (i.e. the official) dt is of no harm.
-        
 
         // For the Thermal Model
         let mut thermal_surfaces: Vec<ThermalSurface> = Vec::with_capacity(model.surfaces.len());
 
-        for (i, surface) in model.surfaces.iter().enumerate() {                        
+        for (i, surface) in model.surfaces.iter().enumerate() {
             let construction_index = *surface.construction.index().unwrap();
 
-            let thermal_surface = match ThermalSurface::new_surface(                
+            let thermal_surface = match ThermalSurface::new_surface(
                 state,
                 surface,
                 dt,
-                &all_n_elements[construction_index],                
+                &all_n_elements[construction_index],
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -142,25 +138,24 @@ impl SimulationModel for ThermalModel {
             thermal_surfaces.push(thermal_surface);
 
             // Match surface and zones
-            if let Ok(b) = surface.front_boundary(){
+            if let Ok(b) = surface.front_boundary() {
                 thermal_surfaces[i].set_front_boundary(b.clone());
             }
-            if let Ok(b)=surface.back_boundary(){
+            if let Ok(b) = surface.back_boundary() {
                 thermal_surfaces[i].set_back_boundary(b.clone());
             }
-                
         }
-        
+
         let mut thermal_fenestrations: Vec<ThermalSurface> =
             Vec::with_capacity(model.fenestrations.len());
         for (i, fenestration) in model.fenestrations.iter().enumerate() {
             let construction_index = *fenestration.construction.index().unwrap();
 
-            let thermal_surface = match ThermalSurface::new_fenestration(                
+            let thermal_surface = match ThermalSurface::new_fenestration(
                 state,
                 fenestration,
                 dt,
-                &all_n_elements[construction_index],                
+                &all_n_elements[construction_index],
             ) {
                 Ok(v) => v,
                 Err(e) => return Err(e),
@@ -169,10 +164,10 @@ impl SimulationModel for ThermalModel {
             thermal_fenestrations.push(thermal_surface);
 
             // Match surface and zones
-            if let Ok(b) = fenestration.front_boundary(){
+            if let Ok(b) = fenestration.front_boundary() {
                 thermal_fenestrations[i].set_front_boundary(b.clone());
             }
-            if let Ok(b) = fenestration.back_boundary(){
+            if let Ok(b) = fenestration.back_boundary() {
                 thermal_fenestrations[i].set_back_boundary(b.clone());
             }
         }
@@ -196,8 +191,6 @@ impl SimulationModel for ThermalModel {
         model: &SimpleModel,
         state: &mut SimulationState,
     ) -> Result<(), String> {
-        
-
         // Iterate through all the sub-subdivitions
         for _ in 0..self.dt_subdivisions {
             // advance in time
@@ -223,22 +216,22 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Some(b)=> match b {
-                            Boundary::Space(space) => t_current[*space.index().unwrap()], 
-                            Boundary::Ground => unimplemented!(),
-                    },                                
-                    None => t_out    
+                    Some(b) => match b {
+                        Boundary::Space(space) => t_current[*space.index().unwrap()],
+                        Boundary::Ground => unimplemented!(),
+                    },
+                    None => t_out,
                 };
                 let t_back = match s.back_boundary() {
-                    Some(b)=> match b {
+                    Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()], //self.zones[z_index].temperature(model, state),
                         Boundary::Ground => unimplemented!(),
                     },
-                    None => t_out,                    
+                    None => t_out,
                 };
 
                 // Update temperatures
-                let (_q_front, _q_back) = s.march( state, t_front, t_back, self.dt);
+                let (_q_front, _q_back) = s.march(state, t_front, t_back, self.dt);
             } // end of iterating surface
 
             // What  if they are open???
@@ -248,22 +241,22 @@ impl SimulationModel for ThermalModel {
 
                 // find t_in and t_out of surface.
                 let t_front = match s.front_boundary() {
-                    Some(b)=>match b{
+                    Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()],
                         Boundary::Ground => unimplemented!(),
                     },
-                    None => t_out                    
+                    None => t_out,
                 };
                 let t_back = match s.back_boundary() {
-                    Some(b)=>match b{
+                    Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()],
                         Boundary::Ground => unimplemented!(),
                     },
-                    None => t_out                    
+                    None => t_out,
                 };
 
                 // Update temperatures
-                s.march( state, t_front, t_back, self.dt);
+                s.march(state, t_front, t_back, self.dt);
             } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
@@ -272,7 +265,8 @@ impl SimulationModel for ThermalModel {
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
             for (i, zone) in self.zones.iter().enumerate() {
-                zone.reference_space.set_dry_bulb_temperature(state, future_temperatures[i]);
+                zone.reference_space
+                    .set_dry_bulb_temperature(state, future_temperatures[i]);
             }
         } // End of 'in each sub-timestep-subdivision'
 
@@ -367,71 +361,73 @@ impl ThermalModel {
         &self,
         model: &SimpleModel,
         state: &SimulationState,
-    ) -> (Vec<Float>, Vec<Float>, Vec<Float>) {        
+    ) -> (Vec<Float>, Vec<Float>, Vec<Float>) {
         let nzones = self.zones.len();
         // Initialize vectors containing a and b
         let mut a = vec![0.0; nzones];
         let mut b = vec![0.0; nzones];
         let mut c = vec![0.0; nzones];
 
-        
         /* Qi */
         // Heating/Cooling
-        for hvac in model.hvacs.iter(){
-            for (target_space_index, heating_cooling) in calc_cooling_heating_power(hvac, state){
+        for hvac in model.hvacs.iter() {
+            for (target_space_index, heating_cooling) in calc_cooling_heating_power(hvac, state) {
                 a[target_space_index] += heating_cooling;
             }
             // heating through air supply?
         }
 
         // Heating/Cooling
-        for luminaire in model.luminaires.iter(){
-            if let Ok(target_space) = luminaire.target_space() {                
+        for luminaire in model.luminaires.iter() {
+            if let Ok(target_space) = luminaire.target_space() {
                 let target_space_index = *target_space.index().unwrap();
-                let consumption = luminaire.power_consumption(state).expect("Luminaire has no Power Consumption state");                
+                let consumption = luminaire
+                    .power_consumption(state)
+                    .expect("Luminaire has no Power Consumption state");
                 a[target_space_index] += consumption;
-            }                        
+            }
         }
 
-        // Other 
-        for (i, zone) in self.zones.iter().enumerate() {                        
-            
+        // Other
+        for (i, zone) in self.zones.iter().enumerate() {
             /* INFILTRATION AND VENTILATION */
             // ... should we always asume that the Cp for
             // outside and inside are equal?  I will
-            // assume them different... profiling can 
+            // assume them different... profiling can
             // tell us if this makes the program slow.
-            let space = &model.spaces[i];            
-            // let t_zone = space.dry_bulb_temperature(state).expect("Zone has no Temperature!");                         
+            let space = &model.spaces[i];
+            // let t_zone = space.dry_bulb_temperature(state).expect("Zone has no Temperature!");
             let cp_zone = gas_properties::air::specific_heat();
 
             // infiltration from outside
-            if let Some(t_inf_inwards) = space.infiltration_temperature(state){
-                let m_inf = space.infiltration_volume(state).expect("Space has infiltration temperature but not volume");            
+            if let Some(t_inf_inwards) = space.infiltration_temperature(state) {
+                let m_inf = space
+                    .infiltration_volume(state)
+                    .expect("Space has infiltration temperature but not volume");
                 let cp_inf_inwards = gas_properties::air::specific_heat();
                 a[i] += m_inf * cp_inf_inwards * t_inf_inwards;
                 b[i] += m_inf * cp_zone;
             }
 
-            
             // ventilation
-            if let Some(t_vent_inwards) = space.ventilation_temperature(state){
-                let m_vent = space.ventilation_volume(state).expect("Space has ventilation temperature but not volume");            
+            if let Some(t_vent_inwards) = space.ventilation_temperature(state) {
+                let m_vent = space
+                    .ventilation_volume(state)
+                    .expect("Space has ventilation temperature but not volume");
                 let cp_vent_inwards = gas_properties::air::specific_heat();
                 a[i] += m_vent * cp_vent_inwards * t_vent_inwards;
                 b[i] += m_vent * cp_zone;
             }
 
-
             // Mixing with other zones
-            
+
             /* CAPACITANCE */
             c[i] = zone.mcp();
         }
 
         /* SURFACES */
         fn iterate_surfaces(
-            surfaces: &[ThermalSurface],            
+            surfaces: &[ThermalSurface],
             state: &SimulationState,
             a: &mut Vec<Float>,
             b: &mut Vec<Float>,
@@ -470,10 +466,7 @@ impl ThermalModel {
 
     /// Retrieves a vector of the current temperatures of all the Zones as
     /// registered in the Simulation State
-    fn get_current_zones_temperatures(
-        &self,        
-        state: &SimulationState,
-    ) -> Vec<Float> {
+    fn get_current_zones_temperatures(&self, state: &SimulationState) -> Vec<Float> {
         let nzones = self.zones.len();
         // Initialize return
         let mut ret: Vec<Float> = Vec::with_capacity(nzones);
@@ -551,20 +544,17 @@ mod testing {
     use calendar::date::Date;
     use schedule::constant::ScheduleConstant;
     use weather::synthetic_weather::SyntheticWeather;
-    
-    use simple_test_models::*;
+
     use gas_properties::air;
-    use simple_model::{
-        HVAC, 
-        SimulationStateElement
-    };
-    
+    use simple_model::{SimulationStateElement, HVAC};
+    use simple_test_models::*;
+
     /// A single-zone test model with walls assumed to have
     /// no mass. It has a closed solution, which is nice.
-    /// 
+    ///
     /// There is no sun.
     #[derive(Default)]
-    struct SingleZoneTestModel{
+    struct SingleZoneTestModel {
         /// volume of the zone (m3)
         zone_volume: Float,
 
@@ -588,46 +578,39 @@ mod testing {
 
         /// Temperature at the beginning
         temp_start: Float,
-
-        
     }
 
     impl SingleZoneTestModel {
-        fn get_closed_solution(&self)->Box<impl Fn(Float)->Float>{
+        fn get_closed_solution(&self) -> Box<impl Fn(Float) -> Float> {
             // heat balance in the form
             // of C*dT/dt = A - B*T
             let rho = air::density(); //kg/m3
             let cp = air::specific_heat(); //J/kg.K
-            let u = 1./self.facade_r;
+            let u = 1. / self.facade_r;
 
             let c = self.zone_volume * rho * cp;
 
-            let mut a =     
-                    self.heating_power 
-                    + self.lighting_power 
-                    + self.temp_out * u * self.surface_area + self.infiltration_rate * cp * self.temp_out ;
+            let mut a = self.heating_power
+                + self.lighting_power
+                + self.temp_out * u * self.surface_area
+                + self.infiltration_rate * cp * self.temp_out;
 
-            a/=c;
+            a /= c;
 
-            let mut b = u * self.surface_area + self.infiltration_rate*cp;
+            let mut b = u * self.surface_area + self.infiltration_rate * cp;
             b /= c;
 
-            let k1 = self.temp_start - a/b;
+            let k1 = self.temp_start - a / b;
 
-            let f = move |t: Float|->Float{
-                a/b + k1*(-b*t).exp()
-            };
+            let f = move |t: Float| -> Float { a / b + k1 * (-b * t).exp() };
 
-            Box::new(f)            
+            Box::new(f)
         }
     }
 
-
-
     #[test]
     fn test_calculate_zones_abc() {
-        
-        let  (simple_model, mut state_header) = get_single_zone_test_building(
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume: 40.,
@@ -638,7 +621,7 @@ mod testing {
         );
 
         let n: usize = 1;
-        let thermal_model = ThermalModel::new(& simple_model, &mut state_header, n).unwrap();
+        let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
         let state = state_header.take_values().unwrap();
         // MAP THE STATE
         // model.map_simulation_state(&mut state).unwrap();
@@ -662,7 +645,7 @@ mod testing {
     #[test]
     fn test_very_simple_march() {
         let zone_volume = 40.;
-        let surface_area = 4.;        
+        let surface_area = 4.;
         let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
@@ -691,20 +674,22 @@ mod testing {
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
 
-
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
 
         let t_out: Float = 30.0; // T of surroundings
 
         // test model
-        let tester = SingleZoneTestModel{
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area,
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
 
@@ -718,14 +703,19 @@ mod testing {
         };
 
         // March:
-        
+
         for i in 0..800 {
             let time = (i as Float) * main_dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
             // Get exact solution.
             let exp = exp_fn(time);
@@ -735,7 +725,6 @@ mod testing {
             let diff = (exp - found).abs();
             println!("{},{}, {}", exp, found, diff);
             assert!(diff < max_error);
-            
         }
     }
     /// END OF TEST_MODEL_MARCH
@@ -746,8 +735,7 @@ mod testing {
         let window_area = 1.;
         let zone_volume = 40.;
 
-        
-        let  (simple_model, mut state_header) = get_single_zone_test_building(
+        let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
@@ -775,16 +763,19 @@ mod testing {
         let r = construction.r_value().unwrap()
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
-        
+
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
 
         let t_out: Float = 30.0; // T of surroundings
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
-        let dt = main_dt; 
+        let dt = main_dt;
 
         let mut date = Date {
             day: 1,
@@ -792,14 +783,14 @@ mod testing {
             month: 1,
         };
 
-         // test model
-         let tester = SingleZoneTestModel{
+        // test model
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area, // the window is a hole on the wall... does not add area
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
 
@@ -808,27 +799,29 @@ mod testing {
             let time = (i as Float) * dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
-            // Get exact solution.            
+            // Get exact solution.
             let exp = exp_fn(time);
             let max_error = 0.15;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
-            
         }
     }
-
 
     #[test]
     fn test_model_march_with_window_and_luminaire() {
         let surface_area = 4.;
         let zone_volume = 40.;
         let lighting_power = 100.;
-        
-        
+
         let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
@@ -852,7 +845,9 @@ mod testing {
         // model.map_simulation_state(&mut state).unwrap();
 
         // turn the lights on
-        let lum_state_i = simple_model.luminaires[0].power_consumption_index().unwrap();
+        let lum_state_i = simple_model.luminaires[0]
+            .power_consumption_index()
+            .unwrap();
         // state.update_value(lum_state_i, SimulationStateElement::LuminairePowerConsumption(0, lighting_power));
         state[lum_state_i] = lighting_power;
 
@@ -864,25 +859,25 @@ mod testing {
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
 
-
-
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
 
         let t_out: Float = 30.0; // T of surroundings
 
         // test model
-        let tester = SingleZoneTestModel{
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area, // the window is a hole on the wall... does not add area
             lighting_power,
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
-
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
@@ -900,17 +895,21 @@ mod testing {
             let time = (i as Float) * dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;            
+            let max_error = 0.55;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
-            
         }
     }
 
@@ -919,8 +918,7 @@ mod testing {
         let surface_area = 4.;
         let zone_volume = 40.;
         let heating_power = 100.;
-        
-        
+
         let (simple_model, mut state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
@@ -943,11 +941,10 @@ mod testing {
         // model.map_simulation_state(&mut state).unwrap();
 
         // turn the heater on
-        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0]{
+        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0] {
             let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
             state[hvac_state_i] = heating_power;
         }
-        
 
         // START TESTING.
         let construction = &simple_model.constructions[0];
@@ -957,24 +954,24 @@ mod testing {
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
 
-
-
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
         let t_out: Float = 30.0; // T of surroundings
 
         // test model
-        let tester = SingleZoneTestModel{
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area, // the window is a hole on the wall... does not add area
             heating_power,
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
-
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
@@ -992,22 +989,24 @@ mod testing {
             let time = (i as Float) * dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;            
+            let max_error = 0.55;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
-            
         }
     }
 
-
-    
     #[test]
     fn test_model_march_with_window_heater_and_infiltration() {
         let surface_area = 4.;
@@ -1034,22 +1033,28 @@ mod testing {
         let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
-        // Set infiltration                
-        let inf_vol_index = state_header.push(SimulationStateElement::SpaceInfiltrationVolume(0), infiltration_rate);
+        // Set infiltration
+        let inf_vol_index = state_header.push(
+            SimulationStateElement::SpaceInfiltrationVolume(0),
+            infiltration_rate,
+        );
         simple_model.spaces[0].set_infiltration_volume_index(inf_vol_index);
-        let inf_temp_index = state_header.push(SimulationStateElement::SpaceInfiltrationTemperature(0), t_out);
+        let inf_temp_index = state_header.push(
+            SimulationStateElement::SpaceInfiltrationTemperature(0),
+            t_out,
+        );
         simple_model.spaces[0].set_infiltration_temperature_index(inf_temp_index);
 
         // MAP THE STATE
-        
+
         let mut state = state_header.take_values().unwrap();
 
         // turn the heater on
-        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0]{
+        if let HVAC::ElectricHeater(heater) = &simple_model.hvacs[0] {
             let hvac_state_i = heater.heating_cooling_consumption_index().unwrap();
             state[hvac_state_i] = heating_power;
         }
-    
+
         // START TESTING.
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
@@ -1058,14 +1063,14 @@ mod testing {
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
 
-
-
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
-        
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
 
         // test model
-        let tester = SingleZoneTestModel{
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area, // the window is a hole on the wall... does not add area
             heating_power,
@@ -1073,10 +1078,9 @@ mod testing {
             temp_out: t_out,
             temp_start: t_start,
             infiltration_rate,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
-
 
         let mut weather = SyntheticWeather::new();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
@@ -1094,43 +1098,34 @@ mod testing {
             let time = (i as Float) * dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;            
+            let max_error = 0.55;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
-            
         }
     }
 
-    
-    use simple_model::{
-        Space, 
-        Substance, 
-        Material,
-        Construction,
-        Surface
-    };
-    use geometry3d::{
-        Point3D,
-        Loop3D,
-        Polygon3D
-    };
+    use geometry3d::{Loop3D, Point3D, Polygon3D};
+    use simple_model::{Construction, Material, Space, Substance, Surface};
     use std::rc::Rc;
-    
 
     #[test]
-    fn another_test(){
+    fn another_test() {
         let n: usize = 1;
         let zone_volume = 40.;
-        let surface_area : Float = 4.;
-        
-        
+        let surface_area: Float = 4.;
+
         let mut simple_model = SimpleModel::new("The SimpleModel".to_string());
 
         /*************** */
@@ -1141,15 +1136,14 @@ mod testing {
         space.set_volume(zone_volume);
         let space = simple_model.add_space(space);
 
-        
-
         /******************* */
         /* ADD THE SUBSTANCE */
         /******************* */
-        
+
         // First material
         let mut substance1 = Substance::new("Substance 1".to_string());
-        substance1.set_density(2400.)
+        substance1
+            .set_density(2400.)
             .set_thermal_conductivity(1.63)
             .set_specific_heat_capacity(800.);
         let substance1 = Rc::new(substance1);
@@ -1163,18 +1157,17 @@ mod testing {
         // let substance2 = Rc::new(substance2);
         // let material2 = Material::new("Layer 2".to_string(), substance2, 0.025);
         // let material2 = Rc::new(material2);
-        
+
         let mut construction = Construction::new("The construction".to_string());
         construction.materials.push(material1);
-        
 
         let construction = simple_model.add_construction(construction);
-        
+
         /****************** */
         /* SURFACE GEOMETRY */
         /****************** */
         // Wall
-    
+
         let l = (surface_area / 4.).sqrt();
         let mut the_loop = Loop3D::new();
         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
@@ -1185,18 +1178,16 @@ mod testing {
 
         let p = Polygon3D::new(the_loop).unwrap();
 
-        
-
         /***************** */
         /* ACTUAL SURFACES */
         /***************** */
-        // Add surface    
+        // Add surface
         let mut surface = Surface::new("Surface".to_string(), p, construction);
         surface.set_front_boundary(Boundary::Space(Rc::clone(&space)));
         simple_model.add_surface(surface);
 
         /* TEST */
-        
+
         let main_dt = 60. * 60. / n as Float;
         let mut state_header = SimulationStateHeader::new();
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
@@ -1215,20 +1206,22 @@ mod testing {
             + thermal_model.surfaces[0].rs_front()
             + thermal_model.surfaces[0].rs_back();
 
-
         // Initial T of the zone
-        let t_start = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap(); 
+        let t_start = thermal_model.zones[0]
+            .reference_space
+            .dry_bulb_temperature(&state)
+            .unwrap();
 
         let t_out: Float = 30.0; // T of surroundings
 
         // test model
-        let tester = SingleZoneTestModel{
+        let tester = SingleZoneTestModel {
             zone_volume,
             surface_area,
             facade_r: r,
             temp_out: t_out,
             temp_start: t_start,
-            .. SingleZoneTestModel::default()
+            ..SingleZoneTestModel::default()
         };
         let exp_fn = tester.get_closed_solution();
 
@@ -1242,14 +1235,19 @@ mod testing {
         };
 
         // March:
-        
+
         for i in 0..800 {
             let time = (i as Float) * main_dt;
             date.add_seconds(time);
 
-            let found = thermal_model.zones[0].reference_space.dry_bulb_temperature(&state).unwrap();
+            let found = thermal_model.zones[0]
+                .reference_space
+                .dry_bulb_temperature(&state)
+                .unwrap();
 
-            thermal_model.march(date, &weather, &simple_model, &mut state).unwrap();
+            thermal_model
+                .march(date, &weather, &simple_model, &mut state)
+                .unwrap();
 
             // Get exact solution.
             let exp = exp_fn(time);
@@ -1259,8 +1257,6 @@ mod testing {
             let diff = (exp - found).abs();
             println!("{},{}, {}", exp, found, diff);
             // assert!(diff < max_error);
-            
         }
     }
-    
 }

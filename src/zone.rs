@@ -18,43 +18,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use std::rc::Rc;
 use crate::Float;
-use simple_model::{
-    Space, 
-    SimulationStateElement, SimulationStateHeader
-};
 use gas_properties::air;
-
-
+use simple_model::{SimulationStateElement, SimulationStateHeader, Space};
+use std::rc::Rc;
 
 pub struct ThermalZone {
-    
     /// The `Space` that this [`Thermal Zone`] represents
     pub reference_space: Rc<Space>,
 
-    
     /// volume of the zone
     volume: Float,
-    
 }
 
 impl ThermalZone {
     /// This function creates a new ThermalZone from a Space.
     /// It will copy the index of the space, so it should be used
     /// by iterating the spaces in a model (so there is no mismatch).
-    pub fn from_space(space: &Rc<Space>, state: &mut SimulationStateHeader, space_index: usize) -> Self {
-        
+    pub fn from_space(
+        space: &Rc<Space>,
+        state: &mut SimulationStateHeader,
+        space_index: usize,
+    ) -> Self {
         let volume = *space.volume().unwrap();
         // Add Space Temperature state
         let state_index = state.push(
             // start, by default, at 22.0 C
-            SimulationStateElement::SpaceDryBulbTemperature(space_index), 
-            22.0
+            SimulationStateElement::SpaceDryBulbTemperature(space_index),
+            22.0,
         );
         space.set_dry_bulb_temperature_index(state_index);
 
-        ThermalZone {            
+        ThermalZone {
             reference_space: Rc::clone(space),
             volume,
         }
@@ -67,6 +62,4 @@ impl ThermalZone {
 
         self.volume * air_density * air_specific_heat
     }
-
-    
 }
