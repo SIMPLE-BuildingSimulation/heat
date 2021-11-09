@@ -1,0 +1,39 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:     
+  clippy:
+    runs-on: ubuntu-latest        
+    steps: 
+    - uses: actions/checkout@v1   
+    - name: clippy
+      run: cargo clippy > clippy_output.txt            
+  format:
+    runs-on: ubuntu-latest        
+    steps: 
+    - uses: actions/checkout@v1   
+    - name: format
+      run: cargo fmt        
+  docs:    
+    runs-on: ubuntu-latest
+    needs: [clippy]
+    steps:
+    - uses: actions/checkout@v1    
+    - name: Build doc
+      run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps
+    - name: Set Index
+      run: echo '<meta http-equiv=refresh content=0;url=thermal/index.html>' > target/doc/index.html
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.5
+      with:
+        branch: gh-pages # The branch the action should deploy to.
+        folder: target/doc/ # The folder the action should deploy.
+  
