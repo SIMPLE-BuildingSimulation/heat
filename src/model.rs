@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 use crate::Float;
-use calendar::date::Date;
+use calendar::Date;
 use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
 use weather::Weather;
@@ -541,9 +541,9 @@ mod testing {
     use super::*;
     // use crate::construction::*;
 
-    use calendar::date::Date;
-    use schedule::constant::ScheduleConstant;
-    use weather::synthetic_weather::SyntheticWeather;
+    use calendar::Date;
+    use weather::SyntheticWeather;
+    use schedule::ScheduleConstant;
 
     use gas_properties::air;
     use simple_model::{SimulationStateElement, HVAC};
