@@ -1294,6 +1294,9 @@
 <span id="1260">1260</span>
 <span id="1261">1261</span>
 <span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1405,9 +1408,7 @@ SOFTWARE.
         <span class="comment">// safety..?</span>
         <span class="ident">dt</span> <span class="kw-2">*</span><span class="op">=</span> <span class="number">0.5</span>;
         <span class="ident">n_subdivisions</span> <span class="kw-2">*</span><span class="op">=</span> <span class="number">2</span>;
-
-        <span class="macro">println!</span>(<span class="string">&quot;There are {} Subdivisions (dt = {}s)&quot;</span>, <span class="ident">n_subdivisions</span>, <span class="ident">dt</span>);
-
+        
         <span class="comment">/* CREATE SURFACES USING THE MINIMUM TIMESTEP */</span>
         <span class="comment">// The rationale here is the following: We find the minimum</span>
         <span class="comment">// timestep (or maximum timestep_subdivisions), and that will be the</span>
@@ -1819,9 +1820,14 @@ SOFTWARE.
         <span class="comment">// Initialize return</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">nzones</span> {
-            <span class="ident">ret</span>.<span class="ident">push</span>(
-                <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span> (<span class="ident">t_current</span>[<span class="ident">i</span>] <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">*</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>(),
-            );
+            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> { <span class="comment">// is this an apropriate threshold?</span>
+                <span class="ident">ret</span>.<span class="ident">push</span>(
+                    <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span> (<span class="ident">t_current</span>[<span class="ident">i</span>] <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">*</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>(),
+                );
+            }<span class="kw">else</span>{
+                <span class="comment">// A space that is disconnected from everything... maintains its temperature</span>
+                <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">t_current</span>[<span class="ident">i</span>]);
+            }
         }
 
         <span class="ident">ret</span>
@@ -1937,7 +1943,7 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">a</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">temp</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">b</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span>);
     }
-
+    
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_very_simple_march</span>() {
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
