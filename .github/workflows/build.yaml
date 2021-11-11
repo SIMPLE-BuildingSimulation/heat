@@ -21,4 +21,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1   
     - name: Build Float
-      run: cargo build --verbose --features float --features simple_test_models/float
+      run: cargo build --verbose --features float 

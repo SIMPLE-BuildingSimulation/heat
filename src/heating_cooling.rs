@@ -17,11 +17,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 use simple_model::SimulationState;
-// use std::rc::Rc;
-
 use simple_model::hvac::HVAC;
-
 use crate::Float;
 
 /// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into

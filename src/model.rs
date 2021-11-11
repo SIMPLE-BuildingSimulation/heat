@@ -109,9 +109,7 @@ impl SimulationModel for ThermalModel {
         // safety..?
         dt *= 0.5;
         n_subdivisions *= 2;
-
-        println!("There are {} Subdivisions (dt = {}s)", n_subdivisions, dt);
-
+        
         /* CREATE SURFACES USING THE MINIMUM TIMESTEP */
         // The rationale here is the following: We find the minimum
         // timestep (or maximum timestep_subdivisions), and that will be the
@@ -523,9 +521,14 @@ impl ThermalModel {
         // Initialize return
         let mut ret: Vec<Float> = Vec::with_capacity(nzones);
         for i in 0..nzones {
-            ret.push(
-                a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
-            );
+            if b[i].abs() > 1e-9 { // is this an apropriate threshold?
+                ret.push(
+                    a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
+                );
+            }else{
+                // A space that is disconnected from everything... maintains its temperature
+                ret.push(t_current[i]);
+            }
         }
 
         ret
@@ -641,7 +644,7 @@ mod testing {
         assert_eq!(a[0], area * hi * temp);
         assert_eq!(b[0], area * hi);
     }
-
+    
     #[test]
     fn test_very_simple_march() {
         let zone_volume = 40.;

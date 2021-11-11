@@ -32,7 +32,7 @@
                     "test",
                     "--no-run",
                     "--bench=benchmark",
-                    "--package=rendering"
+                    "--package=thermal"
                 ],
                 "filter": {
                     "name": "benchmark",
