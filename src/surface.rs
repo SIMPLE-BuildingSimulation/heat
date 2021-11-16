@@ -361,8 +361,20 @@ impl ThermalSurface {
         // Set state
         self.set_node_temperatures(state, &temperatures);
 
-        // return
-        self.calc_heat_flow(state, t_front, t_back)
+        // Update state
+        let (flow_front, flow_back) = self.calc_heat_flow(state, t_front, t_back);
+        match &self{
+            Self::Fenestration(fen,_data)=>{                
+                fen.set_front_convective_heat_flow(state, flow_front);
+                fen.set_back_convective_heat_flow(state, flow_back);
+                
+            },
+            Self::Surface(sur,_data) => {                
+                sur.set_front_convective_heat_flow(state, flow_front);
+                sur.set_back_convective_heat_flow(state, flow_back);                
+            }
+        };
+        (flow_front, flow_back)
     }
 }
 
