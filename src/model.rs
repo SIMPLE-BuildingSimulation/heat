@@ -431,11 +431,24 @@ impl ThermalModel {
             b: &mut Vec<Float>,
         ) {
             for surface in surfaces.iter() {
+                let (rs_front, rs_back) = match &surface{
+                    ThermalSurface::Fenestration(fen,data)=>{
+                        let front = fen.front_convection_coefficient(state).unwrap();
+                        let back = fen.back_convection_coefficient(state).unwrap();
+                        (front + data.r_front, back + data.r_back)
+                    },
+                    ThermalSurface::Surface(fen,data) => {
+                        let front = fen.front_convection_coefficient(state).unwrap();
+                        let back = fen.back_convection_coefficient(state).unwrap();
+                        (front + data.r_front, back + data.r_back)
+                    }
+                };
+
                 let ai = surface.area();
                 // if front leads to a Zone
                 if let Some(Boundary::Space(space)) = surface.front_boundary() {
                     let z_index = space.index().unwrap();
-                    let hi = 1. / surface.rs_front();
+                    let hi = 1. / rs_front;
                     let temp = surface.front_temperature(state);
                     a[*z_index] += hi * ai * temp;
                     b[*z_index] += hi * ai;
@@ -444,7 +457,7 @@ impl ThermalModel {
                 // if back leads to a Zone
                 if let Some(Boundary::Space(space)) = surface.back_boundary() {
                     let z_index = space.index().unwrap();
-                    let hi = 1. / surface.rs_back();
+                    let hi = 1. / rs_back;
                     let temp = surface.back_temperature(state);
                     a[*z_index] += hi * ai * temp;
                     b[*z_index] += hi * ai;
@@ -494,12 +507,15 @@ impl ThermalModel {
 
         for i in 0..self.zones.len() {
             let current_temp = t_current[i];
-
-            ret.push(
-                a[i] / b[i]
-                    + (c[i] * (current_temp - a[i] / b[i]) / future_time / b[i])
-                        * (1.0 - (-b[i] * future_time / c[i]).exp()),
-            );
+            if b[i].abs() > 1e-9 { // is this an apropriate threshold?
+                ret.push(
+                    a[i] / b[i]
+                        + (c[i] * (current_temp - a[i] / b[i]) / future_time / b[i])
+                            * (1.0 - (-b[i] * future_time / c[i]).exp()),
+                );
+            }else{
+                ret.push(current_temp);
+            }
         }
 
         ret
@@ -635,7 +651,8 @@ mod testing {
         assert_eq!(c.len(), 1);
         assert_eq!(b.len(), 1);
         assert_eq!(c[0], thermal_model.get_thermal_zone(0).unwrap().mcp());
-        let hi = 1. / thermal_model.get_thermal_surface(0).unwrap().rs_front();
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let hi = 1. / rs_front;
         let temp = thermal_model
             .get_thermal_surface(0)
             .unwrap()
@@ -671,11 +688,12 @@ mod testing {
 
         /* START THE TEST */
         let construction = &simple_model.constructions[0];
-        // assert!(model.surfaces[0].is_massive());
+        assert!(thermal_model.surfaces[0].is_massive());
 
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
         let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+            + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -763,9 +781,10 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
         let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+            + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -857,10 +876,12 @@ mod testing {
         // START TESTING.
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
+        println!("IS MASSIVE??? {}", thermal_model.surfaces[0].is_massive());
 
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
         let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+            + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -910,7 +931,7 @@ mod testing {
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;
+            let max_error = 0.4;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
         }
@@ -953,9 +974,10 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
         let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+            + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -1004,7 +1026,7 @@ mod testing {
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;
+            let max_error = 0.2;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
         }
@@ -1062,9 +1084,10 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
+        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
         let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
+            + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -1113,153 +1136,11 @@ mod testing {
             // Get exact solution.
             let exp = exp_fn(time);
 
-            let max_error = 0.55;
+            let max_error = 0.1;
             println!("{}, {}", exp, found);
             assert!((exp - found).abs() < max_error);
         }
     }
 
-    use geometry3d::{Loop3D, Point3D, Polygon3D};
-    use simple_model::{Construction, Material, Space, Substance, Surface};
-    use std::rc::Rc;
-
-    #[test]
-    fn another_test() {
-        let n: usize = 1;
-        let zone_volume = 40.;
-        let surface_area: Float = 4.;
-
-        let mut simple_model = SimpleModel::new("The SimpleModel".to_string());
-
-        /*************** */
-        /* ADD THE SPACE */
-        /*************** */
-
-        let mut space = Space::new("Some space".to_string());
-        space.set_volume(zone_volume);
-        let space = simple_model.add_space(space);
-
-        /******************* */
-        /* ADD THE SUBSTANCE */
-        /******************* */
-
-        // First material
-        let mut substance1 = Substance::new("Substance 1".to_string());
-        substance1
-            .set_density(2400.)
-            .set_thermal_conductivity(1.63)
-            .set_specific_heat_capacity(800.);
-        let substance1 = Rc::new(substance1);
-        let material1 = Material::new("Layer 1".to_string(), substance1, 0.1);
-        let material1 = Rc::new(material1);
-
-        // let mut substance2 = Substance::new("substance 2".to_string());
-        // substance2.set_density(30.)
-        //     .set_thermal_conductivity(0.035)
-        //     .set_specific_heat_capacity(1300.);
-        // let substance2 = Rc::new(substance2);
-        // let material2 = Material::new("Layer 2".to_string(), substance2, 0.025);
-        // let material2 = Rc::new(material2);
-
-        let mut construction = Construction::new("The construction".to_string());
-        construction.materials.push(material1);
-
-        let construction = simple_model.add_construction(construction);
-
-        /****************** */
-        /* SURFACE GEOMETRY */
-        /****************** */
-        // Wall
-
-        let l = (surface_area / 4.).sqrt();
-        let mut the_loop = Loop3D::new();
-        the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-        the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-        the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-        the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-        the_loop.close().unwrap();
-
-        let p = Polygon3D::new(the_loop).unwrap();
-
-        /***************** */
-        /* ACTUAL SURFACES */
-        /***************** */
-        // Add surface
-        let mut surface = Surface::new("Surface".to_string(), p, construction);
-        surface.set_front_boundary(Boundary::Space(Rc::clone(&space)));
-        simple_model.add_surface(surface);
-
-        /* TEST */
-
-        let main_dt = 60. * 60. / n as Float;
-        let mut state_header = SimulationStateHeader::new();
-        let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
-
-        let mut state = state_header.take_values().unwrap();
-
-        //println!("DT_SUBDIVISIONS = {}", model.dt_subdivisions);
-        // MAP THE STATE
-        // model.map_simulation_state(&mut state_).unwrap();
-
-        /* START THE TEST */
-        let construction = &simple_model.constructions[0];
-        // assert!(model.surfaces[0].is_massive());
-
-        let r = construction.r_value().unwrap()
-            + thermal_model.surfaces[0].rs_front()
-            + thermal_model.surfaces[0].rs_back();
-
-        // Initial T of the zone
-        let t_start = thermal_model.zones[0]
-            .reference_space
-            .dry_bulb_temperature(&state)
-            .unwrap();
-
-        let t_out: Float = 30.0; // T of surroundings
-
-        // test model
-        let tester = SingleZoneTestModel {
-            zone_volume,
-            surface_area,
-            facade_r: r,
-            temp_out: t_out,
-            temp_start: t_start,
-            ..SingleZoneTestModel::default()
-        };
-        let exp_fn = tester.get_closed_solution();
-
-        let mut weather = SyntheticWeather::new();
-        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
-
-        let mut date = Date {
-            day: 1,
-            hour: 0.0,
-            month: 1,
-        };
-
-        // March:
-
-        for i in 0..800 {
-            let time = (i as Float) * main_dt;
-            date.add_seconds(time);
-
-            let found = thermal_model.zones[0]
-                .reference_space
-                .dry_bulb_temperature(&state)
-                .unwrap();
-
-            thermal_model
-                .march(date, &weather, &simple_model, &mut state)
-                .unwrap();
-
-            // Get exact solution.
-            let exp = exp_fn(time);
-
-            //assert!((exp - found).abs() < 0.05);
-            // let max_error = 0.15;
-            let diff = (exp - found).abs();
-            println!("{},{}, {}", exp, found, diff);
-            // assert!(diff < max_error);
-        }
-    }
+    
 }

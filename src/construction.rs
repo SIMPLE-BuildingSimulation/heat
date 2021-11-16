@@ -338,27 +338,27 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
-pub fn calc_full_rs_front(c: &Rc<Construction>, rs_front: Float, first_massive: usize) -> Float {
-    let mut full_rs_front = rs_front;
+pub fn calc_r_front(c: &Rc<Construction>,  first_massive: usize) -> Float {
+    let mut r_front = 0.;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
         let material = &c.materials[i]; //model.get_material(material_index).unwrap();
                                         // let substance_index = material.get_substance_index().unwrap();
         let substance = &material.substance; //model.get_substance(substance_index).unwrap();
 
-        full_rs_front += material.thickness / substance.thermal_conductivity().unwrap();
+        r_front += material.thickness / substance.thermal_conductivity().unwrap();
     }
-    full_rs_front
+    r_front
 }
 
-pub fn calc_full_rs_back(c: &Rc<Construction>, rs_back: Float, last_massive: usize) -> Float {
-    let mut full_rs_back = rs_back;
+pub fn calc_r_back(c: &Rc<Construction>,  last_massive: usize) -> Float {
+    let mut r_back = 0.;
     for i in last_massive..c.materials.len() {
         let material = &c.materials[i];
         let substance = &material.substance;
-        full_rs_back += material.thickness / substance.thermal_conductivity().unwrap();
+        r_back += material.thickness / substance.thermal_conductivity().unwrap();
     }
-    full_rs_back
+    r_back
 }
 
 fn calc_c_matrix(
@@ -439,8 +439,8 @@ fn calc_c_matrix(
 /// \end{bmatrix}   
 ///```
 ///
-/// Now, these nodes are also connected to an interior and an exterior temperatures through
-/// interior and exterior convection coefficients (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).
+/// Now, these nodes are also connected to an interior and an exterior temperatures through all the 
+/// layers that do not have any thermal mass both in the interior and exterior (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively). 
 /// This means that the Matrix $`\overline{K}`$ needs to become:
 /// ```math
 /// \overline{K}=\begin{bmatrix}
@@ -450,20 +450,18 @@ fn calc_c_matrix(
 /// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4}- 1/R_{so,full} \\
 /// \end{bmatrix}   
 ///```
+/// 
+/// This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to 
+/// be added when marching (because these values change over time).
 fn calc_k_matrix(
     c: &Rc<Construction>,
     first_massive: usize,
     last_massive: usize,
-    n_elements: &[usize],
-    rs_front: Float,
-    rs_back: Float,
+    n_elements: &[usize],    
     all_nodes: usize,
 ) -> Matrix {
     // initialize k_prime
     let mut k = Matrix::new(0.0, all_nodes, all_nodes);
-
-    let full_rs_front = calc_full_rs_front(c, rs_front, first_massive);
-    let full_rs_back = calc_full_rs_back(c, rs_back, last_massive);
 
     // Calculate what is in between the massive layers
     let mut node: usize = 0;
@@ -539,19 +537,19 @@ fn calc_k_matrix(
         }
     }
 
-    // ADD RSI AND RSO
-    // add r_si to first node
-    if full_rs_front > 0.0 {
-        let old_value = k.get(0, 0).unwrap();
-        k.set(0, 0, old_value - 1.0 / full_rs_front).unwrap();
-    }
+    // // ADD RSI AND RSO
+    // // add r_si to first node
+    // if r_front > 0.0 {
+    //     let old_value = k.get(0, 0).unwrap();
+    //     k.set(0, 0, old_value - 1.0 / r_front).unwrap();
+    // }
 
-    // rs_o to the last node
-    if full_rs_back > 0.0 {
-        let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();
-        k.set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / full_rs_back)
-            .unwrap();
-    }
+    // // rs_o to the last node
+    // if r_back > 0.0 {
+    //     let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();
+    //     k.set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / r_back)
+    //         .unwrap();
+    // }
     // return
     k
 }
@@ -616,11 +614,11 @@ pub fn build_thermal_network(
     dt: Float,
     all_nodes: usize,
     n_elements: &[usize],
-    rs_front: Float,
-    rs_back: Float,
-    full_rs_front: Float,
-    full_rs_back: Float,
-) -> Result<impl Fn(&Matrix, Float, Float) -> Matrix, String> {
+    // rs_front: Float,
+    // rs_back: Float,
+    r_front: Float,
+    r_back: Float,
+) -> Result<impl Fn(&Matrix, Float, Float, Float, Float) -> Matrix, String> {
     // if this happens, we are trying to build the
     // thermal network for a non-massive wall... Which
     // does not make sense
@@ -640,8 +638,8 @@ pub fn build_thermal_network(
         first_massive,
         last_massive,
         n_elements,
-        rs_front,
-        rs_back,
+        // rs_front,
+        // rs_back,
         all_nodes,
     );
 
@@ -669,24 +667,37 @@ pub fn build_thermal_network(
 
     // *given_k_prime = k_prime;
 
-    let clo = move |nodes_temps: &Matrix, t_front: Float, t_back: Float| -> Matrix {
+    // let r_front = calc_r_front(construction, first_massive);
+    // let r_back = calc_r_back(construction, last_massive);
+
+    let clo = move |nodes_temps: &Matrix, t_front: Float, t_back: Float, rs_front: Float, rs_back: Float| -> Matrix {
+        
+        let full_rs_front = r_front + rs_front;
+        let full_rs_back = r_back + rs_back;
+        let ts_front = nodes_temps.get(0,0).unwrap();
+        let ts_back = nodes_temps.get(all_nodes - 1, 0).unwrap();
+
         // Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T
         // But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime
         // --> Calculate: k_i = c_prime * q + k_prime * T
-
+        
         let mut k_i = k_prime.from_prod_n_diag(nodes_temps, 3).unwrap();
 
         // if we are generating heat in any layer (e.g., radiant floor) this
         // would need to change...
         let old_value = k_i.get(0, 0).unwrap();
-        k_i.set(0, 0, old_value + c_prime[0] * t_front / full_rs_front)
+        k_i.set(0, 0, old_value 
+            /* Add RSFront */ - c_prime[0] * ts_front / full_rs_front
+            /* And the heat flow*/ + c_prime[0] * t_front / full_rs_front)
             .unwrap();
 
         let old_value = k_i.get(all_nodes - 1, 0).unwrap();
         k_i.set(
             all_nodes - 1,
             0,
-            old_value + c_prime[all_nodes - 1] * t_back / full_rs_back,
+            old_value 
+            /* Add RSBack */ - c_prime[all_nodes - 1] * ts_back / full_rs_back
+            /* And the heat flow*/ + c_prime[all_nodes - 1] * t_back / full_rs_back
         )
         .unwrap();
 

@@ -48,8 +48,20 @@ impl ThermalSurface {
     ) -> Result<Self, String> {
         let ref_surface_index = *surface.index().unwrap();
         let construction = &surface.construction;
-        let (rs_front, rs_back) = calc_convection_coefficients(&**surface);
+        // let (rs_front, rs_back) = calc_convection_coefficients(&**surface);
         let area = surface.area();
+
+        let i = state.push(SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index), 0.1);
+        surface.set_front_convection_coefficient_index(i);
+
+        let i = state.push(SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index), 0.1);
+        surface.set_back_convection_coefficient_index(i);
+
+        let i = state.push(SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index), 0.1);
+        surface.set_front_convective_heat_flow_index(i);
+
+        let i = state.push(SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index), 0.1);
+        surface.set_back_convective_heat_flow_index(i);
 
         // surface,
         let (first_node, last_node, data) = ThermalSurfaceData::new(
@@ -57,8 +69,8 @@ impl ThermalSurface {
             construction,
             dt,
             area,
-            rs_front,
-            rs_back,
+            // rs_front,
+            // rs_back,
             n_elements,
             ref_surface_index,
             false, // not fenestration
@@ -79,7 +91,19 @@ impl ThermalSurface {
         let ref_surface_index = *fenestration.index().unwrap();
         let construction = &fenestration.construction;
         let area = fenestration.area(); // should not fail because surface is full
-        let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
+        // let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
+
+        let i = state.push(SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index), 0.1);
+        fenestration.set_front_convection_coefficient_index(i);
+
+        let i = state.push(SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index), 0.1);
+        fenestration.set_back_convection_coefficient_index(i);
+
+        let i = state.push(SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index), 0.1);
+        fenestration.set_front_convective_heat_flow_index(i);
+
+        let i = state.push(SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index), 0.1);
+        fenestration.set_back_convective_heat_flow_index(i);
 
         let (first_node, last_node, data) = ThermalSurfaceData::new(
             // model,
@@ -87,8 +111,8 @@ impl ThermalSurface {
             construction,
             dt,
             area,
-            rs_front,
-            rs_back,
+            // rs_front,
+            // rs_back,
             n_elements,
             ref_surface_index,
             true, // it is a fenestration
@@ -119,15 +143,15 @@ impl ThermalSurface {
         self.data().area
     }
 
-    /// Gets the `rs_front`
-    pub fn rs_front(&self) -> Float {
-        self.data().rs_front
-    }
+    // /// Gets the `rs_front`
+    // pub fn rs_front(&self) -> Float {
+    //     self.data().rs_front
+    // }
 
-    /// Gets the `rs_back`
-    pub fn rs_back(&self) -> Float {
-        self.data().rs_back
-    }
+    // /// Gets the `rs_back`
+    // pub fn rs_back(&self) -> Float {
+    //     self.data().rs_back
+    // }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
         self.mut_data().front_boundary = Some(b);
@@ -233,12 +257,25 @@ impl ThermalSurface {
         let q_out;
         let t_si = self.front_temperature(state);
         let t_so = self.back_temperature(state);
+        let (rs_front, rs_back) = match self{
+            Self::Fenestration(fen, _data)=>{
+                let front = fen.front_convection_coefficient(state).expect("Could not get front convection coefficient for fenestration");
+                let back = fen.back_convection_coefficient(state).expect("Could not get back convection coefficient for fenestration");
+                (front, back)
+            },
+            Self::Surface(sur, _data)=>{
+                let front = sur.front_convection_coefficient(state).expect("Could not get front convection coefficient for surface");
+                let back = sur.back_convection_coefficient(state).expect("Could not get back convection coefficient for surface");
+                (front, back)
+            }
+        };
+        
         if data.massive {
-            q_in = (t_si - t_front) / data.full_rs_front;
-            q_out = (t_so - t_back) / data.full_rs_back;
+            q_in = (t_si - t_front) / (data.r_front + rs_front);
+            q_out = (t_so - t_back) / (data.r_back + rs_back);
         } else {
-            q_in = (t_si - t_front) / data.rs_front;
-            q_out = (t_so - t_back) / data.rs_back;
+            q_in = (t_si - t_front) / rs_front;
+            q_out = (t_so - t_back) / rs_back;
         }
         // return
         (q_in, q_out)
@@ -255,13 +292,27 @@ impl ThermalSurface {
         let mut temperatures = self.get_node_temperatures(state);
         let data = self.data();
 
-        // println!("T front = {} | T back = {} ", t_front, t_back);
-        // println!(" OLD TEMPS = {}", temperatures);
+
+        // Calculate and set Front and Back convection coefficients
+        let (rs_front, rs_back) = match &self{
+            Self::Fenestration(fen,_data)=>{
+                let (front, back) = calc_convection_coefficients_for_fenestration(&**fen);
+                fen.set_front_convection_coefficient(state, front);
+                fen.set_back_convection_coefficient(state, back);
+                (front,back)
+            },
+            Self::Surface(sur,_data) => {
+                let (front, back) = calc_convection_coefficients(&**sur);
+                sur.set_front_convection_coefficient(state, front);
+                sur.set_back_convection_coefficient(state, back);
+                (front,back)
+            }
+        };
 
         if data.massive {
             if let Some(func) = &data.kt4_func {
                 // First
-                let mut k1 = func(&temperatures, t_front, t_back);
+                let mut k1 = func(&temperatures, t_front, t_back, rs_front, rs_back);
 
                 // returning "temperatures + k1" is Euler... continuing is
                 // Runge–Kutta 4th order
@@ -269,17 +320,17 @@ impl ThermalSurface {
                 // Second
                 let mut aux = k1.from_scale(0.5).unwrap(); //  aux = k1 /2
                 aux.add_to_this(&temperatures).unwrap(); // aux = T + k1/2
-                let mut k2 = func(&aux, t_front, t_back);
+                let mut k2 = func(&aux, t_front, t_back, rs_front, rs_back);
 
                 // Third... put the result into `aux`
                 k2.scale(0.5, &mut aux).unwrap(); //  aux = k2 /2
                 aux.add_to_this(&temperatures).unwrap(); // T + k2/2
-                let mut k3 = func(&aux, t_front, t_back);
+                let mut k3 = func(&aux, t_front, t_back, rs_front, rs_back);
 
                 // Fourth... put the result into `aux`
                 k3.scale(1., &mut aux).unwrap(); //  aux = k3
                 aux.add_to_this(&temperatures).unwrap(); // aux = T + k3
-                let mut k4 = func(&aux, t_front, t_back);
+                let mut k4 = func(&aux, t_front, t_back, rs_front, rs_back);
 
                 // Scale them and add them all up
                 k1.scale_this(1. / 6.);
@@ -298,15 +349,15 @@ impl ThermalSurface {
             }
         } else {
             // full_rs_front is, indeed, the whole R
-            let q = (t_back - t_front) / data.total_r;
+            let q = (t_back - t_front) / (data.total_r + rs_front + rs_back);
 
-            let ts_front = t_front + q * data.rs_front;
-            let ts_back = t_back - q * data.rs_back;
+            let ts_front = t_front + q * rs_front;
+            let ts_back = t_back - q * rs_back;
 
             temperatures.set(0, 0, ts_front).unwrap();
             temperatures.set(data.n_nodes - 1, 0, ts_back).unwrap();
         }
-        // println!(" Temperatures_after = {}", temperatures);
+        
         // Set state
         self.set_node_temperatures(state, &temperatures);
 
@@ -320,29 +371,30 @@ impl ThermalSurface {
 /// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
 /// are treated in the same way.
 pub struct ThermalSurfaceData {
-    /// The front side convection coefficient
-    rs_front: Float,
+    // / The front side convection coefficient
+    // rs_front: Float,
 
-    /// The back side convection coefficient
-    rs_back: Float,
+    // / The back side convection coefficient
+    // rs_back: Float,
 
+    /// Total resistance of the construction, WITHOUT Rsi and Rso
     total_r: Float,
 
-    kt4_func: Option<Box<dyn Fn(&Matrix, Float, Float) -> Matrix>>,
+    /// The function that allows implementing the KT4 method.
+    kt4_func: Option<Box<dyn Fn(&Matrix, Float, Float, Float, Float) -> Matrix>>,
 
     /// The interior (i.e. front side) resistance before
-    /// any layer with mass. It includes the r_si and also
-    /// any light-weight material at the front of the construction.
+    /// any layer with mass. It includes any light-weight material at the front of the construction.
     /// If the first layer in the construction has mass, then this
-    /// value will be equal to r_si
-    full_rs_front: Float,
+    /// value will be equal to 0. This value DOES NOT include the r_si
+    pub r_front: Float,
 
     /// The exterior (i.e. back side) resistance after
-    /// the last layer with mass. It includes the r_so and also
+    /// the last layer with mass. It includes
     /// any light-weight material at the back of the contruction.
-    /// If the first layer in the construction has mass, then
-    /// this value will be equal to r_si
-    full_rs_back: Float,
+    /// If the last layer in the construction has mass, then
+    /// this value will be equal to 0. This value DOES NOT include the r_so.
+    pub r_back: Float,
 
     // The location of the first temperature node
     // in the SimulationState
@@ -373,8 +425,8 @@ impl ThermalSurfaceData {
         construction: &Rc<Construction>,
         dt: Float,
         area: Float,
-        rs_front: Float,
-        rs_back: Float,
+        // rs_front: Float,
+        // rs_back: Float,
         n_elements: &[usize],
         ref_surface_index: usize,
         is_fenestration: bool,
@@ -407,11 +459,11 @@ impl ThermalSurfaceData {
         // Build ThermalSurface
         let (first_massive, last_massive) = get_first_and_last_massive_elements(n_elements)?;
         let mut ret = ThermalSurfaceData {
-            rs_front,
-            rs_back,
-            total_r: construction.r_value().unwrap() + rs_front + rs_back,
-            full_rs_front: calc_full_rs_front(construction, rs_front, first_massive),
-            full_rs_back: calc_full_rs_back(construction, rs_back, last_massive),
+            // rs_front,
+            // rs_back,
+            total_r: construction.r_value().unwrap(),
+            r_front: calc_r_front(construction, first_massive),
+            r_back: calc_r_back(construction, last_massive),
             n_nodes,
             massive: true,
             front_boundary: None, // filled when setting boundary
@@ -433,10 +485,10 @@ impl ThermalSurfaceData {
                 dt,
                 n_nodes,
                 &n_elements,
-                rs_front,
-                rs_back,
-                ret.full_rs_front,
-                ret.full_rs_back,
+                // rs_front,
+                // rs_back,
+                ret.r_front,
+                ret.r_back,
             )
             .unwrap();
             ret.kt4_func = Some(Box::new(func));
@@ -536,11 +588,11 @@ mod testing {
         let mut state_header = SimulationStateHeader::new();
         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
 
-        let (rs_front, rs_back) = calc_convection_coefficients(&surface);
+        // let (rs_front, rs_back) = calc_convection_coefficients(&surface);
         assert!(ts.data().massive);
         // assert_eq!(ts.data().n_nodes, 9);
-        assert_eq!(ts.data().rs_front, rs_front);
-        assert_eq!(ts.data().rs_back, rs_back);
+        // assert_eq!(ts.data().rs_front, rs_front);
+        // assert_eq!(ts.data().rs_back, rs_back);
         assert_eq!(ts.data().area, 4.0);
     }
 
@@ -659,11 +711,13 @@ mod testing {
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
+        let rs_front = surface.front_convection_coefficient(&state).unwrap();
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.data().rs_front;
+        let q_in_ref = (22.0 - t_front) / rs_front;
 
+        let rs_back = surface.back_convection_coefficient(&state).unwrap();
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
+        let q_out_ref = (22.0 - t_back) / rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -719,11 +773,13 @@ mod testing {
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
+        let rs_front = surface.front_convection_coefficient(&state).unwrap();
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.data().rs_front;
+        let q_in_ref = (22.0 - t_front) / rs_front;
 
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.data().rs_back;
+        let rs_back = surface.back_convection_coefficient(&state).unwrap();
+        let q_out_ref = (22.0 - t_back) / rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -785,11 +841,13 @@ mod testing {
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
+        let rs_front = surface.front_convection_coefficient(&state).unwrap()+ ts.data().r_front;
         let t_front = 10.0;
-        let q_in_ref = (22.0 - t_front) / ts.data().full_rs_front;
+        let q_in_ref = (22.0 - t_front) / rs_front;
 
+        let rs_back = surface.back_convection_coefficient(&state).unwrap() + ts.data().r_back;
         let t_back = 10.0;
-        let q_out_ref = (22.0 - t_back) / ts.data().full_rs_back;
+        let q_out_ref = (22.0 - t_back) / rs_back;
         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
 
         assert_eq!(q_in, q_in_ref);
@@ -902,7 +960,9 @@ mod testing {
 
         let r = c.r_value().unwrap();
 
-        let exp_q = (30.0 - 10.0) / (r + ts.data().rs_front + ts.data().rs_back);
+        let rs_front = surface.front_convection_coefficient(&state).unwrap();
+        let rs_back = surface.back_convection_coefficient(&state).unwrap();
+        let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);
         assert!((exp_q - final_qin).abs() < 0.00033);
         assert!((exp_q + final_qout).abs() < 0.00033);
     }
@@ -977,7 +1037,9 @@ mod testing {
         assert!(q_out < 0.0);
         assert!((q_in + q_out).abs() < 1E-6);
 
-        let exp_q = (30.0 - 10.0) / (c.r_value().unwrap() + ts.data().rs_front + ts.data().rs_back);
+        let rs_front = surface.front_convection_coefficient(&state).unwrap();
+        let rs_back = surface.back_convection_coefficient(&state).unwrap();
+        let exp_q = (30.0 - 10.0) / (c.r_value().unwrap() + rs_front + rs_back);
         assert!((exp_q - q_in).abs() < 1E-4);
         assert!((exp_q + q_out).abs() < 1E-4);
     }
