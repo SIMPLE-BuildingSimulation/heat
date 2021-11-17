@@ -1189,114 +1189,6 @@
 <span id="1155">1155</span>
 <span id="1156">1156</span>
 <span id="1157">1157</span>
-<span id="1158">1158</span>
-<span id="1159">1159</span>
-<span id="1160">1160</span>
-<span id="1161">1161</span>
-<span id="1162">1162</span>
-<span id="1163">1163</span>
-<span id="1164">1164</span>
-<span id="1165">1165</span>
-<span id="1166">1166</span>
-<span id="1167">1167</span>
-<span id="1168">1168</span>
-<span id="1169">1169</span>
-<span id="1170">1170</span>
-<span id="1171">1171</span>
-<span id="1172">1172</span>
-<span id="1173">1173</span>
-<span id="1174">1174</span>
-<span id="1175">1175</span>
-<span id="1176">1176</span>
-<span id="1177">1177</span>
-<span id="1178">1178</span>
-<span id="1179">1179</span>
-<span id="1180">1180</span>
-<span id="1181">1181</span>
-<span id="1182">1182</span>
-<span id="1183">1183</span>
-<span id="1184">1184</span>
-<span id="1185">1185</span>
-<span id="1186">1186</span>
-<span id="1187">1187</span>
-<span id="1188">1188</span>
-<span id="1189">1189</span>
-<span id="1190">1190</span>
-<span id="1191">1191</span>
-<span id="1192">1192</span>
-<span id="1193">1193</span>
-<span id="1194">1194</span>
-<span id="1195">1195</span>
-<span id="1196">1196</span>
-<span id="1197">1197</span>
-<span id="1198">1198</span>
-<span id="1199">1199</span>
-<span id="1200">1200</span>
-<span id="1201">1201</span>
-<span id="1202">1202</span>
-<span id="1203">1203</span>
-<span id="1204">1204</span>
-<span id="1205">1205</span>
-<span id="1206">1206</span>
-<span id="1207">1207</span>
-<span id="1208">1208</span>
-<span id="1209">1209</span>
-<span id="1210">1210</span>
-<span id="1211">1211</span>
-<span id="1212">1212</span>
-<span id="1213">1213</span>
-<span id="1214">1214</span>
-<span id="1215">1215</span>
-<span id="1216">1216</span>
-<span id="1217">1217</span>
-<span id="1218">1218</span>
-<span id="1219">1219</span>
-<span id="1220">1220</span>
-<span id="1221">1221</span>
-<span id="1222">1222</span>
-<span id="1223">1223</span>
-<span id="1224">1224</span>
-<span id="1225">1225</span>
-<span id="1226">1226</span>
-<span id="1227">1227</span>
-<span id="1228">1228</span>
-<span id="1229">1229</span>
-<span id="1230">1230</span>
-<span id="1231">1231</span>
-<span id="1232">1232</span>
-<span id="1233">1233</span>
-<span id="1234">1234</span>
-<span id="1235">1235</span>
-<span id="1236">1236</span>
-<span id="1237">1237</span>
-<span id="1238">1238</span>
-<span id="1239">1239</span>
-<span id="1240">1240</span>
-<span id="1241">1241</span>
-<span id="1242">1242</span>
-<span id="1243">1243</span>
-<span id="1244">1244</span>
-<span id="1245">1245</span>
-<span id="1246">1246</span>
-<span id="1247">1247</span>
-<span id="1248">1248</span>
-<span id="1249">1249</span>
-<span id="1250">1250</span>
-<span id="1251">1251</span>
-<span id="1252">1252</span>
-<span id="1253">1253</span>
-<span id="1254">1254</span>
-<span id="1255">1255</span>
-<span id="1256">1256</span>
-<span id="1257">1257</span>
-<span id="1258">1258</span>
-<span id="1259">1259</span>
-<span id="1260">1260</span>
-<span id="1261">1261</span>
-<span id="1262">1262</span>
-<span id="1263">1263</span>
-<span id="1264">1264</span>
-<span id="1265">1265</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1322,17 +1214,11 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident">communication_protocols::simulation_model::SimulationModel</span>;
 <span class="kw">use</span> <span class="ident">weather::Weather</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::surface::ThermalSurface</span>;
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Boundary</span>, <span class="ident">SimpleModel</span>, <span class="ident">SimulationState</span>, <span class="ident">SimulationStateHeader</span>};
-<span class="comment">// use simple_model::simulation_state_element::SimulationStateElement;</span>
-<span class="comment">// use simple_model::hvac::*;</span>
-<span class="comment">// use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;</span>
-<span class="comment">// use simple_model::hvac::electric_heater::ElectricHeater;</span>
-<span class="comment">// use simple_model::boundary::Boundary;</span>
-
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::construction::discretize_construction</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::heating_cooling::calc_cooling_heating_power</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::surface::ThermalSurface</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::zone::ThermalZone</span>;
+<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Boundary</span>, <span class="ident">SimpleModel</span>, <span class="ident">SimulationState</span>, <span class="ident">SimulationStateHeader</span>};
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThermalModel</span> {
     <span class="doccomment">/// All the Thermal Zones in the model</span>
@@ -1408,7 +1294,7 @@ SOFTWARE.
         <span class="comment">// safety..?</span>
         <span class="ident">dt</span> <span class="kw-2">*</span><span class="op">=</span> <span class="number">0.5</span>;
         <span class="ident">n_subdivisions</span> <span class="kw-2">*</span><span class="op">=</span> <span class="number">2</span>;
-        
+
         <span class="comment">/* CREATE SURFACES USING THE MINIMUM TIMESTEP */</span>
         <span class="comment">// The rationale here is the following: We find the minimum</span>
         <span class="comment">// timestep (or maximum timestep_subdivisions), and that will be the</span>
@@ -1730,11 +1616,24 @@ SOFTWARE.
             <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>,
         ) {
             <span class="kw">for</span> <span class="ident">surface</span> <span class="kw">in</span> <span class="ident">surfaces</span>.<span class="ident">iter</span>() {
+                <span class="kw">let</span> (<span class="ident">rs_front</span>, <span class="ident">rs_back</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">surface</span> {
+                    <span class="ident">ThermalSurface::Fenestration</span>(<span class="ident">fen</span>, <span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
+                        <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
+                        (<span class="ident">front</span> <span class="op">+</span> <span class="ident">data</span>.<span class="ident">r_front</span>, <span class="ident">back</span> <span class="op">+</span> <span class="ident">data</span>.<span class="ident">r_back</span>)
+                    }
+                    <span class="ident">ThermalSurface::Surface</span>(<span class="ident">fen</span>, <span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
+                        <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
+                        (<span class="ident">front</span> <span class="op">+</span> <span class="ident">data</span>.<span class="ident">r_front</span>, <span class="ident">back</span> <span class="op">+</span> <span class="ident">data</span>.<span class="ident">r_back</span>)
+                    }
+                };
+
                 <span class="kw">let</span> <span class="ident">ai</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">area</span>();
                 <span class="comment">// if front leads to a Zone</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Boundary::Space</span>(<span class="ident">space</span>)) <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">front_boundary</span>() {
                     <span class="kw">let</span> <span class="ident">z_index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">surface</span>.<span class="ident">rs_front</span>();
+                    <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">rs_front</span>;
                     <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>);
                     <span class="ident">a</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">ai</span> <span class="op">*</span> <span class="ident">temp</span>;
                     <span class="ident">b</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">ai</span>;
@@ -1743,7 +1642,7 @@ SOFTWARE.
                 <span class="comment">// if back leads to a Zone</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Boundary::Space</span>(<span class="ident">space</span>)) <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">back_boundary</span>() {
                     <span class="kw">let</span> <span class="ident">z_index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">surface</span>.<span class="ident">rs_back</span>();
+                    <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">rs_back</span>;
                     <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>);
                     <span class="ident">a</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">ai</span> <span class="op">*</span> <span class="ident">temp</span>;
                     <span class="ident">b</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">ai</span>;
@@ -1793,12 +1692,16 @@ SOFTWARE.
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>() {
             <span class="kw">let</span> <span class="ident">current_temp</span> <span class="op">=</span> <span class="ident">t_current</span>[<span class="ident">i</span>];
-
-            <span class="ident">ret</span>.<span class="ident">push</span>(
-                <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]
-                    <span class="op">+</span> (<span class="ident">c</span>[<span class="ident">i</span>] <span class="op">*</span> (<span class="ident">current_temp</span> <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">/</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>])
-                        <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>()),
-            );
+            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> {
+                <span class="comment">// is this an apropriate threshold?</span>
+                <span class="ident">ret</span>.<span class="ident">push</span>(
+                    <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]
+                        <span class="op">+</span> (<span class="ident">c</span>[<span class="ident">i</span>] <span class="op">*</span> (<span class="ident">current_temp</span> <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">/</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>])
+                            <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>()),
+                );
+            } <span class="kw">else</span> {
+                <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">current_temp</span>);
+            }
         }
 
         <span class="ident">ret</span>
@@ -1820,11 +1723,12 @@ SOFTWARE.
         <span class="comment">// Initialize return</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">nzones</span> {
-            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> { <span class="comment">// is this an apropriate threshold?</span>
+            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> {
+                <span class="comment">// is this an apropriate threshold?</span>
                 <span class="ident">ret</span>.<span class="ident">push</span>(
                     <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span> (<span class="ident">t_current</span>[<span class="ident">i</span>] <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">*</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>(),
                 );
-            }<span class="kw">else</span>{
+            } <span class="kw">else</span> {
                 <span class="comment">// A space that is disconnected from everything... maintains its temperature</span>
                 <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">t_current</span>[<span class="ident">i</span>]);
             }
@@ -1844,8 +1748,8 @@ SOFTWARE.
     <span class="comment">// use crate::construction::*;</span>
 
     <span class="kw">use</span> <span class="ident">calendar::Date</span>;
-    <span class="kw">use</span> <span class="ident">weather::SyntheticWeather</span>;
     <span class="kw">use</span> <span class="ident">schedule::ScheduleConstant</span>;
+    <span class="kw">use</span> <span class="ident">weather::SyntheticWeather</span>;
 
     <span class="kw">use</span> <span class="ident">gas_properties::air</span>;
     <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationStateElement</span>, <span class="ident">HVAC</span>};
@@ -1934,7 +1838,10 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">c</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">b</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">c</span>[<span class="number">0</span>], <span class="ident">thermal_model</span>.<span class="ident">get_thermal_zone</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">mcp</span>());
-        <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">thermal_model</span>.<span class="ident">get_thermal_surface</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">rs_front</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">rs_front</span>;
         <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">thermal_model</span>
             .<span class="ident">get_thermal_surface</span>(<span class="number">0</span>)
             .<span class="ident">unwrap</span>()
@@ -1943,7 +1850,7 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">a</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">temp</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">b</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span>);
     }
-    
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_very_simple_march</span>() {
         <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
@@ -1970,11 +1877,15 @@ SOFTWARE.
 
         <span class="comment">/* START THE TEST */</span>
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
-        <span class="comment">// assert!(model.surfaces[0].is_massive());</span>
+        <span class="macro">assert!</span>(<span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">is_massive</span>());
 
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rs_back</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>() <span class="op">+</span> <span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">rs_back</span>;
 
         <span class="comment">// Initial T of the zone</span>
         <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
@@ -2062,9 +1973,13 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
         <span class="comment">// assert!(!model.surfaces[0].is_massive());</span>
 
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rs_back</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>() <span class="op">+</span> <span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">rs_back</span>;
 
         <span class="comment">// Initial T of the zone</span>
         <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
@@ -2156,10 +2071,15 @@ SOFTWARE.
         <span class="comment">// START TESTING.</span>
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
         <span class="comment">// assert!(!model.surfaces[0].is_massive());</span>
+        <span class="macro">println!</span>(<span class="string">&quot;IS MASSIVE??? {}&quot;</span>, <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">is_massive</span>());
 
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rs_back</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>() <span class="op">+</span> <span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">rs_back</span>;
 
         <span class="comment">// Initial T of the zone</span>
         <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
@@ -2209,7 +2129,7 @@ SOFTWARE.
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.4</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
         }
@@ -2252,9 +2172,13 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
         <span class="comment">// assert!(!model.surfaces[0].is_massive());</span>
 
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rs_back</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>() <span class="op">+</span> <span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">rs_back</span>;
 
         <span class="comment">// Initial T of the zone</span>
         <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
@@ -2303,7 +2227,7 @@ SOFTWARE.
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.2</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
         }
@@ -2361,9 +2285,13 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
         <span class="comment">// assert!(!model.surfaces[0].is_massive());</span>
 
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
+        <span class="kw">let</span> <span class="ident">rs_front</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rs_back</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
+            .<span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>() <span class="op">+</span> <span class="ident">rs_front</span> <span class="op">+</span> <span class="ident">rs_back</span>;
 
         <span class="comment">// Initial T of the zone</span>
         <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
@@ -2412,153 +2340,9 @@ SOFTWARE.
             <span class="comment">// Get exact solution.</span>
             <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
 
-            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.55</span>;
+            <span class="kw">let</span> <span class="ident">max_error</span> <span class="op">=</span> <span class="number">0.1</span>;
             <span class="macro">println!</span>(<span class="string">&quot;{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>);
             <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">max_error</span>);
-        }
-    }
-
-    <span class="kw">use</span> <span class="ident">geometry3d</span>::{<span class="ident">Loop3D</span>, <span class="ident">Point3D</span>, <span class="ident">Polygon3D</span>};
-    <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Construction</span>, <span class="ident">Material</span>, <span class="ident">Space</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>};
-    <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">another_test</span>() {
-        <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="number">40.</span>;
-        <span class="kw">let</span> <span class="ident">surface_area</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">4.</span>;
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">simple_model</span> <span class="op">=</span> <span class="ident">SimpleModel::new</span>(<span class="string">&quot;The SimpleModel&quot;</span>.<span class="ident">to_string</span>());
-
-        <span class="comment">/*************** */</span>
-        <span class="comment">/* ADD THE SPACE */</span>
-        <span class="comment">/*************** */</span>
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">Space::new</span>(<span class="string">&quot;Some space&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">space</span>.<span class="ident">set_volume</span>(<span class="ident">zone_volume</span>);
-        <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">add_space</span>(<span class="ident">space</span>);
-
-        <span class="comment">/******************* */</span>
-        <span class="comment">/* ADD THE SUBSTANCE */</span>
-        <span class="comment">/******************* */</span>
-
-        <span class="comment">// First material</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substance1</span> <span class="op">=</span> <span class="ident">Substance::new</span>(<span class="string">&quot;Substance 1&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">substance1</span>
-            .<span class="ident">set_density</span>(<span class="number">2400.</span>)
-            .<span class="ident">set_thermal_conductivity</span>(<span class="number">1.63</span>)
-            .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>);
-        <span class="kw">let</span> <span class="ident">substance1</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">substance1</span>);
-        <span class="kw">let</span> <span class="ident">material1</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;Layer 1&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">substance1</span>, <span class="number">0.1</span>);
-        <span class="kw">let</span> <span class="ident">material1</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">material1</span>);
-
-        <span class="comment">// let mut substance2 = Substance::new(&quot;substance 2&quot;.to_string());</span>
-        <span class="comment">// substance2.set_density(30.)</span>
-        <span class="comment">//     .set_thermal_conductivity(0.035)</span>
-        <span class="comment">//     .set_specific_heat_capacity(1300.);</span>
-        <span class="comment">// let substance2 = Rc::new(substance2);</span>
-        <span class="comment">// let material2 = Material::new(&quot;Layer 2&quot;.to_string(), substance2, 0.025);</span>
-        <span class="comment">// let material2 = Rc::new(material2);</span>
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;The construction&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material1</span>);
-
-        <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
-
-        <span class="comment">/****************** */</span>
-        <span class="comment">/* SURFACE GEOMETRY */</span>
-        <span class="comment">/****************** */</span>
-        <span class="comment">// Wall</span>
-
-        <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> (<span class="ident">surface_area</span> <span class="op">/</span> <span class="number">4.</span>).<span class="ident">sqrt</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-        <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="ident">l</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">the_loop</span>.<span class="ident">close</span>().<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon3D::new</span>(<span class="ident">the_loop</span>).<span class="ident">unwrap</span>();
-
-        <span class="comment">/***************** */</span>
-        <span class="comment">/* ACTUAL SURFACES */</span>
-        <span class="comment">/***************** */</span>
-        <span class="comment">// Add surface</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">surface</span> <span class="op">=</span> <span class="ident">Surface::new</span>(<span class="string">&quot;Surface&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">p</span>, <span class="ident">construction</span>);
-        <span class="ident">surface</span>.<span class="ident">set_front_boundary</span>(<span class="ident">Boundary::Space</span>(<span class="ident">Rc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">space</span>)));
-        <span class="ident">simple_model</span>.<span class="ident">add_surface</span>(<span class="ident">surface</span>);
-
-        <span class="comment">/* TEST */</span>
-
-        <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span> <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
-
-        <span class="comment">//println!(&quot;DT_SUBDIVISIONS = {}&quot;, model.dt_subdivisions);</span>
-        <span class="comment">// MAP THE STATE</span>
-        <span class="comment">// model.map_simulation_state(&amp;mut state_).unwrap();</span>
-
-        <span class="comment">/* START THE TEST */</span>
-        <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">simple_model</span>.<span class="ident">constructions</span>[<span class="number">0</span>];
-        <span class="comment">// assert!(model.surfaces[0].is_massive());</span>
-
-        <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">r_value</span>().<span class="ident">unwrap</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_front</span>()
-            <span class="op">+</span> <span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">rs_back</span>();
-
-        <span class="comment">// Initial T of the zone</span>
-        <span class="kw">let</span> <span class="ident">t_start</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
-            .<span class="ident">reference_space</span>
-            .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
-            .<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">t_out</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.0</span>; <span class="comment">// T of surroundings</span>
-
-        <span class="comment">// test model</span>
-        <span class="kw">let</span> <span class="ident">tester</span> <span class="op">=</span> <span class="ident">SingleZoneTestModel</span> {
-            <span class="ident">zone_volume</span>,
-            <span class="ident">surface_area</span>,
-            <span class="ident">facade_r</span>: <span class="ident">r</span>,
-            <span class="ident">temp_out</span>: <span class="ident">t_out</span>,
-            <span class="ident">temp_start</span>: <span class="ident">t_start</span>,
-            ..<span class="ident">SingleZoneTestModel::default</span>()
-        };
-        <span class="kw">let</span> <span class="ident">exp_fn</span> <span class="op">=</span> <span class="ident">tester</span>.<span class="ident">get_closed_solution</span>();
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">weather</span> <span class="op">=</span> <span class="ident">SyntheticWeather::new</span>();
-        <span class="ident">weather</span>.<span class="ident">dry_bulb_temperature</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">ScheduleConstant::new</span>(<span class="ident">t_out</span>));
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">Date</span> {
-            <span class="ident">day</span>: <span class="number">1</span>,
-            <span class="ident">hour</span>: <span class="number">0.0</span>,
-            <span class="ident">month</span>: <span class="number">1</span>,
-        };
-
-        <span class="comment">// March:</span>
-
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">800</span> {
-            <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">*</span> <span class="ident">main_dt</span>;
-            <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="ident">time</span>);
-
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">thermal_model</span>.<span class="ident">zones</span>[<span class="number">0</span>]
-                .<span class="ident">reference_space</span>
-                .<span class="ident">dry_bulb_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
-                .<span class="ident">unwrap</span>();
-
-            <span class="ident">thermal_model</span>
-                .<span class="ident">march</span>(<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">weather</span>, <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
-                .<span class="ident">unwrap</span>();
-
-            <span class="comment">// Get exact solution.</span>
-            <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">exp_fn</span>(<span class="ident">time</span>);
-
-            <span class="comment">//assert!((exp - found).abs() &lt; 0.05);</span>
-            <span class="comment">// let max_error = 0.15;</span>
-            <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>();
-            <span class="macro">println!</span>(<span class="string">&quot;{},{}, {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, <span class="ident">diff</span>);
-            <span class="comment">// assert!(diff &lt; max_error);</span>
         }
     }
 }

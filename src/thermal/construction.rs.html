@@ -731,6 +731,25 @@
 <span id="697">697</span>
 <span id="698">698</span>
 <span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -882,19 +901,19 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">density</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">unwrap</span>();
 
-            <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="number">2.</span>;
-            <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="op">-</span><span class="ident">dt</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">RS</span>);
-            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">dt</span> <span class="op">*</span> <span class="ident">k</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span>);
-            <span class="kw">let</span> <span class="ident">disc</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">b</span> <span class="op">-</span> <span class="number">4.</span> <span class="op">*</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">c</span>;
+            <span class="kw">let</span> <span class="ident">a_coef</span> <span class="op">=</span> <span class="number">2.</span>;
+            <span class="kw">let</span> <span class="ident">b_coef</span> <span class="op">=</span> <span class="op">-</span><span class="ident">dt</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">RS</span>);
+            <span class="kw">let</span> <span class="ident">c_coef</span> <span class="op">=</span> <span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">dt</span> <span class="op">*</span> <span class="ident">k</span> <span class="op">/</span> (<span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span>);
+            <span class="kw">let</span> <span class="ident">disc</span> <span class="op">=</span> <span class="ident">b_coef</span> <span class="op">*</span> <span class="ident">b_coef</span> <span class="op">-</span> <span class="number">4.</span> <span class="op">*</span> <span class="ident">a_coef</span> <span class="op">*</span> <span class="ident">c_coef</span>;
             <span class="comment">// this should never happen...?</span>
             <span class="macro">debug_assert!</span>(<span class="ident">disc</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>);
 
             <span class="comment">// One solution is apparently always negative...</span>
             <span class="comment">// i.e. it is meaningless</span>
-            <span class="macro">debug_assert!</span>((<span class="op">-</span><span class="ident">b</span> <span class="op">-</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a</span>) <span class="op">&lt;</span> <span class="number">0.</span>);
+            <span class="macro">debug_assert!</span>((<span class="op">-</span><span class="ident">b_coef</span> <span class="op">-</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a_coef</span>) <span class="op">&lt;</span> <span class="number">0.</span>);
 
             <span class="comment">// The positive solution is the one we care about</span>
-            <span class="kw">let</span> <span class="ident">min_dx</span> <span class="op">=</span> (<span class="op">-</span><span class="ident">b</span> <span class="op">+</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a</span>);
+            <span class="kw">let</span> <span class="ident">min_dx</span> <span class="op">=</span> (<span class="op">-</span><span class="ident">b_coef</span> <span class="op">+</span> <span class="ident">disc</span>.<span class="ident">sqrt</span>()) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">a_coef</span>);
 
             <span class="kw">if</span> <span class="ident">min_dx</span> <span class="op">&gt;</span> <span class="ident">thickness</span> {
                 <span class="comment">// This means that this layer cannot comply with the</span>
@@ -1071,27 +1090,27 @@ SOFTWARE.
     <span class="prelude-val">Ok</span>(<span class="ident">n</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">rs_front</span>: <span class="ident">Float</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">rs_front</span>;
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r_front</span> <span class="op">=</span> <span class="number">0.</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">first_massive</span> {
         <span class="comment">// let material_index = c.get_layer_index(i).unwrap();</span>
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">i</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
                                         <span class="comment">// let substance_index = material.get_substance_index().unwrap();</span>
         <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
 
-        <span class="ident">full_rs_front</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
+        <span class="ident">r_front</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
     }
-    <span class="ident">full_rs_front</span>
+    <span class="ident">r_front</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">rs_back</span>: <span class="ident">Float</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">rs_back</span>;
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r_back</span> <span class="op">=</span> <span class="number">0.</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">last_massive</span>..<span class="ident">c</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">i</span>];
         <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>;
-        <span class="ident">full_rs_back</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
+        <span class="ident">r_back</span> <span class="op">+</span><span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
     }
-    <span class="ident">full_rs_back</span>
+    <span class="ident">r_back</span>
 }
 
 <span class="kw">fn</span> <span class="ident">calc_c_matrix</span>(
@@ -1172,8 +1191,8 @@ SOFTWARE.
 <span class="doccomment">/// \end{bmatrix}   </span>
 <span class="doccomment">///```</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Now, these nodes are also connected to an interior and an exterior temperatures through</span>
-<span class="doccomment">/// interior and exterior convection coefficients (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).</span>
+<span class="doccomment">/// Now, these nodes are also connected to an interior and an exterior temperatures through all the</span>
+<span class="doccomment">/// layers that do not have any thermal mass both in the interior and exterior (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).</span>
 <span class="doccomment">/// This means that the Matrix $`\overline{K}`$ needs to become:</span>
 <span class="doccomment">/// ```math</span>
 <span class="doccomment">/// \overline{K}=\begin{bmatrix}</span>
@@ -1183,20 +1202,18 @@ SOFTWARE.
 <span class="doccomment">/// 0 &amp; 0 &amp; 1/R_{3\rightarrow4} &amp; -1/R_{3\rightarrow4}- 1/R_{so,full} \\</span>
 <span class="doccomment">/// \end{bmatrix}   </span>
 <span class="doccomment">///```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to</span>
+<span class="doccomment">/// be added when marching (because these values change over time).</span>
 <span class="kw">fn</span> <span class="ident">calc_k_matrix</span>(
     <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">first_massive</span>: <span class="ident">usize</span>,
     <span class="ident">last_massive</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
-    <span class="ident">rs_back</span>: <span class="ident">Float</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
     <span class="comment">// initialize k_prime</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">all_nodes</span>, <span class="ident">all_nodes</span>);
-
-    <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">calc_full_rs_front</span>(<span class="ident">c</span>, <span class="ident">rs_front</span>, <span class="ident">first_massive</span>);
-    <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">calc_full_rs_back</span>(<span class="ident">c</span>, <span class="ident">rs_back</span>, <span class="ident">last_massive</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k_matrix</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">all_nodes</span>, <span class="ident">all_nodes</span>);
 
     <span class="comment">// Calculate what is in between the massive layers</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1211,7 +1228,7 @@ SOFTWARE.
             <span class="comment">// no-mass material</span>
             <span class="comment">// add up all the R of the no-mass layers that</span>
             <span class="comment">// are together</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="number">0.0</span>; <span class="comment">// if the material is no mass, then the first value</span>
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_resistance</span> <span class="op">=</span> <span class="number">0.0</span>; <span class="comment">// if the material is no mass, then the first value</span>
             <span class="kw">while</span> <span class="ident">n_layer</span> <span class="op">&lt;</span> <span class="ident">last_massive</span> <span class="op">&amp;&amp;</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="comment">// let material_index = c.get_layer_index(n_layer).unwrap();</span>
                 <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
@@ -1221,24 +1238,26 @@ SOFTWARE.
                 <span class="kw">let</span> <span class="ident">substance</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span>; <span class="comment">//model.get_substance(substance_index).unwrap();</span>
                 <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">substance</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap</span>();
 
-                <span class="ident">r</span> <span class="op">+</span><span class="op">=</span> <span class="ident">dx</span> <span class="op">/</span> <span class="ident">k</span>;
+                <span class="ident">thermal_resistance</span> <span class="op">+</span><span class="op">=</span> <span class="ident">dx</span> <span class="op">/</span> <span class="ident">k</span>;
                 <span class="ident">n_layer</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             }
 
             <span class="comment">// update values</span>
-            <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">r</span>;
+            <span class="kw">let</span> <span class="ident">u_value</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">thermal_resistance</span>;
             <span class="comment">// top left</span>
-            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
-            <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
+            <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u_value</span>).<span class="ident">unwrap</span>();
             <span class="comment">// top right</span>
-            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-            <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
+            <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u_value</span>).<span class="ident">unwrap</span>();
             <span class="comment">// bottom left</span>
-            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
-            <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
+            <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u_value</span>).<span class="ident">unwrap</span>();
             <span class="comment">// bottom right</span>
-            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-            <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
+            <span class="ident">k_matrix</span>
+                .<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u_value</span>)
+                .<span class="ident">unwrap</span>();
 
             <span class="comment">// Move one node ahead</span>
             <span class="ident">node</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -1253,17 +1272,17 @@ SOFTWARE.
 
             <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">m</span> {
                 <span class="comment">// top left</span>
-                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
-                <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
+                <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
                 <span class="comment">// top right</span>
-                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-                <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
+                <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
                 <span class="comment">// bottom left</span>
-                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
-                <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>).<span class="ident">unwrap</span>();
+                <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
                 <span class="comment">// bottom right</span>
-                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-                <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_matrix</span>.<span class="ident">get</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
+                <span class="ident">k_matrix</span>.<span class="ident">set</span>(<span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">node</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
 
                 <span class="comment">// advance node.</span>
                 <span class="ident">node</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -1272,21 +1291,21 @@ SOFTWARE.
         }
     }
 
-    <span class="comment">// ADD RSI AND RSO</span>
-    <span class="comment">// add r_si to first node</span>
-    <span class="kw">if</span> <span class="ident">full_rs_front</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
-        <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_front</span>).<span class="ident">unwrap</span>();
-    }
+    <span class="comment">// // ADD RSI AND RSO</span>
+    <span class="comment">// // add r_si to first node</span>
+    <span class="comment">// if r_front &gt; 0.0 {</span>
+    <span class="comment">//     let old_value = k.get(0, 0).unwrap();</span>
+    <span class="comment">//     k.set(0, 0, old_value - 1.0 / r_front).unwrap();</span>
+    <span class="comment">// }</span>
 
-    <span class="comment">// rs_o to the last node</span>
-    <span class="kw">if</span> <span class="ident">full_rs_back</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
-        <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">full_rs_back</span>)
-            .<span class="ident">unwrap</span>();
-    }
+    <span class="comment">// // rs_o to the last node</span>
+    <span class="comment">// if r_back &gt; 0.0 {</span>
+    <span class="comment">//     let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();</span>
+    <span class="comment">//     k.set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / r_back)</span>
+    <span class="comment">//         .unwrap();</span>
+    <span class="comment">// }</span>
     <span class="comment">// return</span>
-    <span class="ident">k</span>
+    <span class="ident">k_matrix</span>
 }
 
 <span class="doccomment">/// Builds the necessary data for marching forward through time, solving the</span>
@@ -1349,16 +1368,14 @@ SOFTWARE.
     <span class="ident">dt</span>: <span class="ident">Float</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
-    <span class="ident">rs_back</span>: <span class="ident">Float</span>,
-    <span class="ident">full_rs_front</span>: <span class="ident">Float</span>,
-    <span class="ident">full_rs_back</span>: <span class="ident">Float</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">r_front</span>: <span class="ident">Float</span>,
+    <span class="ident">r_back</span>: <span class="ident">Float</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// if this happens, we are trying to build the</span>
     <span class="comment">// thermal network for a non-massive wall... Which</span>
     <span class="comment">// does not make sense</span>
     <span class="macro">debug_assert!</span>(<span class="ident">first_massive</span> <span class="op">!</span><span class="op">=</span> <span class="ident">last_massive</span>);
-    <span class="macro">debug_assert_eq!</span>(<span class="ident">calc_n_total_nodes</span>(<span class="kw-2">&amp;</span><span class="ident">n_elements</span>).<span class="ident">unwrap</span>(), <span class="ident">all_nodes</span>);
+    <span class="macro">debug_assert_eq!</span>(<span class="ident">calc_n_total_nodes</span>(<span class="ident">n_elements</span>).<span class="ident">unwrap</span>(), <span class="ident">all_nodes</span>);
 
     <span class="comment">// check coherence in input data</span>
     <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
@@ -1373,8 +1390,8 @@ SOFTWARE.
         <span class="ident">first_massive</span>,
         <span class="ident">last_massive</span>,
         <span class="ident">n_elements</span>,
-        <span class="ident">rs_front</span>,
-        <span class="ident">rs_back</span>,
+        <span class="comment">// rs_front,</span>
+        <span class="comment">// rs_back,</span>
         <span class="ident">all_nodes</span>,
     );
 
@@ -1402,7 +1419,20 @@ SOFTWARE.
 
     <span class="comment">// *given_k_prime = k_prime;</span>
 
-    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
+    <span class="comment">// let r_front = calc_r_front(construction, first_massive);</span>
+    <span class="comment">// let r_back = calc_r_back(construction, last_massive);</span>
+
+    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>,
+                    <span class="ident">t_front</span>: <span class="ident">Float</span>,
+                    <span class="ident">t_back</span>: <span class="ident">Float</span>,
+                    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
+                    <span class="ident">rs_back</span>: <span class="ident">Float</span><span class="op">|</span>
+          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
+        <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">r_front</span> <span class="op">+</span> <span class="ident">rs_front</span>;
+        <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">r_back</span> <span class="op">+</span> <span class="ident">rs_back</span>;
+        <span class="kw">let</span> <span class="ident">ts_front</span> <span class="op">=</span> <span class="ident">nodes_temps</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">ts_back</span> <span class="op">=</span> <span class="ident">nodes_temps</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
+
         <span class="comment">// Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T</span>
         <span class="comment">// But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime</span>
         <span class="comment">// --&gt; Calculate: k_i = c_prime * q + k_prime * T</span>
@@ -1412,14 +1442,22 @@ SOFTWARE.
         <span class="comment">// if we are generating heat in any layer (e.g., radiant floor) this</span>
         <span class="comment">// would need to change...</span>
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_i</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k_i</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="number">0</span>] <span class="op">*</span> <span class="ident">t_front</span> <span class="op">/</span> <span class="ident">full_rs_front</span>)
-            .<span class="ident">unwrap</span>();
+        <span class="ident">k_i</span>.<span class="ident">set</span>(
+            <span class="number">0</span>,
+            <span class="number">0</span>,
+            <span class="ident">old_value</span>
+            <span class="comment">/* Add RSFront */</span> <span class="op">-</span> <span class="ident">c_prime</span>[<span class="number">0</span>] <span class="op">*</span> <span class="ident">ts_front</span> <span class="op">/</span> <span class="ident">full_rs_front</span>
+            <span class="comment">/* And the heat flow*/</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="number">0</span>] <span class="op">*</span> <span class="ident">t_front</span> <span class="op">/</span> <span class="ident">full_rs_front</span>,
+        )
+        .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">old_value</span> <span class="op">=</span> <span class="ident">k_i</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="ident">k_i</span>.<span class="ident">set</span>(
             <span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>,
             <span class="number">0</span>,
-            <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">*</span> <span class="ident">t_back</span> <span class="op">/</span> <span class="ident">full_rs_back</span>,
+            <span class="ident">old_value</span>
+            <span class="comment">/* Add RSBack */</span> <span class="op">-</span> <span class="ident">c_prime</span>[<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">*</span> <span class="ident">ts_back</span> <span class="op">/</span> <span class="ident">full_rs_back</span>
+            <span class="comment">/* And the heat flow*/</span> <span class="op">+</span> <span class="ident">c_prime</span>[<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">*</span> <span class="ident">t_back</span> <span class="op">/</span> <span class="ident">full_rs_back</span>,
         )
         .<span class="ident">unwrap</span>();
 
