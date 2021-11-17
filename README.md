@@ -3,7 +3,6 @@
 ![build badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/build.yaml/badge.svg)
 ![docs badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/docs.yaml/badge.svg)
 ![tests badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/tests.yaml/badge.svg)
-![coverage badge](https://github.com/SIMPLE-BuildingSimulation/thermal/blob/main/coverage/badges/flat.svg)
 
 
 This module reads a [SIMPLE model](https://github.com/SIMPLE-BuildingSimulation/simple_model) and estimates the temperatures. **It is still under development**. Check the documentation [Here](https://simple-buildingsimulation.github.io/thermal/)
