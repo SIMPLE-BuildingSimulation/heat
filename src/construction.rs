@@ -149,19 +149,19 @@ pub fn discretize_construction(
             let rho = substance.density().unwrap();
             let cp = substance.specific_heat_capacity().unwrap();
 
-            let a = 2.;
-            let b = -dt / (rho * cp * RS);
-            let c = -2. * dt * k / (rho * cp);
-            let disc = b * b - 4. * a * c;
+            let a_coef = 2.;
+            let b_coef = -dt / (rho * cp * RS);
+            let c_coef = -2. * dt * k / (rho * cp);
+            let disc = b_coef * b_coef - 4. * a_coef * c_coef;
             // this should never happen...?
             debug_assert!(disc >= 0.);
 
             // One solution is apparently always negative...
             // i.e. it is meaningless
-            debug_assert!((-b - disc.sqrt()) / (2. * a) < 0.);
+            debug_assert!((-b_coef - disc.sqrt()) / (2. * a_coef) < 0.);
 
             // The positive solution is the one we care about
-            let min_dx = (-b + disc.sqrt()) / (2. * a);
+            let min_dx = (-b_coef + disc.sqrt()) / (2. * a_coef);
 
             if min_dx > thickness {
                 // This means that this layer cannot comply with the
@@ -338,7 +338,7 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
-pub fn calc_r_front(c: &Rc<Construction>,  first_massive: usize) -> Float {
+pub fn calc_r_front(c: &Rc<Construction>, first_massive: usize) -> Float {
     let mut r_front = 0.;
     for i in 0..first_massive {
         // let material_index = c.get_layer_index(i).unwrap();
@@ -351,7 +351,7 @@ pub fn calc_r_front(c: &Rc<Construction>,  first_massive: usize) -> Float {
     r_front
 }
 
-pub fn calc_r_back(c: &Rc<Construction>,  last_massive: usize) -> Float {
+pub fn calc_r_back(c: &Rc<Construction>, last_massive: usize) -> Float {
     let mut r_back = 0.;
     for i in last_massive..c.materials.len() {
         let material = &c.materials[i];
@@ -439,8 +439,8 @@ fn calc_c_matrix(
 /// \end{bmatrix}   
 ///```
 ///
-/// Now, these nodes are also connected to an interior and an exterior temperatures through all the 
-/// layers that do not have any thermal mass both in the interior and exterior (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively). 
+/// Now, these nodes are also connected to an interior and an exterior temperatures through all the
+/// layers that do not have any thermal mass both in the interior and exterior (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).
 /// This means that the Matrix $`\overline{K}`$ needs to become:
 /// ```math
 /// \overline{K}=\begin{bmatrix}
@@ -450,18 +450,18 @@ fn calc_c_matrix(
 /// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4}- 1/R_{so,full} \\
 /// \end{bmatrix}   
 ///```
-/// 
-/// This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to 
+///
+/// This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to
 /// be added when marching (because these values change over time).
 fn calc_k_matrix(
     c: &Rc<Construction>,
     first_massive: usize,
     last_massive: usize,
-    n_elements: &[usize],    
+    n_elements: &[usize],
     all_nodes: usize,
 ) -> Matrix {
     // initialize k_prime
-    let mut k = Matrix::new(0.0, all_nodes, all_nodes);
+    let mut k_matrix = Matrix::new(0.0, all_nodes, all_nodes);
 
     // Calculate what is in between the massive layers
     let mut node: usize = 0;
@@ -476,7 +476,7 @@ fn calc_k_matrix(
             // no-mass material
             // add up all the R of the no-mass layers that
             // are together
-            let mut r = 0.0; // if the material is no mass, then the first value
+            let mut thermal_resistance = 0.0; // if the material is no mass, then the first value
             while n_layer < last_massive && n_elements[n_layer] == 0 {
                 // let material_index = c.get_layer_index(n_layer).unwrap();
                 let material = &c.materials[n_layer]; //model.get_material(material_index).unwrap();
@@ -486,24 +486,26 @@ fn calc_k_matrix(
                 let substance = &material.substance; //model.get_substance(substance_index).unwrap();
                 let k = substance.thermal_conductivity().unwrap();
 
-                r += dx / k;
+                thermal_resistance += dx / k;
                 n_layer += 1;
             }
 
             // update values
-            let u = 1. / r;
+            let u_value = 1. / thermal_resistance;
             // top left
-            let old_value = k.get(node, node).unwrap();
-            k.set(node, node, old_value - u).unwrap();
+            let old_value = k_matrix.get(node, node).unwrap();
+            k_matrix.set(node, node, old_value - u_value).unwrap();
             // top right
-            let old_value = k.get(node, node + 1).unwrap();
-            k.set(node, node + 1, old_value + u).unwrap();
+            let old_value = k_matrix.get(node, node + 1).unwrap();
+            k_matrix.set(node, node + 1, old_value + u_value).unwrap();
             // bottom left
-            let old_value = k.get(node + 1, node).unwrap();
-            k.set(node + 1, node, old_value + u).unwrap();
+            let old_value = k_matrix.get(node + 1, node).unwrap();
+            k_matrix.set(node + 1, node, old_value + u_value).unwrap();
             // bottom right
-            let old_value = k.get(node + 1, node + 1).unwrap();
-            k.set(node + 1, node + 1, old_value - u).unwrap();
+            let old_value = k_matrix.get(node + 1, node + 1).unwrap();
+            k_matrix
+                .set(node + 1, node + 1, old_value - u_value)
+                .unwrap();
 
             // Move one node ahead
             node += 1;
@@ -518,17 +520,17 @@ fn calc_k_matrix(
 
             for _ in 0..m {
                 // top left
-                let old_value = k.get(node, node).unwrap();
-                k.set(node, node, old_value - u).unwrap();
+                let old_value = k_matrix.get(node, node).unwrap();
+                k_matrix.set(node, node, old_value - u).unwrap();
                 // top right
-                let old_value = k.get(node, node + 1).unwrap();
-                k.set(node, node + 1, old_value + u).unwrap();
+                let old_value = k_matrix.get(node, node + 1).unwrap();
+                k_matrix.set(node, node + 1, old_value + u).unwrap();
                 // bottom left
-                let old_value = k.get(node + 1, node).unwrap();
-                k.set(node + 1, node, old_value + u).unwrap();
+                let old_value = k_matrix.get(node + 1, node).unwrap();
+                k_matrix.set(node + 1, node, old_value + u).unwrap();
                 // bottom right
-                let old_value = k.get(node + 1, node + 1).unwrap();
-                k.set(node + 1, node + 1, old_value - u).unwrap();
+                let old_value = k_matrix.get(node + 1, node + 1).unwrap();
+                k_matrix.set(node + 1, node + 1, old_value - u).unwrap();
 
                 // advance node.
                 node += 1;
@@ -551,7 +553,7 @@ fn calc_k_matrix(
     //         .unwrap();
     // }
     // return
-    k
+    k_matrix
 }
 
 /// Builds the necessary data for marching forward through time, solving the
@@ -614,8 +616,6 @@ pub fn build_thermal_network(
     dt: Float,
     all_nodes: usize,
     n_elements: &[usize],
-    // rs_front: Float,
-    // rs_back: Float,
     r_front: Float,
     r_back: Float,
 ) -> Result<impl Fn(&Matrix, Float, Float, Float, Float) -> Matrix, String> {
@@ -623,7 +623,7 @@ pub fn build_thermal_network(
     // thermal network for a non-massive wall... Which
     // does not make sense
     debug_assert!(first_massive != last_massive);
-    debug_assert_eq!(calc_n_total_nodes(&n_elements).unwrap(), all_nodes);
+    debug_assert_eq!(calc_n_total_nodes(n_elements).unwrap(), all_nodes);
 
     // check coherence in input data
     if n_elements.len() != construction.materials.len() {
@@ -670,34 +670,42 @@ pub fn build_thermal_network(
     // let r_front = calc_r_front(construction, first_massive);
     // let r_back = calc_r_back(construction, last_massive);
 
-    let clo = move |nodes_temps: &Matrix, t_front: Float, t_back: Float, rs_front: Float, rs_back: Float| -> Matrix {
-        
+    let clo = move |nodes_temps: &Matrix,
+                    t_front: Float,
+                    t_back: Float,
+                    rs_front: Float,
+                    rs_back: Float|
+          -> Matrix {
         let full_rs_front = r_front + rs_front;
         let full_rs_back = r_back + rs_back;
-        let ts_front = nodes_temps.get(0,0).unwrap();
+        let ts_front = nodes_temps.get(0, 0).unwrap();
         let ts_back = nodes_temps.get(all_nodes - 1, 0).unwrap();
 
         // Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T
         // But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime
         // --> Calculate: k_i = c_prime * q + k_prime * T
-        
+
         let mut k_i = k_prime.from_prod_n_diag(nodes_temps, 3).unwrap();
 
         // if we are generating heat in any layer (e.g., radiant floor) this
         // would need to change...
         let old_value = k_i.get(0, 0).unwrap();
-        k_i.set(0, 0, old_value 
+        k_i.set(
+            0,
+            0,
+            old_value
             /* Add RSFront */ - c_prime[0] * ts_front / full_rs_front
-            /* And the heat flow*/ + c_prime[0] * t_front / full_rs_front)
-            .unwrap();
+            /* And the heat flow*/ + c_prime[0] * t_front / full_rs_front,
+        )
+        .unwrap();
 
         let old_value = k_i.get(all_nodes - 1, 0).unwrap();
         k_i.set(
             all_nodes - 1,
             0,
-            old_value 
+            old_value
             /* Add RSBack */ - c_prime[all_nodes - 1] * ts_back / full_rs_back
-            /* And the heat flow*/ + c_prime[all_nodes - 1] * t_back / full_rs_back
+            /* And the heat flow*/ + c_prime[all_nodes - 1] * t_back / full_rs_back,
         )
         .unwrap();
 

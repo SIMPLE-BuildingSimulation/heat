@@ -23,17 +23,11 @@ use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
 use weather::Weather;
 
-use crate::surface::ThermalSurface;
-use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
-// use simple_model::simulation_state_element::SimulationStateElement;
-// use simple_model::hvac::*;
-// use simple_model::hvac::ideal_heater_cooler::IdealHeaterCooler;
-// use simple_model::hvac::electric_heater::ElectricHeater;
-// use simple_model::boundary::Boundary;
-
 use crate::construction::discretize_construction;
 use crate::heating_cooling::calc_cooling_heating_power;
+use crate::surface::ThermalSurface;
 use crate::zone::ThermalZone;
+use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 
 pub struct ThermalModel {
     /// All the Thermal Zones in the model
@@ -109,7 +103,7 @@ impl SimulationModel for ThermalModel {
         // safety..?
         dt *= 0.5;
         n_subdivisions *= 2;
-        
+
         /* CREATE SURFACES USING THE MINIMUM TIMESTEP */
         // The rationale here is the following: We find the minimum
         // timestep (or maximum timestep_subdivisions), and that will be the
@@ -431,13 +425,13 @@ impl ThermalModel {
             b: &mut Vec<Float>,
         ) {
             for surface in surfaces.iter() {
-                let (rs_front, rs_back) = match &surface{
-                    ThermalSurface::Fenestration(fen,data)=>{
+                let (rs_front, rs_back) = match &surface {
+                    ThermalSurface::Fenestration(fen, data) => {
                         let front = fen.front_convection_coefficient(state).unwrap();
                         let back = fen.back_convection_coefficient(state).unwrap();
                         (front + data.r_front, back + data.r_back)
-                    },
-                    ThermalSurface::Surface(fen,data) => {
+                    }
+                    ThermalSurface::Surface(fen, data) => {
                         let front = fen.front_convection_coefficient(state).unwrap();
                         let back = fen.back_convection_coefficient(state).unwrap();
                         (front + data.r_front, back + data.r_back)
@@ -507,13 +501,14 @@ impl ThermalModel {
 
         for i in 0..self.zones.len() {
             let current_temp = t_current[i];
-            if b[i].abs() > 1e-9 { // is this an apropriate threshold?
+            if b[i].abs() > 1e-9 {
+                // is this an apropriate threshold?
                 ret.push(
                     a[i] / b[i]
                         + (c[i] * (current_temp - a[i] / b[i]) / future_time / b[i])
                             * (1.0 - (-b[i] * future_time / c[i]).exp()),
                 );
-            }else{
+            } else {
                 ret.push(current_temp);
             }
         }
@@ -537,11 +532,12 @@ impl ThermalModel {
         // Initialize return
         let mut ret: Vec<Float> = Vec::with_capacity(nzones);
         for i in 0..nzones {
-            if b[i].abs() > 1e-9 { // is this an apropriate threshold?
+            if b[i].abs() > 1e-9 {
+                // is this an apropriate threshold?
                 ret.push(
                     a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
                 );
-            }else{
+            } else {
                 // A space that is disconnected from everything... maintains its temperature
                 ret.push(t_current[i]);
             }
@@ -561,8 +557,8 @@ mod testing {
     // use crate::construction::*;
 
     use calendar::Date;
-    use weather::SyntheticWeather;
     use schedule::ScheduleConstant;
+    use weather::SyntheticWeather;
 
     use gas_properties::air;
     use simple_model::{SimulationStateElement, HVAC};
@@ -651,7 +647,9 @@ mod testing {
         assert_eq!(c.len(), 1);
         assert_eq!(b.len(), 1);
         assert_eq!(c[0], thermal_model.get_thermal_zone(0).unwrap().mcp());
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
         let hi = 1. / rs_front;
         let temp = thermal_model
             .get_thermal_surface(0)
@@ -661,7 +659,7 @@ mod testing {
         assert_eq!(a[0], area * hi * temp);
         assert_eq!(b[0], area * hi);
     }
-    
+
     #[test]
     fn test_very_simple_march() {
         let zone_volume = 40.;
@@ -690,10 +688,13 @@ mod testing {
         let construction = &simple_model.constructions[0];
         assert!(thermal_model.surfaces[0].is_massive());
 
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
-        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
-        let r = construction.r_value().unwrap()
-            + rs_front + rs_back;
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
+        let rs_back = simple_model.surfaces[0]
+            .back_convection_coefficient(&state)
+            .unwrap();
+        let r = construction.r_value().unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -781,10 +782,13 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
-        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
-        let r = construction.r_value().unwrap()
-            + rs_front + rs_back;
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
+        let rs_back = simple_model.surfaces[0]
+            .back_convection_coefficient(&state)
+            .unwrap();
+        let r = construction.r_value().unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -878,10 +882,13 @@ mod testing {
         // assert!(!model.surfaces[0].is_massive());
         println!("IS MASSIVE??? {}", thermal_model.surfaces[0].is_massive());
 
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
-        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
-        let r = construction.r_value().unwrap()
-            + rs_front + rs_back;
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
+        let rs_back = simple_model.surfaces[0]
+            .back_convection_coefficient(&state)
+            .unwrap();
+        let r = construction.r_value().unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -974,10 +981,13 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
-        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
-        let r = construction.r_value().unwrap()
-            + rs_front + rs_back;
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
+        let rs_back = simple_model.surfaces[0]
+            .back_convection_coefficient(&state)
+            .unwrap();
+        let r = construction.r_value().unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -1084,10 +1094,13 @@ mod testing {
         let construction = &simple_model.constructions[0];
         // assert!(!model.surfaces[0].is_massive());
 
-        let rs_front = simple_model.surfaces[0].front_convection_coefficient(&state).unwrap();
-        let rs_back = simple_model.surfaces[0].back_convection_coefficient(&state).unwrap();
-        let r = construction.r_value().unwrap()
-            + rs_front + rs_back;
+        let rs_front = simple_model.surfaces[0]
+            .front_convection_coefficient(&state)
+            .unwrap();
+        let rs_back = simple_model.surfaces[0]
+            .back_convection_coefficient(&state)
+            .unwrap();
+        let r = construction.r_value().unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -1141,6 +1154,4 @@ mod testing {
             assert!((exp - found).abs() < max_error);
         }
     }
-
-    
 }

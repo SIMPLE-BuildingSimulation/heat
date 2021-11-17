@@ -18,9 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use simple_model::SimulationState;
-use simple_model::hvac::HVAC;
 use crate::Float;
+use simple_model::hvac::HVAC;
+use simple_model::SimulationState;
 
 /// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into
 /// each space (of index `usize`)

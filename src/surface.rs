@@ -51,16 +51,28 @@ impl ThermalSurface {
         // let (rs_front, rs_back) = calc_convection_coefficients(&**surface);
         let area = surface.area();
 
-        let i = state.push(SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index),
+            0.1,
+        );
         surface.set_front_convection_coefficient_index(i);
 
-        let i = state.push(SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index),
+            0.1,
+        );
         surface.set_back_convection_coefficient_index(i);
 
-        let i = state.push(SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index),
+            0.1,
+        );
         surface.set_front_convective_heat_flow_index(i);
 
-        let i = state.push(SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index),
+            0.1,
+        );
         surface.set_back_convective_heat_flow_index(i);
 
         // surface,
@@ -91,18 +103,30 @@ impl ThermalSurface {
         let ref_surface_index = *fenestration.index().unwrap();
         let construction = &fenestration.construction;
         let area = fenestration.area(); // should not fail because surface is full
-        // let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
+                                        // let (rs_front, rs_back) = calc_convection_coefficients_for_fenestration(fenestration);
 
-        let i = state.push(SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index),
+            0.1,
+        );
         fenestration.set_front_convection_coefficient_index(i);
 
-        let i = state.push(SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index),
+            0.1,
+        );
         fenestration.set_back_convection_coefficient_index(i);
 
-        let i = state.push(SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index),
+            0.1,
+        );
         fenestration.set_front_convective_heat_flow_index(i);
 
-        let i = state.push(SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index), 0.1);
+        let i = state.push(
+            SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index),
+            0.1,
+        );
         fenestration.set_back_convective_heat_flow_index(i);
 
         let (first_node, last_node, data) = ThermalSurfaceData::new(
@@ -257,19 +281,27 @@ impl ThermalSurface {
         let q_out;
         let t_si = self.front_temperature(state);
         let t_so = self.back_temperature(state);
-        let (rs_front, rs_back) = match self{
-            Self::Fenestration(fen, _data)=>{
-                let front = fen.front_convection_coefficient(state).expect("Could not get front convection coefficient for fenestration");
-                let back = fen.back_convection_coefficient(state).expect("Could not get back convection coefficient for fenestration");
+        let (rs_front, rs_back) = match self {
+            Self::Fenestration(fen, _data) => {
+                let front = fen
+                    .front_convection_coefficient(state)
+                    .expect("Could not get front convection coefficient for fenestration");
+                let back = fen
+                    .back_convection_coefficient(state)
+                    .expect("Could not get back convection coefficient for fenestration");
                 (front, back)
-            },
-            Self::Surface(sur, _data)=>{
-                let front = sur.front_convection_coefficient(state).expect("Could not get front convection coefficient for surface");
-                let back = sur.back_convection_coefficient(state).expect("Could not get back convection coefficient for surface");
+            }
+            Self::Surface(sur, _data) => {
+                let front = sur
+                    .front_convection_coefficient(state)
+                    .expect("Could not get front convection coefficient for surface");
+                let back = sur
+                    .back_convection_coefficient(state)
+                    .expect("Could not get back convection coefficient for surface");
                 (front, back)
             }
         };
-        
+
         if data.massive {
             q_in = (t_si - t_front) / (data.r_front + rs_front);
             q_out = (t_so - t_back) / (data.r_back + rs_back);
@@ -292,20 +324,19 @@ impl ThermalSurface {
         let mut temperatures = self.get_node_temperatures(state);
         let data = self.data();
 
-
         // Calculate and set Front and Back convection coefficients
-        let (rs_front, rs_back) = match &self{
-            Self::Fenestration(fen,_data)=>{
+        let (rs_front, rs_back) = match &self {
+            Self::Fenestration(fen, _data) => {
                 let (front, back) = calc_convection_coefficients_for_fenestration(&**fen);
                 fen.set_front_convection_coefficient(state, front);
                 fen.set_back_convection_coefficient(state, back);
-                (front,back)
-            },
-            Self::Surface(sur,_data) => {
+                (front, back)
+            }
+            Self::Surface(sur, _data) => {
                 let (front, back) = calc_convection_coefficients(&**sur);
                 sur.set_front_convection_coefficient(state, front);
                 sur.set_back_convection_coefficient(state, back);
-                (front,back)
+                (front, back)
             }
         };
 
@@ -357,26 +388,27 @@ impl ThermalSurface {
             temperatures.set(0, 0, ts_front).unwrap();
             temperatures.set(data.n_nodes - 1, 0, ts_back).unwrap();
         }
-        
+
         // Set state
         self.set_node_temperatures(state, &temperatures);
 
         // Update state
         let (flow_front, flow_back) = self.calc_heat_flow(state, t_front, t_back);
-        match &self{
-            Self::Fenestration(fen,_data)=>{                
+        match &self {
+            Self::Fenestration(fen, _data) => {
                 fen.set_front_convective_heat_flow(state, flow_front);
                 fen.set_back_convective_heat_flow(state, flow_back);
-                
-            },
-            Self::Surface(sur,_data) => {                
+            }
+            Self::Surface(sur, _data) => {
                 sur.set_front_convective_heat_flow(state, flow_front);
-                sur.set_back_convective_heat_flow(state, flow_back);                
+                sur.set_back_convective_heat_flow(state, flow_back);
             }
         };
         (flow_front, flow_back)
     }
 }
+
+pub type KT4Func = dyn Fn(&Matrix, Float, Float, Float, Float) -> Matrix;
 
 /// This is a Surface from the point of view of our thermal solver.
 /// Since this module only calculate heat transfer (and not short-wave solar
@@ -388,12 +420,11 @@ pub struct ThermalSurfaceData {
 
     // / The back side convection coefficient
     // rs_back: Float,
-
     /// Total resistance of the construction, WITHOUT Rsi and Rso
     total_r: Float,
 
     /// The function that allows implementing the KT4 method.
-    kt4_func: Option<Box<dyn Fn(&Matrix, Float, Float, Float, Float) -> Matrix>>,
+    kt4_func: Option<Box<KT4Func>>,
 
     /// The interior (i.e. front side) resistance before
     /// any layer with mass. It includes any light-weight material at the front of the construction.
@@ -437,14 +468,12 @@ impl ThermalSurfaceData {
         construction: &Rc<Construction>,
         dt: Float,
         area: Float,
-        // rs_front: Float,
-        // rs_back: Float,
         n_elements: &[usize],
         ref_surface_index: usize,
         is_fenestration: bool,
     ) -> Result<(usize, usize, Self), String> {
         // Calculate number of nodes in that construction.
-        let n_nodes = calc_n_total_nodes(&n_elements)?;
+        let n_nodes = calc_n_total_nodes(n_elements)?;
 
         // Push elements to the SimulationStateHeader
         let mut first_node: Option<usize> = None;
@@ -496,9 +525,7 @@ impl ThermalSurfaceData {
                 last_massive,
                 dt,
                 n_nodes,
-                &n_elements,
-                // rs_front,
-                // rs_back,
+                n_elements,
                 ret.r_front,
                 ret.r_back,
             )
@@ -853,7 +880,7 @@ mod testing {
         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
 
-        let rs_front = surface.front_convection_coefficient(&state).unwrap()+ ts.data().r_front;
+        let rs_front = surface.front_convection_coefficient(&state).unwrap() + ts.data().r_front;
         let t_front = 10.0;
         let q_in_ref = (22.0 - t_front) / rs_front;
 
