@@ -138,7 +138,7 @@ SOFTWARE.
         <span class="ident">space</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Space</span><span class="op">&gt;</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">space_index</span>: <span class="ident">usize</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    ) -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">volume</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">volume</span>().<span class="ident">unwrap</span>();
         <span class="comment">// Add Space Temperature state</span>
         <span class="kw">let</span> <span class="ident">state_index</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
@@ -155,7 +155,7 @@ SOFTWARE.
     }
 
     <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">air_density</span> <span class="op">=</span> <span class="ident">air::density</span>(); <span class="comment">//kg/m3</span>
         <span class="kw">let</span> <span class="ident">air_specific_heat</span> <span class="op">=</span> <span class="ident">air::specific_heat</span>(); <span class="comment">//J/kg.K</span>
 

@@ -871,7 +871,7 @@ SOFTWARE.
     <span class="ident">model_dt</span>: <span class="ident">Float</span>,
     <span class="ident">max_dx</span>: <span class="ident">Float</span>,
     <span class="ident">min_dt</span>: <span class="ident">Float</span>,
-) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+) -&gt; (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
     <span class="comment">// I could only think of how to make this recursively... so I did this.</span>
     <span class="kw">fn</span> <span class="ident">aux</span>(
         <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
@@ -879,7 +879,7 @@ SOFTWARE.
         <span class="ident">n</span>: <span class="ident">usize</span>,
         <span class="ident">max_dx</span>: <span class="ident">Float</span>,
         <span class="ident">min_dt</span>: <span class="ident">Float</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    ) -&gt; (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>);
 
         <span class="comment">// Choose a dx so that dt allows convergence.</span>
@@ -990,7 +990,7 @@ SOFTWARE.
 <span class="doccomment">/// first and the last massive layers... the no-mass layers</span>
 <span class="doccomment">/// before and after the first and last massive ones, respectively,</span>
 <span class="doccomment">/// are just bulked with the values of RSi and RSo.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_and_last_massive_elements</span>(<span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_and_last_massive_elements</span>(<span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// We need somethig to process!</span>
     <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">is_empty</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(
@@ -1001,8 +1001,8 @@ SOFTWARE.
     <span class="kw">let</span> <span class="ident">n_layers</span> <span class="op">=</span> <span class="ident">n_elements</span>.<span class="ident">len</span>();
 
     <span class="comment">// Border cases: one layer</span>
-    <span class="kw">if</span> <span class="ident">n_layers</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="kw">if</span> <span class="ident">n_elements</span>[<span class="number">0</span>] <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">n_layers</span> <span class="op">==</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">n_elements</span>[<span class="number">0</span>] <span class="op">==</span> <span class="number">0</span> {
             <span class="comment">// if the layer is no-mass, then return 0,0</span>
             <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="number">0</span>, <span class="number">0</span>));
         } <span class="kw">else</span> {
@@ -1044,15 +1044,15 @@ SOFTWARE.
 <span class="doccomment">///</span>
 <span class="doccomment">/// Nodes are placed in the joints between elements, and</span>
 <span class="doccomment">/// the nodes for the Rsi and Rso layers are considered.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_n_total_nodes</span>(<span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_n_total_nodes</span>(<span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// We need somethig to process!</span>
     <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">is_empty</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Wrong discretization scheme... it contains no elements&quot;</span>.<span class="ident">to_string</span>());
     }
 
     <span class="comment">// Border case: Only one element.</span>
-    <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="kw">if</span> <span class="ident">n_elements</span>[<span class="number">0</span>] <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">n_elements</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">n_elements</span>[<span class="number">0</span>] <span class="op">==</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">2</span>);
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">n_elements</span>[<span class="number">0</span>] <span class="op">+</span> <span class="number">1</span>);
@@ -1064,7 +1064,7 @@ SOFTWARE.
     <span class="kw">let</span> (<span class="ident">first_massive</span>, <span class="ident">last_massive</span>) <span class="op">=</span> <span class="ident">get_first_and_last_massive_elements</span>(<span class="ident">n_elements</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// No massive layer at all in the construction...</span>
-    <span class="kw">if</span> <span class="ident">first_massive</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">last_massive</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">first_massive</span> <span class="op">==</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">last_massive</span> <span class="op">==</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">2</span>);
     }
 
@@ -1090,7 +1090,7 @@ SOFTWARE.
     <span class="prelude-val">Ok</span>(<span class="ident">n</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_front</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">first_massive</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Float</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r_front</span> <span class="op">=</span> <span class="number">0.</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">first_massive</span> {
         <span class="comment">// let material_index = c.get_layer_index(i).unwrap();</span>
@@ -1103,7 +1103,7 @@ SOFTWARE.
     <span class="ident">r_front</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Float</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_r_back</span>(<span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>, <span class="ident">last_massive</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Float</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r_back</span> <span class="op">=</span> <span class="number">0.</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">last_massive</span>..<span class="ident">c</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">i</span>];
@@ -1117,7 +1117,7 @@ SOFTWARE.
     <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_matrix</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">all_nodes</span>];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="number">0</span>;
 
@@ -1211,7 +1211,7 @@ SOFTWARE.
     <span class="ident">last_massive</span>: <span class="ident">usize</span>,
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
     <span class="ident">all_nodes</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
+) -&gt; <span class="ident">Matrix</span> {
     <span class="comment">// initialize k_prime</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k_matrix</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">all_nodes</span>, <span class="ident">all_nodes</span>);
 
@@ -1224,12 +1224,12 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
 
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>];
-        <span class="kw">if</span> <span class="ident">m</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">m</span> <span class="op">==</span> <span class="number">0</span> {
             <span class="comment">// no-mass material</span>
             <span class="comment">// add up all the R of the no-mass layers that</span>
             <span class="comment">// are together</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_resistance</span> <span class="op">=</span> <span class="number">0.0</span>; <span class="comment">// if the material is no mass, then the first value</span>
-            <span class="kw">while</span> <span class="ident">n_layer</span> <span class="op">&lt;</span> <span class="ident">last_massive</span> <span class="op">&amp;&amp;</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="kw">while</span> <span class="ident">n_layer</span> <span class="op">&lt;</span> <span class="ident">last_massive</span> <span class="op">&amp;&amp;</span> <span class="ident">n_elements</span>[<span class="ident">n_layer</span>] <span class="op">==</span> <span class="number">0</span> {
                 <span class="comment">// let material_index = c.get_layer_index(n_layer).unwrap();</span>
                 <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">c</span>.<span class="ident">materials</span>[<span class="ident">n_layer</span>]; <span class="comment">//model.get_material(material_index).unwrap();</span>
                 <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span>; <span class="comment">//().unwrap();</span>
@@ -1370,7 +1370,7 @@ SOFTWARE.
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
     <span class="ident">r_front</span>: <span class="ident">Float</span>,
     <span class="ident">r_back</span>: <span class="ident">Float</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) -&gt; <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// if this happens, we are trying to build the</span>
     <span class="comment">// thermal network for a non-massive wall... Which</span>
     <span class="comment">// does not make sense</span>
@@ -1427,7 +1427,7 @@ SOFTWARE.
                     <span class="ident">t_back</span>: <span class="ident">Float</span>,
                     <span class="ident">rs_front</span>: <span class="ident">Float</span>,
                     <span class="ident">rs_back</span>: <span class="ident">Float</span><span class="op">|</span>
-          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
+          -&gt; <span class="ident">Matrix</span> {
         <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">r_front</span> <span class="op">+</span> <span class="ident">rs_front</span>;
         <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">r_back</span> <span class="op">+</span> <span class="ident">rs_back</span>;
         <span class="kw">let</span> <span class="ident">ts_front</span> <span class="op">=</span> <span class="ident">nodes_temps</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
