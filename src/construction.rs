@@ -24,7 +24,7 @@ use std::rc::Rc;
 
 use matrix::Matrix;
 
-use simple_model::Construction;
+use simple_model::{Construction, Substance};
 
 /// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
 /// will find an arguibly good (i.e., stable and accurate) combination of $\\Delta t\$ and number of elements in each
@@ -130,10 +130,7 @@ pub fn discretize_construction(
     ) -> (usize, Vec<usize>) {
         let dt = main_dt / (n as Float);
 
-        // Choose a dx so that dt allows convergence.
-        // stability is assured by (alpha * dt / dx^2 <= 1/2 )
-        // meaning, we need to satisfy dx >= sqrt(0.5 * dt * thermal_cond/( dens * heat_cap  ))
-
+        
         // So, for each layer
         let n_layers = construction.materials.len();
         let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
@@ -145,9 +142,16 @@ pub fn discretize_construction(
 
             // Calculate the minimum_dx
             let thickness = material.thickness;
-            let k = substance.thermal_conductivity().unwrap();
-            let rho = substance.density().unwrap();
-            let cp = substance.specific_heat_capacity().unwrap();
+            let (k, rho, cp) = match substance{
+                Substance::Normal(s)=>{                    
+                    let k = s.thermal_conductivity().expect("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'");            
+                    let rho = s.density().expect("Trying to discretize a construction that contains a Normal Substance without a 'density'");            
+                    let cp = s.specific_heat_capacity().expect("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'");            
+                    (*k, *rho, *cp)
+                },
+                // Potentially... Substance::Gas(_)=>{n_elements.push(0); continue}
+            };
+
 
             let a_coef = 2.;
             let b_coef = -dt / (rho * cp * RS);
@@ -211,9 +215,15 @@ pub fn discretize_construction(
 
                 // Calculate the optimum_dx
                 let thickness = material.thickness;
-                let k = substance.thermal_conductivity().unwrap();
-                let rho = substance.density().unwrap();
-                let cp = substance.specific_heat_capacity().unwrap();
+                let (k, rho, cp) = match substance{
+                    Substance::Normal(s)=>{                    
+                        let k = s.thermal_conductivity().unwrap();
+                        let rho = s.density().unwrap();
+                        let cp = s.specific_heat_capacity().unwrap();
+                        (*k, *rho, *cp)
+                    },
+                    // Potentially... Substance::Gas(_)=>{panic! ?}
+                };
                 let dt = main_dt / n as Float;
                 let dx = thickness / n_elements[n_layer] as Float;
 
@@ -340,13 +350,14 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
 
 pub fn calc_r_front(c: &Rc<Construction>, first_massive: usize) -> Float {
     let mut r_front = 0.;
-    for i in 0..first_massive {
-        // let material_index = c.get_layer_index(i).unwrap();
-        let material = &c.materials[i]; //model.get_material(material_index).unwrap();
-                                        // let substance_index = material.get_substance_index().unwrap();
-        let substance = &material.substance; //model.get_substance(substance_index).unwrap();
+    for i in 0..first_massive {        
+        let material = &c.materials[i];                                         
+        match &material.substance{
+            Substance::Normal(s)=>{
+                r_front += material.thickness / s.thermal_conductivity().expect("calc_r_front() requires that Normal substances have Thermal Conductivity");
 
-        r_front += material.thickness / substance.thermal_conductivity().unwrap();
+            }
+        }
     }
     r_front
 }
@@ -355,8 +366,10 @@ pub fn calc_r_back(c: &Rc<Construction>, last_massive: usize) -> Float {
     let mut r_back = 0.;
     for i in last_massive..c.materials.len() {
         let material = &c.materials[i];
-        let substance = &material.substance;
-        r_back += material.thickness / substance.thermal_conductivity().unwrap();
+        match &material.substance{
+            Substance::Normal(s)=>{r_back += material.thickness / s.thermal_conductivity().expect("calc_r_back requires that Normal substances have Thermal Conductivity");}
+        }
+        
     }
     r_back
 }
@@ -382,8 +395,16 @@ fn calc_c_matrix(
                 // let substance_index = material.get_substance_index().unwrap();
                 let substance = &material.substance; //model.get_substance(substance_index).unwrap();
 
-                let rho = substance.density().unwrap();
-                let cp = substance.specific_heat_capacity().unwrap();
+                // let rho = substance.density().unwrap();
+                // let cp = substance.specific_heat_capacity().unwrap();
+                let (rho, cp) = match substance{
+                    Substance::Normal(s)=>{                                            
+                        let rho = s.density().expect("Trying to calculate C_Matrix with a substance without 'density'");            
+                        let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");            
+                        (*rho, *cp)
+                    },
+                    // Potentially... Substance::Gas(_)=>{n_elements.push(0); continue}
+                };
                 let dx = material.thickness / (m as Float);
                 let m = rho * cp * dx; // dt;
 
@@ -482,9 +503,13 @@ fn calc_k_matrix(
                 let material = &c.materials[n_layer]; //model.get_material(material_index).unwrap();
                 let dx = material.thickness; //().unwrap();
 
-                // let substance_index = material.get_substance_index().unwrap();
-                let substance = &material.substance; //model.get_substance(substance_index).unwrap();
-                let k = substance.thermal_conductivity().unwrap();
+                // let substance_index = material.get_substance_index().unwrap();                
+                let k = match &material.substance {
+                    Substance::Normal(s)=>{
+                        let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
+                        k
+                    }
+                };
 
                 thermal_resistance += dx / k;
                 n_layer += 1;
@@ -511,12 +536,15 @@ fn calc_k_matrix(
             node += 1;
         } else {
             // calc U value
-            // let substance_index = material.get_substance_index().unwrap();
-            let substance = &material.substance; //model.get_substance(substance_index).unwrap();
-
-            let lambda = substance.thermal_conductivity().unwrap();
+            
+            let k = match &material.substance {
+                Substance::Normal(s)=>{
+                    let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
+                    k
+                }
+            };
             let dx = material.thickness / (m as Float);
-            let u = lambda / dx;
+            let u = k / dx;
 
             for _ in 0..m {
                 // top left
@@ -631,15 +659,12 @@ pub fn build_thermal_network(
         return Err(err);
     }
 
-    // initialize k_prime as K... we will modify it later
-    // K_prime = dt*inv(C)*K
+    // initialize k_prime as K... we will modify it later    
     let mut k_prime = calc_k_matrix(
         construction,
         first_massive,
         last_massive,
         n_elements,
-        // rs_front,
-        // rs_back,
         all_nodes,
     );
 

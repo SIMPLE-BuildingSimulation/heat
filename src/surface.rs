@@ -550,40 +550,40 @@ mod testing {
     use super::*;
     use geometry3d::{Loop3D, Point3D, Polygon3D};
 
-    use simple_model::{Construction, Material, SimpleModel, Substance};
+    use simple_model::{Construction, Material, SimpleModel, Substance, substance::Normal as NormalSubstance};
 
-    fn add_polyurethane(model: &mut SimpleModel) -> Rc<Substance> {
-        let mut poly = Substance::new("polyurethane".to_string());
+    fn add_polyurethane(model: &mut SimpleModel) -> Substance {
+        let mut poly = NormalSubstance::new("polyurethane".to_string());
         poly.set_density(17.5) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(2400.) // J/kg.K
             .set_thermal_conductivity(0.0252); // W/m.K
 
-        let ret = model.add_substance(poly);
-        assert_eq!(ret.thermal_diffusivity().unwrap(), 0.6E-6);
+        assert_eq!(poly.thermal_diffusivity().unwrap(), 0.6E-6);
+        let ret = model.add_substance(poly.wrap());
         ret
     }
 
-    fn add_brickwork(model: &mut SimpleModel) -> Rc<Substance> {
-        let mut brickwork = Substance::new("brickwork".to_string());
+    fn add_brickwork(model: &mut SimpleModel) -> Substance {
+        let mut brickwork = NormalSubstance::new("brickwork".to_string());
 
         brickwork
             .set_density(1700.) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(800.) // J/kg.K
             .set_thermal_conductivity(0.816); // W/m.K
+            
+        assert!((brickwork.thermal_diffusivity().unwrap() - 0.6E-6).abs() < 0.00000001);
+        let ret = model.add_substance(brickwork.wrap());
 
-        let ret = model.add_substance(brickwork);
-
-        assert!((ret.thermal_diffusivity().unwrap() - 0.6E-6).abs() < 0.00000001);
 
         ret
     }
 
     fn add_material(
         model: &mut SimpleModel,
-        substance: &Rc<Substance>,
+        substance: Substance,
         thickness: Float,
     ) -> Rc<Material> {
-        let mat = Material::new("123123".to_string(), Rc::clone(substance), thickness);
+        let mat = Material::new("123123".to_string(), substance.clone(), thickness);
 
         model.add_material(mat)
     }
@@ -597,7 +597,7 @@ mod testing {
         let poly = add_polyurethane(&mut model);
 
         let m0_thickness = 200.0 / 1000. as Float;
-        let m0 = add_material(&mut model, &poly, m0_thickness);
+        let m0 = add_material(&mut model, poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
@@ -709,7 +709,7 @@ mod testing {
         /* MATERIALS */
 
         let m0_thickness = 200.0 / 1000. as Float;
-        let m0 = add_material(&mut model, &poly, m0_thickness);
+        let m0 = add_material(&mut model, poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
@@ -773,7 +773,7 @@ mod testing {
 
         /* MATERIALS */
         let m0_thickness = 200.0 / 1000.;
-        let m0 = add_material(&mut model, &poly, m0_thickness);
+        let m0 = add_material(&mut model, poly, m0_thickness);
 
         /* CONSTRUCTION */
         let mut c0 = Construction::new("Wall".to_string());
@@ -836,8 +836,8 @@ mod testing {
         let brickwork = add_brickwork(&mut model);
 
         /* MATERIALS */
-        let m1 = add_material(&mut model, &poly, 20. / 1000.);
-        let m2 = add_material(&mut model, &brickwork, 220. / 1000.);
+        let m1 = add_material(&mut model, poly, 20. / 1000.);
+        let m2 = add_material(&mut model, brickwork, 220. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
@@ -901,7 +901,7 @@ mod testing {
         let brickwork = add_brickwork(&mut model);
 
         /* MATERIALS */
-        let m1 = add_material(&mut model, &brickwork, 20. / 1000.);
+        let m1 = add_material(&mut model, brickwork, 20. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
@@ -1014,7 +1014,7 @@ mod testing {
         let polyurethane = add_polyurethane(&mut model);
 
         /* MATERIAL */
-        let m1 = add_material(&mut model, &polyurethane, 3. / 1000.);
+        let m1 = add_material(&mut model, polyurethane, 3. / 1000.);
 
         /* CONSTRUCTION */
         let mut c = Construction::new("Construction".to_string());
