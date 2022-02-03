@@ -776,6 +776,7 @@
 <span id="741">741</span>
 <span id="742">742</span>
 <span id="743">743</span>
+<span id="744">744</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1473,11 +1474,12 @@ SOFTWARE.
     <span class="comment">// let r_front = calc_r_front(construction, first_massive);</span>
     <span class="comment">// let r_back = calc_r_back(construction, last_massive);</span>
 
-    <span class="kw">let</span> <span class="ident">clo</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>,
-                    <span class="ident">t_front</span>: <span class="ident">Float</span>,
-                    <span class="ident">t_back</span>: <span class="ident">Float</span>,
-                    <span class="ident">rs_front</span>: <span class="ident">Float</span>,
-                    <span class="ident">rs_back</span>: <span class="ident">Float</span><span class="op">|</span>
+    <span class="kw">let</span> <span class="ident">march_closure</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span>
+            <span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>,
+            <span class="ident">t_front</span>: <span class="ident">Float</span>,
+            <span class="ident">t_back</span>: <span class="ident">Float</span>,
+            <span class="ident">rs_front</span>: <span class="ident">Float</span>,
+            <span class="ident">rs_back</span>: <span class="ident">Float</span><span class="op">|</span>
           -&gt; <span class="ident">Matrix</span> {
         <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">r_front</span> <span class="op">+</span> <span class="ident">rs_front</span>;
         <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">r_back</span> <span class="op">+</span> <span class="ident">rs_back</span>;
@@ -1516,7 +1518,7 @@ SOFTWARE.
         <span class="ident">k_i</span>
     };
 
-    <span class="prelude-val">Ok</span>(<span class="ident">clo</span>)
+    <span class="prelude-val">Ok</span>(<span class="ident">march_closure</span>)
     <span class="comment">// Ok(())</span>
 }
 </code></pre></div>
