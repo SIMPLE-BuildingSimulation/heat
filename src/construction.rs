@@ -695,11 +695,12 @@ pub fn build_thermal_network(
     // let r_front = calc_r_front(construction, first_massive);
     // let r_back = calc_r_back(construction, last_massive);
 
-    let clo = move |nodes_temps: &Matrix,
-                    t_front: Float,
-                    t_back: Float,
-                    rs_front: Float,
-                    rs_back: Float|
+    let march_closure = move |
+            nodes_temps: &Matrix,
+            t_front: Float,
+            t_back: Float,
+            rs_front: Float,
+            rs_back: Float|
           -> Matrix {
         let full_rs_front = r_front + rs_front;
         let full_rs_back = r_back + rs_back;
@@ -738,6 +739,6 @@ pub fn build_thermal_network(
         k_i
     };
 
-    Ok(clo)
+    Ok(march_closure)
     // Ok(())
 }
