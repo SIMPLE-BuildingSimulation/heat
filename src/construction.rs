@@ -536,7 +536,6 @@ fn calc_k_matrix(
             node += 1;
         } else {
             // calc U value
-            
             let k = match &material.substance {
                 Substance::Normal(s)=>{
                     let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
@@ -567,19 +566,7 @@ fn calc_k_matrix(
         }
     }
 
-    // // ADD RSI AND RSO
-    // // add r_si to first node
-    // if r_front > 0.0 {
-    //     let old_value = k.get(0, 0).unwrap();
-    //     k.set(0, 0, old_value - 1.0 / r_front).unwrap();
-    // }
-
-    // // rs_o to the last node
-    // if r_back > 0.0 {
-    //     let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();
-    //     k.set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / r_back)
-    //         .unwrap();
-    // }
+    
     // return
     k_matrix
 }
@@ -646,7 +633,7 @@ pub fn build_thermal_network(
     n_elements: &[usize],
     r_front: Float,
     r_back: Float,
-) -> Result<impl Fn(&Matrix, Float, Float, Float, Float) -> Matrix, String> {
+) -> Result<impl Fn(&Matrix, Float, Float, Float, Float, Float, Float, Float, Float) -> Matrix, String> {
     // if this happens, we are trying to build the
     // thermal network for a non-massive wall... Which
     // does not make sense
@@ -686,24 +673,75 @@ pub fn build_thermal_network(
         }
     }
 
-    // SET C_I AND C_O
-    // *c_i = c[0]/dt;
-    // *c_o = c[all_nodes - 1]/dt;
+    
+    let front_mat = &construction.materials[0];
+    let (front_thermal_absorbtance, front_solar_absorbtance) = match &front_mat.substance{
+        Substance::Normal(s)=>{
+            let thermal = match s.thermal_absorbtance(){
+                Ok(v)=>*v,
+                Err(_) => {
+                    let v = 0.9;
+                    eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
+                    v
+                }
+            };
+            let solar = match s.solar_absorbtance(){
+                Ok(v)=>*v,
+                Err(_)=>{
+                    let v = 0.7;
+                    eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
+                    v
+                }
+            };
+            (thermal, solar)
+        }
+    };
 
-    // *given_k_prime = k_prime;
-
-    // let r_front = calc_r_front(construction, first_massive);
-    // let r_back = calc_r_back(construction, last_massive);
+    let back_mat = &construction.materials.last().unwrap(); // There should be at least one.
+    let (back_thermal_absorbtance, back_solar_absorbtance) = match &back_mat.substance{
+        Substance::Normal(s)=>{
+            let thermal = match s.thermal_absorbtance(){
+                Ok(v)=>*v,
+                Err(_) => {
+                    let v = 0.9;
+                    eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
+                    v
+                }
+            };
+            let solar = match s.solar_absorbtance(){
+                Ok(v)=>*v,
+                Err(_)=>{
+                    let v = 0.7;
+                    eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
+                    v
+                }
+            };
+            (thermal, solar)
+        }
+    };
+    
 
     let march_closure = move |
             nodes_temps: &Matrix,
-            t_front: Float,
-            t_back: Float,
+            air_temp_front: Float,
+            air_temp_back: Float,
             rs_front: Float,
-            rs_back: Float|
+            rs_back: Float,
+            solar_irradiance_front: Float, 
+            solar_irradiance_back: Float,
+            ir_irradiance_front: Float, 
+            ir_irradiance_back: Float|            
           -> Matrix {
+            
+            
         let full_rs_front = r_front + rs_front;
         let full_rs_back = r_back + rs_back;
+
+        // Sol-air temperature
+        let t_front = air_temp_front + (front_solar_absorbtance*solar_irradiance_front + front_thermal_absorbtance*ir_irradiance_front)*full_rs_front;
+        let t_back = air_temp_back + (back_solar_absorbtance*solar_irradiance_back + back_thermal_absorbtance*ir_irradiance_back)*full_rs_back;
+        
+
         let ts_front = nodes_temps.get(0, 0).unwrap();
         let ts_back = nodes_temps.get(all_nodes - 1, 0).unwrap();
 

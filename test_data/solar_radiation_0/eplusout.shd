@@ -1,0 +1,9 @@
+Shadowing Combinations
+..Solar Distribution=Minimal Shadowing, Detached Shading will not be used in shadowing calculations
+..In the following, only the first 10 reference surfaces will be shown.
+..But all surfaces are used in the calculations.
+==================================
+Surface=WALL EXTERIOR is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0

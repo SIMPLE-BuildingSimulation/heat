@@ -1,0 +1,8 @@
+ ReadVarsESO
+ processing:/Users/germolinal/Documents/simple/thermal/test_data/solar_radiation_0/concrete_single_wall.rvi
+ input file:eplusout.eso
+ output file:eplusout.csv
+ getting all vars from:eplusout.eso
+  number variables requested for output=           5
+ ReadVars Run Time=00hr 00min  0.03sec
+ ReadVarsESO program completed successfully.

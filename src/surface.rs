@@ -75,14 +75,36 @@ impl ThermalSurface {
         );
         surface.set_back_convective_heat_flow_index(i);
 
+        let i = state.push(
+            SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
+            0.0,
+        );
+        surface.set_front_incident_solar_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::SurfaceBackSolarIrradiance(ref_surface_index),
+            0.0,
+        );
+        surface.set_back_incident_solar_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::SurfaceFrontIRIrradiance(ref_surface_index),
+            0.0,
+        );
+        surface.set_front_ir_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::SurfaceBackIRIrradiance(ref_surface_index),
+            0.0,
+        );
+        surface.set_back_ir_irradiance_index(i);
+
         // surface,
         let (first_node, last_node, data) = ThermalSurfaceData::new(
             state,
             construction,
             dt,
             area,
-            // rs_front,
-            // rs_back,
             n_elements,
             ref_surface_index,
             false, // not fenestration
@@ -93,12 +115,10 @@ impl ThermalSurface {
     }
 
     pub fn new_fenestration(
-        // model: &SimpleModel,
         state: &mut SimulationStateHeader,
         fenestration: &Rc<Fenestration>,
         dt: Float,
-        n_elements: &[usize],
-        // index: usize,
+        n_elements: &[usize],        
     ) -> Result<Self, String> {
         let ref_surface_index = *fenestration.index().unwrap();
         let construction = &fenestration.construction;
@@ -129,14 +149,36 @@ impl ThermalSurface {
         );
         fenestration.set_back_convective_heat_flow_index(i);
 
-        let (first_node, last_node, data) = ThermalSurfaceData::new(
-            // model,
+
+        let i = state.push(
+            SimulationStateElement::FenestrationFrontSolarIrradiance(ref_surface_index),
+            0.0,
+        );
+        fenestration.set_front_incident_solar_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::FenestrationBackSolarIrradiance(ref_surface_index),
+            0.0,
+        );
+        fenestration.set_back_incident_solar_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::FenestrationFrontIRIrradiance(ref_surface_index),
+            0.0,
+        );
+        fenestration.set_front_ir_irradiance_index(i);
+
+        let i = state.push(
+            SimulationStateElement::FenestrationBackIRIrradiance(ref_surface_index),
+            0.0,
+        );
+        fenestration.set_back_ir_irradiance_index(i);
+
+        let (first_node, last_node, data) = ThermalSurfaceData::new(            
             state,
             construction,
             dt,
             area,
-            // rs_front,
-            // rs_back,
             n_elements,
             ref_surface_index,
             true, // it is a fenestration
@@ -340,10 +382,39 @@ impl ThermalSurface {
             }
         };
 
+        // Calculate and set Front and Back Solar Irradiance
+        let (solar_front, solar_back) = match &self {
+            Self::Fenestration(fen, _data) => {
+                let front = fen.front_incident_solar_irradiance(state).expect("Could not get front solar irradiance");
+                let back = fen.back_incident_solar_irradiance(state).expect("Could not get front solar irradiance");
+                (front, back)
+            }
+            Self::Surface(sur, _data) => {
+                let front = sur.front_incident_solar_irradiance(state).expect("Could not get front solar irradiance");
+                let back = sur.back_incident_solar_irradiance(state).expect("Could not get back solar irradiance");
+                (front, back)
+            }
+        };
+
+        // Calculate and set Front and Back IR Irradiance
+        let (ir_front, ir_back) = match &self {
+            Self::Fenestration(fen, _data) => {
+                let front = fen.front_ir_irradiance(state).expect("Could not get front IR irradiance");
+                let back = fen.back_ir_irradiance(state).expect("Could not get back IR irradiance");
+                (front, back)
+            }
+            Self::Surface(sur, _data) => {
+                let front = sur.front_ir_irradiance(state).expect("Could not get front IR irradiance");
+                let back = sur.back_ir_irradiance(state).expect("Could not get back IR irradiance");
+                (front, back)
+            }
+        };
+
+
         if data.massive {
             if let Some(func) = &data.kt4_func {
                 // First
-                let mut k1 = func(&temperatures, t_front, t_back, rs_front, rs_back);
+                let mut k1 = func(&temperatures, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // returning "temperatures + k1" is Euler... continuing is
                 // Runge–Kutta 4th order
@@ -351,17 +422,17 @@ impl ThermalSurface {
                 // Second
                 let mut aux = k1.from_scale(0.5).unwrap(); //  aux = k1 /2
                 aux.add_to_this(&temperatures).unwrap(); // aux = T + k1/2
-                let mut k2 = func(&aux, t_front, t_back, rs_front, rs_back);
+                let mut k2 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Third... put the result into `aux`
                 k2.scale(0.5, &mut aux).unwrap(); //  aux = k2 /2
                 aux.add_to_this(&temperatures).unwrap(); // T + k2/2
-                let mut k3 = func(&aux, t_front, t_back, rs_front, rs_back);
+                let mut k3 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Fourth... put the result into `aux`
                 k3.scale(1., &mut aux).unwrap(); //  aux = k3
                 aux.add_to_this(&temperatures).unwrap(); // aux = T + k3
-                let mut k4 = func(&aux, t_front, t_back, rs_front, rs_back);
+                let mut k4 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Scale them and add them all up
                 k1.scale_this(1. / 6.);
@@ -374,7 +445,7 @@ impl ThermalSurface {
                 k1.add_to_this(&k4).unwrap();
 
                 // Let's add it to the temperatures.
-                temperatures.add_to_this(&k1).unwrap();
+                temperatures.add_to_this(&k1).unwrap();                
             } else {
                 unreachable!()
             }
@@ -394,21 +465,12 @@ impl ThermalSurface {
 
         // Update state
         let (flow_front, flow_back) = self.calc_heat_flow(state, t_front, t_back);
-        match &self {
-            Self::Fenestration(fen, _data) => {
-                fen.set_front_convective_heat_flow(state, flow_front);
-                fen.set_back_convective_heat_flow(state, flow_back);
-            }
-            Self::Surface(sur, _data) => {
-                sur.set_front_convective_heat_flow(state, flow_front);
-                sur.set_back_convective_heat_flow(state, flow_back);
-            }
-        };
+        
         (flow_front, flow_back)
     }
 }
 
-pub type KT4Func = dyn Fn(&Matrix, Float, Float, Float, Float) -> Matrix;
+pub type KT4Func = dyn Fn(&Matrix, Float, Float, Float, Float, Float, Float, Float, Float) -> Matrix;
 
 /// This is a Surface from the point of view of our thermal solver.
 /// Since this module only calculate heat transfer (and not short-wave solar
@@ -1082,4 +1144,6 @@ mod testing {
         assert!((exp_q - q_in).abs() < 1E-4);
         assert!((exp_q + q_out).abs() < 1E-4);
     }
+
+    
 }
