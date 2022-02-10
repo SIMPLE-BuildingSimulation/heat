@@ -777,6 +777,44 @@
 <span id="742">742</span>
 <span id="743">743</span>
 <span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1315,7 +1353,6 @@ SOFTWARE.
             <span class="ident">node</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         } <span class="kw">else</span> {
             <span class="comment">// calc U value</span>
-            
             <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">material</span>.<span class="ident">substance</span> {
                 <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
                     <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to calc K-matrix of a construciton containing a Normal Substance without &#39;Thermal conductivity&#39;&quot;</span>);
@@ -1346,19 +1383,7 @@ SOFTWARE.
         }
     }
 
-    <span class="comment">// // ADD RSI AND RSO</span>
-    <span class="comment">// // add r_si to first node</span>
-    <span class="comment">// if r_front &gt; 0.0 {</span>
-    <span class="comment">//     let old_value = k.get(0, 0).unwrap();</span>
-    <span class="comment">//     k.set(0, 0, old_value - 1.0 / r_front).unwrap();</span>
-    <span class="comment">// }</span>
-
-    <span class="comment">// // rs_o to the last node</span>
-    <span class="comment">// if r_back &gt; 0.0 {</span>
-    <span class="comment">//     let old_value = k.get(all_nodes - 1, all_nodes - 1).unwrap();</span>
-    <span class="comment">//     k.set(all_nodes - 1, all_nodes - 1, old_value - 1.0 / r_back)</span>
-    <span class="comment">//         .unwrap();</span>
-    <span class="comment">// }</span>
+    
     <span class="comment">// return</span>
     <span class="ident">k_matrix</span>
 }
@@ -1425,7 +1450,7 @@ SOFTWARE.
     <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
     <span class="ident">r_front</span>: <span class="ident">Float</span>,
     <span class="ident">r_back</span>: <span class="ident">Float</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) -&gt; <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) -&gt; <span class="ident">Matrix</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="comment">// if this happens, we are trying to build the</span>
     <span class="comment">// thermal network for a non-massive wall... Which</span>
     <span class="comment">// does not make sense</span>
@@ -1465,24 +1490,75 @@ SOFTWARE.
         }
     }
 
-    <span class="comment">// SET C_I AND C_O</span>
-    <span class="comment">// *c_i = c[0]/dt;</span>
-    <span class="comment">// *c_o = c[all_nodes - 1]/dt;</span>
+    
+    <span class="kw">let</span> <span class="ident">front_mat</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>];
+    <span class="kw">let</span> (<span class="ident">front_thermal_absorbtance</span>, <span class="ident">front_solar_absorbtance</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">front_mat</span>.<span class="ident">substance</span>{
+        <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
+            <span class="kw">let</span> <span class="ident">thermal</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>(){
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="number">0.9</span>;
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Substance &#39;{}&#39; has no thermal absorbtance... assuming a value of {}&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>, <span class="ident">v</span>);
+                    <span class="ident">v</span>
+                }
+            };
+            <span class="kw">let</span> <span class="ident">solar</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>(){
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
+                    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="number">0.7</span>;
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Substance &#39;{}&#39; has no Solar absorbtance... assuming a value of {}&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>, <span class="ident">v</span>);
+                    <span class="ident">v</span>
+                }
+            };
+            (<span class="ident">thermal</span>, <span class="ident">solar</span>)
+        }
+    };
 
-    <span class="comment">// *given_k_prime = k_prime;</span>
-
-    <span class="comment">// let r_front = calc_r_front(construction, first_massive);</span>
-    <span class="comment">// let r_back = calc_r_back(construction, last_massive);</span>
+    <span class="kw">let</span> <span class="ident">back_mat</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>(); <span class="comment">// There should be at least one.</span>
+    <span class="kw">let</span> (<span class="ident">back_thermal_absorbtance</span>, <span class="ident">back_solar_absorbtance</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">back_mat</span>.<span class="ident">substance</span>{
+        <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
+            <span class="kw">let</span> <span class="ident">thermal</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>(){
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="number">0.9</span>;
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Substance &#39;{}&#39; has no thermal absorbtance... assuming a value of {}&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>, <span class="ident">v</span>);
+                    <span class="ident">v</span>
+                }
+            };
+            <span class="kw">let</span> <span class="ident">solar</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>(){
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
+                    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="number">0.7</span>;
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Substance &#39;{}&#39; has no Solar absorbtance... assuming a value of {}&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>, <span class="ident">v</span>);
+                    <span class="ident">v</span>
+                }
+            };
+            (<span class="ident">thermal</span>, <span class="ident">solar</span>)
+        }
+    };
+    
 
     <span class="kw">let</span> <span class="ident">march_closure</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span>
             <span class="ident">nodes_temps</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>,
-            <span class="ident">t_front</span>: <span class="ident">Float</span>,
-            <span class="ident">t_back</span>: <span class="ident">Float</span>,
+            <span class="ident">air_temp_front</span>: <span class="ident">Float</span>,
+            <span class="ident">air_temp_back</span>: <span class="ident">Float</span>,
             <span class="ident">rs_front</span>: <span class="ident">Float</span>,
-            <span class="ident">rs_back</span>: <span class="ident">Float</span><span class="op">|</span>
+            <span class="ident">rs_back</span>: <span class="ident">Float</span>,
+            <span class="ident">solar_irradiance_front</span>: <span class="ident">Float</span>, 
+            <span class="ident">solar_irradiance_back</span>: <span class="ident">Float</span>,
+            <span class="ident">ir_irradiance_front</span>: <span class="ident">Float</span>, 
+            <span class="ident">ir_irradiance_back</span>: <span class="ident">Float</span><span class="op">|</span>            
           -&gt; <span class="ident">Matrix</span> {
+            
+            
         <span class="kw">let</span> <span class="ident">full_rs_front</span> <span class="op">=</span> <span class="ident">r_front</span> <span class="op">+</span> <span class="ident">rs_front</span>;
         <span class="kw">let</span> <span class="ident">full_rs_back</span> <span class="op">=</span> <span class="ident">r_back</span> <span class="op">+</span> <span class="ident">rs_back</span>;
+
+        <span class="comment">// Sol-air temperature</span>
+        <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="ident">air_temp_front</span> <span class="op">+</span> (<span class="ident">front_solar_absorbtance</span><span class="kw-2">*</span><span class="ident">solar_irradiance_front</span> <span class="op">+</span> <span class="ident">front_thermal_absorbtance</span><span class="kw-2">*</span><span class="ident">ir_irradiance_front</span>)<span class="kw-2">*</span><span class="ident">full_rs_front</span>;
+        <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="ident">air_temp_back</span> <span class="op">+</span> (<span class="ident">back_solar_absorbtance</span><span class="kw-2">*</span><span class="ident">solar_irradiance_back</span> <span class="op">+</span> <span class="ident">back_thermal_absorbtance</span><span class="kw-2">*</span><span class="ident">ir_irradiance_back</span>)<span class="kw-2">*</span><span class="ident">full_rs_back</span>;
+        
+
         <span class="kw">let</span> <span class="ident">ts_front</span> <span class="op">=</span> <span class="ident">nodes_temps</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">ts_back</span> <span class="op">=</span> <span class="ident">nodes_temps</span>.<span class="ident">get</span>(<span class="ident">all_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
 

@@ -1118,6 +1118,70 @@
 <span id="1083">1083</span>
 <span id="1084">1084</span>
 <span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1195,14 +1259,36 @@ SOFTWARE.
         );
         <span class="ident">surface</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
 
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SurfaceFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">surface</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SurfaceBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">surface</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SurfaceFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">surface</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::SurfaceBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">surface</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+
         <span class="comment">// surface,</span>
         <span class="kw">let</span> (<span class="ident">first_node</span>, <span class="ident">last_node</span>, <span class="ident">data</span>) <span class="op">=</span> <span class="ident">ThermalSurfaceData::new</span>(
             <span class="ident">state</span>,
             <span class="ident">construction</span>,
             <span class="ident">dt</span>,
             <span class="ident">area</span>,
-            <span class="comment">// rs_front,</span>
-            <span class="comment">// rs_back,</span>
             <span class="ident">n_elements</span>,
             <span class="ident">ref_surface_index</span>,
             <span class="bool-val">false</span>, <span class="comment">// not fenestration</span>
@@ -1213,12 +1299,10 @@ SOFTWARE.
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_fenestration</span>(
-        <span class="comment">// model: &amp;SimpleModel,</span>
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">fenestration</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Fenestration</span><span class="op">&gt;</span>,
         <span class="ident">dt</span>: <span class="ident">Float</span>,
-        <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],
-        <span class="comment">// index: usize,</span>
+        <span class="ident">n_elements</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>],        
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ref_surface_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">fenestration</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">fenestration</span>.<span class="ident">construction</span>;
@@ -1249,14 +1333,36 @@ SOFTWARE.
         );
         <span class="ident">fenestration</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
 
-        <span class="kw">let</span> (<span class="ident">first_node</span>, <span class="ident">last_node</span>, <span class="ident">data</span>) <span class="op">=</span> <span class="ident">ThermalSurfaceData::new</span>(
-            <span class="comment">// model,</span>
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::FenestrationFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">fenestration</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::FenestrationBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">fenestration</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::FenestrationFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">fenestration</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+            <span class="ident">SimulationStateElement::FenestrationBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+            <span class="number">0.0</span>,
+        );
+        <span class="ident">fenestration</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+
+        <span class="kw">let</span> (<span class="ident">first_node</span>, <span class="ident">last_node</span>, <span class="ident">data</span>) <span class="op">=</span> <span class="ident">ThermalSurfaceData::new</span>(            
             <span class="ident">state</span>,
             <span class="ident">construction</span>,
             <span class="ident">dt</span>,
             <span class="ident">area</span>,
-            <span class="comment">// rs_front,</span>
-            <span class="comment">// rs_back,</span>
             <span class="ident">n_elements</span>,
             <span class="ident">ref_surface_index</span>,
             <span class="bool-val">true</span>, <span class="comment">// it is a fenestration</span>
@@ -1460,10 +1566,39 @@ SOFTWARE.
             }
         };
 
+        <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
+        <span class="kw">let</span> (<span class="ident">solar_front</span>, <span class="ident">solar_back</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::Fenestration</span>(<span class="ident">fen</span>, <span class="ident">_data</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">front_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get front solar irradiance&quot;</span>);
+                <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">back_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get front solar irradiance&quot;</span>);
+                (<span class="ident">front</span>, <span class="ident">back</span>)
+            }
+            <span class="ident"><span class="self">Self</span>::Surface</span>(<span class="ident">sur</span>, <span class="ident">_data</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">sur</span>.<span class="ident">front_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get front solar irradiance&quot;</span>);
+                <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">sur</span>.<span class="ident">back_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get back solar irradiance&quot;</span>);
+                (<span class="ident">front</span>, <span class="ident">back</span>)
+            }
+        };
+
+        <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
+        <span class="kw">let</span> (<span class="ident">ir_front</span>, <span class="ident">ir_back</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
+            <span class="ident"><span class="self">Self</span>::Fenestration</span>(<span class="ident">fen</span>, <span class="ident">_data</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">front_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get front IR irradiance&quot;</span>);
+                <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">fen</span>.<span class="ident">back_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get back IR irradiance&quot;</span>);
+                (<span class="ident">front</span>, <span class="ident">back</span>)
+            }
+            <span class="ident"><span class="self">Self</span>::Surface</span>(<span class="ident">sur</span>, <span class="ident">_data</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">front</span> <span class="op">=</span> <span class="ident">sur</span>.<span class="ident">front_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get front IR irradiance&quot;</span>);
+                <span class="kw">let</span> <span class="ident">back</span> <span class="op">=</span> <span class="ident">sur</span>.<span class="ident">back_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not get back IR irradiance&quot;</span>);
+                (<span class="ident">front</span>, <span class="ident">back</span>)
+            }
+        };
+
+
         <span class="kw">if</span> <span class="ident">data</span>.<span class="ident">massive</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">func</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">kt4_func</span> {
                 <span class="comment">// First</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k1</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k1</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>, <span class="ident">solar_front</span>, <span class="ident">solar_back</span>, <span class="ident">ir_front</span>, <span class="ident">ir_back</span>);
 
                 <span class="comment">// returning &quot;temperatures + k1&quot; is Euler... continuing is</span>
                 <span class="comment">// Runge–Kutta 4th order</span>
@@ -1471,17 +1606,17 @@ SOFTWARE.
                 <span class="comment">// Second</span>
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">aux</span> <span class="op">=</span> <span class="ident">k1</span>.<span class="ident">from_scale</span>(<span class="number">0.5</span>).<span class="ident">unwrap</span>(); <span class="comment">//  aux = k1 /2</span>
                 <span class="ident">aux</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">temperatures</span>).<span class="ident">unwrap</span>(); <span class="comment">// aux = T + k1/2</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k2</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k2</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>, <span class="ident">solar_front</span>, <span class="ident">solar_back</span>, <span class="ident">ir_front</span>, <span class="ident">ir_back</span>);
 
                 <span class="comment">// Third... put the result into `aux`</span>
                 <span class="ident">k2</span>.<span class="ident">scale</span>(<span class="number">0.5</span>, <span class="kw-2">&amp;mut</span> <span class="ident">aux</span>).<span class="ident">unwrap</span>(); <span class="comment">//  aux = k2 /2</span>
                 <span class="ident">aux</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">temperatures</span>).<span class="ident">unwrap</span>(); <span class="comment">// T + k2/2</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k3</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k3</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>, <span class="ident">solar_front</span>, <span class="ident">solar_back</span>, <span class="ident">ir_front</span>, <span class="ident">ir_back</span>);
 
                 <span class="comment">// Fourth... put the result into `aux`</span>
                 <span class="ident">k3</span>.<span class="ident">scale</span>(<span class="number">1.</span>, <span class="kw-2">&amp;mut</span> <span class="ident">aux</span>).<span class="ident">unwrap</span>(); <span class="comment">//  aux = k3</span>
                 <span class="ident">aux</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">temperatures</span>).<span class="ident">unwrap</span>(); <span class="comment">// aux = T + k3</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k4</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k4</span> <span class="op">=</span> <span class="ident">func</span>(<span class="kw-2">&amp;</span><span class="ident">aux</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">rs_front</span>, <span class="ident">rs_back</span>, <span class="ident">solar_front</span>, <span class="ident">solar_back</span>, <span class="ident">ir_front</span>, <span class="ident">ir_back</span>);
 
                 <span class="comment">// Scale them and add them all up</span>
                 <span class="ident">k1</span>.<span class="ident">scale_this</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">6.</span>);
@@ -1494,7 +1629,7 @@ SOFTWARE.
                 <span class="ident">k1</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">k4</span>).<span class="ident">unwrap</span>();
 
                 <span class="comment">// Let&#39;s add it to the temperatures.</span>
-                <span class="ident">temperatures</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">k1</span>).<span class="ident">unwrap</span>();
+                <span class="ident">temperatures</span>.<span class="ident">add_to_this</span>(<span class="kw-2">&amp;</span><span class="ident">k1</span>).<span class="ident">unwrap</span>();                
             } <span class="kw">else</span> {
                 <span class="macro">unreachable!</span>()
             }
@@ -1514,21 +1649,12 @@ SOFTWARE.
 
         <span class="comment">// Update state</span>
         <span class="kw">let</span> (<span class="ident">flow_front</span>, <span class="ident">flow_back</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_heat_flow</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>);
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Fenestration</span>(<span class="ident">fen</span>, <span class="ident">_data</span>) =&gt; {
-                <span class="ident">fen</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">flow_front</span>);
-                <span class="ident">fen</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">flow_back</span>);
-            }
-            <span class="ident"><span class="self">Self</span>::Surface</span>(<span class="ident">sur</span>, <span class="ident">_data</span>) =&gt; {
-                <span class="ident">sur</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">flow_front</span>);
-                <span class="ident">sur</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">flow_back</span>);
-            }
-        };
+        
         (<span class="ident">flow_front</span>, <span class="ident">flow_back</span>)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">KT4Func</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) -&gt; <span class="ident">Matrix</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">KT4Func</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) -&gt; <span class="ident">Matrix</span>;
 
 <span class="doccomment">/// This is a Surface from the point of view of our thermal solver.</span>
 <span class="doccomment">/// Since this module only calculate heat transfer (and not short-wave solar</span>
@@ -2202,6 +2328,8 @@ SOFTWARE.
         <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">-</span> <span class="ident">q_in</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-4</span>);
         <span class="macro">assert!</span>((<span class="ident">exp_q</span> <span class="op">+</span> <span class="ident">q_out</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-4</span>);
     }
+
+    
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
