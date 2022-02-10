@@ -1180,7 +1180,7 @@ mod testing {
         // Finished model the SimpleModel
 
         let n: usize = 20;
-        let main_dt = 60. * 60. / n as Float;
+        // let main_dt = 60. * 60. / n as Float;
         let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
 
         let mut state = state_header.take_values().unwrap();
@@ -1201,7 +1201,11 @@ mod testing {
             // Get zone's temp
             let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
             let exp_temp = exp_zone_air_temp[i];
-            println!("{},{}", found_temp, exp_temp);
+            if i > 450{
+                // ignore warmup period
+                println!("{},{}", found_temp, exp_temp);
+                assert!( (found_temp-exp_temp).abs() < 0.4, "found_temp = {}, exp_temp = {} ,  error = {}", found_temp, exp_temp, (found_temp-exp_temp).abs() )
+            }
             
             
             // Set outdoor temp
@@ -1228,7 +1232,7 @@ mod testing {
 
             
         }
-        assert!(false)
+        
         
     }
 }
