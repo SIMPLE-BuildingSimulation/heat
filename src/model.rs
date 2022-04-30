@@ -564,6 +564,7 @@ mod testing {
     use calendar::Date;
     use schedule::ScheduleConstant;
     use weather::SyntheticWeather;
+    use crate::construction::r_value;
 
     use gas_properties::air;
     use simple_model::{SimulationStateElement, HVAC};
@@ -699,7 +700,7 @@ mod testing {
         let rs_back = simple_model.surfaces[0]
             .back_convection_coefficient(&state)
             .unwrap();
-        let r = construction.r_value().unwrap() + rs_front + rs_back;
+        let r = r_value(&construction).unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -793,7 +794,7 @@ mod testing {
         let rs_back = simple_model.surfaces[0]
             .back_convection_coefficient(&state)
             .unwrap();
-        let r = construction.r_value().unwrap() + rs_front + rs_back;
+        let r = r_value(&construction).unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -893,7 +894,7 @@ mod testing {
         let rs_back = simple_model.surfaces[0]
             .back_convection_coefficient(&state)
             .unwrap();
-        let r = construction.r_value().unwrap() + rs_front + rs_back;
+        let r = r_value(&construction).unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -992,7 +993,7 @@ mod testing {
         let rs_back = simple_model.surfaces[0]
             .back_convection_coefficient(&state)
             .unwrap();
-        let r = construction.r_value().unwrap() + rs_front + rs_back;
+        let r = r_value(&construction).unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]
@@ -1105,7 +1106,7 @@ mod testing {
         let rs_back = simple_model.surfaces[0]
             .back_convection_coefficient(&state)
             .unwrap();
-        let r = construction.r_value().unwrap() + rs_front + rs_back;
+        let r = r_value(&construction).unwrap() + rs_front + rs_back;
 
         // Initial T of the zone
         let t_start = thermal_model.zones[0]

@@ -149,7 +149,7 @@ pub fn discretize_construction(
                     let cp = s.specific_heat_capacity().expect("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'");            
                     (*k, *rho, *cp)
                 },
-                // Potentially... Substance::Gas(_)=>{n_elements.push(0); continue}
+                Substance::Gas(_)=>{n_elements.push(0); continue}
             };
 
 
@@ -222,7 +222,7 @@ pub fn discretize_construction(
                         let cp = s.specific_heat_capacity().unwrap();
                         (*k, *rho, *cp)
                     },
-                    // Potentially... Substance::Gas(_)=>{panic! ?}
+                    Substance::Gas(_)=>{continue}
                 };
                 let dt = main_dt / n as Float;
                 let dx = thickness / n_elements[n_layer] as Float;
@@ -348,6 +348,25 @@ pub fn calc_n_total_nodes(n_elements: &[usize]) -> Result<usize, String> {
     Ok(n)
 }
 
+/// Calculates the R-value of the Construction (not including surface coefficients).
+pub fn r_value(c: &Rc<Construction>) -> Result<Float, String> {
+    let mut r = 0.0;
+
+    for material in c.materials.iter() {
+        match &material.substance {
+            Substance::Normal(s) => {
+                let lambda = s.thermal_conductivity()?;
+                r += material.thickness / lambda;
+            }
+            Substance::Gas(_) => {
+                todo!()
+            }
+        }
+    }
+
+    Ok(r)
+}
+
 pub fn calc_r_front(c: &Rc<Construction>, first_massive: usize) -> Float {
     let mut r_front = 0.;
     for i in 0..first_massive {        
@@ -355,8 +374,11 @@ pub fn calc_r_front(c: &Rc<Construction>, first_massive: usize) -> Float {
         match &material.substance{
             Substance::Normal(s)=>{
                 r_front += material.thickness / s.thermal_conductivity().expect("calc_r_front() requires that Normal substances have Thermal Conductivity");
-
             }
+            Substance::Gas(_) => {
+                todo!()
+            }
+
         }
     }
     r_front
@@ -368,6 +390,9 @@ pub fn calc_r_back(c: &Rc<Construction>, last_massive: usize) -> Float {
         let material = &c.materials[i];
         match &material.substance{
             Substance::Normal(s)=>{r_back += material.thickness / s.thermal_conductivity().expect("calc_r_back requires that Normal substances have Thermal Conductivity");}
+            Substance::Gas(_) => {
+                todo!()
+            }
         }
         
     }
@@ -403,7 +428,7 @@ fn calc_c_matrix(
                         let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");            
                         (*rho, *cp)
                     },
-                    // Potentially... Substance::Gas(_)=>{n_elements.push(0); continue}
+                    Substance::Gas(_)=>{todo!()}
                 };
                 let dx = material.thickness / (m as Float);
                 let m = rho * cp * dx; // dt;
@@ -509,6 +534,9 @@ fn calc_k_matrix(
                         let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
                         k
                     }
+                    Substance::Gas(_) => {
+                        todo!()
+                    }
                 };
 
                 thermal_resistance += dx / k;
@@ -540,6 +568,9 @@ fn calc_k_matrix(
                 Substance::Normal(s)=>{
                     let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
                     k
+                }
+                Substance::Gas(_) => {
+                    todo!()
                 }
             };
             let dx = material.thickness / (m as Float);
@@ -695,6 +726,9 @@ pub fn build_thermal_network(
             };
             (thermal, solar)
         }
+        Substance::Gas(_) => {
+            todo!()
+        }
     };
 
     let back_mat = &construction.materials.last().unwrap(); // There should be at least one.
@@ -717,6 +751,9 @@ pub fn build_thermal_network(
                 }
             };
             (thermal, solar)
+        }
+        Substance::Gas(_) => {
+            todo!()
         }
     };
     
@@ -780,3 +817,7 @@ pub fn build_thermal_network(
     Ok(march_closure)
     // Ok(())
 }
+
+
+
+

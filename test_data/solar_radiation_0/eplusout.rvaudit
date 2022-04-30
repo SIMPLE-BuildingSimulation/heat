@@ -3,6 +3,6 @@
  input file:eplusout.eso
  output file:eplusout.csv
  getting all vars from:eplusout.eso
-  number variables requested for output=           5
- ReadVars Run Time=00hr 00min  0.03sec
+  number variables requested for output=          12
+ ReadVars Run Time=00hr 00min  0.05sec
  ReadVarsESO program completed successfully.

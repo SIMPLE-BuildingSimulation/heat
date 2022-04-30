@@ -141,4 +141,13 @@ Output:Variable,*,Surface Outside Face Outdoor Air Drybulb Temperature,timestep;
 Output:Variable,*,Zone Mean Air Temperature,timestep; !- Zone Average [C]
 Output:Variable,*,Surface Outside Face Net Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
 Output:Variable,*,Surface Outside Face Solar Radiation Heat Gain Rate per Area,timestep; !- Zone Average [W/m2]
+
 Output:Variable,*,Surface Outside Face Incident Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Outside Face Incident Beam Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Outside Face Incident Sky Diffuse Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Outside Face Incident Beam To Diffuse Ground Reflected Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Outside Face Incident Sky Diffuse Ground Reflected Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+
+Output:Variable,*,Site Diffuse Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Site Direct Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Outside Face Beam Solar Incident Angle Cosine Value,timestep; !- Zone Average []

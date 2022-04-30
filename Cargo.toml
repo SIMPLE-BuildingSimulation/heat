@@ -17,6 +17,7 @@ communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/
 matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
 convection = {git = "https://github.com/SIMPLE-BuildingSimulation/convection.git"}
 gas_properties = {git = "https://github.com/SIMPLE-BuildingSimulation/gas_properties.git"}
+polynomial = {git = "https://github.com/SIMPLE-BuildingSimulation/polynomial.git"}
 
 [dev-dependencies]
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }

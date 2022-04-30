@@ -33,8 +33,7 @@ use crate::construction::*;
 
 pub enum ThermalSurface {
     Fenestration(Rc<Fenestration>, ThermalSurfaceData),
-    Surface(Rc<Surface>, ThermalSurfaceData),
-    // Floor(ThermalSurfaceData)
+    Surface(Rc<Surface>, ThermalSurfaceData),    
 }
 
 impl ThermalSurface {
@@ -75,6 +74,7 @@ impl ThermalSurface {
         );
         surface.set_back_convective_heat_flow_index(i);
 
+        /* REPEATED PART... ALSO IN SOLAR MODEL */
         let i = state.push(
             SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
             0.0,
@@ -98,6 +98,9 @@ impl ThermalSurface {
             0.0,
         );
         surface.set_back_ir_irradiance_index(i);
+        /* END OF REPEATED PART */
+
+
 
         // surface,
         let (first_node, last_node, data) = ThermalSurfaceData::new(
@@ -420,32 +423,33 @@ impl ThermalSurface {
                 // Runge–Kutta 4th order
 
                 // Second
-                let mut aux = k1.from_scale(0.5).unwrap(); //  aux = k1 /2
-                aux.add_to_this(&temperatures).unwrap(); // aux = T + k1/2
+                let mut aux = &k1 * 0.5;
+                aux += &temperatures;
                 let mut k2 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Third... put the result into `aux`
-                k2.scale(0.5, &mut aux).unwrap(); //  aux = k2 /2
-                aux.add_to_this(&temperatures).unwrap(); // T + k2/2
+                k2.scale_into(0.5, &mut aux).unwrap(); //  aux = k2 /2
+                aux += &temperatures;
                 let mut k3 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Fourth... put the result into `aux`
-                k3.scale(1., &mut aux).unwrap(); //  aux = k3
-                aux.add_to_this(&temperatures).unwrap(); // aux = T + k3
+                k3.scale_into(1., &mut aux).unwrap(); //  aux = k3
+                aux += &temperatures;
                 let mut k4 = func(&aux, t_front, t_back, rs_front, rs_back, solar_front, solar_back, ir_front, ir_back);
 
                 // Scale them and add them all up
-                k1.scale_this(1. / 6.);
-                k2.scale_this(1. / 3.);
-                k3.scale_this(1. / 3.);
-                k4.scale_this(1. / 6.);
+                k1 /= 6.;                
+                k2 /= 3.;
+                k3 /= 3.;
+                k4 /= 6.;
 
-                k1.add_to_this(&k2).unwrap();
-                k1.add_to_this(&k3).unwrap();
-                k1.add_to_this(&k4).unwrap();
+                k1 += &k2;
+                k1 += &k3;                
+                k1 += &k4;
 
                 // Let's add it to the temperatures.
-                temperatures.add_to_this(&k1).unwrap();                
+                // temperatures.add_to_this(&k1).unwrap();  
+                temperatures += &k1;              
             } else {
                 unreachable!()
             }
@@ -564,7 +568,7 @@ impl ThermalSurfaceData {
         let mut ret = ThermalSurfaceData {
             // rs_front,
             // rs_back,
-            total_r: construction.r_value().unwrap(),
+            total_r: r_value(&construction).unwrap(),
             r_front: calc_r_front(construction, first_massive),
             r_back: calc_r_back(construction, last_massive),
             n_nodes,
@@ -1059,7 +1063,7 @@ mod testing {
         assert!(final_qout < 0.0);
         assert!((final_qin + final_qout).abs() < 0.00033);
 
-        let r = c.r_value().unwrap();
+        let r = r_value(&c).unwrap();
 
         let rs_front = surface.front_convection_coefficient(&state).unwrap();
         let rs_back = surface.back_convection_coefficient(&state).unwrap();
@@ -1140,7 +1144,7 @@ mod testing {
 
         let rs_front = surface.front_convection_coefficient(&state).unwrap();
         let rs_back = surface.back_convection_coefficient(&state).unwrap();
-        let exp_q = (30.0 - 10.0) / (c.r_value().unwrap() + rs_front + rs_back);
+        let exp_q = (30.0 - 10.0) / (r_value(&c).unwrap() + rs_front + rs_back);
         assert!((exp_q - q_in).abs() < 1E-4);
         assert!((exp_q + q_out).abs() < 1E-4);
     }
