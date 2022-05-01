@@ -3,11 +3,12 @@
 ![build badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/build.yaml/badge.svg)
 ![docs badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/docs.yaml/badge.svg)
 ![tests badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/tests.yaml/badge.svg)
+[![codecov](https://codecov.io/gh/SIMPLE-BuildingSimulation/thermal/branch/main/graph/badge.svg?token=X6RV5WE0UL)](https://codecov.io/gh/SIMPLE-BuildingSimulation/thermal)
 
 
 This module reads a [SIMPLE model](https://github.com/SIMPLE-BuildingSimulation/simple_model) and estimates the temperatures. **It is still under development**. Check the documentation [Here](https://simple-buildingsimulation.github.io/thermal/)
 
-Some features:
+## Some features
 
 * Walls are modelled through Finite Difference method, and the solution is found through a [Runge-Kutta method](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods)
 * Materials are described as they are, the module will choose which ones should be considered no-mass

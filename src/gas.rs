@@ -41,29 +41,28 @@ struct Gas {
 }
 
 /// Transforms C into K
-fn in_kelvin(t: Float)->Float{
+fn in_kelvin(t: Float) -> Float {
     t + 273.15
 }
 
 impl Gas {
-    
     /// Derives the Thermal Conductivity from a certain Temperature (in C)
-    pub fn thermal_conductivity(&self, temp: Float)->Float{
+    pub fn thermal_conductivity(&self, temp: Float) -> Float {
         self.thermal_conductivity.eval(in_kelvin(temp))
     }
 
     /// Derives the Dynamic Viscosity from a certain Temperature (in C)
-    pub fn dynamic_viscosity(&self, temp: Float)->Float{
+    pub fn dynamic_viscosity(&self, temp: Float) -> Float {
         self.dynamic_viscosity.eval(in_kelvin(temp))
     }
 
     /// Derives the Soecific Heat Capacity from a certain Temperature (in C)
-    pub fn heat_capacity(&self, temp: Float)->Float{
+    pub fn heat_capacity(&self, temp: Float) -> Float {
         self.heat_capacity.eval(in_kelvin(temp))
     }
 
     /// Retreives the Molecular Mass
-    pub fn mass(&self)-> Float{
+    pub fn mass(&self) -> Float {
         self.mass
     }
 }
@@ -104,7 +103,6 @@ fn xenon() -> Gas {
     }
 }
 
-
 /***********/
 /* TESTING */
 /***********/
@@ -113,16 +111,17 @@ fn xenon() -> Gas {
 mod testing {
     use super::*;
 
-    fn check_value(a: Float, b: Float)->Result<(),String>{
-        let err = (a-b).abs()/a.abs();
-        if err > 1e-2{ //1% error max
-            return Err(format!("a = {} | b = {} | err = {}", a, b, err))
+    fn check_value(a: Float, b: Float) -> Result<(), String> {
+        let err = (a - b).abs() / a.abs();
+        if err > 1e-2 {
+            //1% error max
+            return Err(format!("a = {} | b = {} | err = {}", a, b, err));
         }
         Ok(())
     }
 
     #[test]
-    fn test_thermal_conductivity(){
+    fn test_thermal_conductivity() {
         check_value(0.0241, crate::gas::air().thermal_conductivity(0.)).unwrap();
         check_value(0.0248, crate::gas::air().thermal_conductivity(10.)).unwrap();
 
@@ -137,7 +136,7 @@ mod testing {
     }
 
     #[test]
-    fn test_dynamic_viscosity(){
+    fn test_dynamic_viscosity() {
         check_value(1.722e-5, crate::gas::air().dynamic_viscosity(0.)).unwrap();
         check_value(1.771e-5, crate::gas::air().dynamic_viscosity(10.)).unwrap();
 
@@ -152,7 +151,7 @@ mod testing {
     }
 
     #[test]
-    fn test_heat_capacity(){
+    fn test_heat_capacity() {
         check_value(1006.1034, crate::gas::air().heat_capacity(0.)).unwrap();
         check_value(1006.2265, crate::gas::air().heat_capacity(10.)).unwrap();
 
@@ -167,7 +166,7 @@ mod testing {
     }
 
     #[test]
-    fn test_mass(){
+    fn test_mass() {
         check_value(28.97, crate::gas::air().mass()).unwrap();
         check_value(39.948, crate::gas::argon().mass()).unwrap();
         check_value(83.80, crate::gas::krypton().mass()).unwrap();

@@ -130,7 +130,6 @@ pub fn discretize_construction(
     ) -> (usize, Vec<usize>) {
         let dt = main_dt / (n as Float);
 
-        
         // So, for each layer
         let n_layers = construction.materials.len();
         let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
@@ -142,16 +141,18 @@ pub fn discretize_construction(
 
             // Calculate the minimum_dx
             let thickness = material.thickness;
-            let (k, rho, cp) = match substance{
-                Substance::Normal(s)=>{                    
-                    let k = s.thermal_conductivity().expect("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'");            
-                    let rho = s.density().expect("Trying to discretize a construction that contains a Normal Substance without a 'density'");            
-                    let cp = s.specific_heat_capacity().expect("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'");            
+            let (k, rho, cp) = match substance {
+                Substance::Normal(s) => {
+                    let k = s.thermal_conductivity().expect("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'");
+                    let rho = s.density().expect("Trying to discretize a construction that contains a Normal Substance without a 'density'");
+                    let cp = s.specific_heat_capacity().expect("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'");
                     (*k, *rho, *cp)
-                },
-                Substance::Gas(_)=>{n_elements.push(0); continue}
+                }
+                Substance::Gas(_) => {
+                    n_elements.push(0);
+                    continue;
+                }
             };
-
 
             let a_coef = 2.;
             let b_coef = -dt / (rho * cp * RS);
@@ -215,14 +216,14 @@ pub fn discretize_construction(
 
                 // Calculate the optimum_dx
                 let thickness = material.thickness;
-                let (k, rho, cp) = match substance{
-                    Substance::Normal(s)=>{                    
+                let (k, rho, cp) = match substance {
+                    Substance::Normal(s) => {
                         let k = s.thermal_conductivity().unwrap();
                         let rho = s.density().unwrap();
                         let cp = s.specific_heat_capacity().unwrap();
                         (*k, *rho, *cp)
-                    },
-                    Substance::Gas(_)=>{continue}
+                    }
+                    Substance::Gas(_) => continue,
                 };
                 let dt = main_dt / n as Float;
                 let dx = thickness / n_elements[n_layer] as Float;
@@ -369,16 +370,18 @@ pub fn r_value(c: &Rc<Construction>) -> Result<Float, String> {
 
 pub fn calc_r_front(c: &Rc<Construction>, first_massive: usize) -> Float {
     let mut r_front = 0.;
-    for i in 0..first_massive {        
-        let material = &c.materials[i];                                         
-        match &material.substance{
-            Substance::Normal(s)=>{
-                r_front += material.thickness / s.thermal_conductivity().expect("calc_r_front() requires that Normal substances have Thermal Conductivity");
+    for i in 0..first_massive {
+        let material = &c.materials[i];
+        match &material.substance {
+            Substance::Normal(s) => {
+                r_front += material.thickness
+                    / s.thermal_conductivity().expect(
+                        "calc_r_front() requires that Normal substances have Thermal Conductivity",
+                    );
             }
             Substance::Gas(_) => {
                 todo!()
             }
-
         }
     }
     r_front
@@ -388,13 +391,17 @@ pub fn calc_r_back(c: &Rc<Construction>, last_massive: usize) -> Float {
     let mut r_back = 0.;
     for i in last_massive..c.materials.len() {
         let material = &c.materials[i];
-        match &material.substance{
-            Substance::Normal(s)=>{r_back += material.thickness / s.thermal_conductivity().expect("calc_r_back requires that Normal substances have Thermal Conductivity");}
+        match &material.substance {
+            Substance::Normal(s) => {
+                r_back += material.thickness
+                    / s.thermal_conductivity().expect(
+                        "calc_r_back requires that Normal substances have Thermal Conductivity",
+                    );
+            }
             Substance::Gas(_) => {
                 todo!()
             }
         }
-        
     }
     r_back
 }
@@ -422,13 +429,17 @@ fn calc_c_matrix(
 
                 // let rho = substance.density().unwrap();
                 // let cp = substance.specific_heat_capacity().unwrap();
-                let (rho, cp) = match substance{
-                    Substance::Normal(s)=>{                                            
-                        let rho = s.density().expect("Trying to calculate C_Matrix with a substance without 'density'");            
-                        let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");            
+                let (rho, cp) = match substance {
+                    Substance::Normal(s) => {
+                        let rho = s.density().expect(
+                            "Trying to calculate C_Matrix with a substance without 'density'",
+                        );
+                        let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");
                         (*rho, *cp)
-                    },
-                    Substance::Gas(_)=>{todo!()}
+                    }
+                    Substance::Gas(_) => {
+                        todo!()
+                    }
                 };
                 let dx = material.thickness / (m as Float);
                 let m = rho * cp * dx; // dt;
@@ -528,9 +539,9 @@ fn calc_k_matrix(
                 let material = &c.materials[n_layer]; //model.get_material(material_index).unwrap();
                 let dx = material.thickness; //().unwrap();
 
-                // let substance_index = material.get_substance_index().unwrap();                
+                // let substance_index = material.get_substance_index().unwrap();
                 let k = match &material.substance {
-                    Substance::Normal(s)=>{
+                    Substance::Normal(s) => {
                         let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
                         k
                     }
@@ -565,7 +576,7 @@ fn calc_k_matrix(
         } else {
             // calc U value
             let k = match &material.substance {
-                Substance::Normal(s)=>{
+                Substance::Normal(s) => {
                     let k = s.thermal_conductivity().expect("Trying to calc K-matrix of a construciton containing a Normal Substance without 'Thermal conductivity'");
                     k
                 }
@@ -597,7 +608,6 @@ fn calc_k_matrix(
         }
     }
 
-    
     // return
     k_matrix
 }
@@ -664,7 +674,10 @@ pub fn build_thermal_network(
     n_elements: &[usize],
     r_front: Float,
     r_back: Float,
-) -> Result<impl Fn(&Matrix, Float, Float, Float, Float, Float, Float, Float, Float) -> Matrix, String> {
+) -> Result<
+    impl Fn(&Matrix, Float, Float, Float, Float, Float, Float, Float, Float) -> Matrix,
+    String,
+> {
     // if this happens, we are trying to build the
     // thermal network for a non-massive wall... Which
     // does not make sense
@@ -677,7 +690,7 @@ pub fn build_thermal_network(
         return Err(err);
     }
 
-    // initialize k_prime as K... we will modify it later    
+    // initialize k_prime as K... we will modify it later
     let mut k_prime = calc_k_matrix(
         construction,
         first_massive,
@@ -704,21 +717,20 @@ pub fn build_thermal_network(
         }
     }
 
-    
     let front_mat = &construction.materials[0];
-    let (front_thermal_absorbtance, front_solar_absorbtance) = match &front_mat.substance{
-        Substance::Normal(s)=>{
-            let thermal = match s.thermal_absorbtance(){
-                Ok(v)=>*v,
+    let (front_thermal_absorbtance, front_solar_absorbtance) = match &front_mat.substance {
+        Substance::Normal(s) => {
+            let thermal = match s.thermal_absorbtance() {
+                Ok(v) => *v,
                 Err(_) => {
                     let v = 0.9;
                     eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
                     v
                 }
             };
-            let solar = match s.solar_absorbtance(){
-                Ok(v)=>*v,
-                Err(_)=>{
+            let solar = match s.solar_absorbtance() {
+                Ok(v) => *v,
+                Err(_) => {
                     let v = 0.7;
                     eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
                     v
@@ -732,19 +744,19 @@ pub fn build_thermal_network(
     };
 
     let back_mat = &construction.materials.last().unwrap(); // There should be at least one.
-    let (back_thermal_absorbtance, back_solar_absorbtance) = match &back_mat.substance{
-        Substance::Normal(s)=>{
-            let thermal = match s.thermal_absorbtance(){
-                Ok(v)=>*v,
+    let (back_thermal_absorbtance, back_solar_absorbtance) = match &back_mat.substance {
+        Substance::Normal(s) => {
+            let thermal = match s.thermal_absorbtance() {
+                Ok(v) => *v,
                 Err(_) => {
                     let v = 0.9;
                     eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
                     v
                 }
             };
-            let solar = match s.solar_absorbtance(){
-                Ok(v)=>*v,
-                Err(_)=>{
+            let solar = match s.solar_absorbtance() {
+                Ok(v) => *v,
+                Err(_) => {
                     let v = 0.7;
                     eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
                     v
@@ -756,28 +768,29 @@ pub fn build_thermal_network(
             todo!()
         }
     };
-    
 
-    let march_closure = move |
-            nodes_temps: &Matrix,
-            air_temp_front: Float,
-            air_temp_back: Float,
-            rs_front: Float,
-            rs_back: Float,
-            solar_irradiance_front: Float, 
-            solar_irradiance_back: Float,
-            ir_irradiance_front: Float, 
-            ir_irradiance_back: Float|            
+    let march_closure = move |nodes_temps: &Matrix,
+                              air_temp_front: Float,
+                              air_temp_back: Float,
+                              rs_front: Float,
+                              rs_back: Float,
+                              solar_irradiance_front: Float,
+                              solar_irradiance_back: Float,
+                              ir_irradiance_front: Float,
+                              ir_irradiance_back: Float|
           -> Matrix {
-            
-            
         let full_rs_front = r_front + rs_front;
         let full_rs_back = r_back + rs_back;
 
         // Sol-air temperature
-        let t_front = air_temp_front + (front_solar_absorbtance*solar_irradiance_front + front_thermal_absorbtance*ir_irradiance_front)*full_rs_front;
-        let t_back = air_temp_back + (back_solar_absorbtance*solar_irradiance_back + back_thermal_absorbtance*ir_irradiance_back)*full_rs_back;
-        
+        let t_front = air_temp_front
+            + (front_solar_absorbtance * solar_irradiance_front
+                + front_thermal_absorbtance * ir_irradiance_front)
+                * full_rs_front;
+        let t_back = air_temp_back
+            + (back_solar_absorbtance * solar_irradiance_back
+                + back_thermal_absorbtance * ir_irradiance_back)
+                * full_rs_back;
 
         let ts_front = nodes_temps.get(0, 0).unwrap();
         let ts_back = nodes_temps.get(all_nodes - 1, 0).unwrap();
@@ -817,7 +830,3 @@ pub fn build_thermal_network(
     Ok(march_closure)
     // Ok(())
 }
-
-
-
-

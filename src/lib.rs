@@ -33,8 +33,8 @@ type Float = f32;
 type Float = f64;
 
 pub mod construction;
+pub mod gas;
 pub mod heating_cooling;
 pub mod model;
 pub mod surface;
 pub mod zone;
-pub mod gas;

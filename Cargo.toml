@@ -33,4 +33,4 @@ rustdoc-args = [
 
 [features]
 default = []
-float = ["simple_model/float", "convection/float", "matrix/float", "gas_properties/float", "weather/float", "calendar/float", "geometry3d/float"]
+float = ["simple_model/float", "convection/float", "matrix/float", "gas_properties/float", "weather/float", "calendar/float", "geometry3d/float", "polynomial/float"]
