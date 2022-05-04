@@ -505,7 +505,7 @@ fn calc_c_matrix(
 /// \end{bmatrix}   
 ///```
 ///
-/// This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to
+/// > **NOTE:** This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to
 /// be added when marching (because these values change over time).
 fn calc_k_matrix(
     c: &Rc<Construction>,
