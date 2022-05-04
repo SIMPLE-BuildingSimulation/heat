@@ -17,32 +17,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+use crate::Float;
 
-//! A Finite Difference-based Thermal simulation module
-//!
-//! It uses finite differences for marching forward in time and also
-//! for calculating the heat transfer through walls.
+use crate::gas::Gas;
 
-/// The kind of Floating point number used in the
-/// library... the `"float"` feature means it becomes `f32`
-/// and `f64` is used otherwise.
-#[cfg(feature = "float")]
-type Float = f32;
 
-#[cfg(not(feature = "float"))]
-type Float = f64;
 
-#[cfg(feature = "float")]
-const PI : Float = std::f32::consts::PI;
+#[cfg(test)]
+mod testing {
+    use super::*;
+    
+    
 
-#[cfg(not(feature = "float"))]
-const PI : Float = std::f64::consts::PI;
-
-pub mod construction;
-pub mod gas;
-pub mod heating_cooling;
-pub mod model;
-pub mod surface;
-pub mod zone;
-pub mod glazing;
-pub mod iso15099;
+}

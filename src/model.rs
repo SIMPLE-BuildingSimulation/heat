@@ -60,8 +60,8 @@ impl SimulationModel for ThermalModel {
     /// Creates a new ThermalModel from a SimpleModel.
     ///    
     /// # Inputs:
-    /// * model: the SimpleModel that the model represents
-    /// * state: the SimulationState attached to the SimpleModel
+    /// * model: the `SimpleModel` that the model represents
+    /// * state: the `SimulationStateHeader` attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
     fn new(
         model: &SimpleModel,
@@ -100,7 +100,7 @@ impl SimulationModel for ThermalModel {
         // This is the model's dt now. When marching
         let mut dt = 60. * 60. / (n as Float * n_subdivisions as Float);
 
-        // safety..?
+        // safety.
         dt *= 0.5;
         n_subdivisions *= 2;
 

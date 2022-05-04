@@ -19,15 +19,12 @@ SOFTWARE.
 */
 
 use crate::Float;
-
+use matrix::Matrix;
+use simple_model::{Construction, Substance};
 use std::rc::Rc;
 
-use matrix::Matrix;
-
-use simple_model::{Construction, Substance};
-
 /// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
-/// will find an arguibly good (i.e., stable and accurate) combination of $\\Delta t\$ and number of elements in each
+/// will find an arguibly good (i.e., stable and accurate) combination of $`\Delta t`$ and number of elements in each
 /// layer of the construction.
 ///
 /// This function recursively increases the model's timestep subdivisions (`n`) in order to reduce $`\Delta t`$ to numbers
@@ -248,7 +245,7 @@ pub fn discretize_construction(
 /// In a discretization scheme, this function finds the
 /// first and the last massive layers... the no-mass layers
 /// before and after the first and last massive ones, respectively,
-/// are just bulked with the values of RSi and RSo.
+/// are just bulked with the values of $`R_{si}`$ and $`R_{so}`$.
 pub fn get_first_and_last_massive_elements(n_elements: &[usize]) -> Result<(usize, usize), String> {
     // We need somethig to process!
     if n_elements.is_empty() {
@@ -525,8 +522,7 @@ fn calc_k_matrix(
     let mut n_layer: usize = first_massive;
 
     while n_layer < last_massive {
-        // let material_index = c.get_layer_index(n_layer).unwrap();
-        let material = &c.materials[n_layer]; //model.get_material(material_index).unwrap();
+        let material = &c.materials[n_layer];
 
         let m = n_elements[n_layer];
         if m == 0 {
