@@ -24,6 +24,10 @@ use polynomial::{poly, Polynomial};
 /// A structure containing the data that will describe the thermal
 /// behaviour of a gas.
 pub struct Gas {
+
+    /// The name of the Gas, as named in the `Model`
+    pub name: String,
+
     /// The thermal conductivity ($`{W}/{m.K}`$) as a function of the
     /// temperature (in $`K`$)
     thermal_conductivity: Polynomial,
@@ -40,6 +44,16 @@ pub struct Gas {
     mass: Float,
 }
 
+impl std::convert::From<simple_model::substance::gas::Gas> for Gas {
+    fn from(other: simple_model::substance::gas::Gas) -> Self {
+        match other.gas().unwrap() {
+            simple_model::substance::gas::StandardGas::Air => Self{name: other.name, ..Self::air()},
+            simple_model::substance::gas::StandardGas::Argon => Self{name: other.name, ..Self::argon()},
+            simple_model::substance::gas::StandardGas::Xenon => Self{name: other.name, ..Self::xenon()},
+            simple_model::substance::gas::StandardGas::Krypton => Self{name: other.name, ..Self::krypton()},
+        }
+    }
+}
 
 
 impl Gas {
@@ -73,6 +87,7 @@ impl Gas {
     /// Returns a gas with the properties of Air
     pub fn air() -> Self {
         Self {
+            name: "air".into(),
             thermal_conductivity: poly![2.873e-3, 7.760e-5],
             dynamic_viscosity: poly![3.723e-6, 4.94e-8],
             heat_capacity: poly![1002.7370, 1.2324e-2],
@@ -83,6 +98,7 @@ impl Gas {
     /// Returns a gas with the properties of argon
     pub fn argon() -> Self {
         Self {
+            name: "argon".into(),
             thermal_conductivity: poly![2.285e-3, 5.149e-5],
             dynamic_viscosity: poly![3.379e-6, 6.451e-8],
             heat_capacity: poly![521.9285],
@@ -93,6 +109,7 @@ impl Gas {
     /// Returns a gas with the properties of krypton
     pub fn krypton() -> Self {
         Self {
+            name: "krypton".into(),
             thermal_conductivity: poly![9.443e-4, 2.826e-5],
             dynamic_viscosity: poly![2.213e-6, 7.777e-8],
             heat_capacity: poly![248.0907],
@@ -103,6 +120,7 @@ impl Gas {
     /// Returns a gas with the properties of xenon
     pub fn xenon() -> Self {
         Self {
+            name: "xenon".into(),
             thermal_conductivity: poly![4.538e-4, 1.723e-5],
             dynamic_viscosity: poly![1.069e-6, 7.414e-8],
             heat_capacity: poly![158.3397],

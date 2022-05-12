@@ -4,6 +4,7 @@
 ![docs badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/docs.yaml/badge.svg)
 ![tests badge](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/tests.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/SIMPLE-BuildingSimulation/thermal/branch/main/graph/badge.svg?token=X6RV5WE0UL)](https://codecov.io/gh/SIMPLE-BuildingSimulation/thermal)
+[![Clippy check](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/style.yaml/badge.svg)](https://github.com/SIMPLE-BuildingSimulation/thermal/actions/workflows/style.yaml)
 
 
 This module reads a [SIMPLE model](https://github.com/SIMPLE-BuildingSimulation/simple_model) and estimates the temperatures. **It is still under development**. Check the documentation [Here](https://simple-buildingsimulation.github.io/thermal/)

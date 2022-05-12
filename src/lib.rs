@@ -46,3 +46,4 @@ pub mod surface;
 pub mod zone;
 pub mod glazing;
 pub mod iso15099;
+pub mod surface_trait;
