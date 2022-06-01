@@ -9,14 +9,11 @@ license = "MIT"
 
 [dependencies]
 simple_model = {git = "https://github.com/SIMPLE-BuildingSimulation/simple_model.git"}
-# simple_model = {path = "../simple_model"}
 calendar = { git = "https://github.com/SIMPLE-BuildingSimulation/calendar.git" }
 weather = { git = "https://github.com/SIMPLE-BuildingSimulation/weather.git" }
 geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git"}
 communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
 matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
-convection = {git = "https://github.com/SIMPLE-BuildingSimulation/convection.git"}
-gas_properties = {git = "https://github.com/SIMPLE-BuildingSimulation/gas_properties.git"}
 polynomial = {git = "https://github.com/SIMPLE-BuildingSimulation/polynomial.git"}
 
 [dev-dependencies]
@@ -33,4 +30,4 @@ rustdoc-args = [
 
 [features]
 default = []
-float = ["simple_model/float", "convection/float", "matrix/float", "gas_properties/float", "weather/float", "calendar/float", "geometry3d/float", "polynomial/float"]
+float = ["simple_model/float",  "matrix/float",  "weather/float", "calendar/float", "geometry3d/float", "polynomial/float"]

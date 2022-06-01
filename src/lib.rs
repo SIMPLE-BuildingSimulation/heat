@@ -38,6 +38,14 @@ const PI : Float = std::f32::consts::PI;
 #[cfg(not(feature = "float"))]
 const PI : Float = std::f64::consts::PI;
 
+
+
+/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W/m^2K`$), 
+/// necessary for Radiation calculations
+const SIGMA : Float = 5.670374419e-8;
+
+
+
 pub mod construction;
 pub mod gas;
 pub mod heating_cooling;
@@ -45,5 +53,5 @@ pub mod model;
 pub mod surface;
 pub mod zone;
 pub mod glazing;
-pub mod iso15099;
-pub mod surface_trait;
+pub mod cavity;
+pub mod environment;

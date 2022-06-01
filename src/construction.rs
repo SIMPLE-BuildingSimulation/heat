@@ -18,21 +18,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use crate::{Float, gas};
+
+use crate::cavity::Cavity;
+use crate::environment::Environment;
+use crate::{ Float, SIGMA};
 use matrix::Matrix;
 use simple_model::{Construction, Substance};
 use std::rc::Rc;
-use crate::gas::Gas;
 
 
-/// Represents a thermal resistance through a Wall.
-#[derive(Debug, Clone, Copy)]
-pub enum Resistance {
-    /// A nornal (i.e., $`t/\lambda`$)resistance
+/// Represents a thermal connection in the thermal network.
+/// It can be a Cavity, a Solid, or other.
+#[derive(Debug, Clone)]
+pub enum UValue {
+    /// A normal (i.e., $`\lambda/\Delta x`$) U-value
     Solid(Float),
 
     /// A cavity, comprised of a gas
-    Cavity(usize),
+    Cavity(Cavity),
 
     /// The resistance is a surface coefficient.
     Back,
@@ -41,45 +44,54 @@ pub enum Resistance {
     None,
 }
 
-impl std::default::Default for Resistance {
-    fn default() -> Self {
-        Resistance::None
+impl UValue {
+
+    /// Gets the U-value of a `UValue` object
+    pub fn u_value(&self, t_before: Float, t_after: Float) -> Float {
+        match self {
+            Self::Solid(u) => *u,
+            Self::Cavity(c) => c.u_value(t_before, t_after),
+            Self::Back => 0., // This should be calculated appart
+            // Self::Front => {dbg!("Calc front Rs"); 0.1},
+            Self::None => panic!("Attempting to get the u-value of None"),
+        }
     }
 }
 
-/// This is the signature of a function that allows updating the temperatures of a 
-/// `Discretization` by marching forward in time. The inputs are the following:
-/// 
-/// * `nodes_temps: &mut Matrix`,
-/// * `air_temp_front: Float`,
-/// * `air_temp_back: Float`,
-/// * `rs_front: Float`,
-/// * `rs_back: Float`,
-/// * `solar_irradiance_front: Float`,
-/// * `solar_irradiance_back: Float`,
-/// * `ir_irradiance_front: Float`,
-/// * `ir_irradiance_back: Float`
-type ConstructionMarchFunction = dyn Fn(&mut Matrix, Float, Float, Float, Float, Float, Float, Float, Float);
+impl std::default::Default for UValue {
+    fn default() -> Self {
+        UValue::None
+    }
+}
+
+
+
 
 /// Represents the discretization of a [`Construction`] for heat transfer
-/// calculation purposes
+/// calculation purposes. 
+/// 
+/// # Note
+/// 
+/// This object contains all the [`Cavity`] objects in it, which
+/// contain information not only about their thickness but also their orientation.
+/// This means that one `Discretization` should exist per `Surface`, not just by `Construction`.
 pub struct Discretization {
     /// Contains the node mass and the `Resistance` of each segment
-    pub segments: Vec<(Float, Resistance)>,
+    pub segments: Vec<(Float, UValue)>,
 
-    /// Contains the minimum number of timesteps per model timestep that 
+    /// Contains the minimum number of timesteps per model timestep that
     /// this discretization requires to ensure numerical stability and accuracy.
-    /// 
+    ///
     /// While the caller model—e.g., a Multiphysics Simulation model—may attempt
-    /// to simulate at a certain timestep, some of the constructions in it may 
+    /// to simulate at a certain timestep, some of the constructions in it may
     /// require smaller timesteps to ensure numerical stability and accuracy.
     /// This means that—on each timestep in the caller model—the thermal model needs
-    /// to perform `time_subdivision` sub-timesteps. 
+    /// to perform `time_subdivision` sub-timesteps.
     pub tstep_subdivision: usize,
 
-    /// Indicates whether the thermal network for this `Discretization` is static, 
+    /// Indicates whether the thermal network for this `Discretization` is static,
     /// meaning that the Thermal Network will not change when marching through time.
-    /// 
+    ///
     /// The thermal network can also be dynamic; for example, when there are non-linearities
     /// in the system. An example of this are cavities—which contain Radiation heat transfer,
     /// meaning that the R-value of a cavity depends on temperature—and also
@@ -89,138 +101,203 @@ pub struct Discretization {
 
     /// Indicates if any of the nodes have any thermal mass
     pub is_massive: bool,
-
-    /// The `ConstructionMarchFunction` that allows marching forward
-    /// in time
-    pub march: Option<Box<ConstructionMarchFunction>>,
+    
 }
 
 impl Discretization {
-
     /// Creates a new `Discretization`.
-    /// 
-    /// It first calculates the `tstep_subdivision` and the number of elements 
-    /// on each layer of Construction by calling `discretize_construction()`; and then builds the 
+    ///
+    /// It first calculates the `tstep_subdivision` and the number of elements
+    /// on each layer of Construction by calling `discretize_construction()`; and then builds the
     /// `Discretization` by calling `build()`.
     pub fn new(
         construction: &Rc<Construction>,
-        gases: &[Gas],
         model_dt: Float,
         max_dx: Float,
         min_dt: Float,
-    )->Self{
-        let (tstep_subdivision, n_elements) = Self::discretize_construction(construction, model_dt, max_dx, min_dt);        
-        Self::build(construction, gases, tstep_subdivision, &n_elements)
+        height: Float,
+        angle: Float,
+    ) -> Result<Self, String> {
+        let (tstep_subdivision, n_elements) =
+            Self::discretize_construction(construction, model_dt, max_dx, min_dt);
+        Self::build(construction, tstep_subdivision, &n_elements, height, angle)
     }
+
+    
 
     /// Creates the `segments` of the `Discretization`.
     fn build(
         construction: &Rc<Construction>,
-        gases: &[Gas],
         tstep_subdivision: usize,
-        n_elements: &[usize],        
-    )->Self{
+        n_elements: &[usize],
+        height: Float,
+        angle: Float,
+    ) -> Result<Self, String> {
         debug_assert_eq!(n_elements.len(), construction.materials.len());
 
         // Let's start with an empty set of segments
-        let mut n_nodes : usize = n_elements.iter().sum();        
+        let mut n_nodes: usize = n_elements.iter().sum();
         n_nodes = n_nodes.max(construction.materials.len()); // At least one per layer... but Zero means  "no_mass wall"
 
-        let mut segments : Vec<(Float, Resistance)> = vec![ (0.0, Resistance::default()); n_nodes+1];
+        let mut segments: Vec<(Float, UValue)> = vec![(0.0, UValue::default()); n_nodes + 1];
 
         let mut n_segment = 0;
-        for (n_layer,n) in n_elements.iter().enumerate(){
+        for (n_layer, n) in n_elements.iter().enumerate() {
             let mut n = *n;
             let material = &construction.materials[n_layer];
 
             // get the mass of each segment.
             let mass = if n == 0 {
                 0.0
-            }else{
+            } else {
                 match &material.substance {
-                    Substance::Normal(s)=> {
-                        let dx = material.thickness / n as Float; 
+                    Substance::Normal(s) => {
+                        let dx = material.thickness / n as Float;
                         let rho = s.density().expect(
                             "Trying to calculate C_Matrix with a substance without 'density'",
                         );
                         let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");
                         let m = rho * cp * dx; // dt;
-                        m    
-                    },
-                    Substance::Gas(_s)=>{
-                        0.
+                        m
                     }
+                    Substance::Gas(_s) => 0.,
                 }
             };
 
             if n == 0 {
                 n = 1;
             }
-            // Now iterate all segments... 
+            // Now iterate all segments...
             for _ in 0..n {
                 match &material.substance {
-                    Substance::Normal(s)=> {
-                        
+                    Substance::Normal(s) => {
                         // Add mass to this and next nodes (if it is NoMass, it is Zero)
-                        segments[n_segment].0 += mass/2.;                        
-                        segments[n_segment+1].0 += mass/2.;
-                        
-                        
+                        segments[n_segment].0 += mass / 2.;
+                        segments[n_segment + 1].0 += mass / 2.;
+
                         // Add resistance
-                        let dx = material.thickness; 
+                        let dx = material.thickness;
                         let k = s.thermal_conductivity().expect(&format!("Substance '{}' in material '{}' in Construction '{}' has no thermal conductivity, but we need it", s.name(), material.name(), construction.name()));
-
-                        segments[n_segment].1 = Resistance::Solid(dx/k);
-
-    
-                    },
-                    Substance::Gas(s)=>{
-
-                        
+                        // Push U-value
+                        segments[n_segment].1 = UValue::Solid(k / dx);
+                    }
+                    Substance::Gas(s) => {
+                        dbg!("todo: Fill geometrical elements of Cavity properly");
                         // Search by name
-                        let i = {
-                            let mut index : Option<usize> = None;
-                            for (i,g) in gases.iter().enumerate() {
-                                if &g.name == s.name() {
-                                    index = Some(i);
-                                }
+                        let gas = match s.gas() {
+                            Ok(simple_model::substance::gas::StandardGas::Air) => {
+                                crate::gas::Gas::air()
                             }
-                            index.unwrap()                                       
+                            Ok(simple_model::substance::gas::StandardGas::Argon) => {
+                                crate::gas::Gas::argon()
+                            }
+                            Ok(simple_model::substance::gas::StandardGas::Xenon) => {
+                                crate::gas::Gas::xenon()
+                            }
+                            Ok(simple_model::substance::gas::StandardGas::Krypton) => {
+                                crate::gas::Gas::krypton()
+                            }
+                            _ => {
+                                return Err(format!(
+                                    "Substance '{}' does not have a standard gas.",
+                                    &material.substance.name()
+                                ))
+                            }
                         };
-                        segments[n_segment].1 = Resistance::Cavity(i);
+                        if n_layer == 0 {
+                            dbg!("This should be checked earlier.");
+                            return Err(format!(
+                                "Construction '{}' has a Gas as its first layer",
+                                construction.name
+                            ));
+                        }
+                        let prev_mat = construction.materials.get(n_layer - 1).unwrap(); // we already checked this
+                        let next_mat = match construction.materials.get(n_layer + 1) {
+                            Some(v) => v,
+                            None => {
+                                return Err(format!(
+                                    "Construction '{}' has a Gas as its last layer",
+                                    construction.name
+                                ))
+                            }
+                        };
+
+                        let ein = match &next_mat.substance{
+                            Substance::Normal(s)=>*s.thermal_absorbtance()?,
+                            Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
+                        };
+
+                        let eout = match &prev_mat.substance{
+                            Substance::Normal(s)=>*s.thermal_absorbtance()?,
+                            Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
+                        };
+
+                        let c = Cavity {
+                            gas,
+                            thickness: material.thickness,
+                            height,
+                            angle,
+                            eout,
+                            ein,
+                        };
+                        segments[n_segment].1 = UValue::Cavity(c);
                     }
                 }
-                n_segment+=1;
+                n_segment += 1;
             }
             // Process last one
-            segments[n_nodes].1 = Resistance::Back;
+            segments[n_nodes].1 = UValue::Back;
         }
 
-        let is_static = segments.iter().enumerate().all(|(index, (_mass, resistance))| {
-            // Last one does not count
-            if index == n_nodes {
-                true
-            }else if let Resistance::Solid(_) = resistance {
-                true
-            }else{
-                false
-            }
-        });
+        let is_static = segments
+            .iter()
+            .enumerate()
+            .all(|(index, (_mass, resistance))| {
+                // Last one does not count
+                if index == n_nodes {
+                    true
+                } else if let UValue::Solid(_) = resistance {
+                    true
+                } else {
+                    false
+                }
+            });
         let is_massive = segments.iter().any(|(mass, _resistance)| *mass > 0.0);
 
-        Self {
+        Ok(Self {
             is_static,
             is_massive,
             segments,
-            tstep_subdivision,
-            march: None,// Added when build_thermal_network()
-        }
+            tstep_subdivision,            
+        })
     }
 
     
+
+    /// Calculates the R value of the whole system
+    /// 
+    /// # Panics
+    /// Panics if the calculated R value is Zero (i.e., if there are no 
+    /// layers or something like that)
+    pub fn r_value(&self)->Float{
+        let mut r = 0.0;
+
+        for (_, u_value) in &self.segments{
+            r += match u_value {
+                UValue::Cavity(_c)=>todo!(), //c.u_value(t_front, t_back),
+                UValue::Solid(v)=>1./v,
+                UValue::Back => 0.0,
+                UValue::None => unreachable!()
+            }
+        }
+
+        assert!(r > 0.0, "Found Zero r-value");
+        r
+    }
+
     /// Given a Maximum element thickness ($`\Delta x_{max}`$) and a minimum timestep ($`\Delta t_{min}`$), this function
     /// will find an arguibly good (i.e., stable and accurate) combination of $`\Delta t`$ and number of elements in each
-    /// layer of the construction. 
+    /// layer of the construction.
     ///
     /// This function recursively increases the model's timestep subdivisions (`n`) in order to reduce $`\Delta t`$ to numbers
     /// that respect the restrictions of (1) stability, (2) $`\Delta x_{max}`$, and (3) $`\Delta t_{min}`$. In other words,
@@ -237,8 +314,7 @@ impl Discretization {
     /// to be a conservative restriction for the RK4. Hence, this function uses the
     /// Euler method restrictions.
     ///
-    /// Now, as explained in the [`build_thermal_network`] documentation, we are solving
-    /// the following equation:
+    /// We are solving the following equation:
     ///
     /// ```math
     /// \dot{T} = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q
@@ -325,7 +401,7 @@ impl Discretization {
             // So, for each layer
             let n_layers = construction.materials.len();
             let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
-            const RS: Float = 0.05;
+            const MAX_RS: Float = 0.05;
 
             for n_layer in 0..n_layers {
                 let material = &construction.materials[n_layer];
@@ -347,7 +423,7 @@ impl Discretization {
                 };
 
                 let a_coef = 2.;
-                let b_coef = -dt / (rho * cp * RS);
+                let b_coef = -dt / (rho * cp * MAX_RS);
                 let c_coef = -2. * dt * k / (rho * cp);
                 let disc = b_coef * b_coef - 4. * a_coef * c_coef;
                 // this should never happen...?
@@ -421,7 +497,7 @@ impl Discretization {
                     let dx = thickness / n_elements[n_layer] as Float;
 
                     // assert!(alpha * dt / dx / dx <= 0.5);
-                    let lambda1 = -dt / (RS * rho * cp * dx);
+                    let lambda1 = -dt / (MAX_RS * rho * cp * dx);
                     let r = dx / k;
                     let lambda2 = lambda1 - 2. * dt / (r * rho * cp * dx);
                     assert!(lambda1 >= -2.);
@@ -437,43 +513,14 @@ impl Discretization {
         aux(construction, model_dt, 1, max_dx, min_dt)
     }
 
-    /// Gets a squared [`Matrix`] containing the mass of the massive nodes
-    /// and ignoring the no-mass ones
-    fn calc_c_matrix(
-        &self,         
-    ) -> Vec<Float> {
-        let masses : Vec<Float> = self.segments.iter().filter(|(mass,_r)|{ *mass > 0.0}).map(|(mass, _r)| *mass).collect();
-        masses
-        
-    }
-
-    pub fn r_between(&self,ini: usize, fin: usize, _temps: &[Float], gases: &[Gas])->Float{
-        
-
-        self.segments[ini..fin].iter().map(|(_mass, resistance)|{
-            match resistance {
-                Resistance::Solid(r)=>*r,
-                Resistance::Cavity(i)=>{
-                    let gas = &gases[*i];
-                    todo!();
-                },
-                Resistance::Back => 0.0,//panic!("Todo: Cover Back in r_between"),
-                Resistance::None => panic!("Found Resistance::None when calculating r_between"),
-
-            }
-        }).sum()
-
-        
-    }
-
-    /// Calculates the `K` matrix (i.e., the thermal network) for massive constructions
+   
+   
+    /// Produces $`\overline{K}`$ and $`\vec{q}`$ (as in the equation $`\overline{C} \dot{\vec{T}} =  \overline{K} \vec{T} + \vec{q}`$),
+    /// allowing to update the node temperatures in a surface. This method returns the matrix $`\overline{k}`$
+    /// representing the thermal network, and the vector $`\vec{q}`$), accounting for the heat flows induced by the
+    /// environment.
     ///
-    /// Constructions are assumed to be a sandwich where zero or more massive
-    /// layers are located between two non-mass layers. These non-mass layers will always
-    /// include the interior and exterior film convections coefficients, respectively (which is
-    /// why they are called `full_rs_front` and `full_rs_back`, respectively). Additionally,
-    /// they can also include some lightweight insulation or any other material of negligible
-    /// thermal mass.
+    /// # How it works
     ///
     /// This matrix is constructed based ona discretization of the layers of the
     /// construction; that is, each layer is subdivided into `n` elements all of equal
@@ -481,533 +528,164 @@ impl Discretization {
     /// be represented by the 2x2 matrix
     ///
     /// ```math
-    /// \overline{K}=\begin{bmatrix} -1/R & 1/R \\
-    /// 1/R & -1/R
-    /// \end{bmatrix}   ;   R=\frac{thickness}{\lambda}
-    ///```
-    ///
-    /// Hence—ignoring external inputs—the K matrix for a construction subdivided into 3 elements (i.e., 4 nodes) can be written as follows:
-    /// ```math
-    /// \overline{K}=\begin{bmatrix}
-    /// -1/R_{1\rightarrow2} & 1/R_{1\rightarrow2} & 0 & 0 \\
-    /// 1/R_{1\rightarrow2} & -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} & 1/R_{2\rightarrow3} & 0 \\
-    /// 0 & 1/R_{2\rightarrow3} & -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} & 1/R_{3\rightarrow4} \\
-    /// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4} \\
+    /// \overline{K}=\begin{bmatrix} -U & U \\
+    /// U & -U
     /// \end{bmatrix}   
     ///```
     ///
-    /// Now, these nodes are also connected to an interior and an exterior temperatures through all the
-    /// layers that do not have any thermal mass both in the interior and exterior (i.e., $`R_{si,full}`$ and $`R_{so,full}`$, respectively).
+    /// Then—ignoring all external inputs (i.e., a system disconnected from the environment—the K matrix
+    /// for a construction subdivided into 3 elements (i.e., 4 nodes) can be written as follows:
+    ///
+    /// ```math
+    /// \overline{K}=\begin{bmatrix}
+    /// -U_{1\rightarrow2} & U_{1\rightarrow2} & 0 & 0 \\
+    /// U_{1\rightarrow2} & -U_{1\rightarrow2} - U_{2\rightarrow3} & U_{2\rightarrow3} & 0 \\
+    /// 0 & U_{2\rightarrow3} & -U_{2\rightarrow3} - U_{3\rightarrow4} & U_{3\rightarrow4} \\
+    /// 0 & 0 & U_{3\rightarrow4} & -U_{3\rightarrow4} \\
+    /// \end{bmatrix}   
+    /// ```
+    ///
+    /// Now, these nodes are also connected to a front and back border conditions.
     /// This means that the Matrix $`\overline{K}`$ needs to become:
+    ///
     /// ```math
     /// \overline{K}=\begin{bmatrix}
-    /// -1/R_{1\rightarrow2} - 1/R_{si,full} & 1/R_{1\rightarrow2} & 0 & 0 \\
-    /// 1/R_{1\rightarrow2} & -1/R_{1\rightarrow2} - 1/R_{2\rightarrow3} & 1/R_{2\rightarrow3} & 0 \\
-    /// 0 & 1/R_{2\rightarrow3} & -1/R_{2\rightarrow3} - 1/R_{3\rightarrow4} & 1/R_{3\rightarrow4} \\
-    /// 0 & 0 & 1/R_{3\rightarrow4} & -1/R_{3\rightarrow4}- 1/R_{so,full} \\
+    /// -U_{1\rightarrow2} - h_{so} & U_{1\rightarrow2} & 0 & 0 \\
+    /// U_{1\rightarrow2} & -U_{1\rightarrow2} - U_{2\rightarrow3} & U_{2\rightarrow3} & 0 \\
+    /// 0 & U_{2\rightarrow3} & -U_{2\rightarrow3} - U_{3\rightarrow4} & U_{3\rightarrow4} \\
+    /// 0 & 0 & U_{3\rightarrow4} & -U_{3\rightarrow4}- h_{si} \\
     /// \end{bmatrix}   
-    ///```
+    /// ```
     ///
-    /// > **NOTE:** This method returns such a matrix, without the $`R_{si, full}`$ and $`R_{so, full}`$. They need to
-    /// be added when marching (because these values change over time).
-    fn calc_k_matrix(
+    /// Additionally, the vector $`\vec{q}`$ will have to account for the border conditions. How this is done depends
+    /// on the border condition. If the border leads to a zone, a value of $` \epsilon_s + T_{env} h_s + E_{ir}\epsilon_s - \sigma {T_s}^4`$
+    /// should be added to $`\vec{q}`$.  Note that $`T_{env}`$ is the temparture of the air in the environment,
+    /// $`h_s`$ is the convection coefficient, $`E_{ir}`$ is the incident infrared radiation and $`\epsilon_s`$ is the
+    /// emmisivity of the surface. On the contrary, if the border condition is a cavity, then a value of $`T_{pane} U_{cavity}`$
+    /// should be added. $`T_{pane}`$ is the temperature of the surface before or after.
+    ///         
+    pub fn get_k_q(
         &self,
-        temps: &[Float],
-        gases: &[Gas],
-        // c: &Rc<Construction>,
-        // first_massive: usize,
-        // last_massive: usize,
-        // n_elements: &[usize],
-        // all_nodes: usize,
-        massive_only: bool,
-    ) -> Matrix {
-        // We need onte temperature per node
-        assert_eq!(temps.len(), self.segments.len());
-
-        
-        let massives : Vec<usize> = if massive_only {
-
-            self.segments.iter().enumerate().filter_map(|(i,(mass, _r))| {
-                if *mass > 0. {
-                    Some(i)
-                } else {
-                    None
-                }}).collect()
-        }else{
-            self.segments.iter().enumerate().map(|(i,..)| i).collect()
-        };
-        let n_massive = massives.len();
-        // initialize k_prime
-        let mut k_matrix = Matrix::new(0.0, n_massive, n_massive);
-        
-        // * massive_node_i counts each row/col of the K matrix.
-        // * ini and fin hold the position of the massive node among
-        //   all nodes, including non-massive ones
-        dbg!("Account for whatever is BEFOR the first massive node");
-        for massive_node_i in 0..massives.len() {
-            if massive_node_i == massives.len()-1{
-                // We have reached the end... so, don't bother
-                break
-            }
-            let ini = massives[massive_node_i];
-            let fin = massives[massive_node_i+1];
-            let thermal_resistance = self.r_between(ini, fin, temps, gases);
-
-            // update values
-            let u_value = 1. / thermal_resistance;
-            // top left
-            let i = massive_node_i;
-            let old_value = k_matrix.get(i, i).unwrap();
-            k_matrix.set(i, i, old_value - u_value).unwrap();
-            // top right
-            let old_value = k_matrix.get(i, i + 1).unwrap();
-            k_matrix.set(i, i + 1, old_value + u_value).unwrap();
-            // bottom left
-            let old_value = k_matrix.get(i + 1, i).unwrap();
-            k_matrix.set(i + 1, i, old_value + u_value).unwrap();
-            // bottom right
-            let old_value = k_matrix.get(i + 1, i + 1).unwrap();
-            k_matrix
-                .set(i + 1, i + 1, old_value - u_value)
-                .unwrap();
-        }
-        
-
-        k_matrix
-        
-    }
-
-    /// Builds the necessary data for marching forward through time, solving the
-    /// Ordinary Differential Equation that governs the heat transfer in walls.
-    ///
-    ///
-    /// The equation to solve is the following:
-    ///
-    /// ```math
-    /// \overline{C}  \dot{T} - \overline{K}  T = q
-    /// ```
-    ///
-    /// Where $`\overline{C}`$ and $`\overline{K}`$ are matrices representing the
-    /// thermal mass of each node and the thermal network, respectively; and where $`T`$ and $`q`$ are
-    /// vectors representing the Temperature and the heat "flow into" each node, respectively.
-    /// $`\overline{C}`$ and $`\overline{K}`$ are build based on the finite difference method.
-    ///
-    /// This model uses a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) (a.k.a., RK4)
-    /// to march through time. In order to do this, it is convenient to write the equation to solve
-    /// as follows:
-    ///
-    /// ```math
-    /// \dot{T}  = f(t, T)
-    /// ```
-    ///
-    /// Where
-    /// ```math
-    /// f(t,T) = \overline{C}^{-1} \overline{K}  T + \overline{C}^{-1} q
-    /// ```
-    ///
-    /// Note that—unless some layer of the Surface is generating heat—all the elements of $`q`$ are Zero
-    /// exept the first one and the last one, which are $`\frac{T_{in}}{R_{si}}`$ and $`\frac{T_{out}}{R_{so}}`$,
-    /// respectively.
-    ///
-    /// Then, the 4th order Runge-Kutta method allows marching forward through time as follows:
-    /// ```math
-    ///  T_{i+1} = T_i + \frac{k_1 + 2k_2 + 2k_3 + k_4}{6}
-    /// ```
-    /// Where $`k_1`$, $`k_2`$, $`k_3`$ and $`k_4`$ can be calculated based on the
-    /// timestep $`\Delta t`$ as follows:
-    ///
-    /// * $`k_1 = \Delta t \times f(t,T)`$
-    /// * $`k_2 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_1}{2})`$
-    /// * $`k_3 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_2}{2})`$
-    /// * $`k_4 = \Delta t \times f(t+\delta t, T+k_3 )`$
-    ///
-    /// So, what this method does is to calculate what is needed in order to return a closure that
-    /// calculates $`\Delta t \times f(t,T)`$; that is to say:
-    /// ```math
-    /// return = \Delta t \times f(t,T) = \Delta t \times \overline{C}^{-1} \overline{K}  T + \Delta t \times \overline{C}^{-1} q
-    /// ```
-    /// It is worth mentioning that, due to efficiency reasons, the following variables are defined
-    /// within the code:
-    /// * $`\overline{K}^{\star} = \Delta t \times \overline{C}^{-1}\overline{K}`$
-    /// * $`\overline{C}^{\star} = \Delta t \times \overline{C}^{-1}`$
-    fn build_static_massive_thermal_network(
-        &mut self,
-        gases: &[Gas],
-        construction: &Rc<Construction>,
-        // first_massive: usize,
-        // last_massive: usize,
-        dt: Float,
-        // all_nodes: usize,
-        // n_elements: &[usize],
-        r_front: Float,
-        r_back: Float,
-    ) {
-        // if this happens, we are trying to build the
-        // thermal network for a non-massive wall... Which
-        // does not make sense
-        // debug_assert!(first_massive != last_massive);
-        // debug_assert_eq!(calc_n_total_nodes(n_elements).unwrap(), all_nodes);
-
-        // check coherence in input data
-        // if n_elements.len() != construction.materials.len() {
-        //     let err = format!("Mismatch between number of layers in construction ({}) and the number of elements in scheme ({})",construction.materials.len(),n_elements.len());
-        //     return Err(err);
-        // }
-
-
-    
-        // initialize k_prime as K... we will modify it later
-        let mut k_prime = self.calc_k_matrix(
-            &vec![0.; self.segments.len()], 
-            gases,
-            // first_massive,
-            // last_massive,
-            // n_elements,
-            // all_nodes,
-            true // massive onlye
+        ini: usize,
+        fin: usize,
+        temperatures: &Matrix,
+        front_env: &Environment,
+        front_emmisivity: Float,
+        front_hs: Float,
+        back_env: &Environment,
+        back_emmisivity: Float,
+        back_hs: Float
+    ) -> (Matrix, Matrix) {
+        let (nrows, ncols) = temperatures.size();
+        assert_eq!(
+            ncols, 1,
+            "Expecting `temperatures` to be a Column matrix... but found {} columns",
+            ncols
         );
-
-        // Calc the masses
-        let c = self.calc_c_matrix(
-            // construction, all_nodes, n_elements
+        assert_eq!(
+            nrows,
+            self.segments.len(),
+            "Expecting `temperatures` to have {} elements... found {}",
+            self.segments.len(),
+            nrows
         );
-        let all_nodes = self.segments.len();
+        let nnodes = fin - ini + 1;        
 
-        // DIVIDE ONE BY THE OTHER to make K_prime
-        let mut c_prime: Vec<Float> = Vec::with_capacity(all_nodes);
-        for (i, mass) in c.iter().enumerate() {
-            if *mass != 0.0 {
-                // Multiply the whole column K by this.
-                for j in 0..all_nodes {
-                    let old_k_value = k_prime.get(i, j).unwrap();
-                    k_prime.set(i, j, dt * old_k_value / mass).unwrap();
+        let mut k = Matrix::new(0.0, nnodes, nnodes);
+        let mut q = Matrix::new(0.0, nnodes, 1);
+
+
+        // this is just quite helpful
+        let get_t_after = |i: usize|->Float{
+            match temperatures.get(i + 1, 0) {
+                Ok(v) => v,
+                Err(_) => {
+                    let (.., s) = &self.segments[i];
+                    assert!(!matches!(s, &UValue::Cavity(_)));
+                    // If it is not Cavity, then it we can return whatever we want,
+                    // as this u-value does not depend on tempeature
+                    123.
                 }
-                c_prime.push(dt / mass);
-            } else {
-                unreachable!()
+            }
+        };
+
+
+        for local_i in 0..nnodes-1 {
+            let global_i = ini + local_i;            
+            let (.., uvalue) = &self.segments[global_i];
+            let t_before = temperatures.get(global_i, 0).unwrap(); // this should NEVER fail
+            let t_after = get_t_after(global_i);
+            let u = uvalue.u_value(t_before, t_after);
+
+            // Top left... should be there            
+            let old_value = k.get(local_i, local_i).unwrap();
+            k.set(local_i, local_i, old_value - u).unwrap();            
+
+            // Bottom right, only if within range.            
+            if let Ok(old_value) = k.get(local_i + 1, local_i + 1){ 
+                k.set(local_i + 1, local_i + 1, old_value - u).unwrap();
+            }
+            // Top right, only if within range.
+            if let Ok(old_value) = k.get(local_i, local_i + 1) {
+                k.set(local_i, local_i + 1, old_value + u).unwrap();
+            }
+
+            // Bottom left, only if within range.
+            if let Ok(old_value) = k.get(local_i + 1, local_i) {
+                k.set(local_i + 1, local_i, old_value + u).unwrap();
             }
         }
 
-        let front_mat = &construction.materials[0];
-        let (front_thermal_absorbtance, front_solar_absorbtance) = match &front_mat.substance {
-            Substance::Normal(s) => {
-                let thermal = match s.thermal_absorbtance() {
-                    Ok(v) => *v,
-                    Err(_) => {
-                        let v = 0.9;
-                        eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
-                        v
-                    }
-                };
-                let solar = match s.solar_absorbtance() {
-                    Ok(v) => *v,
-                    Err(_) => {
-                        let v = 0.7;
-                        eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
-                        v
-                    }
-                };
-                (thermal, solar)
-            }
-            Substance::Gas(_) => {
-                todo!()
-            }
+        // Add front border conditions
+        let (hs_front, front_q) = if ini == 0 {            
+            let ts = 273.15 + temperatures.get(0, 0).unwrap();
+            let front_q = front_env.air_temperature * front_hs  // convection
+                + front_env.ir_irrad * front_emmisivity // incident radiation
+                - SIGMA * front_emmisivity * ts.powi(4); // outgoing radiation
+                
+            (front_hs, front_q)
+        } else {
+            let (.., resistance) = &self.segments[ini-1];
+            let t_before = temperatures.get(ini-1, 0).unwrap(); // this should NEVER fail
+            let t_after = get_t_after(fin);
+            let u = resistance.u_value(t_before, t_after);
+
+            (u, u*t_after)
+        };        
+        let old_v = q.get(0, 0).unwrap();
+        q.set(0, 0, old_v + front_q).unwrap();
+
+        let old_value = k.get(0, 0).unwrap();
+        k.set(0, 0, old_value - hs_front).unwrap();
+
+        // Add back border conditions
+        let (hs_back, back_q) = if fin == nnodes - 1 {
+            let ts = 273.15 + temperatures.get(fin, 0).unwrap();
+                                    
+            let back_q = back_env.air_temperature * back_hs  // convection
+                + back_env.ir_irrad * back_emmisivity // incident radiation
+                - SIGMA * back_emmisivity * ts.powi(4); // outgoing radiation
+
+            (back_hs, back_q)
+        } else {
+            
+            let (.., resistance) = &self.segments[fin];
+            let t_before = temperatures.get(fin, 0).unwrap(); // this should NEVER fail
+            let t_after = get_t_after(fin);
+            let u = resistance.u_value(t_before, t_after);   
+            dbg!(t_after - t_before, (t_after - t_before)*u, u);         
+
+            (u, u*t_after)
         };
+        let old_v = q.get(nnodes - 1, 0).unwrap();
+        q.set(nnodes - 1, 0, old_v + back_q).unwrap();
+        let old_value = k.get(nnodes - 1, nnodes - 1).unwrap();
+        k.set(nnodes - 1, nnodes - 1, old_value - hs_back).unwrap();
 
-        let back_mat = &construction.materials.last().unwrap(); // There should be at least one.
-        let (back_thermal_absorbtance, back_solar_absorbtance) = match &back_mat.substance {
-            Substance::Normal(s) => {
-                let thermal = match s.thermal_absorbtance() {
-                    Ok(v) => *v,
-                    Err(_) => {
-                        let v = 0.9;
-                        eprintln!("Warning: Substance '{}' has no thermal absorbtance... assuming a value of {}", s.name, v);
-                        v
-                    }
-                };
-                let solar = match s.solar_absorbtance() {
-                    Ok(v) => *v,
-                    Err(_) => {
-                        let v = 0.7;
-                        eprintln!("Warning: Substance '{}' has no Solar absorbtance... assuming a value of {}", s.name, v);
-                        v
-                    }
-                };
-                (thermal, solar)
-            }
-            Substance::Gas(_) => {
-                todo!()
-            }
-        };
-
-        let func = move |
-                                temperatures: &Matrix,
-                                air_temp_front: Float,
-                                air_temp_back: Float,
-                                rs_front: Float,
-                                rs_back: Float,
-                                solar_irradiance_front: Float,
-                                solar_irradiance_back: Float,
-                                ir_irradiance_front: Float,
-                                ir_irradiance_back: Float|
-            -> Matrix {
-            let full_rs_front = r_front + rs_front;
-            let full_rs_back = r_back + rs_back;
-
-            // Sol-air temperature
-            let t_front = air_temp_front
-                + (front_solar_absorbtance * solar_irradiance_front
-                    + front_thermal_absorbtance * ir_irradiance_front)
-                    * full_rs_front;
-            let t_back = air_temp_back
-                + (back_solar_absorbtance * solar_irradiance_back
-                    + back_thermal_absorbtance * ir_irradiance_back)
-                    * full_rs_back;
-
-            let ts_front = temperatures.get(0, 0).unwrap();
-            let ts_back = temperatures.get(all_nodes - 1, 0).unwrap();
-
-            // Calculate: k_i = dt*inv(C) * q + h*inv(C)*k*T
-            // But, dt*inv(C) = c_prime | h*inv(C)*k = k_prime
-            // --> Calculate: k_i = c_prime * q + k_prime * T
-
-            let mut k_i = k_prime.from_prod_n_diag(temperatures, 3).unwrap();
-
-            // if we are generating heat in any layer (e.g., radiant floor) this
-            // would need to change...
-            let old_value = k_i.get(0, 0).unwrap();
-            k_i.set(
-                0,
-                0,
-                old_value
-                /* Add RSFront */ - c_prime[0] * ts_front / full_rs_front
-                /* And the heat flow*/ + c_prime[0] * t_front / full_rs_front,
-            )
-            .unwrap();
-
-            // Ki is a column
-            let old_value = k_i.get(all_nodes - 1, 0).unwrap();
-            k_i.set(
-                all_nodes - 1,
-                0,
-                old_value
-                /* Add RSBack */ - c_prime[all_nodes - 1] * ts_back / full_rs_back
-                /* And the heat flow*/ + c_prime[all_nodes - 1] * t_back / full_rs_back,
-            )
-            .unwrap();
-
-            // return
-            k_i
-        };
-
-        let march_closure = move |
-                                temperatures: &mut Matrix,
-                                air_temp_front: Float,
-                                air_temp_back: Float,
-                                rs_front: Float,
-                                rs_back: Float,
-                                solar_irradiance_front: Float,
-                                solar_irradiance_back: Float,
-                                ir_irradiance_front: Float,
-                                ir_irradiance_back: Float|{
-            // First
-            let mut k1 = func(
-                &temperatures,
-                air_temp_front,
-                air_temp_back,
-                rs_front,
-                rs_back,
-                solar_irradiance_front,
-                solar_irradiance_back,
-                ir_irradiance_front,
-                ir_irradiance_back,
-            );
-
-            // returning "temperatures + k1" is Euler... continuing is
-            // Runge–Kutta 4th order
-
-            // Second
-            let mut aux = &k1 * 0.5;
-            aux += &temperatures;
-            let mut k2 = func(
-                &aux,
-                air_temp_front,
-                air_temp_back,
-                rs_front,
-                rs_back,
-                solar_irradiance_front,
-                solar_irradiance_back,
-                ir_irradiance_front,
-                ir_irradiance_back,
-            );
-
-            // Third... put the result into `aux`
-            k2.scale_into(0.5, &mut aux).unwrap(); //  aux = k2 /2
-            aux += &temperatures;
-            let mut k3 = func(
-                &aux,
-                air_temp_front,
-                air_temp_back,
-                rs_front,
-                rs_back,
-                solar_irradiance_front,
-                solar_irradiance_back,
-                ir_irradiance_front,
-                ir_irradiance_back,
-            );
-
-            // Fourth... put the result into `aux`
-            k3.scale_into(1., &mut aux).unwrap(); //  aux = k3
-            aux += &temperatures;
-            let mut k4 = func(
-                &aux,
-                air_temp_front,
-                air_temp_back,
-                rs_front,
-                rs_back,
-                solar_irradiance_front,
-                solar_irradiance_back,
-                ir_irradiance_front,
-                ir_irradiance_back,
-            );
-
-            // Scale them and add them all up
-            k1 /= 6.;
-            k2 /= 3.;
-            k3 /= 3.;
-            k4 /= 6.;
-
-            k1 += &k2;
-            k1 += &k3;
-            k1 += &k4;
-
-            // Let's add it to the temperatures.
-            // temperatures.add_to_this(&k1).unwrap();
-            *temperatures += &k1;
-        };
-        self.march = Some(Box::new(march_closure));
-        
+        // return
+        (k, q)
     }
-
-
-    /// Calculates the temperatures 
-    fn build_static_no_mass_thermal_network(
-        &mut self,
-        gases: &[Gas],
-        construction: &Rc<Construction>,
-        // first_massive: usize,
-        // last_massive: usize,
-        dt: Float,
-        // all_nodes: usize,
-        // n_elements: &[usize],
-        r_front: Float,
-        r_back: Float,
-    ) {
-        let r = self.r_between(0, self.segments.len(), &vec![], gases);
-        let u = 1./(r + r_front + r_back);
-
-        let n_nodes = self.segments.len();
-        
-        let temps = vec![0.0; n_nodes];
-        let k = self.calc_k_matrix(&temps, gases, false);// Not only massive ones
-        // k *= -1.;
-        println!("K={}", k);
-
-        let march_closure = move |
-        temperatures: &mut Matrix,
-        air_temp_front: Float,
-        air_temp_back: Float,
-        rs_front: Float,
-        rs_back: Float,
-        _solar_irradiance_front: Float,
-        _solar_irradiance_back: Float,
-        _ir_irradiance_front: Float,
-        _ir_irradiance_back: Float|{
-            
-            // Solve (A * temp = -q)
-            let mut q = vec![0.0; n_nodes];
-            q[0] -= air_temp_front/rs_front;
-            q[n_nodes-1] -= air_temp_back/rs_back;
-            let q = Matrix::from_data(n_nodes, 1, q);
-            dbg!(rs_back);
-            dbg!(rs_front);
-
-            // Add the effect of convective heat transfer
-            // let ts_front = temperatures.get(0, 0).unwrap();
-            // let ts_back = temperatures.get(n_nodes - 1, 0).unwrap();
-
-            // I don't like this... but it seems like I need this.
-            let mut kp = k.clone();
-            println!("K before = {}",kp);
-            
-
-            let old_value = kp.get(0, 0).unwrap();
-            kp.set(
-                0,
-                0,
-                old_value
-                /* Add RSFront */ -  1. / rs_front
-                // /* And the heat flow*/ + c_prime[0] * air_t_front / rs_front,
-            )
-            .unwrap();
-
-            let old_value = kp.get(n_nodes - 1, n_nodes - 1).unwrap();
-            kp.set(
-                n_nodes - 1,
-                n_nodes - 1,
-                old_value
-                /* Add RSBack */ -  1. / rs_back
-                // /* And the heat flow*/ + c_prime[n_nodes - 1] * air_temp_back / rs_back,
-            )
-            .unwrap();
-
-
-
-            dbg!(air_temp_front);
-            dbg!(air_temp_back);
-            println!("Q = {}",q);
-            println!("K = {}",kp);
-            
-            // solve K * temp = -q
-            let r = kp.gauss_seidel(&q, temperatures, 100, 0.002);
-            if r.is_err(){                
-                k.gauss_seidel(&q, temperatures, 100, 0.2).unwrap()                
-            }
-            
-
-        };
-        self.march = Some(Box::new(march_closure));
-        
-        
-        
-    }
-
-    pub fn build_thermal_network(
-        &mut self,
-        gases: &[Gas],
-        construction: &Rc<Construction>,
-        // first_massive: usize,
-        // last_massive: usize,
-        dt: Float,
-        // all_nodes: usize,
-        // n_elements: &[usize],
-        r_front: Float,
-        r_back: Float,
-    ) {
-
-        // Is it Linear        
-        if self.is_massive && self.is_static {
-            // Normal surface.                        
-            self.build_static_massive_thermal_network(gases, construction, dt, r_front, r_back);
-            
-        } else if !self.is_massive && self.is_static {
-            self.build_static_no_mass_thermal_network(gases, construction, dt, r_front, r_back);
-        };
-    }
-
 }
-
-
 
 /***********/
 /* TESTING */
@@ -1016,10 +694,22 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
-    
+    use crate::gas::Gas;
 
-    fn get_normal(thermal_cond: Float, density: Float, cp: Float, thickness: Float)->Rc<Construction>{
+
+    #[test]
+    fn test_build_c(){
+        assert!(false)   
         
+    }
+
+
+    fn get_normal(
+        thermal_cond: Float,
+        density: Float,
+        cp: Float,
+        thickness: Float,
+    ) -> Rc<Construction> {
         let mut s = simple_model::substance::Normal::new("the substance".into());
         s.set_thermal_conductivity(thermal_cond)
             .set_density(density)
@@ -1033,87 +723,57 @@ mod testing {
         Rc::new(construction)
     }
 
+  
     #[test]
-    fn test_normal_march_closure(){
+    fn test_build_normal_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
-        let thickness = 12.5/1000.;        
+        let thickness = 12.5 / 1000.;
         let tstep_sub = 10;
 
-        let gases = Vec::new();
         let construction = get_normal(thermal_cond, density, cp, thickness);
-        let n_elements = vec![1]; 
-        let mut d = Discretization::build(&construction, &gases, tstep_sub, &n_elements);
-        
-        let first_massive: usize = 0;
-        let last_massive: usize = 1;
-        let dt: Float = 0.1;
-        let all_nodes: usize = 1;
-        let r_front: Float = 0.2;
-        let r_back: Float = 0.1;
-
-        let f = d.build_thermal_network(&gases, &construction, dt, r_front, r_back);
-    }
-    
-    #[test]
-    fn test_build_k(){
-        assert!(false)   
-    }
-
-    #[test]
-    fn test_build_c(){
-        assert!(false)   
-        
-    }
-
-    #[test]
-    fn test_build_normal_mass(){
-        let thermal_cond = 1.;
-        let density = 2.1;
-        let cp = 1.312;
-        let thickness = 12.5/1000.;        
-        let tstep_sub = 10;
-
-        let gases = Vec::new();
-        let construction = get_normal(thermal_cond, density, cp, thickness);
-        let d = Discretization::build(&construction, &gases, tstep_sub, &[1]);
+        let d = Discretization::build(&construction, tstep_sub, &[1], 1., 0.).unwrap();
         // normal --> linear
         assert!(d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 2);
         // mass of node 0
-        let exp_mass = thickness * density * cp/2.;
+        let exp_mass = thickness * density * cp / 2.;
         let mass = d.segments[0].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Solid(r) = d.segments[0].1{
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(u) = d.segments[0].1 {
+            assert!((u -  thermal_cond/thickness).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
         let mass = d.segments[1].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Back = d.segments[1].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Back = d.segments[1].1 {
             assert!(true)
-        }else{
+        } else {
             panic!("Expecting Back!")
         }
     }
 
     #[test]
-    fn test_build_normal_no_mass(){
-        
+    fn test_build_normal_no_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
-        let thickness = 12.5/1000.;        
+        let thickness = 12.5 / 1000.;
         let tstep_sub = 10;
-        
+
         let construction = get_normal(thermal_cond, density, cp, thickness);
-        let gases = Vec::new();
-        
-        let d = Discretization::build(&construction, &gases, tstep_sub, &[0]);
+
+        let d = Discretization::build(&construction, tstep_sub, &[0], 1., 0.).unwrap();
 
         // normal --> linear
         assert!(d.is_static);
@@ -1122,35 +782,41 @@ mod testing {
         // mass of node 0
         let exp_mass = 0.0;
         let mass = d.segments[0].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Solid(r) = d.segments[0].1{
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(u) = d.segments[0].1 {
+            assert!((u -  thermal_cond/thickness).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
         let mass = d.segments[1].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Back = d.segments[1].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Back = d.segments[1].1 {
             assert!(true)
-        }else{
+        } else {
             panic!("Expecting Back!")
         }
     }
 
     #[test]
-    fn test_build_normal_gas_normal_mass(){
+    fn test_build_normal_gas_normal_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
-        let thickness = 12.5/1000.;
-        let mut gases = Vec::new();
+        let thickness = 12.5 / 1000.;
 
         let tstep_sub = 10;
         let mut construction = simple_model::Construction::new("the construction".into());
         // add normal
         let mut normal = simple_model::substance::Normal::new("the substance".into());
-        normal.set_thermal_conductivity(thermal_cond)
+        normal
+            .set_thermal_conductivity(thermal_cond)
             .set_density(density)
             .set_specific_heat_capacity(cp);
         let normal = normal.wrap();
@@ -1159,79 +825,90 @@ mod testing {
         construction.materials.push(normal.clone());
 
         // add gas
-        let mut gas = simple_model::substance::Gas::new("the gas".into());        
+        let mut gas = simple_model::substance::Gas::new("the gas".into());
         gas.set_gas(simple_model::substance::gas::StandardGas::Air);
-        gases.push(gas.clone().into());
+
         let gas = gas.wrap();
         let gas = simple_model::Material::new("the_gas".into(), gas, thickness);
         let gas = Rc::new(gas);
         construction.materials.push(gas);
-        
-        // add normal        
-        construction.materials.push(normal);
-        
 
+        // add normal
+        construction.materials.push(normal);
 
         let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, &gases, tstep_sub, &[1, 1, 1]);
+        let d = Discretization::build(&construction, tstep_sub, &[1, 1, 1], 1., 0.).unwrap();
 
         // has gas --> linear
         assert!(!d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 4); // normal, gas, normal, back
-        
+
         // node 0
-        let exp_mass = thickness * density * cp/2.;
+        let exp_mass = thickness * density * cp / 2.;
         let mass = d.segments[0].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");                
-        if let Resistance::Solid(r) = d.segments[0].1 {
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(u) = d.segments[0].1 {
+            assert!((u - thermal_cond/thickness).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
-        // node 1        
+        // node 1
         let mass = d.segments[1].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Cavity(i) = d.segments[1].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Cavity(_c) = &d.segments[1].1 {
             // assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-            assert_eq!(i, 0, "Expecting 0... found {i}");
-        }else{
+            // assert_eq!(i, 0, "Expecting 0... found {i}");
+            todo!()
+        } else {
             panic!("Expecting Solid!")
         }
 
         // node 2
         let mass = d.segments[2].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Solid(r) = d.segments[2].1{
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(u) = d.segments[2].1 {
+            assert!((u - thermal_cond/thickness).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
         // node 3
         let mass = d.segments[3].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Back = d.segments[3].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Back = d.segments[3].1 {
             assert!(true)
-        }else{
+        } else {
             panic!("Expecting Solid!")
         }
     }
 
     #[test]
-    fn test_build_normal_gas_normal_no_mass(){
+    fn test_build_normal_gas_normal_no_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
-        let thickness = 12.5/1000.;
-        let mut gases = Vec::new();
+        let thickness = 12.5 / 1000.;
 
         let tstep_sub = 10;
         let mut construction = simple_model::Construction::new("the construction".into());
         // add normal
         let mut normal = simple_model::substance::Normal::new("the substance".into());
-        normal.set_thermal_conductivity(thermal_cond)
+        normal
+            .set_thermal_conductivity(thermal_cond)
             .set_density(density)
             .set_specific_heat_capacity(cp);
         let normal = normal.wrap();
@@ -1240,69 +917,410 @@ mod testing {
         construction.materials.push(normal.clone());
 
         // add gas
-        let mut gas = simple_model::substance::Gas::new("the gas".into());        
+        let mut gas = simple_model::substance::Gas::new("the gas".into());
         gas.set_gas(simple_model::substance::gas::StandardGas::Air);
-        gases.push(gas.clone().into());
+
         let gas = gas.wrap();
         let gas = simple_model::Material::new("the_gas".into(), gas, thickness);
         let gas = Rc::new(gas);
         construction.materials.push(gas);
-        
-        // add normal        
-        construction.materials.push(normal);
-        
 
+        // add normal
+        construction.materials.push(normal);
 
         let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, &gases,  tstep_sub, &[0,0,0]);
+        let d = Discretization::build(&construction, tstep_sub, &[0, 0, 0], 1., 0.).unwrap();
 
         // has gas --> linear
         assert!(!d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 4); // normal, gas, normal, back
-        
+
         // node 0
         let exp_mass = 0.0;
         let mass = d.segments[0].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");                
-        if let Resistance::Solid(r) = d.segments[0].1 {
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(u) = d.segments[0].1 {
+            assert!((u - thermal_cond/thickness).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
-        // node 1        
+        // node 1
         let mass = d.segments[1].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Cavity(i) = d.segments[1].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Cavity(_i) = &d.segments[1].1 {
             // assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-            assert_eq!(i, 0, "Expecting 0... found {i}");
-        }else{
+            todo!()
+        } else {
             panic!("Expecting Solid!")
         }
 
         // node 2
         let mass = d.segments[2].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Solid(r) = d.segments[2].1{
-            assert!( (r - thickness/thermal_cond).abs() < 1e-16 )
-        }else{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Solid(r) = d.segments[2].1 {
+            assert!((r - thickness / thermal_cond).abs() < 1e-16)
+        } else {
             panic!("Expecting Solid!")
         }
 
         // node 3
         let mass = d.segments[3].0;
-        assert!( (exp_mass - mass).abs() < 1e-17 , "Expecting mass to be {exp_mass}... found {mass}");
-        if let Resistance::Back = d.segments[3].1{
+        assert!(
+            (exp_mass - mass).abs() < 1e-17,
+            "Expecting mass to be {exp_mass}... found {mass}"
+        );
+        if let UValue::Back = d.segments[3].1 {
             assert!(true)
-        }else{
+        } else {
             panic!("Expecting Solid!")
         }
     }
 
+    #[test]
+    fn test_get_q_k_solid() {
+        let thickness = 0.5;
+        let n = 5;
+        let dx = thickness / n as Float;
+        let thermal_cond = 2.12;
+        let u = thermal_cond / dx;
+
+        let mut segments = Vec::with_capacity(n + 1);
+        for _ in 0..n {
+            segments.push((0.0, UValue::Solid(u)));
+        }
+        segments.push((0.0, UValue::Back));
+        assert_eq!(segments.len(), n + 1);
+
+        let d = Discretization {
+            segments,
+            tstep_subdivision: 1,
+            is_static: true,
+            is_massive: true,            
+        };
+
+        let front_env = Environment {
+            solar_radiation: 0.0,
+            air_temperature: 1.,
+            air_speed: 0.,
+            ir_irrad: SIGMA * (273.15 as Float).powi(4),
+            .. Environment::default()
+        };
+        let front_emmisivity = 0.9;
+
+        let back_env = Environment {
+            solar_radiation: 0.0,
+            air_temperature: 6.,
+            air_speed: 0.,
+            ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
+            .. Environment::default()
+        };
+        let back_emmisivity = 0.9;
+
+        let temperatures = Matrix::from_data(n + 1, 1, vec![0., 1., 2., 3., 4., 5.]);
+        let front_hs = front_env.get_hs();
+        let back_hs = back_env.get_hs();
+
+        let (k, q) = d.get_k_q(
+            0,
+            n,
+            &temperatures,
+            &front_env,
+            front_emmisivity,
+            front_hs,
+            &back_env,
+            back_emmisivity,
+            back_hs,
+        );
+        println!("k = {}", k);
+        println!("heat_flows = {}", q);
+
+        
+
+        for r in 0..n + 1 {
+            // Check q
+            let heat_flow = q.get(r, 0).unwrap();
+            if r == 0 {
+                assert!(heat_flow > 1e-5);
+            } else if r == n {
+                assert!(heat_flow > 1e-5);
+            } else {
+                assert!(heat_flow.abs() < 1e-29);
+            }
+
+            for c in 0..n + 1 {
+                let v = k.get(r, c).unwrap();
+
+                if c == r {
+                    // Diagonal
+                    if c == 0 {
+                        // Exterior node
+                        assert!((v - (-front_hs - u)).abs() < 1e-20);
+                    } else if c == n {
+                        // interior node
+                        assert!((v - (-back_hs - u)).abs() < 1e-20);
+                    } else {
+                        // Any other node.
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    }
+                } else {
+                    // Not diagonal
+                    let r = r as i32;
+                    let c = c as i32;
+                    if (c - r).abs() <= 1 {
+                        // if it is within tri-diagonal
+                        assert!((v - u).abs() < 1e-20);
+                    } else {
+                        // if not
+                        assert!(v.abs() < 1e-29);
+                    }
+                }
+            }
+        }
+    }
 
 
-    
-    
-    
+    #[test]
+    fn test_get_q_k_partial() {
+        let thickness = 0.5;
+        let n = 5;
+        let dx = thickness / n as Float;
+        let thermal_cond = 2.12;
+        let u = thermal_cond / dx;
+
+        let mut segments = Vec::with_capacity(n + 1);
+        for _ in 0..n {
+            segments.push((0.0, UValue::Solid(u)));
+        }
+        segments.push((0.0, UValue::Back));
+        assert_eq!(segments.len(), n + 1);
+
+        let d = Discretization {
+            segments,
+            tstep_subdivision: 1,
+            is_static: true,
+            is_massive: true,            
+        };
+
+        let front_env = Environment {
+            air_temperature: 1.,
+            air_speed: 0.,
+            ir_irrad: SIGMA * (273.15 as Float).powi(4),
+            solar_radiation: 0.0,
+            .. Environment::default()
+        };
+        let front_emmisivity = 0.9;
+
+        let back_env = Environment {
+            air_temperature: 6.,
+            air_speed: 0.,
+            ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
+            solar_radiation: 0.0,
+            .. Environment::default()
+        };
+        let back_emmisivity = 0.9;
+
+        let temperatures = Matrix::from_data(n + 1, 1, vec![0., 1., 2., 3., 4., 5.]);
+        let front_hs = 0.1;
+        let back_hs = 0.1;
+        let (k, q) = d.get_k_q(
+            1,
+            n-1,
+            &temperatures,
+            &front_env,
+            front_emmisivity,
+            front_hs,
+            &back_env,
+            back_emmisivity,
+            back_hs,
+        );
+        println!("k = {}", k);
+        println!("heat_flows = {}", q);
+        
+
+        for r in 0..n-1 {
+            // Check q
+            let heat_flow = q.get(r, 0).unwrap();
+            if r == 0 {
+                assert!(heat_flow > 1e-5);
+            } else if r == n-2 {
+                assert!(heat_flow > 1e-5);
+            } else {
+                assert!(heat_flow.abs() < 1e-29);
+            }
+
+            for c in 0..n-1  {
+                let v = k.get(r, c).unwrap();
+
+                if c == r {
+                    // Diagonal
+                    if c == 0 {
+                        // Exterior node
+                        assert!((v + 2.* u).abs() < 1e-20, "v = {} | found = {}", v, 2.*u);
+                    } else if c == n-2 {
+                        // interior node
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    } else {
+                        // Any other node.
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    }
+                } else {
+                    // Not diagonal
+                    let r = r as i32;
+                    let c = c as i32;
+                    if (c - r).abs() <= 1 {
+                        // if it is within tri-diagonal
+                        assert!((v - u).abs() < 1e-20);
+                    } else {
+                        // if not
+                        assert!(v.abs() < 1e-29);
+                    }
+                }
+            }
+        }
+    }
+
+
+    #[test]
+    fn test_u(){
+        // https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp
+
+        
+        let gap_thickness = 0.0127;
+        let solid_thickness = 0.003048;   // [m]
+        let solid_conductance = 1.0; 
+
+        let gap = Cavity{
+            thickness: gap_thickness,
+            height: 1.,
+            gas: Gas::air(),
+            eout: 0.84, 
+            ein: 0.84,
+            angle: 0.*crate::PI/2.,
+        };
+
+        let mut segments = Vec::with_capacity(4);
+        // layer 1.
+        segments.push((0., UValue::Solid(solid_conductance/solid_thickness)));
+
+        // Layer 2: Gap
+        segments.push((0.0, UValue::Cavity(gap)));
+
+        // layer 3.        
+        segments.push((0., UValue::Solid(solid_conductance/solid_thickness)));
+
+        // Last node
+        segments.push((0.0, UValue::Back));
+        let d = Discretization {
+            segments,
+            tstep_subdivision: 1,
+            is_static: true,
+            is_massive: true,            
+        };
+
+        // Borders
+        let air_temperature = 255.15 - 273.15;   // Kelvins into C
+        let air_speed = 5.5;            // meters per second
+        let t_sky: Float = 255.15;             // Kelvins into C
+        let solar_radiation = 789.0;
+        let front_env = Environment{
+            air_speed,
+            air_temperature,
+            solar_radiation,
+            ir_irrad: SIGMA * (t_sky.powi(4)),
+            .. Environment::default()
+        };
+
+        let back_env = Environment{
+            air_speed: 0.0,
+            air_temperature: 294.15 - 273.15, // K into C
+            solar_radiation : 0.,
+            ir_irrad: SIGMA * (294.15 as Float).powi(4),
+            .. Environment::default()
+        };
+
+        let kelvin = Matrix::new(273.14, 4, 1);
+
+
+        // First, u-value        
+        let exp_temps = vec![258.791640 , 259.116115, 279.323983, 279.648458];
+        let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
+        temperatures -= &kelvin;
+        
+        let front_hs = 36.34359273; // these were found by analyzing WINDOW's response
+        let back_hs = 5.;
+
+        let (k, mut q) = d.get_k_q(0, 3, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
+        q *= -1.;
+        // let mut temps = Matrix::new(0.0, 4, 1);
+        
+        println!("K = {}", k);
+        let keep_k = k.clone();
+        println!("q = {}", q); 
+        let keep_q = q.clone();       
+        let t = k.mut_n_diag_gaussian(q, 3).unwrap();        
+        
+        println!("T = {}", &t + &kelvin);
+        
+        for (i,exp) in exp_temps.iter().enumerate() {
+            let found = t.get(i, 0).unwrap() + 273.15;
+            assert!( (exp - found).abs() < 0.17, "Expecting {}, found {}... delta is {}", exp, found, (exp - found).abs() );
+        }        
+        let mut check =  &keep_k*&t; // this should be equals to keep_q
+        check -= &keep_q;
+        println!("check = {}", check);
+
+
+        // Then, with sun
+        let exp_temps = vec![261.920088, 262.408524, 284.752662, 285.038190];
+        let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
+        temperatures -= &kelvin; // into C
+
+        let front_hs = 32.6; // these were found by analyzing WINDOW's response
+        let back_hs = 6.8;
+        let (k, mut q) = d.get_k_q(0, 3, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
+        
+        // add sun?
+        let old = q.get(0, 0).unwrap();
+        q.set(0, 0, old  + 0.096489921212/2. * solar_radiation).unwrap();
+        let old = q.get(1, 0).unwrap();
+        q.set(1, 0, old  + 0.096489921212/2. * solar_radiation).unwrap();
+
+        let old = q.get(2, 0).unwrap();
+        q.set(2, 0, old  + 0.072256758809/2. * solar_radiation).unwrap();
+        let old = q.get(3, 0).unwrap();
+        q.set(3, 0, old  + 0.072256758809/2. * solar_radiation).unwrap();
+
+
+        q *= -1.;
+
+        let keep_k = k.clone();
+        // let keep_q = q.clone();
+        
+        
+        println!("K = {}", k);
+        println!("q = {}", q);
+        
+        let t = k.mut_n_diag_gaussian(q, 3).unwrap();
+                
+        println!("T = {}", &t - &kelvin);
+        
+        for (i,exp) in exp_temps.iter().enumerate() {
+            let found = t.get(i, 0).unwrap() + 273.15;
+            assert!( (exp - found).abs() < 0.15, "Expecting {}, found {}... delta is {}", exp, found, (exp - found).abs() );
+        }        
+        let mut check =  &keep_k*&t; // this should be equals to keep_q
+        check -= &t;
+        println!("check = {}", check);
+    }
 }
