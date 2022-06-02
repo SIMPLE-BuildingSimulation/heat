@@ -23,7 +23,7 @@ use crate::environment::Environment;
 use crate::gas::Gas;
 use crate::Float;
 use matrix::Matrix;
-use simple_model::{Boundary, Construction, SimulationStateHeader, Surface, Fenestration};
+use simple_model::{Boundary, Construction, SimulationStateHeader, Surface, Fenestration, Substance};
 use simple_model::{SimulationState, SimulationStateElement};
 use std::rc::Rc;
 
@@ -78,10 +78,21 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix){
     assert_eq!(qcols, 1, "expecting 'q' to have 1 column... found {}", qcols);
 
     // Rearrenge into dT = (dt/C) * K + (dt/C)*q
-    for nrow in 0..krows{
+    for nrow in 0..krows{        
         let v = dt/c.get(nrow, nrow).unwrap();
         // transform k into k_prime (i.e., k * dt/C)
-        for ncol in 0..kcols{
+        let ini = if nrow == 0 {
+            0
+        }else{
+            nrow - 1
+        };
+        let fin = if nrow == krows - 1{
+            krows - 1
+        }else{
+            nrow + 1
+        };
+        // for ncol in 0..kcols{ 
+        for ncol in ini..=fin {
             k.scale_element(nrow, ncol, v).unwrap();
         }
         // transfrom q into q_prime (i.e., q * dt/C)
@@ -120,13 +131,13 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix){
     k3 /= 3.;
     k4 /= 6.;
 
-    k1 += &k2;
-    k1 += &k3;
-    k1 += &k4;
-
     // Let's add it all and return
     *t += &k1;
+    *t += &k2;
+    *t += &k3;
+    *t += &k4;
 
+    
 }
 
 
@@ -221,14 +232,37 @@ pub trait SurfaceTrait {
     fn front_convection_coefficient(&self, state: &SimulationState)->Option<Float>;
     fn back_convection_coefficient(&self, state: &SimulationState)->Option<Float>;
 
+
     fn set_front_convection_coefficient(&self, state: &mut SimulationState, v: Float);
+
     fn set_back_convection_coefficient(&self, state: &mut SimulationState, v: Float);
+
+    fn front_solar_irradiance(&self, state: &SimulationState)->Float;
+    fn back_solar_irradiance(&self, state: &SimulationState)->Float;
+
+    fn front_infrared_irradiance(&self, state: &SimulationState)->Float;
+    fn back_infrared_irradiance(&self, state: &SimulationState)->Float;
+
     
 
 }
 
 
 impl SurfaceTrait for Surface {
+    fn front_infrared_irradiance(&self, state: &SimulationState)->Float{
+        self.front_ir_irradiance(state).unwrap()
+    }
+    fn back_infrared_irradiance(&self, state: &SimulationState)->Float{
+        self.back_ir_irradiance(state).unwrap()
+    }
+
+    fn front_solar_irradiance(&self, state: &SimulationState)->Float{
+        self.front_incident_solar_irradiance(state).unwrap()
+    }
+    fn back_solar_irradiance(&self, state: &SimulationState)->Float{
+        self.back_incident_solar_irradiance(state).unwrap()
+    }
+
     fn set_front_convection_coefficient(&self, state: &mut SimulationState, v: Float){
         self.set_front_convection_coefficient(state, v)
     }
@@ -368,7 +402,18 @@ impl SurfaceTrait for Surface {
 
 
 impl SurfaceTrait for Fenestration {
-    
+    fn front_infrared_irradiance(&self, state: &SimulationState)->Float{
+        self.front_ir_irradiance(state).unwrap()
+    }
+    fn back_infrared_irradiance(&self, state: &SimulationState)->Float{
+        self.back_ir_irradiance(state).unwrap()
+    }
+    fn front_solar_irradiance(&self, state: &SimulationState)->Float{
+        self.front_incident_solar_irradiance(state).unwrap()
+    }
+    fn back_solar_irradiance(&self, state: &SimulationState)->Float{
+        self.back_incident_solar_irradiance(state).unwrap()
+    }
     fn set_front_convection_coefficient(&self, state: &mut SimulationState, v: Float){
         self.set_front_convection_coefficient(state, v)
     }
@@ -554,6 +599,18 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// Zones array of the Thermal Model    
     pub back_boundary: Option<Boundary>,
 
+    /// The thermal absorbtance on the front side (from 0 to 1)
+    pub front_emmisivity: Float,
+
+    /// The thermal absorbtance on the back side (from 0 to 1)
+    pub back_emmisivity: Float,
+
+    /// The solar absorbtance on the front side (from 0 to 1)
+    pub front_solar_absorbtance: Float,
+
+    /// The solar absorbtance on the back side (from 0 to 1)
+    pub back_solar_absorbtance: Float,
+
     /// The area of the Surface
     pub area: Float,
 }
@@ -591,6 +648,58 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let n_nodes = discretization.segments.len();
         parent.add_node_temperature_states(state, ref_surface_index, n_nodes);
 
+        const DEFAULT_SOLAR: Float = 0.7;
+        let front_solar_absorbtance = match &construction.materials[0].substance{
+            Substance::Normal(s)=>{
+                match s.solar_absorbtance(){
+                    Ok(v)=>*v,
+                    Err(_)=>{
+                        eprintln!("Substance '{}' has no solar absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_SOLAR);
+                        DEFAULT_SOLAR
+                    }
+                }
+            },
+            _ => panic!("Front Emissivity not available for this particular kind of Substance")
+        };
+        let back_solar_absorbtance = match &construction.materials.last().unwrap().substance{
+            Substance::Normal(s)=>{
+                match s.solar_absorbtance(){
+                    Ok(v)=>*v,
+                    Err(_)=>{
+                        eprintln!("Substance '{}' has no solar absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_SOLAR);
+                        DEFAULT_SOLAR
+                    }
+                }
+            },
+            _ => panic!("Front Emissivity not available for this particular kind of Substance")
+        };
+
+        const DEFAULT_EM : Float = 0.84;
+        let front_emmisivity = match &construction.materials[0].substance{
+            Substance::Normal(s)=>{
+                match s.thermal_absorbtance(){
+                    Ok(v)=>*v,
+                    Err(_)=>{
+                        eprintln!("Substance '{}' has no thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
+                        DEFAULT_EM
+                    }
+                }
+            },
+            _ => panic!("Front Emissivity not available for this particular kind of Substance")
+        };
+        let back_emmisivity = match &construction.materials.last().unwrap().substance{
+            Substance::Normal(s)=>{
+                match s.thermal_absorbtance(){
+                    Ok(v)=>*v,
+                    Err(_)=>{
+                        eprintln!("Substance '{}' has no thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
+                        DEFAULT_EM
+                    }
+                }
+            },
+            _ => panic!("Front Emissivity not available for this particular kind of Substance")
+        };
+
         // Build resulting
         Ok(ThermalSurfaceData {
             parent: parent.clone(),
@@ -599,6 +708,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             discretization,
             front_boundary: None,
             back_boundary: None,
+            front_emmisivity,
+            back_emmisivity,
+            front_solar_absorbtance,
+            back_solar_absorbtance
         })
     }
 
@@ -625,78 +738,19 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         
 
-        // Calculate and set Front and Back Solar Irradiance
-        let (solar_front, solar_back) = (0., 0.);
-        // match &self {
-        //     Self::Fenestration(fen, _data) => {
-        //         let front = fen
-        //             .front_incident_solar_irradiance(state)
-        //             .expect("Could not get front solar irradiance");
-        //         let back = fen
-        //             .back_incident_solar_irradiance(state)
-        //             .expect("Could not get front solar irradiance");
-        //         (front, back)
-        //     }
-        //     Self::Surface(sur, _data) => {
-        //         let front = sur
-        //             .front_incident_solar_irradiance(state)
-        //             .expect("Could not get front solar irradiance");
-        //         let back = sur
-        //             .back_incident_solar_irradiance(state)
-        //             .expect("Could not get back solar irradiance");
-        //         (front, back)
-        //     }
-        // };
+        // Calculate and set Front and Back Solar Irradiance        
+        let solar_front = self.parent.front_solar_irradiance(state);
+        let solar_back = self.parent.back_solar_irradiance(state);
+        if solar_back > 0.0{            
+            dbg!(solar_back);
+        }
 
-        // Calculate and set Front and Back IR Irradiance
         
-        let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));
-        // match &self {
-        //     Self::Fenestration(fen, _data) => {
-        //         let front = fen
-        //             .front_ir_irradiance(state)
-        //             .expect("Could not get front IR irradiance");
-        //         let back = fen
-        //             .back_ir_irradiance(state)
-        //             .expect("Could not get back IR irradiance");
-        //         (front, back)
-        //     }
-        //     Self::Surface(sur, _data) => {
-        //         let front = sur
-        //             .front_ir_irradiance(state)
-        //             .expect("Could not get front IR irradiance");
-        //         let back = sur
-        //             .back_ir_irradiance(state)
-        //             .expect("Could not get back IR irradiance");
-        //         (front, back)
-        //     }
-        // };
-
-        // if data.massive {
-        // if let Some(func) = &self.discretization.march {
-        //     func(&mut temperatures,
-        //         t_front,
-        //         t_back,
-        //         rs_front,
-        //         rs_back,
-        //         solar_front,
-        //         solar_back,
-        //         ir_front,
-        //         ir_back);
-        // } else {
-        //     unreachable!()
-        // }
-
-        // } else {
-        //     // full_rs_front is, indeed, the whole R
-        //     let q = (t_back - t_front) / (data.total_r + rs_front + rs_back);
-
-        //     let ts_front = t_front + q * rs_front;
-        //     let ts_back = t_back - q * rs_back;
-
-        //     temperatures.set(0, 0, ts_front).unwrap();
-        //     temperatures.set(data.n_nodes - 1, 0, ts_back).unwrap();
-        // }
+        // Calculate and set Front and Back IR Irradiance        
+        // let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));
+        let ir_front = self.parent.front_infrared_irradiance(state);
+        let ir_back = self.parent.back_infrared_irradiance(state);
+        
 
         let front_env = Environment{
             air_temperature: t_front,
@@ -725,7 +779,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         /////////////////////
         let n_nodes = self.discretization.segments.len();
         let mut q = Matrix::new(0.0, n_nodes, 1);
-        // dbg!("Solar absorption is zero!");
+        q.add_to_element(0, 0, solar_front * self.front_solar_absorbtance ).unwrap();
+        q.add_to_element(n_nodes - 1, 0, solar_back * self.back_solar_absorbtance).unwrap();
+
 
         /////////////////////
         // 2nd: Calculate the temperature in all no-mass nodes.
@@ -750,10 +806,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         if mass.len() == 0 {
 
-            let front_emmisivity = 0.84;
-            let back_emmisivity = 0.84;
-            let front_emmisivity = 0.;
-            let back_emmisivity = 0.;
+            
             // dbg!(front_emmisivity);
 
             
@@ -764,7 +817,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 // let h_front = 10.;
                 // // dbg!(h_front);
                 // let h_back = 10.;
-                let (k, mut local_q) = self.discretization.get_k_q(0, n_nodes-1, &temperatures, &front_env, front_emmisivity, front_hs, &back_env, back_emmisivity, back_hs);
+                let (k, mut local_q) = self.discretization.get_k_q(0, n_nodes-1, &temperatures, &front_env, self.front_emmisivity, front_hs, &back_env, self.back_emmisivity, back_hs);
     
                 // ... here we can add solar gains
                 local_q += &q;
@@ -869,18 +922,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 .collect();
             let c = Matrix::diag(c);
             
-            let front_emmisivity = 0.84;
-            // // dbg!(front_emmisivity);
-            let back_emmisivity = 0.84;
-            let front_emmisivity = 0.;
-            let back_emmisivity = 0.;
-
             
-
-            // This function should also return h_front and h_back
-        
-            let (k, mut local_q) = self.discretization.get_k_q(0, n_nodes - 1, &temperatures, &front_env, front_emmisivity, front_hs, &back_env, back_emmisivity, back_hs);            
-
+                        
+            let (k, mut local_q) = self.discretization.get_k_q(0, n_nodes - 1, &temperatures, &front_env, self.front_emmisivity, front_hs, &back_env, self.back_emmisivity, back_hs);            
+            
             // ... here we can add solar gains            
             local_q += &q;
 
@@ -1016,6 +1061,7 @@ mod testing {
         let mut poly = NormalSubstance::new("polyurethane".to_string());
         poly.set_density(17.5) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(2400.) // J/kg.K
+            .set_thermal_absorbtance(0.)
             .set_thermal_conductivity(0.0252); // W/m.K
 
         assert_eq!(poly.thermal_diffusivity().unwrap(), 0.6E-6);
@@ -1029,6 +1075,7 @@ mod testing {
         brickwork
             .set_density(1700.) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(800.) // J/kg.K
+            .set_thermal_absorbtance(0.)
             .set_thermal_conductivity(0.816); // W/m.K
 
         assert!((brickwork.thermal_diffusivity().unwrap() - 0.6E-6).abs() < 0.00000001);
@@ -1347,18 +1394,18 @@ mod testing {
 
         // Expecting
         let temperatures = ts.parent.get_node_temperatures(&state);        
-        let (nnodes, ..) = temperatures.size();
+        
         println!(" T == {}", &temperatures);
         
         assert!(q_front > 0.0, "q_in = {}", q_front);
         assert!(q_back < 0.0, "q_out = {}", q_back);
 
-        let full_qfront = q_front - 0.84*crate::SIGMA * ( (t_front + 273.15).powi(4) - (temperatures.get(0, 0).unwrap() + 273.15).powi(4));
-        let full_qback = q_back + 0.84*crate::SIGMA * ( (temperatures.get(nnodes-1, 0).unwrap() + 273.15).powi(4) - (t_back+273.15).powi(4));
+        let full_qfront = q_front;
+        let full_qback = q_back;
         
         
         assert!(
-            (full_qfront + full_qback).abs() < 0.05,
+            (full_qfront + full_qback).abs() < 0.08,
             "q_front = {} | q_back = {} | delta = {}",
             full_qfront,
             full_qback,

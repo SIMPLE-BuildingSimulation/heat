@@ -175,8 +175,8 @@ impl Discretization {
                         segments[n_segment].0 += mass / 2.;
                         segments[n_segment + 1].0 += mass / 2.;
 
-                        // Add resistance
-                        let dx = material.thickness;
+                        // Add resistance                        
+                        let dx = material.thickness / n as Float;
                         let k = s.thermal_conductivity().expect(&format!("Substance '{}' in material '{}' in Construction '{}' has no thermal conductivity, but we need it", s.name(), material.name(), construction.name()));
                         // Push U-value
                         segments[n_segment].1 = UValue::Solid(k / dx);
