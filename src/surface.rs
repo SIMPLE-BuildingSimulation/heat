@@ -20,7 +20,6 @@ SOFTWARE.
 
 use crate::construction::Discretization;
 use crate::environment::Environment;
-use crate::gas::Gas;
 use crate::Float;
 use matrix::Matrix;
 use simple_model::{Boundary, Construction, SimulationStateHeader, Surface, Fenestration, Substance};
@@ -557,40 +556,11 @@ impl SurfaceTrait for Fenestration {
 pub struct ThermalSurfaceData<T: SurfaceTrait> {
     pub parent: Rc<T>,
 
-    // / The front side convection coefficient
-    // rs_front: Float,
-
-    // // / The back side convection coefficient
-    // // rs_back: Float,
-
-    // /// Total resistance of the construction, WITHOUT Rsi and Rso
-    // total_r: Float,
-
+    
     /// The [`Discretization`] that represents this `ThermalSurfaceData`
     pub discretization: Discretization,
 
-    // /// The interior (i.e. front side) resistance before
-    // /// any layer with mass. It includes any light-weight material at the front of the construction.
-    // /// If the first layer in the construction has mass, then this
-    // /// value will be equal to 0. This value DOES NOT include the r_si
-    // pub r_front: Float,
-
-    // /// The exterior (i.e. back side) resistance after
-    // /// the last layer with mass. It includes
-    // /// any light-weight material at the back of the contruction.
-    // /// If the last layer in the construction has mass, then
-    // /// this value will be equal to 0. This value DOES NOT include the r_so.
-    // pub r_back: Float,
-
-    // The location of the first temperature node
-    // in the SimulationState
-    // front_side_node_index : usize,
-    /// The number of nodes after discretizing
-    /// the construction
-    n_nodes: usize,
-
-    // /// Has thermal mass at all?
-    // massive: bool,
+        
     /// The location of the front boundary zone in the
     /// Zones array of the Thermal Model
     pub front_boundary: Option<Boundary>,
@@ -621,12 +591,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         ref_surface_index: usize,
         parent: &Rc<T>,
         area: Float,
-        construction: &Rc<Construction>,
-        model_dt: Float,
-        // max_dx: Float,
-        // min_dt: Float,
-        // n_elements: &[usize],
-        // gases: &[Gas],
+        construction: &Rc<Construction>,        
         discretization: Discretization,
     ) -> Result<ThermalSurfaceData<T>, String> {
         // Set Front and Back state
@@ -703,8 +668,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Build resulting
         Ok(ThermalSurfaceData {
             parent: parent.clone(),
-            area,
-            n_nodes,
+            area,            
             discretization,
             front_boundary: None,
             back_boundary: None,
@@ -1164,7 +1128,6 @@ mod testing {
             &surface,
             surface.area(),
             &c,
-            main_dt,
             d,
         )
         .unwrap();
@@ -1292,8 +1255,7 @@ mod testing {
             0,
             &surface,
             surface.area(),
-            &c,
-            main_dt,            
+            &c,         
             d,
         )
         .unwrap();
@@ -1375,7 +1337,6 @@ mod testing {
             &surface,
             surface.area(),
             &c,
-            main_dt,
             d,
         )
         .unwrap();

@@ -50,6 +50,10 @@ impl Gas {
     fn raleigh(&self, t_front: Float, t_back: Float, thickness: Float) -> Float {
         const G: Float = 9.81;
 
+        if (t_front - t_back).abs() < 1e-10{
+            return 0.0000001
+        } 
+
         // Gas mean temperature
         let temp = (in_kelvin(t_front) + in_kelvin(t_back)) / 2.;
         // Eq. 41 of iso15099/2003
@@ -60,6 +64,7 @@ impl Gas {
         let mu = self.dynamic_viscosity(temp);
         let lambda = self.thermal_conductivity(temp);
         let rho = self.density(temp);
+        
         // Eq. 40 of iso15099/2003
         rho.powi(2) * thickness.powi(3) * G * beta * c_p * (t_front - t_back).abs() / (mu * lambda)
     }
