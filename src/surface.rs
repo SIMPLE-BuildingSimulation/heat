@@ -709,10 +709,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
         let solar_back = self.parent.back_solar_irradiance(state);
-        if solar_back > 0.0 {
-            dbg!(solar_back);
-        }
-
+        
         // Calculate and set Front and Back IR Irradiance
         // let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));
         let ir_front = self.parent.front_infrared_irradiance(state);

@@ -1313,7 +1313,7 @@ mod testing {
         q *= -1.;
 
         let keep_k = k.clone();
-        // let keep_q = q.clone();
+        let keep_q = q.clone();
         
         
         println!("K = {}", k);
@@ -1328,7 +1328,7 @@ mod testing {
             assert!( (exp - found).abs() < 0.15, "Expecting {}, found {}... delta is {}", exp, found, (exp - found).abs() );
         }        
         let mut check =  &keep_k*&t; // this should be equals to keep_q
-        check -= &t;
+        check -= &keep_q;
         println!("check = {}", check);
     }
 }
