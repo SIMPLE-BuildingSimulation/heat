@@ -183,7 +183,7 @@ impl Glazing {
         let mut ret = Vec::with_capacity(layers.len());
 
         // Trivial cases
-        if layers.len() == 0 {
+        if layers.is_empty() {
             return ret;
         } else if layers.len() == 1 {
             ret.push(layers[0].alpha_front);

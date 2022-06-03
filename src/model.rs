@@ -409,8 +409,8 @@ impl ThermalModel {
         fn iterate_surfaces<T: SurfaceTrait>(
             surfaces: &[ThermalSurfaceData<T>],
             state: &SimulationState,
-            a: &mut Vec<Float>,
-            b: &mut Vec<Float>,
+            a: &mut [Float],
+            b: &mut [Float],
         ) {
             for surface in surfaces {
                 

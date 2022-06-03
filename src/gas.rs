@@ -206,7 +206,8 @@ fn nusselt(ra: Float, gamma: Float, a_gi: Float) -> Float {
     const THIRTY_RAD: Float = 30. * crate::PI / 180.;
     const EPSILON_RAD: Float = 0.5 * crate::PI / 180.;
 
-    if gamma >= 0.0 && gamma < 2. * THIRTY_RAD - EPSILON_RAD {
+    // if gamma >= 0.0 && gamma < 2. * THIRTY_RAD - EPSILON_RAD {
+    if (0.0..2. * THIRTY_RAD - EPSILON_RAD).contains(&gamma){
         // Between 0 and 60 degrees
         nu_0_60(ra, gamma, a_gi)
     } else if gamma < 2. * THIRTY_RAD + EPSILON_RAD {

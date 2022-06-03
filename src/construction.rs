@@ -35,7 +35,7 @@ pub enum UValue {
     Solid(Float),
 
     /// A cavity, comprised of a gas
-    Cavity(Cavity),
+    Cavity(Box<Cavity>),
 
     /// The resistance is a surface coefficient.
     Back,
@@ -157,8 +157,8 @@ impl Discretization {
                             "Trying to calculate C_Matrix with a substance without 'density'",
                         );
                         let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");
-                        let m = rho * cp * dx; // dt;
-                        m
+                        rho * cp * dx
+                        
                     }
                     Substance::Gas(_s) => 0.,
                 }
@@ -177,7 +177,7 @@ impl Discretization {
 
                         // Add resistance                        
                         let dx = material.thickness / n as Float;
-                        let k = s.thermal_conductivity().expect(&format!("Substance '{}' in material '{}' in Construction '{}' has no thermal conductivity, but we need it", s.name(), material.name(), construction.name()));
+                        let k = s.thermal_conductivity().unwrap_or_else(|_| panic!("Substance '{}' in material '{}' in Construction '{}' has no thermal conductivity, but we need it", s.name(), material.name(), construction.name()));
                         // Push U-value
                         segments[n_segment].1 = UValue::Solid(k / dx);
                     }
@@ -253,7 +253,7 @@ impl Discretization {
                             eout,
                             ein,
                         };
-                        segments[n_segment].1 = UValue::Cavity(c);
+                        segments[n_segment].1 = UValue::Cavity(Box::new(c));
                     }
                 }
                 n_segment += 1;
@@ -1222,7 +1222,7 @@ mod testing {
         segments.push((0., UValue::Solid(solid_conductance/solid_thickness)));
 
         // Layer 2: Gap
-        segments.push((0.0, UValue::Cavity(gap)));
+        segments.push((0.0, UValue::Cavity(Box::new(gap))));
 
         // layer 3.        
         segments.push((0., UValue::Solid(solid_conductance/solid_thickness)));
