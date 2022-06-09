@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["construction",""],["heating_cooling",""],["model",""],["surface",""],["zone",""]],"type":[["Float",""]]});
+initSidebarItems({"constant":[["PI",""],["SIGMA","The Stefan–Boltzmann constant (in $`W/m^2K`$),  necessary for Radiation calculations"]],"mod":[["cavity",""],["construction",""],["environment",""],["gas",""],["glazing",""],["heating_cooling",""],["model",""],["surface",""],["zone",""]],"type":[["Float",""]]});
