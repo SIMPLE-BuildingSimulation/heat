@@ -1817,50 +1817,6 @@
 <span id="1776">1776</span>
 <span id="1777">1777</span>
 <span id="1778">1778</span>
-<span id="1779">1779</span>
-<span id="1780">1780</span>
-<span id="1781">1781</span>
-<span id="1782">1782</span>
-<span id="1783">1783</span>
-<span id="1784">1784</span>
-<span id="1785">1785</span>
-<span id="1786">1786</span>
-<span id="1787">1787</span>
-<span id="1788">1788</span>
-<span id="1789">1789</span>
-<span id="1790">1790</span>
-<span id="1791">1791</span>
-<span id="1792">1792</span>
-<span id="1793">1793</span>
-<span id="1794">1794</span>
-<span id="1795">1795</span>
-<span id="1796">1796</span>
-<span id="1797">1797</span>
-<span id="1798">1798</span>
-<span id="1799">1799</span>
-<span id="1800">1800</span>
-<span id="1801">1801</span>
-<span id="1802">1802</span>
-<span id="1803">1803</span>
-<span id="1804">1804</span>
-<span id="1805">1805</span>
-<span id="1806">1806</span>
-<span id="1807">1807</span>
-<span id="1808">1808</span>
-<span id="1809">1809</span>
-<span id="1810">1810</span>
-<span id="1811">1811</span>
-<span id="1812">1812</span>
-<span id="1813">1813</span>
-<span id="1814">1814</span>
-<span id="1815">1815</span>
-<span id="1816">1816</span>
-<span id="1817">1817</span>
-<span id="1818">1818</span>
-<span id="1819">1819</span>
-<span id="1820">1820</span>
-<span id="1821">1821</span>
-<span id="1822">1822</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1885,10 +1841,11 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::environment::Environment</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Boundary</span>, <span class="ident">Construction</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Surface</span>, <span class="ident">Fenestration</span>, <span class="ident">Substance</span>};
+<span class="kw">use</span> <span class="ident">simple_model</span>::{
+    <span class="ident">Boundary</span>, <span class="ident">Construction</span>, <span class="ident">Fenestration</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>,
+};
 <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationState</span>, <span class="ident">SimulationStateElement</span>};
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-
 
 <span class="doccomment">/// Marches forward through time, solving the</span>
 <span class="doccomment">/// Ordinary Differential Equation that governs the heat transfer in walls.</span>
@@ -1929,31 +1886,42 @@ SOFTWARE.
 <span class="doccomment">/// * $`k_2 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_1}{2})`$</span>
 <span class="doccomment">/// * $`k_3 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_2}{2})`$</span>
 <span class="doccomment">/// * $`k_4 = \Delta t \times f(t+\delta t, T+k_3 )`$</span>
-<span class="kw">fn</span> <span class="ident">rk4</span>(<span class="ident">dt</span>: <span class="ident">Float</span>, <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="kw-2">mut</span> <span class="ident">k</span>: <span class="ident">Matrix</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="ident">Matrix</span>, <span class="ident">t</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Matrix</span>){
-
+<span class="kw">fn</span> <span class="ident">rk4</span>(<span class="ident">dt</span>: <span class="ident">Float</span>, <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="kw-2">mut</span> <span class="ident">k</span>: <span class="ident">Matrix</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="ident">Matrix</span>, <span class="ident">t</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Matrix</span>) {
     <span class="kw">let</span> (<span class="ident">krows</span>, <span class="ident">kcols</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">size</span>();
-    <span class="macro">assert_eq!</span>(<span class="ident">krows</span>, <span class="ident">kcols</span>, <span class="string">&quot;Expecting &#39;K&#39; to be a squared matrix... nrows={}, ncols={}&quot;</span>, <span class="ident">krows</span>, <span class="ident">kcols</span>);
+    <span class="macro">assert_eq!</span>(
+        <span class="ident">krows</span>, <span class="ident">kcols</span>,
+        <span class="string">&quot;Expecting &#39;K&#39; to be a squared matrix... nrows={}, ncols={}&quot;</span>,
+        <span class="ident">krows</span>, <span class="ident">kcols</span>
+    );
     <span class="kw">let</span> (<span class="ident">crows</span>, <span class="ident">ccols</span>) <span class="op">=</span> <span class="ident">c</span>.<span class="ident">size</span>();
-    <span class="macro">assert_eq!</span>(<span class="ident">crows</span>, <span class="ident">ccols</span>, <span class="string">&quot;Expecting &#39;C&#39; to be a squared matrix... nrows={}, ncols={}&quot;</span>, <span class="ident">crows</span>, <span class="ident">ccols</span>);        
+    <span class="macro">assert_eq!</span>(
+        <span class="ident">crows</span>, <span class="ident">ccols</span>,
+        <span class="string">&quot;Expecting &#39;C&#39; to be a squared matrix... nrows={}, ncols={}&quot;</span>,
+        <span class="ident">crows</span>, <span class="ident">ccols</span>
+    );
     <span class="kw">let</span> (<span class="ident">qrows</span>, <span class="ident">qcols</span>) <span class="op">=</span> <span class="ident">q</span>.<span class="ident">size</span>();
-    <span class="macro">assert_eq!</span>(<span class="ident">qrows</span>, <span class="ident">krows</span>, <span class="string">&quot;Expecting &#39;q&#39; to be to have {} rows because K has {} rows... found {}&quot;</span>, <span class="ident">krows</span>, <span class="ident">krows</span>,<span class="ident">qrows</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">qcols</span>, <span class="number">1</span>, <span class="string">&quot;expecting &#39;q&#39; to have 1 column... found {}&quot;</span>, <span class="ident">qcols</span>);
+    <span class="macro">assert_eq!</span>(
+        <span class="ident">qrows</span>, <span class="ident">krows</span>,
+        <span class="string">&quot;Expecting &#39;q&#39; to be to have {} rows because K has {} rows... found {}&quot;</span>,
+        <span class="ident">krows</span>, <span class="ident">krows</span>, <span class="ident">qrows</span>
+    );
+    <span class="macro">assert_eq!</span>(
+        <span class="ident">qcols</span>, <span class="number">1</span>,
+        <span class="string">&quot;expecting &#39;q&#39; to have 1 column... found {}&quot;</span>,
+        <span class="ident">qcols</span>
+    );
 
     <span class="comment">// Rearrenge into dT = (dt/C) * K + (dt/C)*q</span>
-    <span class="kw">for</span> <span class="ident">nrow</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">krows</span>{        
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">dt</span><span class="op">/</span><span class="ident">c</span>.<span class="ident">get</span>(<span class="ident">nrow</span>, <span class="ident">nrow</span>).<span class="ident">unwrap</span>();
+    <span class="kw">for</span> <span class="ident">nrow</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">krows</span> {
+        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">dt</span> <span class="op">/</span> <span class="ident">c</span>.<span class="ident">get</span>(<span class="ident">nrow</span>, <span class="ident">nrow</span>).<span class="ident">unwrap</span>();
         <span class="comment">// transform k into k_prime (i.e., k * dt/C)</span>
-        <span class="kw">let</span> <span class="ident">ini</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">nrow</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="number">0</span>
-        }<span class="kw">else</span>{
-            <span class="ident">nrow</span> <span class="op">-</span> <span class="number">1</span>
-        };
-        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">nrow</span> <span class="op">==</span> <span class="ident">krows</span> <span class="op">-</span> <span class="number">1</span>{
+        <span class="kw">let</span> <span class="ident">ini</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">nrow</span> <span class="op">==</span> <span class="number">0</span> { <span class="number">0</span> } <span class="kw">else</span> { <span class="ident">nrow</span> <span class="op">-</span> <span class="number">1</span> };
+        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">nrow</span> <span class="op">==</span> <span class="ident">krows</span> <span class="op">-</span> <span class="number">1</span> {
             <span class="ident">krows</span> <span class="op">-</span> <span class="number">1</span>
-        }<span class="kw">else</span>{
+        } <span class="kw">else</span> {
             <span class="ident">nrow</span> <span class="op">+</span> <span class="number">1</span>
         };
-        <span class="comment">// for ncol in 0..kcols{ </span>
+        <span class="comment">// for ncol in 0..kcols{</span>
         <span class="kw">for</span> <span class="ident">ncol</span> <span class="kw">in</span> <span class="ident">ini</span>..<span class="op">=</span><span class="ident">fin</span> {
             <span class="ident">k</span>.<span class="ident">scale_element</span>(<span class="ident">nrow</span>, <span class="ident">ncol</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
         }
@@ -1962,7 +1930,7 @@ SOFTWARE.
     }
 
     <span class="comment">// get k1</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k1</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span><span class="op">*</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">t</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k1</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">t</span>;
     <span class="ident">k1</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
 
     <span class="comment">// returning &quot;temperatures + k1&quot; is Euler... continuing is</span>
@@ -1972,19 +1940,19 @@ SOFTWARE.
     <span class="ident">aux</span> <span class="op">+</span><span class="op">=</span> <span class="ident">t</span>;
 
     <span class="comment">// k2</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k2</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">aux</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k2</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">aux</span>;
     <span class="ident">k2</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
 
     <span class="comment">// k3</span>
     <span class="ident">k2</span>.<span class="ident">scale_into</span>(<span class="number">0.5</span>, <span class="kw-2">&amp;mut</span> <span class="ident">aux</span>).<span class="ident">unwrap</span>();
     <span class="ident">aux</span> <span class="op">+</span><span class="op">=</span> <span class="ident">t</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k3</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">aux</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k3</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">aux</span>;
     <span class="ident">k3</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
 
-    <span class="comment">// k4        </span>
+    <span class="comment">// k4</span>
     <span class="ident">aux</span>.<span class="ident">copy_from</span>(<span class="kw-2">&amp;</span><span class="ident">k3</span>);
-    <span class="ident">aux</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">t</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k4</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">aux</span>;
+    <span class="ident">aux</span> <span class="op">+</span><span class="op">=</span> <span class="ident">t</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k4</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">aux</span>;
     <span class="ident">k4</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
 
     <span class="comment">// Scale them and add them all up</span>
@@ -1998,10 +1966,7 @@ SOFTWARE.
     <span class="kw-2">*</span><span class="ident">t</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k2</span>;
     <span class="kw-2">*</span><span class="ident">t</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k3</span>;
     <span class="kw-2">*</span><span class="ident">t</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k4</span>;
-
-    
 }
-
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SurfaceTrait</span> {
     <span class="kw">fn</span> <span class="ident">add_front_convection_state</span>(
@@ -2059,14 +2024,14 @@ SOFTWARE.
 
     <span class="kw">fn</span> <span class="ident">last_node_temperature_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span>;
 
-    <span class="kw">fn</span> <span class="ident">front_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">front_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">first_node_temperature_index</span>();
         <span class="ident">state</span>[<span class="ident">i</span>]
     }
 
-    <span class="kw">fn</span> <span class="ident">back_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">back_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>();
-        <span class="ident">state</span>[<span class="ident">i</span><span class="op">-</span><span class="number">1</span>]
+        <span class="ident">state</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>]
     }
 
     <span class="kw">fn</span> <span class="ident">get_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Matrix</span> {
@@ -2091,52 +2056,47 @@ SOFTWARE.
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>;
-
+    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">set_front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>);
 
     <span class="kw">fn</span> <span class="ident">set_back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>);
 
-    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>;
-    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>;
+    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span>;
+    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span>;
 
-    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>;
-    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>;
-
-    
-
+    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span>;
+    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span>;
 }
 
-
 <span class="kw">impl</span> <span class="ident">SurfaceTrait</span> <span class="kw">for</span> <span class="ident">Surface</span> {
-    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">front_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">back_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">front_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">back_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">set_front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>){
-        <span class="self">self</span>.<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">v</span>)
+    <span class="kw">fn</span> <span class="ident">set_front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">_v</span>: <span class="ident">Float</span>) {
+        <span class="self">self</span>.<span class="ident">set_front_convection_coefficient</span>(<span class="ident">_state</span>, <span class="ident">_v</span>)
     }
-    <span class="kw">fn</span> <span class="ident">set_back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>){
-        <span class="self">self</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">v</span>)
+    <span class="kw">fn</span> <span class="ident">set_back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">_v</span>: <span class="ident">Float</span>) {
+        <span class="self">self</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">_state</span>, <span class="ident">_v</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
-        <span class="self">self</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">state</span>)
+    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">_state</span>)
     }
-    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
-        <span class="self">self</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">state</span>)
+    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">_state</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">first_node_temperature_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
@@ -2261,32 +2221,30 @@ SOFTWARE.
     }
 }
 
-
-
 <span class="kw">impl</span> <span class="ident">SurfaceTrait</span> <span class="kw">for</span> <span class="ident">Fenestration</span> {
-    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">front_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">front_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">back_infrared_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">back_ir_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">front_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">front_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">fn</span> <span class="ident">back_solar_irradiance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">back_incident_solar_irradiance</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>()
     }
-    <span class="kw">fn</span> <span class="ident">set_front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>){
+    <span class="kw">fn</span> <span class="ident">set_front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>) {
         <span class="self">self</span>.<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">v</span>)
     }
-    <span class="kw">fn</span> <span class="ident">set_back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>){
+    <span class="kw">fn</span> <span class="ident">set_back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">v</span>: <span class="ident">Float</span>) {
         <span class="self">self</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">v</span>)
     }
-    
-    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
-        <span class="self">self</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">state</span>)
+
+    <span class="kw">fn</span> <span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">_state</span>)
     }
-    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>)-&gt;<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>{
+    <span class="kw">fn</span> <span class="ident">back_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">state</span>)
     }
 
@@ -2419,11 +2377,9 @@ SOFTWARE.
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThermalSurfaceData</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SurfaceTrait</span><span class="op">&gt;</span> {
     <span class="kw">pub</span> <span class="ident">parent</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 
-    
     <span class="doccomment">/// The [`Discretization`] that represents this `ThermalSurfaceData`</span>
     <span class="kw">pub</span> <span class="ident">discretization</span>: <span class="ident">Discretization</span>,
 
-        
     <span class="doccomment">/// The location of the front boundary zone in the</span>
     <span class="doccomment">/// Zones array of the Thermal Model</span>
     <span class="kw">pub</span> <span class="ident">front_boundary</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Boundary</span><span class="op">&gt;</span>,
@@ -2454,7 +2410,7 @@ SOFTWARE.
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
         <span class="ident">parent</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
         <span class="ident">area</span>: <span class="ident">Float</span>,
-        <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,        
+        <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
         <span class="ident">discretization</span>: <span class="ident">Discretization</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ThermalSurfaceData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
         <span class="comment">// Set Front and Back state</span>
@@ -2477,81 +2433,87 @@ SOFTWARE.
         <span class="ident">parent</span>.<span class="ident">add_node_temperature_states</span>(<span class="ident">state</span>, <span class="ident">ref_surface_index</span>, <span class="ident">n_nodes</span>);
 
         <span class="kw">const</span> <span class="ident">DEFAULT_SOLAR</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.7</span>;
-        <span class="kw">let</span> <span class="ident">front_solar_absorbtance</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>{
-            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
-                <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>(){
-                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
-                        <span class="macro">eprintln!</span>(<span class="string">&quot;Substance &#39;{}&#39; has no solar absorbtance... assuming {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(), <span class="ident">DEFAULT_SOLAR</span>);
+        <span class="kw">let</span> <span class="ident">front_solar_absorbtance</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span> {
+            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="macro">eprintln!</span>(
+                        <span class="string">&quot;Substance &#39;{}&#39; has no solar absorbtance... assuming {}&quot;</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(),
                         <span class="ident">DEFAULT_SOLAR</span>
-                    }
+                    );
+                    <span class="ident">DEFAULT_SOLAR</span>
                 }
             },
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>)
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>),
         };
-        <span class="kw">let</span> <span class="ident">back_solar_absorbtance</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span>{
-            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
-                <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>(){
-                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
-                        <span class="macro">eprintln!</span>(<span class="string">&quot;Substance &#39;{}&#39; has no solar absorbtance... assuming {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(), <span class="ident">DEFAULT_SOLAR</span>);
+        <span class="kw">let</span> <span class="ident">back_solar_absorbtance</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span> {
+            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">solar_absorbtance</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="macro">eprintln!</span>(
+                        <span class="string">&quot;Substance &#39;{}&#39; has no solar absorbtance... assuming {}&quot;</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(),
                         <span class="ident">DEFAULT_SOLAR</span>
-                    }
+                    );
+                    <span class="ident">DEFAULT_SOLAR</span>
                 }
             },
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>)
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>),
         };
 
-        <span class="kw">const</span> <span class="ident">DEFAULT_EM</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.84</span>;
-        <span class="kw">let</span> <span class="ident">front_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>{
-            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
-                <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>(){
-                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
-                        <span class="macro">eprintln!</span>(<span class="string">&quot;Substance &#39;{}&#39; has no thermal absorbtance... assuming {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(), <span class="ident">DEFAULT_EM</span>);
+        <span class="kw">const</span> <span class="ident">DEFAULT_EM</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.84</span>;
+        <span class="kw">let</span> <span class="ident">front_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span> {
+            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="macro">eprintln!</span>(
+                        <span class="string">&quot;Substance &#39;{}&#39; has no thermal absorbtance... assuming {}&quot;</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(),
                         <span class="ident">DEFAULT_EM</span>
-                    }
+                    );
+                    <span class="ident">DEFAULT_EM</span>
                 }
             },
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>)
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>),
         };
-        <span class="kw">let</span> <span class="ident">back_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span>{
-            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;{
-                <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>(){
-                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>)=&gt;{
-                        <span class="macro">eprintln!</span>(<span class="string">&quot;Substance &#39;{}&#39; has no thermal absorbtance... assuming {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(), <span class="ident">DEFAULT_EM</span>);
+        <span class="kw">let</span> <span class="ident">back_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span> {
+            <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="macro">eprintln!</span>(
+                        <span class="string">&quot;Substance &#39;{}&#39; has no thermal absorbtance... assuming {}&quot;</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span>.<span class="ident">name</span>(),
                         <span class="ident">DEFAULT_EM</span>
-                    }
+                    );
+                    <span class="ident">DEFAULT_EM</span>
                 }
             },
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>)
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>),
         };
 
         <span class="comment">// Build resulting</span>
         <span class="prelude-val">Ok</span>(<span class="ident">ThermalSurfaceData</span> {
             <span class="ident">parent</span>: <span class="ident">parent</span>.<span class="ident">clone</span>(),
-            <span class="ident">area</span>,            
+            <span class="ident">area</span>,
             <span class="ident">discretization</span>,
             <span class="ident">front_boundary</span>: <span class="prelude-val">None</span>,
             <span class="ident">back_boundary</span>: <span class="prelude-val">None</span>,
             <span class="ident">front_emmisivity</span>,
             <span class="ident">back_emmisivity</span>,
             <span class="ident">front_solar_absorbtance</span>,
-            <span class="ident">back_solar_absorbtance</span>
+            <span class="ident">back_solar_absorbtance</span>,
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_front_boundary</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">Boundary</span>){
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_front_boundary</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">Boundary</span>) {
         <span class="self">self</span>.<span class="ident">front_boundary</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_back_boundary</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">Boundary</span>){
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_back_boundary</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">Boundary</span>) {
         <span class="self">self</span>.<span class="ident">back_boundary</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>)
     }
 
-    
-    
     <span class="doccomment">/// Marches one timestep. Returns front and back heat flow    </span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">march</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2563,30 +2525,23 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">get_node_temperatures</span>(<span class="ident">state</span>);
         <span class="kw">let</span> (<span class="ident">rows</span>, ..) <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">size</span>();
 
-        
-
-        <span class="comment">// Calculate and set Front and Back Solar Irradiance        </span>
+        <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
         <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">if</span> <span class="ident">solar_back</span> <span class="op">&gt;</span> <span class="number">0.0</span>{            
-            <span class="macro">dbg!</span>(<span class="ident">solar_back</span>);
-        }
-
         
-        <span class="comment">// Calculate and set Front and Back IR Irradiance        </span>
+        <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
         <span class="comment">// let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));</span>
         <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">ir_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_infrared_irradiance</span>(<span class="ident">state</span>);
-        
 
-        <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span>{
+        <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
             <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_front</span>,
             <span class="ident">solar_radiation</span>: <span class="ident">solar_front</span>,
             ..<span class="ident">Environment::default</span>()
         };
         <span class="comment">// // dbg!(front_env);</span>
-        <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">Environment</span>{
+        <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
             <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_back</span>,
             <span class="ident">solar_radiation</span>: <span class="ident">solar_back</span>,
@@ -2596,25 +2551,25 @@ SOFTWARE.
         <span class="comment">// Calculate and set Front and Back convection coefficients</span>
         <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="ident">front_env</span>.<span class="ident">get_hs</span>();
         <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="ident">back_env</span>.<span class="ident">get_hs</span>();
-        <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">front_hs</span>);
+        <span class="self">self</span>.<span class="ident">parent</span>
+            .<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">front_hs</span>);
         <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">back_hs</span>);
-        
-        
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 1st: Calculate the solar absorption in each node</span>
         <span class="comment">/////////////////////</span>
         <span class="kw">let</span> <span class="ident">n_nodes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">segments</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">n_nodes</span>, <span class="number">1</span>);
-        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">solar_front</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">front_solar_absorbtance</span> ).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>, <span class="ident">solar_back</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">back_solar_absorbtance</span>).<span class="ident">unwrap</span>();
-
+        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">solar_front</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">front_solar_absorbtance</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>, <span class="ident">solar_back</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">back_solar_absorbtance</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 2nd: Calculate the temperature in all no-mass nodes.</span>
-        <span class="comment">// Also, the heat flow into </span>
+        <span class="comment">// Also, the heat flow into</span>
         <span class="comment">/////////////////////</span>
-        
+
         <span class="comment">// Get all no-mass nodes</span>
         <span class="comment">// let nomass: Vec&lt;usize&gt; = self</span>
         <span class="comment">//     .discretization</span>
@@ -2631,31 +2586,36 @@ SOFTWARE.
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">x</span>)<span class="op">|</span> <span class="kw">if</span> <span class="ident">x</span>.<span class="number">0</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">1e-5</span> { <span class="prelude-val">Some</span>(<span class="ident">i</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> })
             .<span class="ident">collect</span>();
 
-        <span class="kw">if</span> <span class="ident">mass</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
-
-            
+        <span class="kw">if</span> <span class="ident">mass</span>.<span class="ident">is_empty</span>() {
             <span class="comment">// dbg!(front_emmisivity);</span>
 
-            
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
             <span class="kw">loop</span> {
-
                 <span class="comment">// This function should also return h_front and h_back</span>
                 <span class="comment">// let h_front = 10.;</span>
                 <span class="comment">// // dbg!(h_front);</span>
                 <span class="comment">// let h_back = 10.;</span>
-                <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(<span class="number">0</span>, <span class="ident">n_nodes</span><span class="op">-</span><span class="number">1</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="kw-2">&amp;</span><span class="ident">front_env</span>, <span class="self">self</span>.<span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="kw-2">&amp;</span><span class="ident">back_env</span>, <span class="self">self</span>.<span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>);
-    
+                <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(
+                    <span class="number">0</span>,
+                    <span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>,
+                    <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
+                    <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
+                    <span class="self">self</span>.<span class="ident">front_emmisivity</span>,
+                    <span class="ident">front_hs</span>,
+                    <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
+                    <span class="self">self</span>.<span class="ident">back_emmisivity</span>,
+                    <span class="ident">back_hs</span>,
+                );
+
                 <span class="comment">// ... here we can add solar gains</span>
                 <span class="ident">local_q</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
                 <span class="ident">local_q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>; <span class="comment">// transfrom equation from kT + q = 0 --&gt; kT = -q</span>
-    
+
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temps</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">local_q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>(); <span class="comment">// and just like that, q is the new temperatures</span>
                 <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temps</span> <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">temperatures</span>;
-                
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">err</span> <span class="op">=</span> <span class="number">0.0</span>;
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span>{
+                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span> {
                     <span class="ident">err</span> <span class="op">+</span><span class="op">=</span> <span class="ident">diff</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">abs</span>();
                 }
                 <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> (<span class="ident">n_nodes</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
@@ -2666,40 +2626,34 @@ SOFTWARE.
                 <span class="ident">temps</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">temperatures</span>;
                 <span class="ident">temps</span> <span class="op">/</span><span class="op">=</span> <span class="number">2.</span>;
                 <span class="ident">temperatures</span>.<span class="ident">copy_from</span>(<span class="kw-2">&amp;</span><span class="ident">temps</span>);
-
             }
-
-
-
-        }<span class="kw">else</span> <span class="kw">if</span> <span class="ident">mass</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">n_nodes</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">mass</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">n_nodes</span> {
             <span class="macro">todo!</span>();
-            <span class="comment">// for i in 0..mass.len()-1 {            </span>
+            <span class="comment">// for i in 0..mass.len()-1 {</span>
             <span class="comment">//     let n = mass[i];</span>
-            <span class="comment">//     let next_n = mass[i+1];                        </span>
-    
+            <span class="comment">//     let next_n = mass[i+1];</span>
+
             <span class="comment">//     let front_emmisivity = 0.84;</span>
             <span class="comment">//     // dbg!(front_emmisivity);</span>
             <span class="comment">//     let back_emmisivity = 0.84;</span>
-    
-                
-    
+
             <span class="comment">//     // This function should also return h_front and h_back</span>
             <span class="comment">//     // let h_front = 10.;</span>
             <span class="comment">//     // // dbg!(h_front);</span>
             <span class="comment">//     // let h_back = 10.;</span>
             <span class="comment">//     let (k, mut local_q) = self.discretization.get_k_q(n, next_n, &amp;temperatures, &amp;front_env, front_emmisivity, front_hs,&amp;back_env, back_emmisivity, back_hs);</span>
-    
+
             <span class="comment">//     // ... here we can add solar gains</span>
             <span class="comment">//     local_q *= -1.; // transfrom equation from kT + q = 0 --&gt; kT = -q</span>
-    
+
             <span class="comment">//     let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures</span>
-                
-            <span class="comment">//     // update temperatures            </span>
+
+            <span class="comment">//     // update temperatures</span>
             <span class="comment">//     for (j, node) in (n..next_n).into_iter().enumerate() {</span>
             <span class="comment">//         let temp = temps.get(j, 0).unwrap();</span>
             <span class="comment">//         temperatures.set(node, 0, temp).unwrap();</span>
             <span class="comment">//     }</span>
-    
+
             <span class="comment">//     // // Update heat</span>
             <span class="comment">//     // if n == 0 {</span>
 
@@ -2713,18 +2667,15 @@ SOFTWARE.
             <span class="comment">//     // if let Ok(prev_temp) = temperatures.get(next_n+1, 0){</span>
             <span class="comment">//     //     let temp = temperatures.get(next_n, 0).unwrap();</span>
             <span class="comment">//     //     let q_back = h_back * (temp - prev_temp);</span>
-            <span class="comment">//     //     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();                </span>
+            <span class="comment">//     //     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();</span>
             <span class="comment">//     // }</span>
-                            
+
             <span class="comment">// }</span>
         }
 
-        
         <span class="comment">/////////////////////</span>
         <span class="comment">// 3rd: Calculate K and C matrices for the massive walls</span>
         <span class="comment">/////////////////////</span>
-        
-        
 
         <span class="comment">// let mass: Vec&lt;usize&gt; = self</span>
         <span class="comment">//     .discretization</span>
@@ -2740,30 +2691,37 @@ SOFTWARE.
             .<span class="ident">enumerate</span>()
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">x</span>)<span class="op">|</span> <span class="kw">if</span> <span class="ident">x</span>.<span class="number">0</span> <span class="op">&lt;</span> <span class="number">1e-5</span> { <span class="prelude-val">Some</span>(<span class="ident">i</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> })
             .<span class="ident">collect</span>();
-        
-        
-        <span class="kw">if</span> <span class="ident">nomass</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>{
-            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">segments</span>
-                .<span class="ident">iter</span>()                
+
+        <span class="kw">if</span> <span class="ident">nomass</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">discretization</span>
+                .<span class="ident">segments</span>
+                .<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">mass</span>, <span class="ident">_r</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">mass</span>)
                 .<span class="ident">collect</span>();
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Matrix::diag</span>(<span class="ident">c</span>);
-            
-            
-                        
-            <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(<span class="number">0</span>, <span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="kw-2">&amp;</span><span class="ident">front_env</span>, <span class="self">self</span>.<span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="kw-2">&amp;</span><span class="ident">back_env</span>, <span class="self">self</span>.<span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>);            
-            
-            <span class="comment">// ... here we can add solar gains            </span>
+
+            <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(
+                <span class="number">0</span>,
+                <span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>,
+                <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
+                <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
+                <span class="self">self</span>.<span class="ident">front_emmisivity</span>,
+                <span class="ident">front_hs</span>,
+                <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
+                <span class="self">self</span>.<span class="ident">back_emmisivity</span>,
+                <span class="ident">back_hs</span>,
+            );
+
+            <span class="comment">// ... here we can add solar gains</span>
             <span class="ident">local_q</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
 
             <span class="comment">/////////////////////</span>
             <span class="comment">// 4rd: March massive nodes</span>
             <span class="comment">/////////////////////</span>
-            <span class="comment">// Use RT4 for updating temperatures of massive noted.  </span>
+            <span class="comment">// Use RT4 for updating temperatures of massive noted.</span>
             <span class="ident">rk4</span>(<span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">k</span>, <span class="ident">local_q</span>, <span class="kw-2">&amp;mut</span> <span class="ident">temperatures</span>);
-            
-            
-            
+
             <span class="comment">// // Update heat</span>
             <span class="comment">// if let Ok(prev_temp) = temperatures.get(n-1, 0){</span>
             <span class="comment">//     let temp = temperatures.get(n, 0).unwrap();</span>
@@ -2773,16 +2731,14 @@ SOFTWARE.
             <span class="comment">// if let Ok(prev_temp) = temperatures.get(next_n+1, 0){</span>
             <span class="comment">//     let temp = temperatures.get(next_n, 0).unwrap();</span>
             <span class="comment">//     let q_back = back_hs * (temp - prev_temp);</span>
-            <span class="comment">//     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();                </span>
+            <span class="comment">//     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();</span>
             <span class="comment">// }</span>
-                        
-            
-        }<span class="kw">else</span> <span class="kw">if</span> <span class="ident">nomass</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">n_nodes</span>  {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">nomass</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">n_nodes</span> {
             <span class="macro">todo!</span>();
-            <span class="comment">// for i in 0..mass.len()-1 {            </span>
+            <span class="comment">// for i in 0..mass.len()-1 {</span>
             <span class="comment">//     let n = mass[i];</span>
-            <span class="comment">//     let next_n = mass[i+1];                        </span>
-                
+            <span class="comment">//     let next_n = mass[i+1];</span>
+
             <span class="comment">//     let c = self.discretization.segments</span>
             <span class="comment">//         .iter()</span>
             <span class="comment">//         .skip(n)</span>
@@ -2791,32 +2747,30 @@ SOFTWARE.
             <span class="comment">//         .collect();</span>
             <span class="comment">//     let c = Matrix::diag(c);</span>
             <span class="comment">//     // let c = self.discretization.build_c();</span>
-    
+
             <span class="comment">//     let front_emmisivity = 0.84;</span>
             <span class="comment">//     // dbg!(front_emmisivity);</span>
             <span class="comment">//     let back_emmisivity = 0.84;</span>
-    
-                
-    
+
             <span class="comment">//     // This function should also return h_front and h_back</span>
-            
+
             <span class="comment">//     let (k, mut local_q) = self.discretization.get_k_q(n, next_n, &amp;temperatures, &amp;front_env, front_emmisivity, front_hs, &amp;back_env, back_emmisivity, back_hs);</span>
-    
+
             <span class="comment">//     // ... here we can add solar gains</span>
             <span class="comment">//     local_q *= -1.; // transfrom equation from kT + q = 0 --&gt; kT = -q</span>
-    
+
             <span class="comment">//     /////////////////////</span>
             <span class="comment">//     // 4rd: March massive nodes</span>
             <span class="comment">//     /////////////////////</span>
-            <span class="comment">//     // Use RT4 for updating temperatures of massive noted.  </span>
+            <span class="comment">//     // Use RT4 for updating temperatures of massive noted.</span>
             <span class="comment">//     let temps = self.rk4(dt, &amp;c, k, q.clone(), &amp;temperatures);</span>
-                
-            <span class="comment">//     // update values            </span>
+
+            <span class="comment">//     // update values</span>
             <span class="comment">//     for (j, node) in (n..next_n).into_iter().enumerate() {</span>
             <span class="comment">//         let temp = temps.get(j, 0).unwrap();</span>
             <span class="comment">//         temperatures.set(node, 0, temp).unwrap();</span>
             <span class="comment">//     }</span>
-    
+
             <span class="comment">//     // Update heat</span>
             <span class="comment">//     if let Ok(prev_temp) = temperatures.get(n-1, 0){</span>
             <span class="comment">//         let temp = temperatures.get(n, 0).unwrap();</span>
@@ -2826,21 +2780,17 @@ SOFTWARE.
             <span class="comment">//     if let Ok(prev_temp) = temperatures.get(next_n+1, 0){</span>
             <span class="comment">//         let temp = temperatures.get(next_n, 0).unwrap();</span>
             <span class="comment">//         let q_back = h_back * (temp - prev_temp);</span>
-            <span class="comment">//         q.add_to_element(n_nodes - 1, 0, q_back).unwrap();                </span>
+            <span class="comment">//         q.add_to_element(n_nodes - 1, 0, q_back).unwrap();</span>
             <span class="comment">//     }</span>
-                            
-                
-                
+
             <span class="comment">// }</span>
         }
-        
-        
+
         <span class="comment">/////////////////////</span>
         <span class="comment">// 5th: Set temperatures, calc heat-flows and return</span>
-        <span class="comment">/////////////////////        </span>
+        <span class="comment">/////////////////////</span>
         <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_node_temperatures</span>(<span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>);
 
-        
         <span class="comment">// Calc heat flow</span>
         <span class="kw">let</span> <span class="ident">ts_front</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">ts_back</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">rows</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
@@ -2857,8 +2807,6 @@ SOFTWARE.
 
         (<span class="ident">flow_front</span>, <span class="ident">flow_back</span>)
     }
-
-    
 }
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ThermalSurface</span> <span class="op">=</span> <span class="ident">ThermalSurfaceData</span><span class="op">&lt;</span><span class="ident">simple_model::Surface</span><span class="op">&gt;</span>;
@@ -2878,11 +2826,6 @@ SOFTWARE.
         <span class="ident">substance::Normal</span> <span class="kw">as</span> <span class="ident">NormalSubstance</span>, <span class="ident">Construction</span>, <span class="ident">Material</span>, <span class="ident">SimpleModel</span>, <span class="ident">Substance</span>,
         <span class="ident">Surface</span>,
     };
-
-
-   
-
-
 
     <span class="kw">fn</span> <span class="ident">add_polyurethane</span>(<span class="ident">model</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimpleModel</span>) -&gt; <span class="ident">Substance</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poly</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;polyurethane&quot;</span>.<span class="ident">to_string</span>());
@@ -2985,16 +2928,8 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="kw">as</span> <span class="ident">Float</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
-            <span class="number">0</span>,
-            <span class="kw-2">&amp;</span><span class="ident">surface</span>,
-            <span class="ident">surface</span>.<span class="ident">area</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">c</span>,
-            <span class="ident">d</span>,
-        )
-        .<span class="ident">unwrap</span>();
-        
+        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span>
+            <span class="ident">ThermalSurface::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>, <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">surface</span>.<span class="ident">area</span>(), <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">d</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
 
@@ -3005,7 +2940,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">while</span> <span class="ident">q</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">0.00015</span> {
             <span class="kw">let</span> (<span class="ident">q_out</span>, <span class="ident">q_in</span>) <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">march</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>, <span class="number">10.0</span>, <span class="number">10.0</span>, <span class="ident">dt</span>);
-                        
+
             <span class="comment">// the same amount of heat needs to leave in each direction</span>
             <span class="comment">// println!(&quot;q_in = {}, q_out = {} | diff = {}&quot;, q_in, q_out, (q_in - q_out).abs());</span>
             <span class="macro">assert!</span>((<span class="ident">q_in</span> <span class="op">-</span> <span class="ident">q_out</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-5</span>);
@@ -3013,7 +2948,7 @@ SOFTWARE.
             <span class="comment">// q_front is positive</span>
             <span class="macro">assert!</span>(<span class="ident">q_in</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>, <span class="string">&quot;q_in = {} | c = {}&quot;</span>, <span class="ident">q_in</span>, <span class="ident">counter</span>);
             <span class="macro">assert!</span>(<span class="ident">q_out</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>, <span class="string">&quot;q_out = {} | c = {}&quot;</span>, <span class="ident">q_out</span>, <span class="ident">counter</span>);
-            
+
             <span class="comment">// q_in needs to be getting smaller</span>
             <span class="comment">// assert!(q_in &lt; q);</span>
             <span class="ident">q</span> <span class="op">=</span> <span class="ident">q_in</span>;
@@ -3044,12 +2979,11 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qfront</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="op">-</span><span class="number">12312.</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_qback</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">123123123.</span>;
         <span class="kw">while</span> <span class="ident">change</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1E-10</span> {
-            
             <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">march</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>, <span class="number">10.0</span>, <span class="number">30.0</span>, <span class="ident">dt</span>);
             <span class="ident">final_qfront</span> <span class="op">=</span> <span class="ident">q_front</span>;
             <span class="ident">final_qback</span> <span class="op">=</span> <span class="ident">q_back</span>;
 
-            <span class="ident">change</span> <span class="op">=</span> (<span class="ident">q_front</span> <span class="op">-</span> <span class="ident">previous_q</span>).<span class="ident">abs</span>();            
+            <span class="ident">change</span> <span class="op">=</span> (<span class="ident">q_front</span> <span class="op">-</span> <span class="ident">previous_q</span>).<span class="ident">abs</span>();
             <span class="ident">previous_q</span> <span class="op">=</span> <span class="ident">q_front</span>;
 
             <span class="ident">counter</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -3062,7 +2996,7 @@ SOFTWARE.
         <span class="macro">assert!</span>(<span class="ident">final_qfront</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
         <span class="macro">assert!</span>(<span class="ident">final_qback</span> <span class="op">&lt;</span> <span class="number">0.0</span>);
         <span class="comment">// assert!((final_qfront + final_qback).abs() &lt; 0.00033, &quot;final_qfront = {} | final_qback = {} | final_qfront + final_qback = {}&quot;, final_qfront, final_qback,final_qfront + final_qback);</span>
-        
+
         <span class="comment">// let r = d.r_value();</span>
 
         <span class="comment">// let rs_front = 0.1; //surface.front_convection_coefficient(&amp;state).unwrap();</span>
@@ -3074,7 +3008,6 @@ SOFTWARE.
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_march_nomass</span>() {
-        
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">model</span> <span class="op">=</span> <span class="ident">SimpleModel::new</span>(<span class="string">&quot;A model&quot;</span>.<span class="ident">to_string</span>());
 
         <span class="comment">/* SUBSTANCE */</span>
@@ -3111,17 +3044,9 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">10.0</span>;
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="number">1.</span>, <span class="number">0.</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="kw">as</span> <span class="ident">Float</span>;
-        
 
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
-            <span class="number">0</span>,
-            <span class="kw-2">&amp;</span><span class="ident">surface</span>,
-            <span class="ident">surface</span>.<span class="ident">area</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">c</span>,         
-            <span class="ident">d</span>,
-        )
-        .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span>
+            <span class="ident">ThermalSurface::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>, <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">surface</span>.<span class="ident">area</span>(), <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">d</span>).<span class="ident">unwrap</span>();
         <span class="comment">// assert!(!d.is_massive);</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
@@ -3148,15 +3073,10 @@ SOFTWARE.
         );
         <span class="macro">assert!</span>(<span class="ident">q_in</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.07</span>, <span class="string">&quot;q_in is {}&quot;</span>, <span class="ident">q_in</span>);
         <span class="macro">assert!</span>(<span class="ident">q_out</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.07</span>);
-
-
     }
 
-
-    
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_march_nomass_2</span>() {
-        
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">model</span> <span class="op">=</span> <span class="ident">SimpleModel::new</span>(<span class="string">&quot;A model&quot;</span>.<span class="ident">to_string</span>());
 
         <span class="comment">/* SUBSTANCE */</span>
@@ -3193,41 +3113,33 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">10.0</span>;
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="number">1.</span>, <span class="number">0.</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="kw">as</span> <span class="ident">Float</span>;
-        
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
-            <span class="number">0</span>,
-            <span class="kw-2">&amp;</span><span class="ident">surface</span>,
-            <span class="ident">surface</span>.<span class="ident">area</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">c</span>,
-            <span class="ident">d</span>,
-        )
-        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span>
+            <span class="ident">ThermalSurface::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>, <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">surface</span>, <span class="ident">surface</span>.<span class="ident">area</span>(), <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">d</span>).<span class="ident">unwrap</span>();
         <span class="comment">// assert!(!d.is_massive);</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
-       
+
         <span class="comment">// SECOND TEST -- 10 degrees in and 30 out.</span>
         <span class="comment">// We expect the final q to be (30-10)/R from</span>
         <span class="comment">// outside to inside. I.E. q_in = (30-10)/R,</span>
         <span class="comment">// q_out = -(30-10)/R</span>
 
         <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="number">10.0</span>;
-        <span class="kw">let</span> <span class="ident">t_back</span>  <span class="op">=</span> <span class="number">30.0</span>;
+        <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="number">30.0</span>;
         <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">march</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">dt</span>);
 
         <span class="comment">// Expecting</span>
-        <span class="kw">let</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">parent</span>.<span class="ident">get_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>);        
-        
+        <span class="kw">let</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">parent</span>.<span class="ident">get_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>);
+
         <span class="macro">println!</span>(<span class="string">&quot; T == {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>);
-        
+
         <span class="macro">assert!</span>(<span class="ident">q_front</span> <span class="op">&gt;</span> <span class="number">0.0</span>, <span class="string">&quot;q_in = {}&quot;</span>, <span class="ident">q_front</span>);
         <span class="macro">assert!</span>(<span class="ident">q_back</span> <span class="op">&lt;</span> <span class="number">0.0</span>, <span class="string">&quot;q_out = {}&quot;</span>, <span class="ident">q_back</span>);
 
         <span class="kw">let</span> <span class="ident">full_qfront</span> <span class="op">=</span> <span class="ident">q_front</span>;
         <span class="kw">let</span> <span class="ident">full_qback</span> <span class="op">=</span> <span class="ident">q_back</span>;
-        
-        
+
         <span class="macro">assert!</span>(
             (<span class="ident">full_qfront</span> <span class="op">+</span> <span class="ident">full_qback</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.08</span>,
             <span class="string">&quot;q_front = {} | q_back = {} | delta = {}&quot;</span>,
@@ -3248,27 +3160,20 @@ SOFTWARE.
         <span class="comment">// assert!((exp_q + q_back).abs() &lt; 1E-4, &quot;exp_qout = {} ... found {}&quot;, exp_q, q_back);</span>
     }
 
-
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_rk4</span>(){
-        
+    <span class="kw">fn</span> <span class="ident">test_rk4</span>() {
         <span class="comment">// Setup</span>
-        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">2</span>, <span class="macro">vec!</span>[<span class="number">1.</span>,  <span class="number">0.</span>, <span class="number">0.</span>,  <span class="number">1.</span>]);
+        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">2</span>, <span class="macro">vec!</span>[<span class="number">1.</span>, <span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>]);
         <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">2</span>, <span class="macro">vec!</span>[<span class="number">1.</span>, <span class="op">-</span><span class="number">3.</span>, <span class="number">4.</span>, <span class="op">-</span><span class="number">6.</span>]);
         <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">1</span>, <span class="macro">vec!</span>[<span class="number">0.</span>, <span class="number">0.</span>]);
-        
+
         <span class="comment">// This system has a transient solution equals to c1*[0.75 1]&#39;* e^(-3t) + c2*[1 1]&#39; * e^(-2t)...</span>
 
         <span class="comment">// Find initial conditions so that C1 and C2 are 1.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">1</span>, <span class="macro">vec!</span>[ <span class="number">0.75</span> <span class="op">+</span> <span class="number">1.</span>, <span class="number">2.</span> ]);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">2</span>, <span class="number">1</span>, <span class="macro">vec!</span>[<span class="number">0.75</span> <span class="op">+</span> <span class="number">1.</span>, <span class="number">2.</span>]);
 
-        <span class="kw">let</span> <span class="ident">temp_a_fn</span> <span class="op">=</span> <span class="op">|</span><span class="ident">time</span>: <span class="ident">Float</span><span class="op">|</span> {
-            <span class="number">0.75</span> <span class="op">*</span> (<span class="op">-</span><span class="number">3.</span><span class="kw-2">*</span><span class="ident">time</span>).<span class="ident">exp</span>() <span class="op">+</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>()
-        };
-        <span class="kw">let</span> <span class="ident">temp_b_fn</span> <span class="op">=</span> <span class="op">|</span><span class="ident">time</span>: <span class="ident">Float</span><span class="op">|</span> {
-            (<span class="op">-</span><span class="number">3.</span><span class="kw-2">*</span><span class="ident">time</span>).<span class="ident">exp</span>() <span class="op">+</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>()
-        };
+        <span class="kw">let</span> <span class="ident">temp_a_fn</span> <span class="op">=</span> <span class="op">|</span><span class="ident">time</span>: <span class="ident">Float</span><span class="op">|</span> <span class="number">0.75</span> <span class="op">*</span> (<span class="op">-</span><span class="number">3.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>() <span class="op">+</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>();
+        <span class="kw">let</span> <span class="ident">temp_b_fn</span> <span class="op">=</span> <span class="op">|</span><span class="ident">time</span>: <span class="ident">Float</span><span class="op">|</span> (<span class="op">-</span><span class="number">3.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>() <span class="op">+</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">time</span>).<span class="ident">exp</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">time</span> <span class="op">=</span> <span class="number">0.0</span>;
         <span class="kw">loop</span> {
@@ -3279,410 +3184,417 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">temp_b</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">exp_temp_b</span> <span class="op">=</span> <span class="ident">temp_b_fn</span>(<span class="ident">time</span>);
             <span class="kw">let</span> <span class="ident">diff_b</span> <span class="op">=</span> (<span class="ident">temp_b</span> <span class="op">-</span> <span class="ident">exp_temp_b</span>).<span class="ident">abs</span>();
-            <span class="kw">const</span> <span class="ident">SMOL</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="number">1e-8</span>;
-            <span class="macro">assert!</span>(<span class="ident">diff_a</span> <span class="op">&lt;</span> <span class="ident">SMOL</span>, <span class="string">&quot;temp_a = {} | exp_temp_a = {}, diff = {}&quot;</span>, <span class="ident">temp_a</span>, <span class="ident">exp_temp_a</span>, <span class="ident">diff_a</span>);
-            <span class="macro">assert!</span>(<span class="ident">diff_b</span> <span class="op">&lt;</span> <span class="ident">SMOL</span>, <span class="string">&quot;temp_b = {} | exp_temp_b = {}, diff = {}&quot;</span>, <span class="ident">temp_b</span>, <span class="ident">exp_temp_b</span>, <span class="ident">diff_b</span>);
-            
-            
+            <span class="kw">const</span> <span class="ident">SMOL</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">1e-8</span>;
+            <span class="macro">assert!</span>(
+                <span class="ident">diff_a</span> <span class="op">&lt;</span> <span class="ident">SMOL</span>,
+                <span class="string">&quot;temp_a = {} | exp_temp_a = {}, diff = {}&quot;</span>,
+                <span class="ident">temp_a</span>,
+                <span class="ident">exp_temp_a</span>,
+                <span class="ident">diff_a</span>
+            );
+            <span class="macro">assert!</span>(
+                <span class="ident">diff_b</span> <span class="op">&lt;</span> <span class="ident">SMOL</span>,
+                <span class="string">&quot;temp_b = {} | exp_temp_b = {}, diff = {}&quot;</span>,
+                <span class="ident">temp_b</span>,
+                <span class="ident">exp_temp_b</span>,
+                <span class="ident">diff_b</span>
+            );
+
             <span class="ident">rk4</span>(<span class="number">0.01</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">k</span>.<span class="ident">clone</span>(), <span class="ident">q</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">temperatures</span>);
-            
 
             <span class="ident">time</span> <span class="op">+</span><span class="op">=</span> <span class="number">0.01</span>;
 
             <span class="kw">if</span> <span class="ident">time</span> <span class="op">&gt;</span> <span class="number">100.</span> {
-                <span class="kw">break</span>
+                <span class="kw">break</span>;
             }
         }
-
-
     }
 
-    
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_calc_heat_flow_with_mass() {</span>
-<span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
-
-<span class="comment">//         /* SUBSTANCES */</span>
-
-<span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
+    <span class="comment">//     #[test]</span>
+    <span class="comment">//     fn test_calc_heat_flow_with_mass() {</span>
+    <span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
+
+    <span class="comment">//         /* SUBSTANCES */</span>
+
+    <span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
 
-<span class="comment">//         /* MATERIALS */</span>
+    <span class="comment">//         /* MATERIALS */</span>
 
-<span class="comment">//         let m0_thickness = 200.0 / 1000. as Float;</span>
-<span class="comment">//         let m0 = add_material(&amp;mut model, poly, m0_thickness);</span>
-
-<span class="comment">//         /* CONSTRUCTION */</span>
-<span class="comment">//         let mut c0 = Construction::new(&quot;Wall&quot;.to_string());</span>
-<span class="comment">//         c0.materials.push(Rc::clone(&amp;m0));</span>
-<span class="comment">//         let c0 = model.add_construction(c0);</span>
-
-<span class="comment">//         /* GEOMETRY */</span>
-<span class="comment">//         let mut the_loop = Loop3D::new();</span>
-<span class="comment">//         let l = 1. as Float;</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.close().unwrap();</span>
-<span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
+    <span class="comment">//         let m0_thickness = 200.0 / 1000. as Float;</span>
+    <span class="comment">//         let m0 = add_material(&amp;mut model, poly, m0_thickness);</span>
 
-<span class="comment">//         /* SURFACE */</span>
-<span class="comment">//         let surface = Surface::new(&quot;Surface&quot;.to_string(), p, Rc::clone(&amp;c0));</span>
-<span class="comment">//         let surface = model.add_surface(surface);</span>
+    <span class="comment">//         /* CONSTRUCTION */</span>
+    <span class="comment">//         let mut c0 = Construction::new(&quot;Wall&quot;.to_string());</span>
+    <span class="comment">//         c0.materials.push(Rc::clone(&amp;m0));</span>
+    <span class="comment">//         let c0 = model.add_construction(c0);</span>
+
+    <span class="comment">//         /* GEOMETRY */</span>
+    <span class="comment">//         let mut the_loop = Loop3D::new();</span>
+    <span class="comment">//         let l = 1. as Float;</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.close().unwrap();</span>
+    <span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
 
-<span class="comment">//         /* TEST */</span>
+    <span class="comment">//         /* SURFACE */</span>
+    <span class="comment">//         let surface = Surface::new(&quot;Surface&quot;.to_string(), p, Rc::clone(&amp;c0));</span>
+    <span class="comment">//         let surface = model.add_surface(surface);</span>
 
-<span class="comment">//         let main_dt = 300.0;</span>
-<span class="comment">//         let max_dx = m0.thickness / 4.0;</span>
-<span class="comment">//         let min_dt = 1.0;</span>
-<span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c0, main_dt, max_dx, min_dt);</span>
+    <span class="comment">//         /* TEST */</span>
 
-<span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
-<span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
-<span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
-<span class="comment">//         assert!(ts.data().massive);</span>
+    <span class="comment">//         let main_dt = 300.0;</span>
+    <span class="comment">//         let max_dx = m0.thickness / 4.0;</span>
+    <span class="comment">//         let min_dt = 1.0;</span>
+    <span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c0, main_dt, max_dx, min_dt);</span>
 
-<span class="comment">//         let state = state_header.take_values().unwrap();</span>
-
-<span class="comment">//         // TEST</span>
-<span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
-
-<span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
-<span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
+    <span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
+    <span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
+    <span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
+    <span class="comment">//         assert!(ts.data().massive);</span>
 
-<span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let t_front = 10.0;</span>
-<span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
-
-<span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let t_back = 10.0;</span>
-<span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
-<span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
-
-<span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
-<span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
-<span class="comment">//     }</span>
-
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_calc_heat_flow_no_mass() {</span>
-<span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
-
-<span class="comment">//         /* SUBSTANCES */</span>
-
-<span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
-
-<span class="comment">//         /* MATERIALS */</span>
-<span class="comment">//         let m0_thickness = 200.0 / 1000.;</span>
-<span class="comment">//         let m0 = add_material(&amp;mut model, poly, m0_thickness);</span>
-
-<span class="comment">//         /* CONSTRUCTION */</span>
-<span class="comment">//         let mut c0 = Construction::new(&quot;Wall&quot;.to_string());</span>
-<span class="comment">//         c0.materials.push(Rc::clone(&amp;m0));</span>
-<span class="comment">//         let c0 = model.add_construction(c0);</span>
-
-<span class="comment">//         /* GEOMETRY */</span>
-<span class="comment">//         let mut the_loop = Loop3D::new();</span>
-<span class="comment">//         let l = 1. as Float;</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.close().unwrap();</span>
-<span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
-
-<span class="comment">//         /* SURFACE */</span>
-<span class="comment">//         let surface = Surface::new(&quot;Surface&quot;.to_string(), p, Rc::clone(&amp;c0));</span>
-<span class="comment">//         let surface = model.add_surface(surface);</span>
-
-<span class="comment">//         let main_dt = 300.0;</span>
-<span class="comment">//         let max_dx = m0.thickness / 15.;</span>
-<span class="comment">//         let min_dt = 80.;</span>
-<span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c0, main_dt, max_dx, min_dt);</span>
-
-<span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
-<span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
-<span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
-
-<span class="comment">//         let state = state_header.take_values().unwrap();</span>
+    <span class="comment">//         let state = state_header.take_values().unwrap();</span>
+
+    <span class="comment">//         // TEST</span>
+    <span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
 
-<span class="comment">//         // TEST</span>
-
-<span class="comment">//         assert!(!ts.data().massive);</span>
-<span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
-<span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
-<span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
-
-<span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let t_front = 10.0;</span>
-<span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
-
-<span class="comment">//         let t_back = 10.0;</span>
-<span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
-<span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
-
-<span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
-<span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
-<span class="comment">//     }</span>
-
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_calc_heat_flow_mixed_mass() {</span>
-<span class="comment">//         // THIRD TEST -- WITH ONE NO-MASS LAYER IN THE EXTERIOR AND ONE IN THE INTERIOR</span>
-
-<span class="comment">//         let mut model = SimpleModel::new(&quot;Some model&quot;.to_string());</span>
-
-<span class="comment">//         /* SUBSTANCES */</span>
-<span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
-<span class="comment">//         let brickwork = add_brickwork(&amp;mut model);</span>
-
-<span class="comment">//         /* MATERIALS */</span>
-<span class="comment">//         let m1 = add_material(&amp;mut model, poly, 20. / 1000.);</span>
-<span class="comment">//         let m2 = add_material(&amp;mut model, brickwork, 220. / 1000.);</span>
-
-<span class="comment">//         /* CONSTRUCTION */</span>
-<span class="comment">//         let mut c = Construction::new(&quot;construction&quot;.to_string());</span>
-<span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
-<span class="comment">//         c.materials.push(Rc::clone(&amp;m2));</span>
-<span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
-<span class="comment">//         let c = model.add_construction(c);</span>
-
-<span class="comment">//         /* GEOMETRY */</span>
-
-<span class="comment">//         let mut the_loop = Loop3D::new();</span>
-<span class="comment">//         let l = 1. as Float;</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.close().unwrap();</span>
-<span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
-
-<span class="comment">//         /* SURFACE */</span>
-<span class="comment">//         let s = Surface::new(&quot;Surface 1&quot;.to_string(), p, Rc::clone(&amp;c));</span>
-<span class="comment">//         let surface = model.add_surface(s);</span>
-
-<span class="comment">//         /* TEST */</span>
-<span class="comment">//         let main_dt = 300.0;</span>
-<span class="comment">//         let max_dx = 0.015;</span>
-<span class="comment">//         let min_dt = 65.;</span>
-<span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
-
-<span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
-<span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
-<span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
-
-<span class="comment">//         let state = state_header.take_values().unwrap();</span>
-
-<span class="comment">//         // TEST</span>
-
-<span class="comment">//         assert!(ts.data().massive);</span>
-<span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
-<span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
-<span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
-
-<span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap() + ts.data().r_front;</span>
-<span class="comment">//         let t_front = 10.0;</span>
-<span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
-
-<span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap() + ts.data().r_back;</span>
-<span class="comment">//         let t_back = 10.0;</span>
-<span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
-<span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
-
-<span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
-<span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
-<span class="comment">//     }</span>
-
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_march_massive() {</span>
-<span class="comment">//         let mut model = SimpleModel::new(&quot;Some model&quot;.to_string());</span>
-
-<span class="comment">//         /* SUBSTANCES */</span>
-<span class="comment">//         let brickwork = add_brickwork(&amp;mut model);</span>
-
-<span class="comment">//         /* MATERIALS */</span>
-<span class="comment">//         let m1 = add_material(&amp;mut model, brickwork, 20. / 1000.);</span>
-
-<span class="comment">//         /* CONSTRUCTION */</span>
-<span class="comment">//         let mut c = Construction::new(&quot;construction&quot;.to_string());</span>
-<span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
-<span class="comment">//         let c = model.add_construction(c);</span>
-
-<span class="comment">//         /* GEOMETRY */</span>
-<span class="comment">//         let mut the_loop = Loop3D::new();</span>
-<span class="comment">//         let l = 1. as Float;</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.close().unwrap();</span>
-<span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
-
-<span class="comment">//         /* SURFACE */</span>
-<span class="comment">//         let s = Surface::new(&quot;Surface 1&quot;.to_string(), p, Rc::clone(&amp;c));</span>
-<span class="comment">//         let surface = model.add_surface(s);</span>
-
-<span class="comment">//         // FIRST TEST -- 10 degrees on each side</span>
-<span class="comment">//         let main_dt = 300.0;</span>
-<span class="comment">//         let max_dx = m1.thickness / 2.0;</span>
-<span class="comment">//         let min_dt = 1.0;</span>
-<span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
-<span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
-
-<span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
-<span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
-<span class="comment">//         assert!(ts.data().massive);</span>
-
-<span class="comment">//         let mut state = state_header.take_values().unwrap();</span>
-
-<span class="comment">//         // TEST</span>
-
-<span class="comment">//         // Try marching until q_in and q_out are zero.</span>
-<span class="comment">//         let mut q: Float = 9999000009.0;</span>
-<span class="comment">//         let mut counter: usize = 0;</span>
-<span class="comment">//         while q.abs() &gt; 0.00015 {</span>
-<span class="comment">//             let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 10.0, dt);</span>
-<span class="comment">//             // the same amount of heat needs to leave in each direction</span>
-<span class="comment">//             // println!(&quot;q_in = {}, q_out = {} | diff = {}&quot;, q_in, q_out, (q_in - q_out).abs());</span>
-<span class="comment">//             // assert!((q_in - q_out).abs() &lt; 1E-5);</span>
-
-<span class="comment">//             // q_front is positive</span>
-<span class="comment">//             assert!(q_in &gt;= 0.);</span>
-<span class="comment">//             assert!(q_out &gt;= 0.);</span>
-
-<span class="comment">//             // q_in needs to be getting smaller</span>
-<span class="comment">//             // assert!(q_in &lt; q);</span>
-<span class="comment">//             q = q_in;</span>
-
-<span class="comment">//             counter += 1;</span>
-<span class="comment">//             if counter &gt; 9999999 {</span>
-<span class="comment">//                 panic!(&quot;Exceded number of iterations... q.abs() = {}&quot;, q.abs())</span>
-<span class="comment">//             }</span>
-<span class="comment">//         }</span>
-
-<span class="comment">//         // all nodes should be at 10.0 now.</span>
-<span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
-<span class="comment">//         for i in 0..ts.data().n_nodes {</span>
-<span class="comment">//             let t = temperatures.get(i, 0).unwrap();</span>
-<span class="comment">//             assert!((t - 10.0).abs() &lt; 0.00015);</span>
-<span class="comment">//         }</span>
-
-<span class="comment">//         // SECOND TEST -- 10 degrees in and 30 out.</span>
-<span class="comment">//         // We expect the final q to be (30-10)/R from</span>
-<span class="comment">//         // outside to inside. I.E. q_in = (30-10)/R,</span>
-<span class="comment">//         // q_out = -(30-10)/R</span>
-
-<span class="comment">//         // March until q converges</span>
-<span class="comment">//         let mut change: Float = 99.0;</span>
-<span class="comment">//         let mut counter: usize = 0;</span>
-<span class="comment">//         let mut previous_q: Float = -125.0;</span>
-<span class="comment">//         let mut final_qin: Float = -12312.;</span>
-<span class="comment">//         let mut final_qout: Float = 123123123.;</span>
-<span class="comment">//         while change.abs() &gt; 1E-10 {</span>
-<span class="comment">//             let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 30.0, dt);</span>
-<span class="comment">//             final_qin = q_in;</span>
-<span class="comment">//             final_qout = q_out;</span>
-
-<span class="comment">//             change = (q_in - previous_q).abs();</span>
-<span class="comment">//             previous_q = q_in;</span>
-
-<span class="comment">//             counter += 1;</span>
-<span class="comment">//             if counter &gt; 99999 {</span>
-<span class="comment">//                 panic!(&quot;Exceded number of iterations&quot;)</span>
-<span class="comment">//             }</span>
-<span class="comment">//         }</span>
-
-<span class="comment">//         // Expecting</span>
-<span class="comment">//         assert!(final_qin &gt; 0.0);</span>
-<span class="comment">//         assert!(final_qout &lt; 0.0);</span>
-<span class="comment">//         assert!((final_qin + final_qout).abs() &lt; 0.00033);</span>
-
-<span class="comment">//         let r = r_value(&amp;c).unwrap();</span>
-
-<span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);</span>
-<span class="comment">//         assert!((exp_q - final_qin).abs() &lt; 0.00033);</span>
-<span class="comment">//         assert!((exp_q + final_qout).abs() &lt; 0.00033);</span>
-<span class="comment">//     }</span>
-
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_march_nomass() {</span>
-<span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
-
-<span class="comment">//         /* SUBSTANCE */</span>
-<span class="comment">//         let polyurethane = add_polyurethane(&amp;mut model);</span>
-
-<span class="comment">//         /* MATERIAL */</span>
-<span class="comment">//         let m1 = add_material(&amp;mut model, polyurethane, 3. / 1000.);</span>
-
-<span class="comment">//         /* CONSTRUCTION */</span>
-<span class="comment">//         let mut c = Construction::new(&quot;Construction&quot;.to_string());</span>
-<span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
-<span class="comment">//         let c = model.add_construction(c);</span>
-
-<span class="comment">//         /* GEOMETRY */</span>
-<span class="comment">//         let mut the_loop = Loop3D::new();</span>
-<span class="comment">//         let l = 1. as Float;</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
-<span class="comment">//         the_loop.close().unwrap();</span>
-<span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
-
-<span class="comment">//         /* SURFACE */</span>
-<span class="comment">//         let s = Surface::new(&quot;WALL&quot;.to_string(), p, Rc::clone(&amp;c));</span>
-<span class="comment">//         let surface = model.add_surface(s);</span>
-<span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
-
-<span class="comment">//         /* TEST */</span>
-
-<span class="comment">//         // FIRST TEST -- 10 degrees on each side</span>
-<span class="comment">//         let main_dt = 300.0;</span>
-<span class="comment">//         let max_dx = m1.thickness / 2.0;</span>
-<span class="comment">//         let min_dt = 100.0;</span>
-<span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
-
-<span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
-
-<span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
-<span class="comment">//         assert!(!ts.data().massive);</span>
-
-<span class="comment">//         let mut state = state_header.take_values().unwrap();</span>
-
-<span class="comment">//         // TEST</span>
-
-<span class="comment">//         // Try marching until q_in and q_out are zero.</span>
-
-<span class="comment">//         let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 10.0, dt);</span>
-
-<span class="comment">//         // this should show instantaneous update. So,</span>
-<span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
-<span class="comment">//         assert_eq!(temperatures.get(0, 0).unwrap(), 10.0);</span>
-<span class="comment">//         assert_eq!(temperatures.get(1, 0).unwrap(), 10.0);</span>
-<span class="comment">//         assert_eq!(q_in, 0.0);</span>
-<span class="comment">//         assert_eq!(q_out, 0.0);</span>
-
-<span class="comment">//         // SECOND TEST -- 10 degrees in and 30 out.</span>
-<span class="comment">//         // We expect the final q to be (30-10)/R from</span>
-<span class="comment">//         // outside to inside. I.E. q_in = (30-10)/R,</span>
-<span class="comment">//         // q_out = -(30-10)/R</span>
-
-<span class="comment">//         let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 30.0, dt);</span>
-
-<span class="comment">//         // Expecting</span>
-<span class="comment">//         assert!(q_in &gt; 0.0);</span>
-<span class="comment">//         assert!(q_out &lt; 0.0);</span>
-<span class="comment">//         assert!((q_in + q_out).abs() &lt; 1E-6);</span>
-
-<span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
-<span class="comment">//         let exp_q = (30.0 - 10.0) / (r_value(&amp;c).unwrap() + rs_front + rs_back);</span>
-<span class="comment">//         assert!((exp_q - q_in).abs() &lt; 1E-4);</span>
-<span class="comment">//         assert!((exp_q + q_out).abs() &lt; 1E-4);</span>
-<span class="comment">//     }</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
+
+    <span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let t_front = 10.0;</span>
+    <span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
+
+    <span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let t_back = 10.0;</span>
+    <span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
+    <span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
+
+    <span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
+    <span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
+    <span class="comment">//     }</span>
+
+    <span class="comment">//     #[test]</span>
+    <span class="comment">//     fn test_calc_heat_flow_no_mass() {</span>
+    <span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
+
+    <span class="comment">//         /* SUBSTANCES */</span>
+
+    <span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
+
+    <span class="comment">//         /* MATERIALS */</span>
+    <span class="comment">//         let m0_thickness = 200.0 / 1000.;</span>
+    <span class="comment">//         let m0 = add_material(&amp;mut model, poly, m0_thickness);</span>
+
+    <span class="comment">//         /* CONSTRUCTION */</span>
+    <span class="comment">//         let mut c0 = Construction::new(&quot;Wall&quot;.to_string());</span>
+    <span class="comment">//         c0.materials.push(Rc::clone(&amp;m0));</span>
+    <span class="comment">//         let c0 = model.add_construction(c0);</span>
+
+    <span class="comment">//         /* GEOMETRY */</span>
+    <span class="comment">//         let mut the_loop = Loop3D::new();</span>
+    <span class="comment">//         let l = 1. as Float;</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.close().unwrap();</span>
+    <span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
+
+    <span class="comment">//         /* SURFACE */</span>
+    <span class="comment">//         let surface = Surface::new(&quot;Surface&quot;.to_string(), p, Rc::clone(&amp;c0));</span>
+    <span class="comment">//         let surface = model.add_surface(surface);</span>
+
+    <span class="comment">//         let main_dt = 300.0;</span>
+    <span class="comment">//         let max_dx = m0.thickness / 15.;</span>
+    <span class="comment">//         let min_dt = 80.;</span>
+    <span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c0, main_dt, max_dx, min_dt);</span>
+
+    <span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
+    <span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
+    <span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
+
+    <span class="comment">//         let state = state_header.take_values().unwrap();</span>
+
+    <span class="comment">//         // TEST</span>
+
+    <span class="comment">//         assert!(!ts.data().massive);</span>
+    <span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
+
+    <span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let t_front = 10.0;</span>
+    <span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
+
+    <span class="comment">//         let t_back = 10.0;</span>
+    <span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
+    <span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
+
+    <span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
+    <span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
+    <span class="comment">//     }</span>
+
+    <span class="comment">//     #[test]</span>
+    <span class="comment">//     fn test_calc_heat_flow_mixed_mass() {</span>
+    <span class="comment">//         // THIRD TEST -- WITH ONE NO-MASS LAYER IN THE EXTERIOR AND ONE IN THE INTERIOR</span>
+
+    <span class="comment">//         let mut model = SimpleModel::new(&quot;Some model&quot;.to_string());</span>
+
+    <span class="comment">//         /* SUBSTANCES */</span>
+    <span class="comment">//         let poly = add_polyurethane(&amp;mut model);</span>
+    <span class="comment">//         let brickwork = add_brickwork(&amp;mut model);</span>
+
+    <span class="comment">//         /* MATERIALS */</span>
+    <span class="comment">//         let m1 = add_material(&amp;mut model, poly, 20. / 1000.);</span>
+    <span class="comment">//         let m2 = add_material(&amp;mut model, brickwork, 220. / 1000.);</span>
+
+    <span class="comment">//         /* CONSTRUCTION */</span>
+    <span class="comment">//         let mut c = Construction::new(&quot;construction&quot;.to_string());</span>
+    <span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
+    <span class="comment">//         c.materials.push(Rc::clone(&amp;m2));</span>
+    <span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
+    <span class="comment">//         let c = model.add_construction(c);</span>
+
+    <span class="comment">//         /* GEOMETRY */</span>
+
+    <span class="comment">//         let mut the_loop = Loop3D::new();</span>
+    <span class="comment">//         let l = 1. as Float;</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.close().unwrap();</span>
+    <span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
+
+    <span class="comment">//         /* SURFACE */</span>
+    <span class="comment">//         let s = Surface::new(&quot;Surface 1&quot;.to_string(), p, Rc::clone(&amp;c));</span>
+    <span class="comment">//         let surface = model.add_surface(s);</span>
+
+    <span class="comment">//         /* TEST */</span>
+    <span class="comment">//         let main_dt = 300.0;</span>
+    <span class="comment">//         let max_dx = 0.015;</span>
+    <span class="comment">//         let min_dt = 65.;</span>
+    <span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
+
+    <span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
+    <span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
+    <span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
+
+    <span class="comment">//         let state = state_header.take_values().unwrap();</span>
+
+    <span class="comment">//         // TEST</span>
+
+    <span class="comment">//         assert!(ts.data().massive);</span>
+    <span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(0, 0).unwrap());</span>
+    <span class="comment">//         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());</span>
+
+    <span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap() + ts.data().r_front;</span>
+    <span class="comment">//         let t_front = 10.0;</span>
+    <span class="comment">//         let q_in_ref = (22.0 - t_front) / rs_front;</span>
+
+    <span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap() + ts.data().r_back;</span>
+    <span class="comment">//         let t_back = 10.0;</span>
+    <span class="comment">//         let q_out_ref = (22.0 - t_back) / rs_back;</span>
+    <span class="comment">//         let (q_in, q_out) = ts.calc_heat_flow(&amp;state, t_front, t_back);</span>
+
+    <span class="comment">//         assert_eq!(q_in, q_in_ref);</span>
+    <span class="comment">//         assert_eq!(q_out, q_out_ref);</span>
+    <span class="comment">//     }</span>
+
+    <span class="comment">//     #[test]</span>
+    <span class="comment">//     fn test_march_massive() {</span>
+    <span class="comment">//         let mut model = SimpleModel::new(&quot;Some model&quot;.to_string());</span>
+
+    <span class="comment">//         /* SUBSTANCES */</span>
+    <span class="comment">//         let brickwork = add_brickwork(&amp;mut model);</span>
+
+    <span class="comment">//         /* MATERIALS */</span>
+    <span class="comment">//         let m1 = add_material(&amp;mut model, brickwork, 20. / 1000.);</span>
+
+    <span class="comment">//         /* CONSTRUCTION */</span>
+    <span class="comment">//         let mut c = Construction::new(&quot;construction&quot;.to_string());</span>
+    <span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
+    <span class="comment">//         let c = model.add_construction(c);</span>
+
+    <span class="comment">//         /* GEOMETRY */</span>
+    <span class="comment">//         let mut the_loop = Loop3D::new();</span>
+    <span class="comment">//         let l = 1. as Float;</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.close().unwrap();</span>
+    <span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
+
+    <span class="comment">//         /* SURFACE */</span>
+    <span class="comment">//         let s = Surface::new(&quot;Surface 1&quot;.to_string(), p, Rc::clone(&amp;c));</span>
+    <span class="comment">//         let surface = model.add_surface(s);</span>
+
+    <span class="comment">//         // FIRST TEST -- 10 degrees on each side</span>
+    <span class="comment">//         let main_dt = 300.0;</span>
+    <span class="comment">//         let max_dx = m1.thickness / 2.0;</span>
+    <span class="comment">//         let min_dt = 1.0;</span>
+    <span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
+    <span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
+
+    <span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
+    <span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
+    <span class="comment">//         assert!(ts.data().massive);</span>
+
+    <span class="comment">//         let mut state = state_header.take_values().unwrap();</span>
+
+    <span class="comment">//         // TEST</span>
+
+    <span class="comment">//         // Try marching until q_in and q_out are zero.</span>
+    <span class="comment">//         let mut q: Float = 9999000009.0;</span>
+    <span class="comment">//         let mut counter: usize = 0;</span>
+    <span class="comment">//         while q.abs() &gt; 0.00015 {</span>
+    <span class="comment">//             let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 10.0, dt);</span>
+    <span class="comment">//             // the same amount of heat needs to leave in each direction</span>
+    <span class="comment">//             // println!(&quot;q_in = {}, q_out = {} | diff = {}&quot;, q_in, q_out, (q_in - q_out).abs());</span>
+    <span class="comment">//             // assert!((q_in - q_out).abs() &lt; 1E-5);</span>
+
+    <span class="comment">//             // q_front is positive</span>
+    <span class="comment">//             assert!(q_in &gt;= 0.);</span>
+    <span class="comment">//             assert!(q_out &gt;= 0.);</span>
+
+    <span class="comment">//             // q_in needs to be getting smaller</span>
+    <span class="comment">//             // assert!(q_in &lt; q);</span>
+    <span class="comment">//             q = q_in;</span>
+
+    <span class="comment">//             counter += 1;</span>
+    <span class="comment">//             if counter &gt; 9999999 {</span>
+    <span class="comment">//                 panic!(&quot;Exceded number of iterations... q.abs() = {}&quot;, q.abs())</span>
+    <span class="comment">//             }</span>
+    <span class="comment">//         }</span>
+
+    <span class="comment">//         // all nodes should be at 10.0 now.</span>
+    <span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
+    <span class="comment">//         for i in 0..ts.data().n_nodes {</span>
+    <span class="comment">//             let t = temperatures.get(i, 0).unwrap();</span>
+    <span class="comment">//             assert!((t - 10.0).abs() &lt; 0.00015);</span>
+    <span class="comment">//         }</span>
+
+    <span class="comment">//         // SECOND TEST -- 10 degrees in and 30 out.</span>
+    <span class="comment">//         // We expect the final q to be (30-10)/R from</span>
+    <span class="comment">//         // outside to inside. I.E. q_in = (30-10)/R,</span>
+    <span class="comment">//         // q_out = -(30-10)/R</span>
+
+    <span class="comment">//         // March until q converges</span>
+    <span class="comment">//         let mut change: Float = 99.0;</span>
+    <span class="comment">//         let mut counter: usize = 0;</span>
+    <span class="comment">//         let mut previous_q: Float = -125.0;</span>
+    <span class="comment">//         let mut final_qin: Float = -12312.;</span>
+    <span class="comment">//         let mut final_qout: Float = 123123123.;</span>
+    <span class="comment">//         while change.abs() &gt; 1E-10 {</span>
+    <span class="comment">//             let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 30.0, dt);</span>
+    <span class="comment">//             final_qin = q_in;</span>
+    <span class="comment">//             final_qout = q_out;</span>
+
+    <span class="comment">//             change = (q_in - previous_q).abs();</span>
+    <span class="comment">//             previous_q = q_in;</span>
+
+    <span class="comment">//             counter += 1;</span>
+    <span class="comment">//             if counter &gt; 99999 {</span>
+    <span class="comment">//                 panic!(&quot;Exceded number of iterations&quot;)</span>
+    <span class="comment">//             }</span>
+    <span class="comment">//         }</span>
+
+    <span class="comment">//         // Expecting</span>
+    <span class="comment">//         assert!(final_qin &gt; 0.0);</span>
+    <span class="comment">//         assert!(final_qout &lt; 0.0);</span>
+    <span class="comment">//         assert!((final_qin + final_qout).abs() &lt; 0.00033);</span>
+
+    <span class="comment">//         let r = r_value(&amp;c).unwrap();</span>
+
+    <span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);</span>
+    <span class="comment">//         assert!((exp_q - final_qin).abs() &lt; 0.00033);</span>
+    <span class="comment">//         assert!((exp_q + final_qout).abs() &lt; 0.00033);</span>
+    <span class="comment">//     }</span>
+
+    <span class="comment">//     #[test]</span>
+    <span class="comment">//     fn test_march_nomass() {</span>
+    <span class="comment">//         let mut model = SimpleModel::new(&quot;A model&quot;.to_string());</span>
+
+    <span class="comment">//         /* SUBSTANCE */</span>
+    <span class="comment">//         let polyurethane = add_polyurethane(&amp;mut model);</span>
+
+    <span class="comment">//         /* MATERIAL */</span>
+    <span class="comment">//         let m1 = add_material(&amp;mut model, polyurethane, 3. / 1000.);</span>
+
+    <span class="comment">//         /* CONSTRUCTION */</span>
+    <span class="comment">//         let mut c = Construction::new(&quot;Construction&quot;.to_string());</span>
+    <span class="comment">//         c.materials.push(Rc::clone(&amp;m1));</span>
+    <span class="comment">//         let c = model.add_construction(c);</span>
+
+    <span class="comment">//         /* GEOMETRY */</span>
+    <span class="comment">//         let mut the_loop = Loop3D::new();</span>
+    <span class="comment">//         let l = 1. as Float;</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();</span>
+    <span class="comment">//         the_loop.close().unwrap();</span>
+    <span class="comment">//         let p = Polygon3D::new(the_loop).unwrap();</span>
+
+    <span class="comment">//         /* SURFACE */</span>
+    <span class="comment">//         let s = Surface::new(&quot;WALL&quot;.to_string(), p, Rc::clone(&amp;c));</span>
+    <span class="comment">//         let surface = model.add_surface(s);</span>
+    <span class="comment">//         let mut state_header = SimulationStateHeader::new();</span>
+
+    <span class="comment">//         /* TEST */</span>
+
+    <span class="comment">//         // FIRST TEST -- 10 degrees on each side</span>
+    <span class="comment">//         let main_dt = 300.0;</span>
+    <span class="comment">//         let max_dx = m1.thickness / 2.0;</span>
+    <span class="comment">//         let min_dt = 100.0;</span>
+    <span class="comment">//         let (n_subdivisions, nodes) = discretize_construction(&amp;c, main_dt, max_dx, min_dt);</span>
+
+    <span class="comment">//         let dt = main_dt / n_subdivisions as Float;</span>
+
+    <span class="comment">//         let ts = ThermalSurface::new_surface(&amp;mut state_header, &amp;surface, dt, &amp;nodes).unwrap();</span>
+    <span class="comment">//         assert!(!ts.data().massive);</span>
+
+    <span class="comment">//         let mut state = state_header.take_values().unwrap();</span>
+
+    <span class="comment">//         // TEST</span>
+
+    <span class="comment">//         // Try marching until q_in and q_out are zero.</span>
+
+    <span class="comment">//         let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 10.0, dt);</span>
+
+    <span class="comment">//         // this should show instantaneous update. So,</span>
+    <span class="comment">//         let temperatures = ts.get_node_temperatures(&amp;state);</span>
+    <span class="comment">//         assert_eq!(temperatures.get(0, 0).unwrap(), 10.0);</span>
+    <span class="comment">//         assert_eq!(temperatures.get(1, 0).unwrap(), 10.0);</span>
+    <span class="comment">//         assert_eq!(q_in, 0.0);</span>
+    <span class="comment">//         assert_eq!(q_out, 0.0);</span>
+
+    <span class="comment">//         // SECOND TEST -- 10 degrees in and 30 out.</span>
+    <span class="comment">//         // We expect the final q to be (30-10)/R from</span>
+    <span class="comment">//         // outside to inside. I.E. q_in = (30-10)/R,</span>
+    <span class="comment">//         // q_out = -(30-10)/R</span>
+
+    <span class="comment">//         let (q_in, q_out) = ts.march(&amp;mut state, 10.0, 30.0, dt);</span>
+
+    <span class="comment">//         // Expecting</span>
+    <span class="comment">//         assert!(q_in &gt; 0.0);</span>
+    <span class="comment">//         assert!(q_out &lt; 0.0);</span>
+    <span class="comment">//         assert!((q_in + q_out).abs() &lt; 1E-6);</span>
+
+    <span class="comment">//         let rs_front = surface.front_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let rs_back = surface.back_convection_coefficient(&amp;state).unwrap();</span>
+    <span class="comment">//         let exp_q = (30.0 - 10.0) / (r_value(&amp;c).unwrap() + rs_front + rs_back);</span>
+    <span class="comment">//         assert!((exp_q - q_in).abs() &lt; 1E-4);</span>
+    <span class="comment">//         assert!((exp_q + q_out).abs() &lt; 1E-4);</span>
+    <span class="comment">//     }</span>
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (7466d5492 2022-06-08)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
 </body></html>

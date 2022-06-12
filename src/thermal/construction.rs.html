@@ -1410,7 +1410,7 @@ SOFTWARE.
     <span class="ident">Solid</span>(<span class="ident">Float</span>),
 
     <span class="doccomment">/// A cavity, comprised of a gas</span>
-    <span class="ident">Cavity</span>(<span class="ident">Cavity</span>),
+    <span class="ident">Cavity</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Cavity</span><span class="op">&gt;</span>),
 
     <span class="doccomment">/// The resistance is a surface coefficient.</span>
     <span class="ident">Back</span>,
@@ -1532,8 +1532,8 @@ SOFTWARE.
                             <span class="string">&quot;Trying to calculate C_Matrix with a substance without &#39;density&#39;&quot;</span>,
                         );
                         <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to calculate C_Matrix with a substance without &#39;specific heat capacity&#39;&quot;</span>);
-                        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>; <span class="comment">// dt;</span>
-                        <span class="ident">m</span>
+                        <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>
+                        
                     }
                     <span class="ident">Substance::Gas</span>(<span class="ident">_s</span>) =&gt; <span class="number">0.</span>,
                 }
@@ -1552,7 +1552,7 @@ SOFTWARE.
 
                         <span class="comment">// Add resistance                        </span>
                         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
-                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">expect</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;Substance &#39;{}&#39; in material &#39;{}&#39; in Construction &#39;{}&#39; has no thermal conductivity, but we need it&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>(), <span class="ident">material</span>.<span class="ident">name</span>(), <span class="ident">construction</span>.<span class="ident">name</span>()));
+                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;Substance &#39;{}&#39; in material &#39;{}&#39; in Construction &#39;{}&#39; has no thermal conductivity, but we need it&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>(), <span class="ident">material</span>.<span class="ident">name</span>(), <span class="ident">construction</span>.<span class="ident">name</span>()));
                         <span class="comment">// Push U-value</span>
                         <span class="ident">segments</span>[<span class="ident">n_segment</span>].<span class="number">1</span> <span class="op">=</span> <span class="ident">UValue::Solid</span>(<span class="ident">k</span> <span class="op">/</span> <span class="ident">dx</span>);
                     }
@@ -1628,7 +1628,7 @@ SOFTWARE.
                             <span class="ident">eout</span>,
                             <span class="ident">ein</span>,
                         };
-                        <span class="ident">segments</span>[<span class="ident">n_segment</span>].<span class="number">1</span> <span class="op">=</span> <span class="ident">UValue::Cavity</span>(<span class="ident">c</span>);
+                        <span class="ident">segments</span>[<span class="ident">n_segment</span>].<span class="number">1</span> <span class="op">=</span> <span class="ident">UValue::Cavity</span>(<span class="ident">Box::new</span>(<span class="ident">c</span>));
                     }
                 }
                 <span class="ident">n_segment</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -2597,7 +2597,7 @@ SOFTWARE.
         <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span><span class="op">/</span><span class="ident">solid_thickness</span>)));
 
         <span class="comment">// Layer 2: Gap</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Cavity</span>(<span class="ident">gap</span>)));
+        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Cavity</span>(<span class="ident">Box::new</span>(<span class="ident">gap</span>))));
 
         <span class="comment">// layer 3.        </span>
         <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span><span class="op">/</span><span class="ident">solid_thickness</span>)));
@@ -2688,7 +2688,7 @@ SOFTWARE.
         <span class="ident">q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
 
         <span class="kw">let</span> <span class="ident">keep_k</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">clone</span>();
-        <span class="comment">// let keep_q = q.clone();</span>
+        <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();
         
         
         <span class="macro">println!</span>(<span class="string">&quot;K = {}&quot;</span>, <span class="ident">k</span>);
@@ -2703,10 +2703,10 @@ SOFTWARE.
             <span class="macro">assert!</span>( (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.15</span>, <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() );
         }        
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span>  <span class="kw-2">&amp;</span><span class="ident">keep_k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
-        <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">t</span>;
+        <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_q</span>;
         <span class="macro">println!</span>(<span class="string">&quot;check = {}&quot;</span>, <span class="ident">check</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (7466d5492 2022-06-08)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
 </body></html>
