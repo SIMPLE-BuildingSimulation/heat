@@ -27,22 +27,22 @@ SOFTWARE.
 /// library... the `"float"` feature means it becomes `f32`
 /// and `f64` is used otherwise.
 #[cfg(feature = "float")]
-type Float = f32;
+pub type Float = f32;
 
 #[cfg(not(feature = "float"))]
-type Float = f64;
+pub type Float = f64;
 
 #[cfg(feature = "float")]
-const PI : Float = std::f32::consts::PI;
+pub const PI : Float = std::f32::consts::PI;
 
 #[cfg(not(feature = "float"))]
-const PI : Float = std::f64::consts::PI;
+pub const PI : Float = std::f64::consts::PI;
 
 
 
 /// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W/m^2K`$), 
 /// necessary for Radiation calculations
-const SIGMA : Float = 5.670374419e-8;
+pub const SIGMA : Float = 5.670374419e-8;
 
 
 

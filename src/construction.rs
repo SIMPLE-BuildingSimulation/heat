@@ -76,7 +76,7 @@ impl std::default::Default for UValue {
 /// contain information not only about their thickness but also their orientation.
 /// This means that one `Discretization` should exist per `Surface`, not just by `Construction`.
 pub struct Discretization {
-    /// Contains the node mass and the `Resistance` of each segment
+    /// Contains the node's mass and the `UValue` of each segment
     pub segments: Vec<(Float, UValue)>,
 
     /// Contains the minimum number of timesteps per model timestep that
@@ -89,18 +89,7 @@ pub struct Discretization {
     /// to perform `time_subdivision` sub-timesteps.
     pub tstep_subdivision: usize,
 
-    /// Indicates whether the thermal network for this `Discretization` is static,
-    /// meaning that the Thermal Network will not change when marching through time.
-    ///
-    /// The thermal network can also be dynamic; for example, when there are non-linearities
-    /// in the system. An example of this are cavities—which contain Radiation heat transfer,
-    /// meaning that the R-value of a cavity depends on temperature—and also
-    /// materials that change their thermal properties with temperature (e.g., Phase Change
-    /// Materials or materials that get wet).
-    pub is_static: bool,
-
-    /// Indicates if any of the nodes have any thermal mass
-    pub is_massive: bool,
+   
     
 }
 
@@ -123,6 +112,46 @@ impl Discretization {
         Self::build(construction, tstep_subdivision, &n_elements, height, angle)
     }
 
+
+    fn chunk_segments(&self, indexes: &[usize])->Vec<(usize,usize)>{
+        if indexes.is_empty(){
+            return Vec::with_capacity(0);
+        }
+        let mut start = indexes[0];
+        let mut prev = start;
+        let mut ret = Vec::new();
+        for i in indexes.iter().skip(1){
+            assert!(*i > start);
+            assert!(*i > prev);
+            if *i - prev == 1 {
+                prev = *i;
+            }else{
+                ret.push((start, prev + 1));
+                start = *i;
+                prev = start;                
+            }
+        }
+        ret.push((start, prev + 1));
+        ret
+    }
+    pub fn get_chunks(&self)->(Vec<(usize,usize)>,Vec<(usize,usize)>){
+
+        let mass_nodes: Vec<usize> = self            
+            .segments
+            .iter()
+            .enumerate()
+            .filter_map(|(i, x)| if x.0 >= 1e-5 { Some(i) } else { None })
+            .collect();
+        let nomass_nodes: Vec<usize> = self            
+            .segments
+            .iter()
+            .enumerate()
+            .filter_map(|(i, x)| if x.0 < 1e-5 { Some(i) } else { None })
+            .collect();
+        let mass = self.chunk_segments(&mass_nodes);
+        let nomass = self.chunk_segments(&nomass_nodes);
+        (mass, nomass)
+    }
     
 
     /// Creates the `segments` of the `Discretization`.
@@ -137,9 +166,11 @@ impl Discretization {
 
         // Let's start with an empty set of segments
         let mut n_nodes: usize = n_elements.iter().sum();
-        n_nodes = n_nodes.max(construction.materials.len()); // At least one per layer... but Zero means  "no_mass wall"
+        // Add those that are Zero        
+        n_nodes += n_elements.iter().filter(|x| **x == 0).count() + 1;
+        // n_nodes = n_nodes.max(construction.materials.len() + 1); // At least one per layer... but Zero means  "no_mass wall"
 
-        let mut segments: Vec<(Float, UValue)> = vec![(0.0, UValue::default()); n_nodes + 1];
+        let mut segments: Vec<(Float, UValue)> = vec![(0.0, UValue::default()); n_nodes];
 
         let mut n_segment = 0;
         for (n_layer, n) in n_elements.iter().enumerate() {
@@ -160,7 +191,7 @@ impl Discretization {
                         rho * cp * dx
                         
                     }
-                    Substance::Gas(_s) => 0.,
+                    Substance::Gas(_s) => 0.0,// should be zero... so should have been captured earlier
                 }
             };
 
@@ -182,7 +213,6 @@ impl Discretization {
                         segments[n_segment].1 = UValue::Solid(k / dx);
                     }
                     Substance::Gas(s) => {
-                        dbg!("todo: Fill geometrical elements of Cavity properly");
                         // Search by name
                         let gas = match s.gas() {
                             Ok(simple_model::substance::gas::StandardGas::Air) => {
@@ -259,27 +289,12 @@ impl Discretization {
                 n_segment += 1;
             }
             // Process last one
-            segments[n_nodes].1 = UValue::Back;
+            segments[n_nodes-1].1 = UValue::Back;
         }
 
-        let is_static = segments
-            .iter()
-            .enumerate()
-            .all(|(index, (_mass, resistance))| {
-                // Last one does not count
-                if index == n_nodes {
-                    true
-                } else if let UValue::Solid(_) = resistance {
-                    true
-                } else {
-                    false
-                }
-            });
-        let is_massive = segments.iter().any(|(mass, _resistance)| *mass > 0.0);
-
-        Ok(Self {
-            is_static,
-            is_massive,
+      
+        
+        Ok(Self {            
             segments,
             tstep_subdivision,            
         })
@@ -571,7 +586,7 @@ impl Discretization {
     /// ```
     ///
     /// Additionally, the vector $`\vec{q}`$ will have to account for the border conditions. How this is done depends
-    /// on the border condition. If the border leads to a zone, a value of $` \epsilon_s + T_{env} h_s + E_{ir}\epsilon_s - \sigma {T_s}^4`$
+    /// on the border condition. If the border leads to a zone, a value of $`  T_{env} h_s + E_{ir}\epsilon_s - \epsilon_s \sigma {T_s}^4`$
     /// should be added to $`\vec{q}`$.  Note that $`T_{env}`$ is the temparture of the air in the environment,
     /// $`h_s`$ is the convection coefficient, $`E_{ir}`$ is the incident infrared radiation and $`\epsilon_s`$ is the
     /// emmisivity of the surface. On the contrary, if the border condition is a cavity, then a value of $`T_{pane} U_{cavity}`$
@@ -602,7 +617,7 @@ impl Discretization {
             self.segments.len(),
             nrows
         );
-        let nnodes = fin - ini + 1;        
+        let nnodes = fin - ini;        
 
         let mut k = Matrix::new(0.0, nnodes, nnodes);
         let mut q = Matrix::new(0.0, nnodes, 1);
@@ -613,11 +628,13 @@ impl Discretization {
             match temperatures.get(i + 1, 0) {
                 Ok(v) => v,
                 Err(_) => {
-                    let (.., s) = &self.segments[i];
-                    assert!(!matches!(s, &UValue::Cavity(_)));
-                    // If it is not Cavity, then it we can return whatever we want,
-                    // as this u-value does not depend on tempeature
-                    123.
+                    back_env.air_temperature
+                    // let (.., s) = &self.segments[i];
+                    // assert!(!matches!(s, &UValue::Cavity(_)));
+                    // // If it is not Cavity, then it we can return whatever we want,
+                    // // as this u-value does not depend on tempeature
+                    // dbg!(123.);
+                    // 123.
                 }
             }
         };
@@ -625,14 +642,13 @@ impl Discretization {
 
         for local_i in 0..nnodes-1 {
             let global_i = ini + local_i;            
+            let t_this = temperatures.get(global_i, 0).unwrap();
+            let t_next = get_t_after(global_i);
             let (.., uvalue) = &self.segments[global_i];
-            let t_before = temperatures.get(global_i, 0).unwrap(); // this should NEVER fail
-            let t_after = get_t_after(global_i);
-            let u = uvalue.u_value(t_before, t_after);
+            let u = uvalue.u_value(t_this, t_next);
 
-            // Top left... should be there            
-            let old_value = k.get(local_i, local_i).unwrap();
-            k.set(local_i, local_i, old_value - u).unwrap();            
+            // Top left... should be there                        
+            k.add_to_element(local_i, local_i,  - u).unwrap();            
 
             // Bottom right, only if within range.            
             if let Ok(old_value) = k.get(local_i + 1, local_i + 1){ 
@@ -651,29 +667,30 @@ impl Discretization {
 
         // Add front border conditions
         let (hs_front, front_q) = if ini == 0 {            
-            let ts = 273.15 + temperatures.get(0, 0).unwrap();
+            let ts = temperatures.get(0, 0).unwrap();
+            let ts = 273.15 + ts;
             let front_q = front_env.air_temperature * front_hs  // convection
                 + front_env.ir_irrad * front_emmisivity // incident radiation
                 - SIGMA * front_emmisivity * ts.powi(4); // outgoing radiation
                 
             (front_hs, front_q)
         } else {
-            let (.., resistance) = &self.segments[ini-1];
-            let t_before = temperatures.get(ini-1, 0).unwrap(); // this should NEVER fail
-            let t_after = get_t_after(fin);
-            let u = resistance.u_value(t_before, t_after);
+            let (.., uvalue) = &self.segments[ini-1];
+            let t_before = temperatures.get(ini-1, 0).unwrap(); // this should NEVER fail            
+            let t_after = temperatures.get(ini, 0).unwrap(); // this should NEVER fail            
+            // let t_after = get_t_after(ini);
+            let u = uvalue.u_value(t_before, t_after);
 
-            (u, u*t_after)
+            (u, u*t_before)
         };        
-        let old_v = q.get(0, 0).unwrap();
-        q.set(0, 0, old_v + front_q).unwrap();
-
-        let old_value = k.get(0, 0).unwrap();
-        k.set(0, 0, old_value - hs_front).unwrap();
+        
+        q.add_to_element(0, 0,  front_q).unwrap();        
+        k.add_to_element(0, 0,  - hs_front).unwrap();
 
         // Add back border conditions
-        let (hs_back, back_q) = if fin == nnodes - 1 {
-            let ts = 273.15 + temperatures.get(fin, 0).unwrap();
+        let (hs_back, back_q) = if fin == nrows  {
+            let ts = temperatures.get(fin - 1 , 0).unwrap();
+            let ts = 273.15 + ts;
                                     
             let back_q = back_env.air_temperature * back_hs  // convection
                 + back_env.ir_irrad * back_emmisivity // incident radiation
@@ -682,18 +699,15 @@ impl Discretization {
             (back_hs, back_q)
         } else {
             
-            let (.., resistance) = &self.segments[fin];
-            let t_before = temperatures.get(fin, 0).unwrap(); // this should NEVER fail
-            let t_after = get_t_after(fin);
-            let u = resistance.u_value(t_before, t_after);   
-            dbg!(t_after - t_before, (t_after - t_before)*u, u);         
+            let (.., uvalue) = &self.segments[fin-1];
+            let t_before = temperatures.get(fin-1, 0).unwrap(); // this should NEVER fail
+            let t_after = get_t_after(fin-1);
+            let u = uvalue.u_value(t_before, t_after);               
 
             (u, u*t_after)
         };
-        let old_v = q.get(nnodes - 1, 0).unwrap();
-        q.set(nnodes - 1, 0, old_v + back_q).unwrap();
-        let old_value = k.get(nnodes - 1, nnodes - 1).unwrap();
-        k.set(nnodes - 1, nnodes - 1, old_value - hs_back).unwrap();
+        q.add_to_element(nnodes - 1, 0, back_q).unwrap();
+        k.add_to_element(nnodes - 1, nnodes - 1,  - hs_back).unwrap();
 
         // return
         (k, q)
@@ -742,7 +756,7 @@ mod testing {
         let construction = get_normal(thermal_cond, density, cp, thickness);
         let d = Discretization::build(&construction, tstep_sub, &[1], 1., 0.).unwrap();
         // normal --> linear
-        assert!(d.is_static);
+        
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 2);
         // mass of node 0
@@ -783,7 +797,6 @@ mod testing {
         let d = Discretization::build(&construction, tstep_sub, &[0], 1., 0.).unwrap();
 
         // normal --> linear
-        assert!(d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 2);
         // mass of node 0
@@ -848,7 +861,6 @@ mod testing {
         let d = Discretization::build(&construction, tstep_sub, &[1, 1, 1], 1., 0.).unwrap();
 
         // has gas --> linear
-        assert!(!d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 4); // normal, gas, normal, back
 
@@ -939,7 +951,6 @@ mod testing {
         let d = Discretization::build(&construction, tstep_sub, &[0, 0, 0], 1., 0.).unwrap();
 
         // has gas --> linear
-        assert!(!d.is_static);
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 4); // normal, gas, normal, back
 
@@ -995,31 +1006,26 @@ mod testing {
         }
     }
 
-    #[test]
-    fn test_get_q_k_solid() {
-        let thickness = 0.5;
+    fn get_solid_test_system( thickness: Float, thermal_cond: Float) -> (Discretization, Matrix, Environment, Float, Float, Environment, Float, Float){
         let n = 5;
         let dx = thickness / n as Float;
-        let thermal_cond = 2.12;
         let u = thermal_cond / dx;
 
         let mut segments = Vec::with_capacity(n + 1);
-        for _ in 0..n {
-            segments.push((0.0, UValue::Solid(u)));
+        for mass in 0..n {
+            segments.push((mass as Float, UValue::Solid(u)));
         }
-        segments.push((0.0, UValue::Back));
+        segments.push((n as Float, UValue::Back));
         assert_eq!(segments.len(), n + 1);
 
         let d = Discretization {
             segments,
-            tstep_subdivision: 1,
-            is_static: true,
-            is_massive: true,            
+            tstep_subdivision: 1            
         };
 
         let front_env = Environment {
             solar_radiation: 0.0,
-            air_temperature: 1.,
+            air_temperature: 0.,
             air_speed: 0.,
             ir_irrad: SIGMA * (273.15 as Float).powi(4),
             .. Environment::default()
@@ -1028,20 +1034,34 @@ mod testing {
 
         let back_env = Environment {
             solar_radiation: 0.0,
-            air_temperature: 6.,
+            air_temperature: 7.,
             air_speed: 0.,
             ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
             .. Environment::default()
         };
         let back_emmisivity = 0.9;
 
-        let temperatures = Matrix::from_data(n + 1, 1, vec![0., 1., 2., 3., 4., 5.]);
+        let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
         let front_hs = front_env.get_hs();
         let back_hs = back_env.get_hs();
 
+        return (d, temperatures, front_env, front_emmisivity, front_hs, back_env, back_emmisivity, back_hs)
+
+    }
+
+    #[test]
+    fn test_get_q_k_solid() {
+        let n = 5;
+        let thickness = 0.5;
+        let thermal_cond = 2.12;
+        
+        let dx = thickness / n as Float;
+        let u = thermal_cond / dx;
+        let (d, temperatures, front_env, front_emmisivity, front_hs, back_env, back_emmisivity, back_hs) = get_solid_test_system( thickness, thermal_cond);
+
         let (k, q) = d.get_k_q(
             0,
-            n,
+            n+1,
             &temperatures,
             &front_env,
             front_emmisivity,
@@ -1059,10 +1079,12 @@ mod testing {
             // Check q
             let heat_flow = q.get(r, 0).unwrap();
             if r == 0 {
-                assert!(heat_flow > 1e-5);
+                // exterior temp is lower, so heat flow is negative
+                assert!(heat_flow < -1e-5);
             } else if r == n {
                 assert!(heat_flow > 1e-5);
             } else {
+                // it is Zero
                 assert!(heat_flow.abs() < 1e-29);
             }
 
@@ -1072,7 +1094,7 @@ mod testing {
                 if c == r {
                     // Diagonal
                     if c == 0 {
-                        // Exterior node
+                        // Exterior node... 
                         assert!((v - (-front_hs - u)).abs() < 1e-20);
                     } else if c == n {
                         // interior node
@@ -1099,11 +1121,151 @@ mod testing {
 
 
     #[test]
+    fn test_get_q_k_solid_partial() {
+        let n = 5;
+        let thickness = 0.5;
+        let thermal_cond = 2.12;
+        
+        let dx = thickness / n as Float;
+        let u = thermal_cond / dx;
+        let (d, temperatures, front_env, front_emmisivity, front_hs, back_env, back_emmisivity, back_hs) = get_solid_test_system( thickness, thermal_cond);
+
+        let (k, q) = d.get_k_q(
+            0,
+            3,
+            &temperatures,
+            &front_env,
+            front_emmisivity,
+            front_hs,
+            &back_env,
+            back_emmisivity,
+            back_hs,
+        );
+        println!("k = {}", k);
+        println!("heat_flows = {}", q);
+
+        
+
+        for r in 0..3 {
+            // Check q
+            let heat_flow = q.get(r, 0).unwrap();
+            if r == 0 {
+                // exterior temp is lower, so heat flow is negative
+                assert!(heat_flow < -1e-5);
+            } else if r == 2 {
+                assert!(heat_flow > 1e-5);
+            } else {
+                // it is Zero
+                assert!(heat_flow.abs() < 1e-29);
+            }
+
+            for c in 0..3 {
+                let v = k.get(r, c).unwrap();
+
+                if c == r {
+                    // Diagonal
+                    if c == 0 {
+                        // Exterior node... 
+                        assert!((v - (-front_hs - u)).abs() < 1e-20);
+                    } else if c == n {
+                        // interior node
+                        assert!((v - (-back_hs - u)).abs() < 1e-20);
+                    } else {
+                        // Any other node.
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    }
+                } else {
+                    // Not diagonal
+                    let r = r as i32;
+                    let c = c as i32;
+                    if (c - r).abs() <= 1 {
+                        // if it is within tri-diagonal
+                        assert!((v - u).abs() < 1e-20);
+                    } else {
+                        // if not
+                        assert!(v.abs() < 1e-29);
+                    }
+                }
+            }
+        }
+    }
+
+
+    #[test]
+    fn test_get_q_k_solid_partial_2() {
+        let n = 5;
+        let thickness = 0.5;
+        let thermal_cond = 0.1;
+        
+        let dx = thickness / n as Float;
+        let u = thermal_cond / dx;
+        let (d, temperatures, front_env, front_emmisivity, front_hs, back_env, back_emmisivity, back_hs) = get_solid_test_system( thickness, thermal_cond);
+        
+        let (k, q) = d.get_k_q(
+            2,
+            5,
+            &temperatures,
+            &front_env,
+            front_emmisivity,
+            front_hs,
+            &back_env,
+            back_emmisivity,
+            back_hs,
+        );
+        println!("k = {}", k);
+        println!("heat_flows = {}", q);
+
+        
+
+        for r in 0..3 {
+            // Check q
+            let heat_flow = q.get(r, 0).unwrap();
+            if r == 1 {
+                // This element is Zero
+                assert!(heat_flow.abs() < 1e-29);                            
+            } else {
+                // This should not be Zero
+                assert!(heat_flow.abs() > 1e-3);
+            }
+
+            for c in 0..3 {
+                let v = k.get(r, c).unwrap();
+
+                if c == r {
+                    // Diagonal
+                    if c == 0 {
+                        // Exterior node... 
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    } else if c == n {
+                        // interior node
+                        assert!((v - (-2.* u)).abs() < 1e-20);
+                    } else {
+                        // Any other node.
+                        assert!((v - (-2. * u)).abs() < 1e-20);
+                    }
+                } else {
+                    // Not diagonal
+                    let r = r as i32;
+                    let c = c as i32;
+                    if (c - r).abs() <= 1 {
+                        // if it is within tri-diagonal
+                        assert!((v - u).abs() < 1e-20);
+                    } else {
+                        // if not
+                        assert!(v.abs() < 1e-29);
+                    }
+                }
+            }
+        }
+    }
+
+
+    #[test]
     fn test_get_q_k_partial() {
         let thickness = 0.5;
         let n = 5;
         let dx = thickness / n as Float;
-        let thermal_cond = 2.12;
+        let thermal_cond = 1.;
         let u = thermal_cond / dx;
 
         let mut segments = Vec::with_capacity(n + 1);
@@ -1115,9 +1277,7 @@ mod testing {
 
         let d = Discretization {
             segments,
-            tstep_subdivision: 1,
-            is_static: true,
-            is_massive: true,            
+            tstep_subdivision: 1,              
         };
 
         let front_env = Environment {
@@ -1138,12 +1298,12 @@ mod testing {
         };
         let back_emmisivity = 0.9;
 
-        let temperatures = Matrix::from_data(n + 1, 1, vec![0., 1., 2., 3., 4., 5.]);
-        let front_hs = 0.1;
-        let back_hs = 0.1;
+        let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
+        let front_hs = 10.;
+        let back_hs = 10.;
         let (k, q) = d.get_k_q(
             1,
-            n-1,
+            n,
             &temperatures,
             &front_env,
             front_emmisivity,
@@ -1231,9 +1391,7 @@ mod testing {
         segments.push((0.0, UValue::Back));
         let d = Discretization {
             segments,
-            tstep_subdivision: 1,
-            is_static: true,
-            is_massive: true,            
+            tstep_subdivision: 1            
         };
 
         // Borders
@@ -1268,7 +1426,7 @@ mod testing {
         let front_hs = 36.34359273; // these were found by analyzing WINDOW's response
         let back_hs = 5.;
 
-        let (k, mut q) = d.get_k_q(0, 3, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
+        let (k, mut q) = d.get_k_q(0, 4, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
         q *= -1.;
         // let mut temps = Matrix::new(0.0, 4, 1);
         
@@ -1296,7 +1454,7 @@ mod testing {
 
         let front_hs = 32.6; // these were found by analyzing WINDOW's response
         let back_hs = 6.8;
-        let (k, mut q) = d.get_k_q(0, 3, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
+        let (k, mut q) = d.get_k_q(0, 4, &temperatures, &front_env, 0.9, front_hs, &back_env, 0.9, back_hs);
         
         // add sun?
         let old = q.get(0, 0).unwrap();
@@ -1330,5 +1488,82 @@ mod testing {
         let mut check =  &keep_k*&t; // this should be equals to keep_q
         check -= &keep_q;
         println!("check = {}", check);
+    }
+
+
+
+    #[test]
+    fn test_get_chunks(){
+        // Single node, massive
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(1., UValue::None)]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert!(nomass_chunks.is_empty());
+        assert_eq!(mass_chunks.len(), 1);
+        assert_eq!(mass_chunks, vec![(0, 1)]);
+
+        // Single node, no-mass
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(0., UValue::None)]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert!(mass_chunks.is_empty());
+        assert_eq!(nomass_chunks.len(), 1);
+        assert_eq!(nomass_chunks, vec![(0, 1)]);
+
+        // Several nodes, massive
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(1., UValue::None); 10]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert!(nomass_chunks.is_empty());
+        assert_eq!(mass_chunks.len(), 1);
+        assert_eq!(mass_chunks, vec![(0, 10)]);
+
+        // Several nodes, no-mass
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(0., UValue::None); 10]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert!(mass_chunks.is_empty());
+        assert_eq!(nomass_chunks.len(), 1);
+        assert_eq!(nomass_chunks, vec![(0, 10)]);
+
+
+        // Mixed 1
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(0., UValue::None), (1., UValue::None), (1., UValue::None), (0., UValue::None), (0., UValue::None)]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert_eq!(mass_chunks.len(), 1);
+        assert_eq!(mass_chunks, vec![(1, 3)]);
+        assert_eq!(nomass_chunks.len(), 2);
+        assert_eq!(nomass_chunks, vec![(0, 1), (3, 5)]);
+
+
+        // Mixed 2
+        let d = Discretization{
+            tstep_subdivision: 1,
+            segments: vec![(1., UValue::None), (1., UValue::None), (1., UValue::None), (0., UValue::None), (0., UValue::None)]
+        };
+
+        let (mass_chunks, nomass_chunks) = d.get_chunks();
+        assert_eq!(mass_chunks.len(), 1);
+        assert_eq!(mass_chunks, vec![(0, 3)]);
+        assert_eq!(nomass_chunks.len(), 1);
+        assert_eq!(nomass_chunks, vec![(3, 5)]);
+
+        
     }
 }

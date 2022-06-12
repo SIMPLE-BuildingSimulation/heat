@@ -3,3 +3,12 @@ Cargo.lock
 check.txt
 .DS_Store
 *.profraw
+
+# EnergyPlus test stuff
+tests/Energy+.idd
+tests/*/*
+!tests/*/*.csv
+!tests/**/**/*.idf
+!tests/**/**/*.epw
+
+

@@ -113,9 +113,11 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     // get k1
     let mut k1 = &k * &*t;
     k1 += &q;
-
+    
     // returning "temperatures + k1" is Euler... continuing is
     // Runge–Kutta 4th order
+    // *t += &k1;
+    // return;
 
     let mut aux = &k1 * 0.5;
     aux += t;
@@ -217,7 +219,7 @@ pub trait SurfaceTrait {
 
     fn get_node_temperatures(&self, state: &SimulationState) -> Matrix {
         let ini = self.first_node_temperature_index();
-        let fin = self.last_node_temperature_index();
+        let fin = self.last_node_temperature_index()+1;
         let n_nodes = fin - ini;
         let mut ret = Matrix::new(0.0, n_nodes, 1);
         for (node_index, i) in (ini..fin).enumerate() {
@@ -231,7 +233,7 @@ pub trait SurfaceTrait {
         let ini = self.first_node_temperature_index();
         let fin = self.last_node_temperature_index();
 
-        for (node_index, i) in (ini..fin).enumerate() {
+        for (node_index, i) in (ini..=fin).enumerate() {
             let new_t = matrix.get(node_index, 0).unwrap();
             state[i] = new_t;
         }
@@ -398,7 +400,7 @@ impl SurfaceTrait for Surface {
         }
         let last_node = state.len();
         self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node);
+        self.set_last_node_temperature_index(last_node-1);
     }
 }
 
@@ -547,7 +549,7 @@ impl SurfaceTrait for Fenestration {
         }
         let last_node = state.len();
         self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node);
+        self.set_last_node_temperature_index(last_node-1);
     }
 }
 
@@ -709,7 +711,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
         let solar_back = self.parent.back_solar_irradiance(state);
-        
+
         // Calculate and set Front and Back IR Irradiance
         // let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));
         let ir_front = self.parent.front_infrared_irradiance(state);
@@ -740,6 +742,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 1st: Calculate the solar absorption in each node
         /////////////////////
         let n_nodes = self.discretization.segments.len();
+        dbg!("call glazing::alphas!");
         let mut q = Matrix::new(0.0, n_nodes, 1);
         q.add_to_element(0, 0, solar_front * self.front_solar_absorbtance)
             .unwrap();
@@ -750,35 +753,15 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
+        
+        let (mass, nomass) = self.discretization.get_chunks();        
 
-        // Get all no-mass nodes
-        // let nomass: Vec<usize> = self
-        //     .discretization
-        //     .segments
-        //     .iter()
-        //     .enumerate()
-        //     .filter_map(|(i, x)| if x.0 < 1e-5 { Some(i) } else { None })
-        //     .collect();
-        let mass: Vec<usize> = self
-            .discretization
-            .segments
-            .iter()
-            .enumerate()
-            .filter_map(|(i, x)| if x.0 >= 1e-5 { Some(i) } else { None })
-            .collect();
-
-        if mass.is_empty() {
-            // dbg!(front_emmisivity);
-
+        for (ini, fin) in nomass {
             let mut count = 0;
             loop {
-                // This function should also return h_front and h_back
-                // let h_front = 10.;
-                // // dbg!(h_front);
-                // let h_back = 10.;
                 let (k, mut local_q) = self.discretization.get_k_q(
-                    0,
-                    n_nodes - 1,
+                    ini,
+                    fin,
                     &temperatures,
                     &front_env,
                     self.front_emmisivity,
@@ -789,102 +772,56 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 );
 
                 // ... here we can add solar gains
-                local_q += &q;
+                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                    let v = q.get(i, 0).unwrap();
+                    local_q.add_to_element(local_i, 0, v).unwrap();
+                }                
                 local_q *= -1.; // transfrom equation from kT + q = 0 --> kT = -q
 
-                let mut temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures
-                let diff = &temps - &temperatures;
+                let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures                                
 
                 let mut err = 0.0;
-                for i in 0..n_nodes {
-                    err += diff.get(i, 0).unwrap().abs();
+                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                    let local_temp = temps.get(local_i, 0).unwrap();
+                    let global_temp = temperatures.get(i, 0).unwrap();
+                    err += (local_temp - global_temp).abs();                    
                 }
+                
                 if err / (n_nodes as Float) < 0.01 {
                     break;
                 }
+                
                 count += 1;
                 assert!(count < 999, "Excessive number of iteration");
-                temps += &temperatures;
-                temps /= 2.;
-                temperatures.copy_from(&temps);
+                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                    let local_temp = temps.get(local_i, 0).unwrap();
+                    temperatures.add_to_element(i, 0, local_temp).unwrap();
+                    temperatures.scale_element(i, 0, 0.5).unwrap();
+                           
+                }
+                
             }
-        } else if mass.len() != n_nodes {
-            todo!();
-            // for i in 0..mass.len()-1 {
-            //     let n = mass[i];
-            //     let next_n = mass[i+1];
-
-            //     let front_emmisivity = 0.84;
-            //     // dbg!(front_emmisivity);
-            //     let back_emmisivity = 0.84;
-
-            //     // This function should also return h_front and h_back
-            //     // let h_front = 10.;
-            //     // // dbg!(h_front);
-            //     // let h_back = 10.;
-            //     let (k, mut local_q) = self.discretization.get_k_q(n, next_n, &temperatures, &front_env, front_emmisivity, front_hs,&back_env, back_emmisivity, back_hs);
-
-            //     // ... here we can add solar gains
-            //     local_q *= -1.; // transfrom equation from kT + q = 0 --> kT = -q
-
-            //     let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures
-
-            //     // update temperatures
-            //     for (j, node) in (n..next_n).into_iter().enumerate() {
-            //         let temp = temps.get(j, 0).unwrap();
-            //         temperatures.set(node, 0, temp).unwrap();
-            //     }
-
-            //     // // Update heat
-            //     // if n == 0 {
-
-            //     // }else{
-            //     //     if let Ok(prev_temp) = temperatures.get(n-1, 0){
-            //     //         let temp = temperatures.get(n, 0).unwrap();
-            //     //         let q_front = h_front * (temp - prev_temp);
-            //     //         q.add_to_element(0, 0, q_front).unwrap();
-            //     //     }
-            //     // }
-            //     // if let Ok(prev_temp) = temperatures.get(next_n+1, 0){
-            //     //     let temp = temperatures.get(next_n, 0).unwrap();
-            //     //     let q_back = h_back * (temp - prev_temp);
-            //     //     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();
-            //     // }
-
-            // }
-        }
+        } 
 
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
         /////////////////////
 
-        // let mass: Vec<usize> = self
-        //     .discretization
-        //     .segments
-        //     .iter()
-        //     .enumerate()
-        //     .filter_map(|(i, x)| if x.0 >= 1e-5 { Some(i) } else { None })
-        //     .collect();
-        let nomass: Vec<usize> = self
-            .discretization
-            .segments
-            .iter()
-            .enumerate()
-            .filter_map(|(i, x)| if x.0 < 1e-5 { Some(i) } else { None })
-            .collect();
-
-        if nomass.is_empty() {
+        
+        for (ini, fin) in mass{
             let c = self
                 .discretization
                 .segments
                 .iter()
-                .map(|(mass, _r)| *mass)
+                .skip(ini)
+                .take(fin-ini)
+                .map(|(mass, _)| *mass)
                 .collect();
             let c = Matrix::diag(c);
 
             let (k, mut local_q) = self.discretization.get_k_q(
-                0,
-                n_nodes - 1,
+                ini,
+                fin,
                 &temperatures,
                 &front_env,
                 self.front_emmisivity,
@@ -894,78 +831,29 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 back_hs,
             );
 
-            // ... here we can add solar gains
-            local_q += &q;
+            // ... here we add solar gains
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+                let v = q.get(global_i, 0).unwrap();
+                local_q.add_to_element(local_i, 0, v).unwrap();
+            }
 
             /////////////////////
             // 4rd: March massive nodes
             /////////////////////
-            // Use RT4 for updating temperatures of massive noted.
-            rk4(dt, &c, k, local_q, &mut temperatures);
+            // Use RT4 for updating temperatures of massive nodes.
+            let mut local_temps = Matrix::new(0.0, fin-ini, 1);
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+                let v = temperatures.get(global_i, 0).unwrap();
+                local_temps.set(local_i, 0, v).unwrap();
+            }
 
-            // // Update heat
-            // if let Ok(prev_temp) = temperatures.get(n-1, 0){
-            //     let temp = temperatures.get(n, 0).unwrap();
-            //     let q_front = front_hs * (temp - prev_temp);
-            //     q.add_to_element(0, 0, q_front).unwrap();
-            // }
-            // if let Ok(prev_temp) = temperatures.get(next_n+1, 0){
-            //     let temp = temperatures.get(next_n, 0).unwrap();
-            //     let q_back = back_hs * (temp - prev_temp);
-            //     q.add_to_element(n_nodes - 1, 0, q_back).unwrap();
-            // }
-        } else if nomass.len() != n_nodes {
-            todo!();
-            // for i in 0..mass.len()-1 {
-            //     let n = mass[i];
-            //     let next_n = mass[i+1];
+            rk4(dt, &c, k, local_q, &mut local_temps);
 
-            //     let c = self.discretization.segments
-            //         .iter()
-            //         .skip(n)
-            //         .take(next_n - n)
-            //         .map(|(mass, _r)| *mass)
-            //         .collect();
-            //     let c = Matrix::diag(c);
-            //     // let c = self.discretization.build_c();
-
-            //     let front_emmisivity = 0.84;
-            //     // dbg!(front_emmisivity);
-            //     let back_emmisivity = 0.84;
-
-            //     // This function should also return h_front and h_back
-
-            //     let (k, mut local_q) = self.discretization.get_k_q(n, next_n, &temperatures, &front_env, front_emmisivity, front_hs, &back_env, back_emmisivity, back_hs);
-
-            //     // ... here we can add solar gains
-            //     local_q *= -1.; // transfrom equation from kT + q = 0 --> kT = -q
-
-            //     /////////////////////
-            //     // 4rd: March massive nodes
-            //     /////////////////////
-            //     // Use RT4 for updating temperatures of massive noted.
-            //     let temps = self.rk4(dt, &c, k, q.clone(), &temperatures);
-
-            //     // update values
-            //     for (j, node) in (n..next_n).into_iter().enumerate() {
-            //         let temp = temps.get(j, 0).unwrap();
-            //         temperatures.set(node, 0, temp).unwrap();
-            //     }
-
-            //     // Update heat
-            //     if let Ok(prev_temp) = temperatures.get(n-1, 0){
-            //         let temp = temperatures.get(n, 0).unwrap();
-            //         let q_front = h_front * (temp - prev_temp);
-            //         q.add_to_element(0, 0, q_front).unwrap();
-            //     }
-            //     if let Ok(prev_temp) = temperatures.get(next_n+1, 0){
-            //         let temp = temperatures.get(next_n, 0).unwrap();
-            //         let q_back = h_back * (temp - prev_temp);
-            //         q.add_to_element(n_nodes - 1, 0, q_back).unwrap();
-            //     }
-
-            // }
-        }
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+                let v = local_temps.get(local_i, 0).unwrap();
+                temperatures.set(global_i, 0, v).unwrap();
+            }
+        } 
 
         /////////////////////
         // 5th: Set temperatures, calc heat-flows and return
@@ -1045,30 +933,7 @@ mod testing {
         model.add_material(mat)
     }
 
-    #[test]
-    fn test_new_discretization() {
-        let mut model = SimpleModel::new("A model".to_string());
-
-        /* SUBSTANCES */
-        // Add polyurethane Substance
-        let poly = add_polyurethane(&mut model);
-
-        let m0_thickness = 200.0 / 1000. as Float;
-        let m0 = add_material(&mut model, poly, m0_thickness);
-
-        /* CONSTRUCTION */
-        let mut c0 = Construction::new("Wall".to_string());
-        c0.materials.push(Rc::clone(&m0));
-        let c0 = model.add_construction(c0);
-
-        // This should result in a dt of 300, with 8 layers of 0.25m thick.
-        let main_dt = 300.0;
-        let max_dx = m0.thickness / 4.0;
-        let min_dt = 1.;
-        let d = Discretization::new(&c0, main_dt, max_dx, min_dt, 1., 0.).unwrap();
-        assert!(d.is_massive);
-        assert!(d.is_static);
-    }
+   
 
     #[test]
     fn test_march_massive() {
@@ -1104,8 +969,7 @@ mod testing {
         let main_dt = 300.0;
         let max_dx = m1.thickness / 2.0;
         let min_dt = 1.0;
-        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
-        assert!(d.is_massive);
+        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();        
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let mut state_header = SimulationStateHeader::new();
@@ -1130,8 +994,7 @@ mod testing {
             assert!(q_in >= 0., "q_in = {} | c = {}", q_in, counter);
             assert!(q_out >= 0., "q_out = {} | c = {}", q_out, counter);
 
-            // q_in needs to be getting smaller
-            // assert!(q_in < q);
+            // q_in needs to be getting smaller            
             q = q_in;
 
             counter += 1;
@@ -1391,388 +1254,5 @@ mod testing {
         }
     }
 
-    //     #[test]
-    //     fn test_calc_heat_flow_with_mass() {
-    //         let mut model = SimpleModel::new("A model".to_string());
-
-    //         /* SUBSTANCES */
-
-    //         let poly = add_polyurethane(&mut model);
-
-    //         /* MATERIALS */
-
-    //         let m0_thickness = 200.0 / 1000. as Float;
-    //         let m0 = add_material(&mut model, poly, m0_thickness);
-
-    //         /* CONSTRUCTION */
-    //         let mut c0 = Construction::new("Wall".to_string());
-    //         c0.materials.push(Rc::clone(&m0));
-    //         let c0 = model.add_construction(c0);
-
-    //         /* GEOMETRY */
-    //         let mut the_loop = Loop3D::new();
-    //         let l = 1. as Float;
-    //         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-    //         the_loop.close().unwrap();
-    //         let p = Polygon3D::new(the_loop).unwrap();
-
-    //         /* SURFACE */
-    //         let surface = Surface::new("Surface".to_string(), p, Rc::clone(&c0));
-    //         let surface = model.add_surface(surface);
-
-    //         /* TEST */
-
-    //         let main_dt = 300.0;
-    //         let max_dx = m0.thickness / 4.0;
-    //         let min_dt = 1.0;
-    //         let (n_subdivisions, nodes) = discretize_construction(&c0, main_dt, max_dx, min_dt);
-
-    //         let dt = main_dt / n_subdivisions as Float;
-    //         let mut state_header = SimulationStateHeader::new();
-    //         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
-    //         assert!(ts.data().massive);
-
-    //         let state = state_header.take_values().unwrap();
-
-    //         // TEST
-    //         let temperatures = ts.get_node_temperatures(&state);
-
-    //         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-    //         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
-
-    //         let rs_front = surface.front_convection_coefficient(&state).unwrap();
-    //         let t_front = 10.0;
-    //         let q_in_ref = (22.0 - t_front) / rs_front;
-
-    //         let rs_back = surface.back_convection_coefficient(&state).unwrap();
-    //         let t_back = 10.0;
-    //         let q_out_ref = (22.0 - t_back) / rs_back;
-    //         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
-
-    //         assert_eq!(q_in, q_in_ref);
-    //         assert_eq!(q_out, q_out_ref);
-    //     }
-
-    //     #[test]
-    //     fn test_calc_heat_flow_no_mass() {
-    //         let mut model = SimpleModel::new("A model".to_string());
-
-    //         /* SUBSTANCES */
-
-    //         let poly = add_polyurethane(&mut model);
-
-    //         /* MATERIALS */
-    //         let m0_thickness = 200.0 / 1000.;
-    //         let m0 = add_material(&mut model, poly, m0_thickness);
-
-    //         /* CONSTRUCTION */
-    //         let mut c0 = Construction::new("Wall".to_string());
-    //         c0.materials.push(Rc::clone(&m0));
-    //         let c0 = model.add_construction(c0);
-
-    //         /* GEOMETRY */
-    //         let mut the_loop = Loop3D::new();
-    //         let l = 1. as Float;
-    //         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-    //         the_loop.close().unwrap();
-    //         let p = Polygon3D::new(the_loop).unwrap();
-
-    //         /* SURFACE */
-    //         let surface = Surface::new("Surface".to_string(), p, Rc::clone(&c0));
-    //         let surface = model.add_surface(surface);
-
-    //         let main_dt = 300.0;
-    //         let max_dx = m0.thickness / 15.;
-    //         let min_dt = 80.;
-    //         let (n_subdivisions, nodes) = discretize_construction(&c0, main_dt, max_dx, min_dt);
-
-    //         let dt = main_dt / n_subdivisions as Float;
-    //         let mut state_header = SimulationStateHeader::new();
-    //         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
-
-    //         let state = state_header.take_values().unwrap();
-
-    //         // TEST
-
-    //         assert!(!ts.data().massive);
-    //         let temperatures = ts.get_node_temperatures(&state);
-    //         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-    //         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
-
-    //         let rs_front = surface.front_convection_coefficient(&state).unwrap();
-    //         let t_front = 10.0;
-    //         let q_in_ref = (22.0 - t_front) / rs_front;
-
-    //         let t_back = 10.0;
-    //         let rs_back = surface.back_convection_coefficient(&state).unwrap();
-    //         let q_out_ref = (22.0 - t_back) / rs_back;
-    //         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
-
-    //         assert_eq!(q_in, q_in_ref);
-    //         assert_eq!(q_out, q_out_ref);
-    //     }
-
-    //     #[test]
-    //     fn test_calc_heat_flow_mixed_mass() {
-    //         // THIRD TEST -- WITH ONE NO-MASS LAYER IN THE EXTERIOR AND ONE IN THE INTERIOR
-
-    //         let mut model = SimpleModel::new("Some model".to_string());
-
-    //         /* SUBSTANCES */
-    //         let poly = add_polyurethane(&mut model);
-    //         let brickwork = add_brickwork(&mut model);
-
-    //         /* MATERIALS */
-    //         let m1 = add_material(&mut model, poly, 20. / 1000.);
-    //         let m2 = add_material(&mut model, brickwork, 220. / 1000.);
-
-    //         /* CONSTRUCTION */
-    //         let mut c = Construction::new("construction".to_string());
-    //         c.materials.push(Rc::clone(&m1));
-    //         c.materials.push(Rc::clone(&m2));
-    //         c.materials.push(Rc::clone(&m1));
-    //         let c = model.add_construction(c);
-
-    //         /* GEOMETRY */
-
-    //         let mut the_loop = Loop3D::new();
-    //         let l = 1. as Float;
-    //         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-    //         the_loop.close().unwrap();
-    //         let p = Polygon3D::new(the_loop).unwrap();
-
-    //         /* SURFACE */
-    //         let s = Surface::new("Surface 1".to_string(), p, Rc::clone(&c));
-    //         let surface = model.add_surface(s);
-
-    //         /* TEST */
-    //         let main_dt = 300.0;
-    //         let max_dx = 0.015;
-    //         let min_dt = 65.;
-    //         let (n_subdivisions, nodes) = discretize_construction(&c, main_dt, max_dx, min_dt);
-
-    //         let dt = main_dt / n_subdivisions as Float;
-    //         let mut state_header = SimulationStateHeader::new();
-    //         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
-
-    //         let state = state_header.take_values().unwrap();
-
-    //         // TEST
-
-    //         assert!(ts.data().massive);
-    //         let temperatures = ts.get_node_temperatures(&state);
-    //         assert_eq!(22.0, temperatures.get(0, 0).unwrap());
-    //         assert_eq!(22.0, temperatures.get(ts.data().n_nodes - 1, 0).unwrap());
-
-    //         let rs_front = surface.front_convection_coefficient(&state).unwrap() + ts.data().r_front;
-    //         let t_front = 10.0;
-    //         let q_in_ref = (22.0 - t_front) / rs_front;
-
-    //         let rs_back = surface.back_convection_coefficient(&state).unwrap() + ts.data().r_back;
-    //         let t_back = 10.0;
-    //         let q_out_ref = (22.0 - t_back) / rs_back;
-    //         let (q_in, q_out) = ts.calc_heat_flow(&state, t_front, t_back);
-
-    //         assert_eq!(q_in, q_in_ref);
-    //         assert_eq!(q_out, q_out_ref);
-    //     }
-
-    //     #[test]
-    //     fn test_march_massive() {
-    //         let mut model = SimpleModel::new("Some model".to_string());
-
-    //         /* SUBSTANCES */
-    //         let brickwork = add_brickwork(&mut model);
-
-    //         /* MATERIALS */
-    //         let m1 = add_material(&mut model, brickwork, 20. / 1000.);
-
-    //         /* CONSTRUCTION */
-    //         let mut c = Construction::new("construction".to_string());
-    //         c.materials.push(Rc::clone(&m1));
-    //         let c = model.add_construction(c);
-
-    //         /* GEOMETRY */
-    //         let mut the_loop = Loop3D::new();
-    //         let l = 1. as Float;
-    //         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-    //         the_loop.close().unwrap();
-    //         let p = Polygon3D::new(the_loop).unwrap();
-
-    //         /* SURFACE */
-    //         let s = Surface::new("Surface 1".to_string(), p, Rc::clone(&c));
-    //         let surface = model.add_surface(s);
-
-    //         // FIRST TEST -- 10 degrees on each side
-    //         let main_dt = 300.0;
-    //         let max_dx = m1.thickness / 2.0;
-    //         let min_dt = 1.0;
-    //         let (n_subdivisions, nodes) = discretize_construction(&c, main_dt, max_dx, min_dt);
-    //         let dt = main_dt / n_subdivisions as Float;
-
-    //         let mut state_header = SimulationStateHeader::new();
-    //         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
-    //         assert!(ts.data().massive);
-
-    //         let mut state = state_header.take_values().unwrap();
-
-    //         // TEST
-
-    //         // Try marching until q_in and q_out are zero.
-    //         let mut q: Float = 9999000009.0;
-    //         let mut counter: usize = 0;
-    //         while q.abs() > 0.00015 {
-    //             let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, dt);
-    //             // the same amount of heat needs to leave in each direction
-    //             // println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
-    //             // assert!((q_in - q_out).abs() < 1E-5);
-
-    //             // q_front is positive
-    //             assert!(q_in >= 0.);
-    //             assert!(q_out >= 0.);
-
-    //             // q_in needs to be getting smaller
-    //             // assert!(q_in < q);
-    //             q = q_in;
-
-    //             counter += 1;
-    //             if counter > 9999999 {
-    //                 panic!("Exceded number of iterations... q.abs() = {}", q.abs())
-    //             }
-    //         }
-
-    //         // all nodes should be at 10.0 now.
-    //         let temperatures = ts.get_node_temperatures(&state);
-    //         for i in 0..ts.data().n_nodes {
-    //             let t = temperatures.get(i, 0).unwrap();
-    //             assert!((t - 10.0).abs() < 0.00015);
-    //         }
-
-    //         // SECOND TEST -- 10 degrees in and 30 out.
-    //         // We expect the final q to be (30-10)/R from
-    //         // outside to inside. I.E. q_in = (30-10)/R,
-    //         // q_out = -(30-10)/R
-
-    //         // March until q converges
-    //         let mut change: Float = 99.0;
-    //         let mut counter: usize = 0;
-    //         let mut previous_q: Float = -125.0;
-    //         let mut final_qin: Float = -12312.;
-    //         let mut final_qout: Float = 123123123.;
-    //         while change.abs() > 1E-10 {
-    //             let (q_in, q_out) = ts.march(&mut state, 10.0, 30.0, dt);
-    //             final_qin = q_in;
-    //             final_qout = q_out;
-
-    //             change = (q_in - previous_q).abs();
-    //             previous_q = q_in;
-
-    //             counter += 1;
-    //             if counter > 99999 {
-    //                 panic!("Exceded number of iterations")
-    //             }
-    //         }
-
-    //         // Expecting
-    //         assert!(final_qin > 0.0);
-    //         assert!(final_qout < 0.0);
-    //         assert!((final_qin + final_qout).abs() < 0.00033);
-
-    //         let r = r_value(&c).unwrap();
-
-    //         let rs_front = surface.front_convection_coefficient(&state).unwrap();
-    //         let rs_back = surface.back_convection_coefficient(&state).unwrap();
-    //         let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);
-    //         assert!((exp_q - final_qin).abs() < 0.00033);
-    //         assert!((exp_q + final_qout).abs() < 0.00033);
-    //     }
-
-    //     #[test]
-    //     fn test_march_nomass() {
-    //         let mut model = SimpleModel::new("A model".to_string());
-
-    //         /* SUBSTANCE */
-    //         let polyurethane = add_polyurethane(&mut model);
-
-    //         /* MATERIAL */
-    //         let m1 = add_material(&mut model, polyurethane, 3. / 1000.);
-
-    //         /* CONSTRUCTION */
-    //         let mut c = Construction::new("Construction".to_string());
-    //         c.materials.push(Rc::clone(&m1));
-    //         let c = model.add_construction(c);
-
-    //         /* GEOMETRY */
-    //         let mut the_loop = Loop3D::new();
-    //         let l = 1. as Float;
-    //         the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    //         the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
-    //         the_loop.close().unwrap();
-    //         let p = Polygon3D::new(the_loop).unwrap();
-
-    //         /* SURFACE */
-    //         let s = Surface::new("WALL".to_string(), p, Rc::clone(&c));
-    //         let surface = model.add_surface(s);
-    //         let mut state_header = SimulationStateHeader::new();
-
-    //         /* TEST */
-
-    //         // FIRST TEST -- 10 degrees on each side
-    //         let main_dt = 300.0;
-    //         let max_dx = m1.thickness / 2.0;
-    //         let min_dt = 100.0;
-    //         let (n_subdivisions, nodes) = discretize_construction(&c, main_dt, max_dx, min_dt);
-
-    //         let dt = main_dt / n_subdivisions as Float;
-
-    //         let ts = ThermalSurface::new_surface(&mut state_header, &surface, dt, &nodes).unwrap();
-    //         assert!(!ts.data().massive);
-
-    //         let mut state = state_header.take_values().unwrap();
-
-    //         // TEST
-
-    //         // Try marching until q_in and q_out are zero.
-
-    //         let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, dt);
-
-    //         // this should show instantaneous update. So,
-    //         let temperatures = ts.get_node_temperatures(&state);
-    //         assert_eq!(temperatures.get(0, 0).unwrap(), 10.0);
-    //         assert_eq!(temperatures.get(1, 0).unwrap(), 10.0);
-    //         assert_eq!(q_in, 0.0);
-    //         assert_eq!(q_out, 0.0);
-
-    //         // SECOND TEST -- 10 degrees in and 30 out.
-    //         // We expect the final q to be (30-10)/R from
-    //         // outside to inside. I.E. q_in = (30-10)/R,
-    //         // q_out = -(30-10)/R
-
-    //         let (q_in, q_out) = ts.march(&mut state, 10.0, 30.0, dt);
-
-    //         // Expecting
-    //         assert!(q_in > 0.0);
-    //         assert!(q_out < 0.0);
-    //         assert!((q_in + q_out).abs() < 1E-6);
-
-    //         let rs_front = surface.front_convection_coefficient(&state).unwrap();
-    //         let rs_back = surface.back_convection_coefficient(&state).unwrap();
-    //         let exp_q = (30.0 - 10.0) / (r_value(&c).unwrap() + rs_front + rs_back);
-    //         assert!((exp_q - q_in).abs() < 1E-4);
-    //         assert!((exp_q + q_out).abs() < 1E-4);
-    //     }
+    
 }

@@ -178,7 +178,7 @@ impl Glazing {
         (a1, a2)
     }
 
-    /// Calculates the absorbtances of each `Glazing` of the sytem
+    /// Calculates the absorbtances of each `Glazing` of the system
     pub fn alphas(layers: &[Glazing]) -> Vec<Float> {
         let mut ret = Vec::with_capacity(layers.len());
 
