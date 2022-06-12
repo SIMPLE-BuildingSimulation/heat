@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//! A Finite Difference-based Thermal simulation module
+//! A Finite Difference-based Thermal simulation module.
 //!
 //! It uses finite differences for marching forward in time and also
 //! for calculating the heat transfer through walls.
