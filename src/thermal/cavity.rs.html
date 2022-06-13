@@ -134,14 +134,6 @@
 <span id="93">93</span>
 <span id="94">94</span>
 <span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -166,26 +158,24 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::gas::Gas</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span>;
 
-
 <span class="doccomment">/// Represents some gas enclosed by two solid</span>
 <span class="doccomment">/// materials</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>,<span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cavity</span> {
-
     <span class="doccomment">/// The distance between the two materials, in $`m`$</span>
     <span class="kw">pub</span> <span class="ident">thickness</span>: <span class="ident">Float</span>,
 
-    <span class="doccomment">/// Height of the `Cavity`. Defined by ISO15099/2003 as &quot;the distance between the top and bottom of the fill </span>
-    <span class="doccomment">/// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the </span>
+    <span class="doccomment">/// Height of the `Cavity`. Defined by ISO15099/2003 as &quot;the distance between the top and bottom of the fill</span>
+    <span class="doccomment">/// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the</span>
     <span class="doccomment">/// thickness of the cavity.&quot;</span>
     <span class="kw">pub</span> <span class="ident">height</span>: <span class="ident">Float</span>,
 
-    <span class="doccomment">/// The gas contained </span>
+    <span class="doccomment">/// The gas contained</span>
     <span class="kw">pub</span> <span class="ident">gas</span>: <span class="ident">Gas</span>,
 
     <span class="doccomment">/// The thermal emissivity of the material at the outer side</span>
     <span class="doccomment">/// of the cavity</span>
-    <span class="kw">pub</span> <span class="ident">eout</span>: <span class="ident">Float</span>, 
+    <span class="kw">pub</span> <span class="ident">eout</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The thermal emissivity of the material at the inner side</span>
     <span class="doccomment">/// of the cavity</span>
@@ -193,27 +183,24 @@ SOFTWARE.
 
     <span class="doccomment">/// The angle of the cavity in radians. $`0`$ is horizontal; $`\pi/2`$ (i.e., $`90^o`$) is vertical.</span>
     <span class="kw">pub</span> <span class="ident">angle</span>: <span class="ident">Float</span>,
-
-
-
 }
 
-
 <span class="kw">impl</span> <span class="ident">Cavity</span> {
-    
-    <span class="doccomment">/// Calculates the `U-value`—including convective and radiative heat transfer—of a </span>
+    <span class="doccomment">/// Calculates the `U-value`—including convective and radiative heat transfer—of a</span>
     <span class="doccomment">/// cavity, so that $`U_{cavity}\times \Delta T = q`$</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// ```math</span>
     <span class="doccomment">/// U_{cavity} = \frac{4*{T_m}^3 * \Sigma  \epsilon_1 \epsilon_2}{1-(1-\epsilon_1)(1-\epsilon_2)} + h_{conv}</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">u_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>,  <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span>)-&gt;<span class="ident">Float</span>{
-        
-        <span class="kw">let</span> <span class="ident">conv</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">gas</span>.<span class="ident">cavity_convection</span>(<span class="self">self</span>.<span class="ident">height</span>, <span class="self">self</span>.<span class="ident">thickness</span>, <span class="self">self</span>.<span class="ident">angle</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>);
-        <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> (<span class="ident">t_back</span> <span class="op">+</span> <span class="ident">t_front</span>)<span class="op">/</span><span class="number">2.</span> <span class="op">+</span> <span class="number">273.15</span>;
-    
-        <span class="kw">let</span> <span class="ident">rad</span> <span class="op">=</span> <span class="number">4.</span><span class="kw-2">*</span><span class="ident">tm</span>.<span class="ident">powi</span>(<span class="number">3</span>) <span class="op">*</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">ein</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">eout</span><span class="op">/</span>(<span class="number">1.</span> <span class="op">-</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">ein</span>)<span class="kw-2">*</span>(<span class="number">1.</span><span class="op">-</span><span class="self">self</span>.<span class="ident">eout</span>));
-    
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">u_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
+        <span class="kw">let</span> <span class="ident">conv</span> <span class="op">=</span>
+            <span class="self">self</span>.<span class="ident">gas</span>
+                .<span class="ident">cavity_convection</span>(<span class="self">self</span>.<span class="ident">height</span>, <span class="self">self</span>.<span class="ident">thickness</span>, <span class="self">self</span>.<span class="ident">angle</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>);
+        <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> (<span class="ident">t_back</span> <span class="op">+</span> <span class="ident">t_front</span>) <span class="op">/</span> <span class="number">2.</span> <span class="op">+</span> <span class="number">273.15</span>;
+
+        <span class="kw">let</span> <span class="ident">rad</span> <span class="op">=</span> <span class="number">4.</span> <span class="op">*</span> <span class="ident">tm</span>.<span class="ident">powi</span>(<span class="number">3</span>) <span class="op">*</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">ein</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">eout</span>
+            <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">ein</span>) <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">eout</span>));
+
         <span class="ident">rad</span> <span class="op">+</span> <span class="ident">conv</span>
     }
 }
@@ -222,28 +209,26 @@ SOFTWARE.
 <span class="kw">mod</span> <span class="ident">testing</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="comment">// use simple_model::Substance;</span>
-    
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_u_value</span>(){
+    <span class="kw">fn</span> <span class="ident">test_u_value</span>() {
         <span class="kw">let</span> <span class="ident">gap_thickness</span> <span class="op">=</span> <span class="number">0.0127</span>;
 
-        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span>{
+        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span> {
             <span class="ident">thickness</span>: <span class="ident">gap_thickness</span>,
             <span class="ident">height</span>: <span class="number">1.</span>,
             <span class="ident">gas</span>: <span class="ident">Gas::air</span>(),
-            <span class="ident">eout</span>: <span class="number">0.84</span>, 
+            <span class="ident">eout</span>: <span class="number">0.84</span>,
             <span class="ident">ein</span>: <span class="number">0.84</span>,
-            <span class="ident">angle</span>: <span class="ident"><span class="kw">crate</span>::PI</span><span class="op">/</span><span class="number">2.</span>,
+            <span class="ident">angle</span>: <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">2.</span>,
         };
         <span class="kw">let</span> <span class="ident">t_out</span> <span class="op">=</span> <span class="number">259.116115</span> <span class="op">-</span> <span class="number">273.15</span>;
         <span class="kw">let</span> <span class="ident">t_in</span> <span class="op">=</span> <span class="number">279.323983</span> <span class="op">-</span> <span class="number">273.15</span>;
-        <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">gap</span>.<span class="ident">u_value</span>(<span class="ident">t_out</span>, <span class="ident">t_in</span> );
+        <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">gap</span>.<span class="ident">u_value</span>(<span class="ident">t_out</span>, <span class="ident">t_in</span>);
         <span class="kw">let</span> <span class="ident">exp_u</span> <span class="op">=</span> <span class="number">0.069446</span> <span class="op">/</span> <span class="ident">gap_thickness</span>;
-        <span class="macro">dbg!</span>(<span class="ident">u</span>, <span class="ident">exp_u</span> );
-
+        <span class="macro">dbg!</span>(<span class="ident">u</span>, <span class="ident">exp_u</span>);
     }
-    
-
-}</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

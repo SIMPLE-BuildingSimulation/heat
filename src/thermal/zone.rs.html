@@ -163,12 +163,12 @@ SOFTWARE.
     <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">air</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>();
-        <span class="kw">let</span> <span class="ident">air_density</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">density</span>(<span class="ident">temp</span> <span class="op">+</span> <span class="number">273.15</span>); <span class="comment">//kg/m3        </span>
+        <span class="kw">let</span> <span class="ident">air_density</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">density</span>(<span class="ident">temp</span> <span class="op">+</span> <span class="number">273.15</span>); <span class="comment">//kg/m3</span>
         <span class="kw">let</span> <span class="ident">air_specific_heat</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">heat_capacity</span>(<span class="ident">temp</span> <span class="op">+</span> <span class="number">273.15</span>); <span class="comment">//J/kg.K</span>
 
-        <span class="self">self</span>.<span class="ident">volume</span> <span class="op">*</span> <span class="ident">air_density</span> <span class="op">*</span> <span class="ident">air_specific_heat</span>
+        <span class="self">self</span>.<span class="ident">volume</span> <span class="op">*</span> <span class="ident">air_density</span> <span class="op">*</span> <span class="ident">air_specific_heat</span> <span class="op">/</span> <span class="number">1.</span>
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

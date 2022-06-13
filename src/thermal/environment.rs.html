@@ -110,15 +110,6 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -139,14 +130,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
 
 <span class="doccomment">/// Represents a border condition of between a Surface</span>
 <span class="doccomment">/// and a Zone or the exterior</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Environment</span> {
-    
     <span class="doccomment">/// The dry bulb temperature of the air, in $`C`$</span>
     <span class="kw">pub</span> <span class="ident">air_temperature</span>: <span class="ident">Float</span>,
 
@@ -162,27 +151,24 @@ SOFTWARE.
     <span class="doccomment">/// The environmental emmisivity, used for calculating incident IR</span>
     <span class="doccomment">/// irradiance, if needed</span>
     <span class="kw">pub</span> <span class="ident">env_emmisivity</span>: <span class="ident">Float</span>,
-    
 }
 
-
 <span class="kw">impl</span> <span class="ident">std::default::Default</span> <span class="kw">for</span> <span class="ident">Environment</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>()-&gt;<span class="self">Self</span>{
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
         <span class="kw">const</span> <span class="ident">DEFAULT_ENV_EMMISIVITY</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">1.</span>;
         <span class="kw">const</span> <span class="ident">DEFAULT_AIR_TEMP</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">22.</span>;
-        <span class="self">Self</span> { 
-            <span class="ident">air_temperature</span>: <span class="ident">DEFAULT_AIR_TEMP</span>, 
-            <span class="ident">air_speed</span>: <span class="number">0.</span>, 
-            <span class="ident">ir_irrad</span>: <span class="ident"><span class="kw">crate</span>::SIGMA</span> <span class="op">*</span> <span class="ident">DEFAULT_ENV_EMMISIVITY</span> <span class="op">*</span> ( <span class="ident">DEFAULT_AIR_TEMP</span> <span class="op">+</span> <span class="number">273.15</span> ).<span class="ident">powi</span>(<span class="number">4</span>), 
+        <span class="self">Self</span> {
+            <span class="ident">air_temperature</span>: <span class="ident">DEFAULT_AIR_TEMP</span>,
+            <span class="ident">air_speed</span>: <span class="number">0.</span>,
+            <span class="ident">ir_irrad</span>: <span class="ident"><span class="kw">crate</span>::SIGMA</span> <span class="op">*</span> <span class="ident">DEFAULT_ENV_EMMISIVITY</span> <span class="op">*</span> (<span class="ident">DEFAULT_AIR_TEMP</span> <span class="op">+</span> <span class="number">273.15</span>).<span class="ident">powi</span>(<span class="number">4</span>),
             <span class="ident">solar_radiation</span>: <span class="number">0.</span>,
-            <span class="ident">env_emmisivity</span>: <span class="ident">DEFAULT_ENV_EMMISIVITY</span> 
+            <span class="ident">env_emmisivity</span>: <span class="ident">DEFAULT_ENV_EMMISIVITY</span>,
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Environment</span> {
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_hs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_hs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
         <span class="comment">// dbg!(&quot;Calculate back Rs&quot;);</span>
         <span class="number">10.</span>
         <span class="comment">// if self.air_speed &gt; 0.{</span>
@@ -194,11 +180,7 @@ SOFTWARE.
 
         <span class="comment">// }</span>
     }
-
-    
-
 }
-
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

@@ -1608,6 +1608,47 @@
 <span id="1567">1567</span>
 <span id="1568">1568</span>
 <span id="1569">1569</span>
+<span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
+<span id="1576">1576</span>
+<span id="1577">1577</span>
+<span id="1578">1578</span>
+<span id="1579">1579</span>
+<span id="1580">1580</span>
+<span id="1581">1581</span>
+<span id="1582">1582</span>
+<span id="1583">1583</span>
+<span id="1584">1584</span>
+<span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1628,14 +1669,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::cavity::Cavity</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::environment::Environment</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{ <span class="ident">Float</span>, <span class="ident">SIGMA</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Float</span>, <span class="ident">SIGMA</span>};
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
 <span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Construction</span>, <span class="ident">Substance</span>};
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-
 
 <span class="doccomment">/// Represents a thermal connection in the thermal network.</span>
 <span class="doccomment">/// It can be a Cavity, a Solid, or other.</span>
@@ -1655,7 +1694,6 @@ SOFTWARE.
 }
 
 <span class="kw">impl</span> <span class="ident">UValue</span> {
-
     <span class="doccomment">/// Gets the U-value of a `UValue` object</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">u_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t_before</span>: <span class="ident">Float</span>, <span class="ident">t_after</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">match</span> <span class="self">self</span> {
@@ -1674,14 +1712,11 @@ SOFTWARE.
     }
 }
 
-
-
-
 <span class="doccomment">/// Represents the discretization of a [`Construction`] for heat transfer</span>
-<span class="doccomment">/// calculation purposes. </span>
-<span class="doccomment">/// </span>
+<span class="doccomment">/// calculation purposes.</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// # Note</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// This object contains all the [`Cavity`] objects in it, which</span>
 <span class="doccomment">/// contain information not only about their thickness but also their orientation.</span>
 <span class="doccomment">/// This means that one `Discretization` should exist per `Surface`, not just by `Construction`.</span>
@@ -1698,9 +1733,6 @@ SOFTWARE.
     <span class="doccomment">/// This means that—on each timestep in the caller model—the thermal model needs</span>
     <span class="doccomment">/// to perform `time_subdivision` sub-timesteps.</span>
     <span class="kw">pub</span> <span class="ident">tstep_subdivision</span>: <span class="ident">usize</span>,
-
-   
-    
 }
 
 <span class="kw">impl</span> <span class="ident">Discretization</span> {
@@ -1722,37 +1754,35 @@ SOFTWARE.
         <span class="ident"><span class="self">Self</span>::build</span>(<span class="ident">construction</span>, <span class="ident">tstep_subdivision</span>, <span class="kw-2">&amp;</span><span class="ident">n_elements</span>, <span class="ident">height</span>, <span class="ident">angle</span>)
     }
 
-
-    <span class="kw">fn</span> <span class="ident">chunk_segments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">indexes</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>])-&gt;<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>,<span class="ident">usize</span>)<span class="op">&gt;</span>{
-        <span class="kw">if</span> <span class="ident">indexes</span>.<span class="ident">is_empty</span>(){
+    <span class="kw">fn</span> <span class="ident">chunk_segments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">indexes</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">indexes</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="ident">Vec::with_capacity</span>(<span class="number">0</span>);
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">indexes</span>[<span class="number">0</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> <span class="op">=</span> <span class="ident">start</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">indexes</span>.<span class="ident">iter</span>().<span class="ident">skip</span>(<span class="number">1</span>){
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">indexes</span>.<span class="ident">iter</span>().<span class="ident">skip</span>(<span class="number">1</span>) {
             <span class="macro">assert!</span>(<span class="kw-2">*</span><span class="ident">i</span> <span class="op">&gt;</span> <span class="ident">start</span>);
             <span class="macro">assert!</span>(<span class="kw-2">*</span><span class="ident">i</span> <span class="op">&gt;</span> <span class="ident">prev</span>);
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">i</span> <span class="op">-</span> <span class="ident">prev</span> <span class="op">==</span> <span class="number">1</span> {
                 <span class="ident">prev</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">i</span>;
-            }<span class="kw">else</span>{
+            } <span class="kw">else</span> {
                 <span class="ident">ret</span>.<span class="ident">push</span>((<span class="ident">start</span>, <span class="ident">prev</span> <span class="op">+</span> <span class="number">1</span>));
                 <span class="ident">start</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">i</span>;
-                <span class="ident">prev</span> <span class="op">=</span> <span class="ident">start</span>;                
+                <span class="ident">prev</span> <span class="op">=</span> <span class="ident">start</span>;
             }
         }
         <span class="ident">ret</span>.<span class="ident">push</span>((<span class="ident">start</span>, <span class="ident">prev</span> <span class="op">+</span> <span class="number">1</span>));
         <span class="ident">ret</span>
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_chunks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;(<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>,<span class="ident">usize</span>)<span class="op">&gt;</span>,<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>,<span class="ident">usize</span>)<span class="op">&gt;</span>){
-
-        <span class="kw">let</span> <span class="ident">mass_nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>            
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_chunks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>) {
+        <span class="kw">let</span> <span class="ident">mass_nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">segments</span>
             .<span class="ident">iter</span>()
             .<span class="ident">enumerate</span>()
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">x</span>)<span class="op">|</span> <span class="kw">if</span> <span class="ident">x</span>.<span class="number">0</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">1e-5</span> { <span class="prelude-val">Some</span>(<span class="ident">i</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> })
             .<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="ident">nomass_nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>            
+        <span class="kw">let</span> <span class="ident">nomass_nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">segments</span>
             .<span class="ident">iter</span>()
             .<span class="ident">enumerate</span>()
@@ -1762,7 +1792,6 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">nomass</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">chunk_segments</span>(<span class="kw-2">&amp;</span><span class="ident">nomass_nodes</span>);
         (<span class="ident">mass</span>, <span class="ident">nomass</span>)
     }
-    
 
     <span class="doccomment">/// Creates the `segments` of the `Discretization`.</span>
     <span class="kw">fn</span> <span class="ident">build</span>(
@@ -1776,7 +1805,7 @@ SOFTWARE.
 
         <span class="comment">// Let&#39;s start with an empty set of segments</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_nodes</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">n_elements</span>.<span class="ident">iter</span>().<span class="ident">sum</span>();
-        <span class="comment">// Add those that are Zero        </span>
+        <span class="comment">// Add those that are Zero</span>
         <span class="ident">n_nodes</span> <span class="op">+</span><span class="op">=</span> <span class="ident">n_elements</span>.<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">x</span> <span class="op">==</span> <span class="number">0</span>).<span class="ident">count</span>() <span class="op">+</span> <span class="number">1</span>;
         <span class="comment">// n_nodes = n_nodes.max(construction.materials.len() + 1); // At least one per layer... but Zero means  &quot;no_mass wall&quot;</span>
 
@@ -1799,9 +1828,8 @@ SOFTWARE.
                         );
                         <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to calculate C_Matrix with a substance without &#39;specific heat capacity&#39;&quot;</span>);
                         <span class="ident">rho</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">*</span> <span class="ident">dx</span>
-                        
                     }
-                    <span class="ident">Substance::Gas</span>(<span class="ident">_s</span>) =&gt; <span class="number">0.0</span>,<span class="comment">// should be zero... so should have been captured earlier</span>
+                    <span class="ident">Substance::Gas</span>(<span class="ident">_s</span>) =&gt; <span class="number">0.0</span>, <span class="comment">// should be zero... so should have been captured earlier</span>
                 }
             };
 
@@ -1816,7 +1844,7 @@ SOFTWARE.
                         <span class="ident">segments</span>[<span class="ident">n_segment</span>].<span class="number">0</span> <span class="op">+</span><span class="op">=</span> <span class="ident">mass</span> <span class="op">/</span> <span class="number">2.</span>;
                         <span class="ident">segments</span>[<span class="ident">n_segment</span> <span class="op">+</span> <span class="number">1</span>].<span class="number">0</span> <span class="op">+</span><span class="op">=</span> <span class="ident">mass</span> <span class="op">/</span> <span class="number">2.</span>;
 
-                        <span class="comment">// Add resistance                        </span>
+                        <span class="comment">// Add resistance</span>
                         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
                         <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;Substance &#39;{}&#39; in material &#39;{}&#39; in Construction &#39;{}&#39; has no thermal conductivity, but we need it&quot;</span>, <span class="ident">s</span>.<span class="ident">name</span>(), <span class="ident">material</span>.<span class="ident">name</span>(), <span class="ident">construction</span>.<span class="ident">name</span>()));
                         <span class="comment">// Push U-value</span>
@@ -1862,7 +1890,7 @@ SOFTWARE.
                             }
                         };
 
-                        <span class="kw">const</span> <span class="ident">DEFAULT_EM</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.84</span>;
+                        <span class="kw">const</span> <span class="ident">DEFAULT_EM</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.84</span>;
                         <span class="kw">let</span> <span class="ident">ein</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">next_mat</span>.<span class="ident">substance</span>{
                             <span class="ident">Substance::Normal</span>(<span class="ident">s</span>)=&gt;<span class="kw">match</span> <span class="ident">s</span>.<span class="ident">thermal_absorbtance</span>(){
                                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>)=&gt;<span class="kw-2">*</span><span class="ident">v</span>,
@@ -1899,33 +1927,29 @@ SOFTWARE.
                 <span class="ident">n_segment</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             }
             <span class="comment">// Process last one</span>
-            <span class="ident">segments</span>[<span class="ident">n_nodes</span><span class="op">-</span><span class="number">1</span>].<span class="number">1</span> <span class="op">=</span> <span class="ident">UValue::Back</span>;
+            <span class="ident">segments</span>[<span class="ident">n_nodes</span> <span class="op">-</span> <span class="number">1</span>].<span class="number">1</span> <span class="op">=</span> <span class="ident">UValue::Back</span>;
         }
 
-      
-        
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {            
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">segments</span>,
-            <span class="ident">tstep_subdivision</span>,            
+            <span class="ident">tstep_subdivision</span>,
         })
     }
 
-    
-
     <span class="doccomment">/// Calculates the R value of the whole system</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">/// Panics if the calculated R value is Zero (i.e., if there are no </span>
+    <span class="doccomment">/// Panics if the calculated R value is Zero (i.e., if there are no</span>
     <span class="doccomment">/// layers or something like that)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;<span class="ident">Float</span>{
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="number">0.0</span>;
 
-        <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">u_value</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>{
+        <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">u_value</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span> {
             <span class="ident">r</span> <span class="op">+</span><span class="op">=</span> <span class="kw">match</span> <span class="ident">u_value</span> {
-                <span class="ident">UValue::Cavity</span>(<span class="ident">_c</span>)=&gt;<span class="macro">todo!</span>(), <span class="comment">//c.u_value(t_front, t_back),</span>
-                <span class="ident">UValue::Solid</span>(<span class="ident">v</span>)=&gt;<span class="number">1.</span><span class="op">/</span><span class="ident">v</span>,
+                <span class="ident">UValue::Cavity</span>(<span class="ident">_c</span>) =&gt; <span class="macro">todo!</span>(), <span class="comment">//c.u_value(t_front, t_back),</span>
+                <span class="ident">UValue::Solid</span>(<span class="ident">v</span>) =&gt; <span class="number">1.</span> <span class="op">/</span> <span class="ident">v</span>,
                 <span class="ident">UValue::Back</span> =&gt; <span class="number">0.0</span>,
-                <span class="ident">UValue::None</span> =&gt; <span class="macro">unreachable!</span>()
+                <span class="ident">UValue::None</span> =&gt; <span class="macro">unreachable!</span>(),
             }
         }
 
@@ -2151,8 +2175,6 @@ SOFTWARE.
         <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>)
     }
 
-   
-   
     <span class="doccomment">/// Produces $`\overline{K}`$ and $`\vec{q}`$ (as in the equation $`\overline{C} \dot{\vec{T}} =  \overline{K} \vec{T} + \vec{q}`$),</span>
     <span class="doccomment">/// allowing to update the node temperatures in a surface. This method returns the matrix $`\overline{k}`$</span>
     <span class="doccomment">/// representing the thermal network, and the vector $`\vec{q}`$), accounting for the heat flows induced by the</span>
@@ -2212,7 +2234,7 @@ SOFTWARE.
         <span class="ident">front_hs</span>: <span class="ident">Float</span>,
         <span class="ident">back_env</span>: <span class="kw-2">&amp;</span><span class="ident">Environment</span>,
         <span class="ident">back_emmisivity</span>: <span class="ident">Float</span>,
-        <span class="ident">back_hs</span>: <span class="ident">Float</span>
+        <span class="ident">back_hs</span>: <span class="ident">Float</span>,
     ) -&gt; (<span class="ident">Matrix</span>, <span class="ident">Matrix</span>) {
         <span class="kw">let</span> (<span class="ident">nrows</span>, <span class="ident">ncols</span>) <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">size</span>();
         <span class="macro">assert_eq!</span>(
@@ -2227,48 +2249,36 @@ SOFTWARE.
             <span class="self">self</span>.<span class="ident">segments</span>.<span class="ident">len</span>(),
             <span class="ident">nrows</span>
         );
-        <span class="kw">let</span> <span class="ident">nnodes</span> <span class="op">=</span> <span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>;        
+        <span class="kw">let</span> <span class="ident">nnodes</span> <span class="op">=</span> <span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">nnodes</span>, <span class="ident">nnodes</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">nnodes</span>, <span class="number">1</span>);
 
-
         <span class="comment">// this is just quite helpful</span>
-        <span class="kw">let</span> <span class="ident">get_t_after</span> <span class="op">=</span> <span class="op">|</span><span class="ident">i</span>: <span class="ident">usize</span><span class="op">|</span>-&gt;<span class="ident">Float</span>{
+        <span class="kw">let</span> <span class="ident">get_t_after</span> <span class="op">=</span> <span class="op">|</span><span class="ident">i</span>: <span class="ident">usize</span><span class="op">|</span> -&gt; <span class="ident">Float</span> {
             <span class="kw">match</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>, <span class="number">0</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="ident">back_env</span>.<span class="ident">air_temperature</span>
-                    <span class="comment">// let (.., s) = &amp;self.segments[i];</span>
-                    <span class="comment">// assert!(!matches!(s, &amp;UValue::Cavity(_)));</span>
-                    <span class="comment">// // If it is not Cavity, then it we can return whatever we want,</span>
-                    <span class="comment">// // as this u-value does not depend on tempeature</span>
-                    <span class="comment">// dbg!(123.);</span>
-                    <span class="comment">// 123.</span>
-                }
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">air_temperature</span>,
             }
         };
 
-
-        <span class="kw">for</span> <span class="ident">local_i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">nnodes</span><span class="op">-</span><span class="number">1</span> {
-            <span class="kw">let</span> <span class="ident">global_i</span> <span class="op">=</span> <span class="ident">ini</span> <span class="op">+</span> <span class="ident">local_i</span>;            
+        <span class="kw">for</span> <span class="ident">local_i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span> {
+            <span class="kw">let</span> <span class="ident">global_i</span> <span class="op">=</span> <span class="ident">ini</span> <span class="op">+</span> <span class="ident">local_i</span>;
             <span class="kw">let</span> <span class="ident">t_this</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">global_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">t_next</span> <span class="op">=</span> <span class="ident">get_t_after</span>(<span class="ident">global_i</span>);
             <span class="kw">let</span> (.., <span class="ident">uvalue</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>[<span class="ident">global_i</span>];
             <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">uvalue</span>.<span class="ident">u_value</span>(<span class="ident">t_this</span>, <span class="ident">t_next</span>);
 
-            <span class="comment">// Top left... should be there                        </span>
-            <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="ident">local_i</span>, <span class="ident">local_i</span>,  <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();            
-
-            <span class="comment">// Bottom right, only if within range.            </span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">old_value</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>){ 
+            <span class="comment">// Top left... should be there</span>
+            <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="ident">local_i</span>, <span class="ident">local_i</span>, <span class="op">-</span><span class="ident">u</span>).<span class="ident">unwrap</span>();
+            <span class="comment">// Bottom right, only if within range.</span>
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">old_value</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>) {
                 <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">-</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
             }
             <span class="comment">// Top right, only if within range.</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">old_value</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>) {
                 <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">local_i</span>, <span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
             }
-
             <span class="comment">// Bottom left, only if within range.</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">old_value</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">local_i</span>) {
                 <span class="ident">k</span>.<span class="ident">set</span>(<span class="ident">local_i</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">local_i</span>, <span class="ident">old_value</span> <span class="op">+</span> <span class="ident">u</span>).<span class="ident">unwrap</span>();
@@ -2276,50 +2286,50 @@ SOFTWARE.
         }
 
         <span class="comment">// Add front border conditions</span>
-        <span class="kw">let</span> (<span class="ident">hs_front</span>, <span class="ident">front_q</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">ini</span> <span class="op">==</span> <span class="number">0</span> {            
+        <span class="kw">let</span> (<span class="ident">hs_front</span>, <span class="ident">front_q</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">ini</span> <span class="op">==</span> <span class="number">0</span> {
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="number">273.15</span> <span class="op">+</span> <span class="ident">ts</span>;
+            <span class="comment">// Solar radiation is added later because it also depends</span>
+            <span class="comment">// on the solar absorption of different layers.</span>
             <span class="kw">let</span> <span class="ident">front_q</span> <span class="op">=</span> <span class="ident">front_env</span>.<span class="ident">air_temperature</span> <span class="op">*</span> <span class="ident">front_hs</span>  <span class="comment">// convection</span>
                 <span class="op">+</span> <span class="ident">front_env</span>.<span class="ident">ir_irrad</span> <span class="op">*</span> <span class="ident">front_emmisivity</span> <span class="comment">// incident radiation</span>
                 <span class="op">-</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="ident">front_emmisivity</span> <span class="op">*</span> <span class="ident">ts</span>.<span class="ident">powi</span>(<span class="number">4</span>); <span class="comment">// outgoing radiation</span>
-                
+
             (<span class="ident">front_hs</span>, <span class="ident">front_q</span>)
         } <span class="kw">else</span> {
-            <span class="kw">let</span> (.., <span class="ident">uvalue</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>[<span class="ident">ini</span><span class="op">-</span><span class="number">1</span>];
-            <span class="kw">let</span> <span class="ident">t_before</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">ini</span><span class="op">-</span><span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail            </span>
-            <span class="kw">let</span> <span class="ident">t_after</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">ini</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail            </span>
-            <span class="comment">// let t_after = get_t_after(ini);</span>
+            <span class="kw">let</span> (.., <span class="ident">uvalue</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>[<span class="ident">ini</span> <span class="op">-</span> <span class="number">1</span>];
+            <span class="kw">let</span> <span class="ident">t_before</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">ini</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail</span>
+            <span class="kw">let</span> <span class="ident">t_after</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">ini</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail</span>
             <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">uvalue</span>.<span class="ident">u_value</span>(<span class="ident">t_before</span>, <span class="ident">t_after</span>);
 
-            (<span class="ident">u</span>, <span class="ident">u</span><span class="kw-2">*</span><span class="ident">t_before</span>)
-        };        
-        
-        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>,  <span class="ident">front_q</span>).<span class="ident">unwrap</span>();        
-        <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>,  <span class="op">-</span> <span class="ident">hs_front</span>).<span class="ident">unwrap</span>();
+            (<span class="ident">u</span>, <span class="ident">u</span> <span class="op">*</span> <span class="ident">t_before</span>)
+        };
+
+        <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">front_q</span>).<span class="ident">unwrap</span>();
+        <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="op">-</span><span class="ident">hs_front</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// Add back border conditions</span>
-        <span class="kw">let</span> (<span class="ident">hs_back</span>, <span class="ident">back_q</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">fin</span> <span class="op">==</span> <span class="ident">nrows</span>  {
-            <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span> , <span class="number">0</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">hs_back</span>, <span class="ident">back_q</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">fin</span> <span class="op">==</span> <span class="ident">nrows</span> {
+            <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="number">273.15</span> <span class="op">+</span> <span class="ident">ts</span>;
-                                    
+            <span class="comment">// Solar radiation is added later because it also depends</span>
+            <span class="comment">// on the solar absorption of different layers.</span>
             <span class="kw">let</span> <span class="ident">back_q</span> <span class="op">=</span> <span class="ident">back_env</span>.<span class="ident">air_temperature</span> <span class="op">*</span> <span class="ident">back_hs</span>  <span class="comment">// convection</span>
                 <span class="op">+</span> <span class="ident">back_env</span>.<span class="ident">ir_irrad</span> <span class="op">*</span> <span class="ident">back_emmisivity</span> <span class="comment">// incident radiation</span>
                 <span class="op">-</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="ident">back_emmisivity</span> <span class="op">*</span> <span class="ident">ts</span>.<span class="ident">powi</span>(<span class="number">4</span>); <span class="comment">// outgoing radiation</span>
 
             (<span class="ident">back_hs</span>, <span class="ident">back_q</span>)
         } <span class="kw">else</span> {
-            
-            <span class="kw">let</span> (.., <span class="ident">uvalue</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>[<span class="ident">fin</span><span class="op">-</span><span class="number">1</span>];
-            <span class="kw">let</span> <span class="ident">t_before</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">fin</span><span class="op">-</span><span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail</span>
-            <span class="kw">let</span> <span class="ident">t_after</span> <span class="op">=</span> <span class="ident">get_t_after</span>(<span class="ident">fin</span><span class="op">-</span><span class="number">1</span>);
-            <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">uvalue</span>.<span class="ident">u_value</span>(<span class="ident">t_before</span>, <span class="ident">t_after</span>);               
+            <span class="kw">let</span> (.., <span class="ident">uvalue</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">segments</span>[<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span>];
+            <span class="kw">let</span> <span class="ident">t_before</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>(); <span class="comment">// this should NEVER fail</span>
+            <span class="kw">let</span> <span class="ident">t_after</span> <span class="op">=</span> <span class="ident">get_t_after</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span>);
+            <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">uvalue</span>.<span class="ident">u_value</span>(<span class="ident">t_before</span>, <span class="ident">t_after</span>);
 
-            (<span class="ident">u</span>, <span class="ident">u</span><span class="kw-2">*</span><span class="ident">t_after</span>)
+            (<span class="ident">u</span>, <span class="ident">u</span> <span class="op">*</span> <span class="ident">t_after</span>)
         };
         <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>, <span class="ident">back_q</span>).<span class="ident">unwrap</span>();
-        <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span>,  <span class="op">-</span> <span class="ident">hs_back</span>).<span class="ident">unwrap</span>();
+        <span class="ident">k</span>.<span class="ident">add_to_element</span>(<span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">nnodes</span> <span class="op">-</span> <span class="number">1</span>, <span class="op">-</span><span class="ident">hs_back</span>).<span class="ident">unwrap</span>();
 
-        <span class="comment">// return</span>
         (<span class="ident">k</span>, <span class="ident">q</span>)
     }
 }
@@ -2332,8 +2342,6 @@ SOFTWARE.
 <span class="kw">mod</span> <span class="ident">testing</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::gas::Gas</span>;
-
-
 
     <span class="kw">fn</span> <span class="ident">get_normal</span>(
         <span class="ident">thermal_cond</span>: <span class="ident">Float</span>,
@@ -2354,7 +2362,6 @@ SOFTWARE.
         <span class="ident">Rc::new</span>(<span class="ident">construction</span>)
     }
 
-  
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_build_normal_mass</span>() {
         <span class="kw">let</span> <span class="ident">thermal_cond</span> <span class="op">=</span> <span class="number">1.</span>;
@@ -2366,9 +2373,10 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">get_normal</span>(<span class="ident">thermal_cond</span>, <span class="ident">density</span>, <span class="ident">cp</span>, <span class="ident">thickness</span>);
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::build</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="ident">tstep_sub</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>], <span class="number">1.</span>, <span class="number">0.</span>).<span class="ident">unwrap</span>();
         <span class="comment">// normal --&gt; linear</span>
-        
+
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">tstep_subdivision</span>, <span class="ident">tstep_sub</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">segments</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+
         <span class="comment">// mass of node 0</span>
         <span class="kw">let</span> <span class="ident">exp_mass</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">*</span> <span class="ident">density</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">/</span> <span class="number">2.</span>;
         <span class="kw">let</span> <span class="ident">mass</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">0</span>;
@@ -2377,7 +2385,7 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span>  <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
+            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2387,11 +2395,7 @@ SOFTWARE.
             (<span class="ident">exp_mass</span> <span class="op">-</span> <span class="ident">mass</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-17</span>,
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Back</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>(<span class="bool-val">true</span>)
-        } <span class="kw">else</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Expecting Back!&quot;</span>)
-        }
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span>, <span class="ident">UValue::Back</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2417,7 +2421,7 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span>  <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
+            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2482,7 +2486,7 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
+            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2493,7 +2497,7 @@ SOFTWARE.
             (<span class="ident">exp_mass</span> <span class="op">-</span> <span class="ident">mass</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-17</span>,
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Cavity</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span> {            
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Cavity</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span> {
             <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">u_value</span>(<span class="number">10.</span>, <span class="number">10.</span>);
             <span class="macro">dbg!</span>(<span class="ident">u</span>);
         } <span class="kw">else</span> {
@@ -2507,7 +2511,7 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">2</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
+            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2572,7 +2576,7 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
+            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>)
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2598,7 +2602,12 @@ SOFTWARE.
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Solid</span>(<span class="ident">u</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">2</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>((<span class="ident">u</span> <span class="op">-</span>  <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>, <span class="string">&quot;u = {} | exp = {}&quot;</span>, <span class="ident">u</span>, <span class="ident">thermal_cond</span><span class="op">/</span><span class="ident">thickness</span>)
+            <span class="macro">assert!</span>(
+                (<span class="ident">u</span> <span class="op">-</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-16</span>,
+                <span class="string">&quot;u = {} | exp = {}&quot;</span>,
+                <span class="ident">u</span>,
+                <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">thickness</span>
+            )
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Expecting Solid!&quot;</span>)
         }
@@ -2616,7 +2625,19 @@ SOFTWARE.
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_solid_test_system</span>( <span class="ident">thickness</span>: <span class="ident">Float</span>, <span class="ident">thermal_cond</span>: <span class="ident">Float</span>) -&gt; (<span class="ident">Discretization</span>, <span class="ident">Matrix</span>, <span class="ident">Environment</span>, <span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Environment</span>, <span class="ident">Float</span>, <span class="ident">Float</span>){
+    <span class="kw">fn</span> <span class="ident">get_solid_test_system</span>(
+        <span class="ident">thickness</span>: <span class="ident">Float</span>,
+        <span class="ident">thermal_cond</span>: <span class="ident">Float</span>,
+    ) -&gt; (
+        <span class="ident">Discretization</span>,
+        <span class="ident">Matrix</span>,
+        <span class="ident">Environment</span>,
+        <span class="ident">Float</span>,
+        <span class="ident">Float</span>,
+        <span class="ident">Environment</span>,
+        <span class="ident">Float</span>,
+        <span class="ident">Float</span>,
+    ) {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">dx</span>;
@@ -2630,7 +2651,7 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">segments</span>,
-            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>            
+            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
         };
 
         <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
@@ -2638,7 +2659,7 @@ SOFTWARE.
             <span class="ident">air_temperature</span>: <span class="number">0.</span>,
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">273.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
         <span class="kw">let</span> <span class="ident">front_emmisivity</span> <span class="op">=</span> <span class="number">0.9</span>;
 
@@ -2647,7 +2668,7 @@ SOFTWARE.
             <span class="ident">air_temperature</span>: <span class="number">7.</span>,
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">5.</span> <span class="op">+</span> <span class="number">273.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
         <span class="kw">let</span> <span class="ident">back_emmisivity</span> <span class="op">=</span> <span class="number">0.9</span>;
 
@@ -2655,8 +2676,16 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="ident">front_env</span>.<span class="ident">get_hs</span>();
         <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="ident">back_env</span>.<span class="ident">get_hs</span>();
 
-        <span class="kw">return</span> (<span class="ident">d</span>, <span class="ident">temperatures</span>, <span class="ident">front_env</span>, <span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="ident">back_env</span>, <span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>)
-
+        <span class="kw">return</span> (
+            <span class="ident">d</span>,
+            <span class="ident">temperatures</span>,
+            <span class="ident">front_env</span>,
+            <span class="ident">front_emmisivity</span>,
+            <span class="ident">front_hs</span>,
+            <span class="ident">back_env</span>,
+            <span class="ident">back_emmisivity</span>,
+            <span class="ident">back_hs</span>,
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2664,14 +2693,23 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">thickness</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="kw">let</span> <span class="ident">thermal_cond</span> <span class="op">=</span> <span class="number">2.12</span>;
-        
+
         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">dx</span>;
-        <span class="kw">let</span> (<span class="ident">d</span>, <span class="ident">temperatures</span>, <span class="ident">front_env</span>, <span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="ident">back_env</span>, <span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">get_solid_test_system</span>( <span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
+        <span class="kw">let</span> (
+            <span class="ident">d</span>,
+            <span class="ident">temperatures</span>,
+            <span class="ident">front_env</span>,
+            <span class="ident">front_emmisivity</span>,
+            <span class="ident">front_hs</span>,
+            <span class="ident">back_env</span>,
+            <span class="ident">back_emmisivity</span>,
+            <span class="ident">back_hs</span>,
+        ) <span class="op">=</span> <span class="ident">get_solid_test_system</span>(<span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
 
         <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
             <span class="number">0</span>,
-            <span class="ident">n</span><span class="op">+</span><span class="number">1</span>,
+            <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>,
             <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
             <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
             <span class="ident">front_emmisivity</span>,
@@ -2682,8 +2720,6 @@ SOFTWARE.
         );
         <span class="macro">println!</span>(<span class="string">&quot;k = {}&quot;</span>, <span class="ident">k</span>);
         <span class="macro">println!</span>(<span class="string">&quot;heat_flows = {}&quot;</span>, <span class="ident">q</span>);
-
-        
 
         <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span> {
             <span class="comment">// Check q</span>
@@ -2704,7 +2740,7 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">r</span> {
                     <span class="comment">// Diagonal</span>
                     <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="number">0</span> {
-                        <span class="comment">// Exterior node... </span>
+                        <span class="comment">// Exterior node...</span>
                         <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="ident">front_hs</span> <span class="op">-</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
                     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">n</span> {
                         <span class="comment">// interior node</span>
@@ -2729,16 +2765,24 @@ SOFTWARE.
         }
     }
 
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_q_k_solid_partial</span>() {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">thickness</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="kw">let</span> <span class="ident">thermal_cond</span> <span class="op">=</span> <span class="number">2.12</span>;
-        
+
         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">dx</span>;
-        <span class="kw">let</span> (<span class="ident">d</span>, <span class="ident">temperatures</span>, <span class="ident">front_env</span>, <span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="ident">back_env</span>, <span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">get_solid_test_system</span>( <span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
+        <span class="kw">let</span> (
+            <span class="ident">d</span>,
+            <span class="ident">temperatures</span>,
+            <span class="ident">front_env</span>,
+            <span class="ident">front_emmisivity</span>,
+            <span class="ident">front_hs</span>,
+            <span class="ident">back_env</span>,
+            <span class="ident">back_emmisivity</span>,
+            <span class="ident">back_hs</span>,
+        ) <span class="op">=</span> <span class="ident">get_solid_test_system</span>(<span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
 
         <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
             <span class="number">0</span>,
@@ -2753,8 +2797,6 @@ SOFTWARE.
         );
         <span class="macro">println!</span>(<span class="string">&quot;k = {}&quot;</span>, <span class="ident">k</span>);
         <span class="macro">println!</span>(<span class="string">&quot;heat_flows = {}&quot;</span>, <span class="ident">q</span>);
-
-        
 
         <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">3</span> {
             <span class="comment">// Check q</span>
@@ -2775,7 +2817,7 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">r</span> {
                     <span class="comment">// Diagonal</span>
                     <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="number">0</span> {
-                        <span class="comment">// Exterior node... </span>
+                        <span class="comment">// Exterior node...</span>
                         <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="ident">front_hs</span> <span class="op">-</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
                     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">n</span> {
                         <span class="comment">// interior node</span>
@@ -2800,17 +2842,25 @@ SOFTWARE.
         }
     }
 
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_q_k_solid_partial_2</span>() {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">thickness</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="kw">let</span> <span class="ident">thermal_cond</span> <span class="op">=</span> <span class="number">0.1</span>;
-        
+
         <span class="kw">let</span> <span class="ident">dx</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">thermal_cond</span> <span class="op">/</span> <span class="ident">dx</span>;
-        <span class="kw">let</span> (<span class="ident">d</span>, <span class="ident">temperatures</span>, <span class="ident">front_env</span>, <span class="ident">front_emmisivity</span>, <span class="ident">front_hs</span>, <span class="ident">back_env</span>, <span class="ident">back_emmisivity</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">get_solid_test_system</span>( <span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
-        
+        <span class="kw">let</span> (
+            <span class="ident">d</span>,
+            <span class="ident">temperatures</span>,
+            <span class="ident">front_env</span>,
+            <span class="ident">front_emmisivity</span>,
+            <span class="ident">front_hs</span>,
+            <span class="ident">back_env</span>,
+            <span class="ident">back_emmisivity</span>,
+            <span class="ident">back_hs</span>,
+        ) <span class="op">=</span> <span class="ident">get_solid_test_system</span>(<span class="ident">thickness</span>, <span class="ident">thermal_cond</span>);
+
         <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
             <span class="number">2</span>,
             <span class="number">5</span>,
@@ -2825,14 +2875,12 @@ SOFTWARE.
         <span class="macro">println!</span>(<span class="string">&quot;k = {}&quot;</span>, <span class="ident">k</span>);
         <span class="macro">println!</span>(<span class="string">&quot;heat_flows = {}&quot;</span>, <span class="ident">q</span>);
 
-        
-
         <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">3</span> {
             <span class="comment">// Check q</span>
             <span class="kw">let</span> <span class="ident">heat_flow</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="ident">r</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="number">1</span> {
                 <span class="comment">// This element is Zero</span>
-                <span class="macro">assert!</span>(<span class="ident">heat_flow</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-29</span>);                            
+                <span class="macro">assert!</span>(<span class="ident">heat_flow</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-29</span>);
             } <span class="kw">else</span> {
                 <span class="comment">// This should not be Zero</span>
                 <span class="macro">assert!</span>(<span class="ident">heat_flow</span>.<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-3</span>);
@@ -2844,11 +2892,11 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">r</span> {
                     <span class="comment">// Diagonal</span>
                     <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="number">0</span> {
-                        <span class="comment">// Exterior node... </span>
+                        <span class="comment">// Exterior node...</span>
                         <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
                     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">n</span> {
                         <span class="comment">// interior node</span>
-                        <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="number">2.</span><span class="op">*</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
+                        <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
                     } <span class="kw">else</span> {
                         <span class="comment">// Any other node.</span>
                         <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
@@ -2869,7 +2917,6 @@ SOFTWARE.
         }
     }
 
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_q_k_partial</span>() {
         <span class="kw">let</span> <span class="ident">thickness</span> <span class="op">=</span> <span class="number">0.5</span>;
@@ -2887,7 +2934,7 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">segments</span>,
-            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,              
+            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
         };
 
         <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
@@ -2895,7 +2942,7 @@ SOFTWARE.
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">273.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
             <span class="ident">solar_radiation</span>: <span class="number">0.0</span>,
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
         <span class="kw">let</span> <span class="ident">front_emmisivity</span> <span class="op">=</span> <span class="number">0.9</span>;
 
@@ -2904,7 +2951,7 @@ SOFTWARE.
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">5.</span> <span class="op">+</span> <span class="number">273.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
             <span class="ident">solar_radiation</span>: <span class="number">0.0</span>,
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
         <span class="kw">let</span> <span class="ident">back_emmisivity</span> <span class="op">=</span> <span class="number">0.9</span>;
 
@@ -2924,28 +2971,27 @@ SOFTWARE.
         );
         <span class="macro">println!</span>(<span class="string">&quot;k = {}&quot;</span>, <span class="ident">k</span>);
         <span class="macro">println!</span>(<span class="string">&quot;heat_flows = {}&quot;</span>, <span class="ident">q</span>);
-        
 
-        <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span><span class="op">-</span><span class="number">1</span> {
+        <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
             <span class="comment">// Check q</span>
             <span class="kw">let</span> <span class="ident">heat_flow</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="ident">r</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="number">0</span> {
                 <span class="macro">assert!</span>(<span class="ident">heat_flow</span> <span class="op">&gt;</span> <span class="number">1e-5</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="ident">n</span><span class="op">-</span><span class="number">2</span> {
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">2</span> {
                 <span class="macro">assert!</span>(<span class="ident">heat_flow</span> <span class="op">&gt;</span> <span class="number">1e-5</span>);
             } <span class="kw">else</span> {
                 <span class="macro">assert!</span>(<span class="ident">heat_flow</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-29</span>);
             }
 
-            <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span><span class="op">-</span><span class="number">1</span>  {
+            <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
                 <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">get</span>(<span class="ident">r</span>, <span class="ident">c</span>).<span class="ident">unwrap</span>();
 
                 <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">r</span> {
                     <span class="comment">// Diagonal</span>
                     <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="number">0</span> {
                         <span class="comment">// Exterior node</span>
-                        <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">+</span> <span class="number">2.</span><span class="op">*</span> <span class="ident">u</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>, <span class="string">&quot;v = {} | found = {}&quot;</span>, <span class="ident">v</span>, <span class="number">2.</span><span class="kw-2">*</span><span class="ident">u</span>);
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">n</span><span class="op">-</span><span class="number">2</span> {
+                        <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">+</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>, <span class="string">&quot;v = {} | found = {}&quot;</span>, <span class="ident">v</span>, <span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>);
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">2</span> {
                         <span class="comment">// interior node</span>
                         <span class="macro">assert!</span>((<span class="ident">v</span> <span class="op">-</span> (<span class="op">-</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">u</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-20</span>);
                     } <span class="kw">else</span> {
@@ -2968,94 +3014,106 @@ SOFTWARE.
         }
     }
 
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_u</span>(){
+    <span class="kw">fn</span> <span class="ident">test_u</span>() {
         <span class="comment">// https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp</span>
 
-        
         <span class="kw">let</span> <span class="ident">gap_thickness</span> <span class="op">=</span> <span class="number">0.0127</span>;
-        <span class="kw">let</span> <span class="ident">solid_thickness</span> <span class="op">=</span> <span class="number">0.003048</span>;   <span class="comment">// [m]</span>
-        <span class="kw">let</span> <span class="ident">solid_conductance</span> <span class="op">=</span> <span class="number">1.0</span>; 
+        <span class="kw">let</span> <span class="ident">solid_thickness</span> <span class="op">=</span> <span class="number">0.003048</span>; <span class="comment">// [m]</span>
+        <span class="kw">let</span> <span class="ident">solid_conductance</span> <span class="op">=</span> <span class="number">1.0</span>;
 
-        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span>{
+        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span> {
             <span class="ident">thickness</span>: <span class="ident">gap_thickness</span>,
             <span class="ident">height</span>: <span class="number">1.</span>,
             <span class="ident">gas</span>: <span class="ident">Gas::air</span>(),
-            <span class="ident">eout</span>: <span class="number">0.84</span>, 
+            <span class="ident">eout</span>: <span class="number">0.84</span>,
             <span class="ident">ein</span>: <span class="number">0.84</span>,
-            <span class="ident">angle</span>: <span class="number">0.</span><span class="kw-2">*</span><span class="ident"><span class="kw">crate</span>::PI</span><span class="op">/</span><span class="number">2.</span>,
+            <span class="ident">angle</span>: <span class="number">0.</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">2.</span>,
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">segments</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">4</span>);
         <span class="comment">// layer 1.</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span><span class="op">/</span><span class="ident">solid_thickness</span>)));
+        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span> <span class="op">/</span> <span class="ident">solid_thickness</span>)));
 
         <span class="comment">// Layer 2: Gap</span>
         <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Cavity</span>(<span class="ident">Box::new</span>(<span class="ident">gap</span>))));
 
-        <span class="comment">// layer 3.        </span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span><span class="op">/</span><span class="ident">solid_thickness</span>)));
+        <span class="comment">// layer 3.</span>
+        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span> <span class="op">/</span> <span class="ident">solid_thickness</span>)));
 
         <span class="comment">// Last node</span>
         <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Back</span>));
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">segments</span>,
-            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>            
+            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
         };
 
         <span class="comment">// Borders</span>
-        <span class="kw">let</span> <span class="ident">air_temperature</span> <span class="op">=</span> <span class="number">255.15</span> <span class="op">-</span> <span class="number">273.15</span>;   <span class="comment">// Kelvins into C</span>
-        <span class="kw">let</span> <span class="ident">air_speed</span> <span class="op">=</span> <span class="number">5.5</span>;            <span class="comment">// meters per second</span>
-        <span class="kw">let</span> <span class="ident">t_sky</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">255.15</span>;             <span class="comment">// Kelvins into C</span>
+        <span class="kw">let</span> <span class="ident">air_temperature</span> <span class="op">=</span> <span class="number">255.15</span> <span class="op">-</span> <span class="number">273.15</span>; <span class="comment">// Kelvins into C</span>
+        <span class="kw">let</span> <span class="ident">air_speed</span> <span class="op">=</span> <span class="number">5.5</span>; <span class="comment">// meters per second</span>
+        <span class="kw">let</span> <span class="ident">t_sky</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">255.15</span>; <span class="comment">// Kelvins into C</span>
         <span class="kw">let</span> <span class="ident">solar_radiation</span> <span class="op">=</span> <span class="number">789.0</span>;
-        <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span>{
+        <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
             <span class="ident">air_speed</span>,
             <span class="ident">air_temperature</span>,
             <span class="ident">solar_radiation</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="ident">t_sky</span>.<span class="ident">powi</span>(<span class="number">4</span>)),
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
 
-        <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">Environment</span>{
+        <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
             <span class="ident">air_speed</span>: <span class="number">0.0</span>,
             <span class="ident">air_temperature</span>: <span class="number">294.15</span> <span class="op">-</span> <span class="number">273.15</span>, <span class="comment">// K into C</span>
-            <span class="ident">solar_radiation</span> : <span class="number">0.</span>,
+            <span class="ident">solar_radiation</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">294.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
-            .. <span class="ident">Environment::default</span>()
+            ..<span class="ident">Environment::default</span>()
         };
 
         <span class="kw">let</span> <span class="ident">kelvin</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">273.14</span>, <span class="number">4</span>, <span class="number">1</span>);
 
-
-        <span class="comment">// First, u-value        </span>
-        <span class="kw">let</span> <span class="ident">exp_temps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">258.791640</span> , <span class="number">259.116115</span>, <span class="number">279.323983</span>, <span class="number">279.648458</span>];
+        <span class="comment">// First, u-value</span>
+        <span class="kw">let</span> <span class="ident">exp_temps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">258.791640</span>, <span class="number">259.116115</span>, <span class="number">279.323983</span>, <span class="number">279.648458</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">4</span>, <span class="number">1</span>, <span class="ident">exp_temps</span>.<span class="ident">clone</span>());
         <span class="ident">temperatures</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>;
-        
+
         <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="number">36.34359273</span>; <span class="comment">// these were found by analyzing WINDOW&#39;s response</span>
         <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="number">5.</span>;
 
-        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(<span class="number">0</span>, <span class="number">4</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="kw-2">&amp;</span><span class="ident">front_env</span>, <span class="number">0.9</span>, <span class="ident">front_hs</span>, <span class="kw-2">&amp;</span><span class="ident">back_env</span>, <span class="number">0.9</span>, <span class="ident">back_hs</span>);
+        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
+            <span class="number">0</span>,
+            <span class="number">4</span>,
+            <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
+            <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
+            <span class="number">0.9</span>,
+            <span class="ident">front_hs</span>,
+            <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
+            <span class="number">0.9</span>,
+            <span class="ident">back_hs</span>,
+        );
         <span class="ident">q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
         <span class="comment">// let mut temps = Matrix::new(0.0, 4, 1);</span>
-        
+
         <span class="macro">println!</span>(<span class="string">&quot;K = {}&quot;</span>, <span class="ident">k</span>);
         <span class="kw">let</span> <span class="ident">keep_k</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">clone</span>();
-        <span class="macro">println!</span>(<span class="string">&quot;q = {}&quot;</span>, <span class="ident">q</span>); 
-        <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();       
-        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();        
-        
+        <span class="macro">println!</span>(<span class="string">&quot;q = {}&quot;</span>, <span class="ident">q</span>);
+        <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
+
         <span class="macro">println!</span>(<span class="string">&quot;T = {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">t</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>);
-        
-        <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">273.15</span>;
-            <span class="macro">assert!</span>( (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.17</span>, <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() );
-        }        
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span>  <span class="kw-2">&amp;</span><span class="ident">keep_k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
+            <span class="macro">assert!</span>(
+                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.17</span>,
+                <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>,
+                <span class="ident">exp</span>,
+                <span class="ident">found</span>,
+                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>()
+            );
+        }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
         <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_q</span>;
         <span class="macro">println!</span>(<span class="string">&quot;check = {}&quot;</span>, <span class="ident">check</span>);
-
 
         <span class="comment">// Then, with sun</span>
         <span class="kw">let</span> <span class="ident">exp_temps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">261.920088</span>, <span class="number">262.408524</span>, <span class="number">284.752662</span>, <span class="number">285.038190</span>];
@@ -3064,50 +3122,66 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="number">32.6</span>; <span class="comment">// these were found by analyzing WINDOW&#39;s response</span>
         <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="number">6.8</span>;
-        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(<span class="number">0</span>, <span class="number">4</span>, <span class="kw-2">&amp;</span><span class="ident">temperatures</span>, <span class="kw-2">&amp;</span><span class="ident">front_env</span>, <span class="number">0.9</span>, <span class="ident">front_hs</span>, <span class="kw-2">&amp;</span><span class="ident">back_env</span>, <span class="number">0.9</span>, <span class="ident">back_hs</span>);
-        
+        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
+            <span class="number">0</span>,
+            <span class="number">4</span>,
+            <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
+            <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
+            <span class="number">0.9</span>,
+            <span class="ident">front_hs</span>,
+            <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
+            <span class="number">0.9</span>,
+            <span class="ident">back_hs</span>,
+        );
+
         <span class="comment">// add sun?</span>
         <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old</span>  <span class="op">+</span> <span class="number">0.096489921212</span><span class="op">/</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>).<span class="ident">unwrap</span>();
+        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.096489921212</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
+            .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="ident">old</span>  <span class="op">+</span> <span class="number">0.096489921212</span><span class="op">/</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>).<span class="ident">unwrap</span>();
+        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.096489921212</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">2</span>, <span class="number">0</span>, <span class="ident">old</span>  <span class="op">+</span> <span class="number">0.072256758809</span><span class="op">/</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>).<span class="ident">unwrap</span>();
+        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">2</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.072256758809</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
+            .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">3</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">3</span>, <span class="number">0</span>, <span class="ident">old</span>  <span class="op">+</span> <span class="number">0.072256758809</span><span class="op">/</span><span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>).<span class="ident">unwrap</span>();
-
+        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">3</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.072256758809</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="ident">q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
 
         <span class="kw">let</span> <span class="ident">keep_k</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">clone</span>();
         <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();
-        
-        
+
         <span class="macro">println!</span>(<span class="string">&quot;K = {}&quot;</span>, <span class="ident">k</span>);
         <span class="macro">println!</span>(<span class="string">&quot;q = {}&quot;</span>, <span class="ident">q</span>);
-        
+
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
-                
+
         <span class="macro">println!</span>(<span class="string">&quot;T = {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">t</span> <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>);
-        
-        <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">273.15</span>;
-            <span class="macro">assert!</span>( (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.15</span>, <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>, <span class="ident">exp</span>, <span class="ident">found</span>, (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() );
-        }        
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span>  <span class="kw-2">&amp;</span><span class="ident">keep_k</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
+            <span class="macro">assert!</span>(
+                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.15</span>,
+                <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>,
+                <span class="ident">exp</span>,
+                <span class="ident">found</span>,
+                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>()
+            );
+        }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
         <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_q</span>;
         <span class="macro">println!</span>(<span class="string">&quot;check = {}&quot;</span>, <span class="ident">check</span>);
     }
 
-
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_chunks</span>(){
+    <span class="kw">fn</span> <span class="ident">test_get_chunks</span>() {
         <span class="comment">// Single node, massive</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">1.</span>, <span class="ident">UValue::None</span>)]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">1.</span>, <span class="ident">UValue::None</span>)],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3116,9 +3190,9 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">mass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">1</span>)]);
 
         <span class="comment">// Single node, no-mass</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">0.</span>, <span class="ident">UValue::None</span>)]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">0.</span>, <span class="ident">UValue::None</span>)],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3127,9 +3201,9 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">1</span>)]);
 
         <span class="comment">// Several nodes, massive</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">1.</span>, <span class="ident">UValue::None</span>); <span class="number">10</span>]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">1.</span>, <span class="ident">UValue::None</span>); <span class="number">10</span>],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3138,9 +3212,9 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">mass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>)]);
 
         <span class="comment">// Several nodes, no-mass</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">0.</span>, <span class="ident">UValue::None</span>); <span class="number">10</span>]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">0.</span>, <span class="ident">UValue::None</span>); <span class="number">10</span>],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3148,11 +3222,16 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>)]);
 
-
         <span class="comment">// Mixed 1</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">0.</span>, <span class="ident">UValue::None</span>), (<span class="number">1.</span>, <span class="ident">UValue::None</span>), (<span class="number">1.</span>, <span class="ident">UValue::None</span>), (<span class="number">0.</span>, <span class="ident">UValue::None</span>), (<span class="number">0.</span>, <span class="ident">UValue::None</span>)]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[
+                (<span class="number">0.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">1.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">1.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">0.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">0.</span>, <span class="ident">UValue::None</span>),
+            ],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3161,11 +3240,16 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>.<span class="ident">len</span>(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">3</span>, <span class="number">5</span>)]);
 
-
         <span class="comment">// Mixed 2</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span>{
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
             <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-            <span class="ident">segments</span>: <span class="macro">vec!</span>[(<span class="number">1.</span>, <span class="ident">UValue::None</span>), (<span class="number">1.</span>, <span class="ident">UValue::None</span>), (<span class="number">1.</span>, <span class="ident">UValue::None</span>), (<span class="number">0.</span>, <span class="ident">UValue::None</span>), (<span class="number">0.</span>, <span class="ident">UValue::None</span>)]
+            <span class="ident">segments</span>: <span class="macro">vec!</span>[
+                (<span class="number">1.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">1.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">1.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">0.</span>, <span class="ident">UValue::None</span>),
+                (<span class="number">0.</span>, <span class="ident">UValue::None</span>),
+            ],
         };
 
         <span class="kw">let</span> (<span class="ident">mass_chunks</span>, <span class="ident">nomass_chunks</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_chunks</span>();
@@ -3173,10 +3257,8 @@ SOFTWARE.
         <span class="macro">assert_eq!</span>(<span class="ident">mass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">3</span>)]);
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">nomass_chunks</span>, <span class="macro">vec!</span>[(<span class="number">3</span>, <span class="number">5</span>)]);
-
-        
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

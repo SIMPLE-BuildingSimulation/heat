@@ -1289,14 +1289,6 @@
 <span id="1248">1248</span>
 <span id="1249">1249</span>
 <span id="1250">1250</span>
-<span id="1251">1251</span>
-<span id="1252">1252</span>
-<span id="1253">1253</span>
-<span id="1254">1254</span>
-<span id="1255">1255</span>
-<span id="1256">1256</span>
-<span id="1257">1257</span>
-<span id="1258">1258</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1412,7 +1404,7 @@ SOFTWARE.
     <span class="comment">// get k1</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k1</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">t</span>;
     <span class="ident">k1</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">q</span>;
-    
+
     <span class="comment">// returning &quot;temperatures + k1&quot; is Euler... continuing is</span>
     <span class="comment">// Runge–Kutta 4th order</span>
     <span class="comment">// *t += &amp;k1;</span>
@@ -1513,12 +1505,12 @@ SOFTWARE.
 
     <span class="kw">fn</span> <span class="ident">back_temperature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>();
-        <span class="ident">state</span>[<span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>]
+        <span class="ident">state</span>[<span class="ident">i</span>]
     }
 
     <span class="kw">fn</span> <span class="ident">get_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Matrix</span> {
         <span class="kw">let</span> <span class="ident">ini</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">first_node_temperature_index</span>();
-        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>()<span class="op">+</span><span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>() <span class="op">+</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">n_nodes</span> <span class="op">=</span> <span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">n_nodes</span>, <span class="number">1</span>);
         <span class="kw">for</span> (<span class="ident">node_index</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">enumerate</span>() {
@@ -1530,9 +1522,9 @@ SOFTWARE.
 
     <span class="kw">fn</span> <span class="ident">set_node_temperatures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>, <span class="ident">matrix</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>) {
         <span class="kw">let</span> <span class="ident">ini</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">first_node_temperature_index</span>();
-        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>();
+        <span class="kw">let</span> <span class="ident">fin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">last_node_temperature_index</span>() <span class="op">+</span> <span class="number">1</span>;
 
-        <span class="kw">for</span> (<span class="ident">node_index</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="op">=</span><span class="ident">fin</span>).<span class="ident">enumerate</span>() {
+        <span class="kw">for</span> (<span class="ident">node_index</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">enumerate</span>() {
             <span class="kw">let</span> <span class="ident">new_t</span> <span class="op">=</span> <span class="ident">matrix</span>.<span class="ident">get</span>(<span class="ident">node_index</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="ident">state</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">new_t</span>;
         }
@@ -1699,7 +1691,7 @@ SOFTWARE.
         }
         <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
         <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
-        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span><span class="op">-</span><span class="number">1</span>);
+        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
     }
 }
 
@@ -1848,7 +1840,7 @@ SOFTWARE.
         }
         <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
         <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
-        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span><span class="op">-</span><span class="number">1</span>);
+        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
     }
 }
 
@@ -2009,10 +2001,9 @@ SOFTWARE.
 
         <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
         <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);        
 
         <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
-        <span class="comment">// let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));</span>
         <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">ir_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_infrared_irradiance</span>(<span class="ident">state</span>);
 
@@ -2052,8 +2043,8 @@ SOFTWARE.
         <span class="comment">// 2nd: Calculate the temperature in all no-mass nodes.</span>
         <span class="comment">// Also, the heat flow into</span>
         <span class="comment">/////////////////////</span>
-        
-        <span class="kw">let</span> (<span class="ident">mass</span>, <span class="ident">nomass</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_chunks</span>();        
+
+        <span class="kw">let</span> (<span class="ident">mass</span>, <span class="ident">nomass</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_chunks</span>();
 
         <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="ident">nomass</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
@@ -2071,49 +2062,46 @@ SOFTWARE.
                 );
 
                 <span class="comment">// ... here we can add solar gains</span>
-                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="ident">local_q</span>.<span class="ident">add_to_element</span>(<span class="ident">local_i</span>, <span class="number">0</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
-                }                
+                }
                 <span class="ident">local_q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>; <span class="comment">// transfrom equation from kT + q = 0 --&gt; kT = -q</span>
 
-                <span class="kw">let</span> <span class="ident">temps</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">local_q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>(); <span class="comment">// and just like that, q is the new temperatures                                </span>
+                <span class="kw">let</span> <span class="ident">temps</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">local_q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>(); <span class="comment">// and just like that, q is the new temperatures</span>
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">err</span> <span class="op">=</span> <span class="number">0.0</span>;
-                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">local_temp</span> <span class="op">=</span> <span class="ident">temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">global_temp</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-                    <span class="ident">err</span> <span class="op">+</span><span class="op">=</span> (<span class="ident">local_temp</span> <span class="op">-</span> <span class="ident">global_temp</span>).<span class="ident">abs</span>();                    
+                    <span class="ident">err</span> <span class="op">+</span><span class="op">=</span> (<span class="ident">local_temp</span> <span class="op">-</span> <span class="ident">global_temp</span>).<span class="ident">abs</span>();
                 }
-                
+
                 <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> (<span class="ident">n_nodes</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
                     <span class="kw">break</span>;
                 }
-                
+
                 <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="macro">assert!</span>(<span class="ident">count</span> <span class="op">&lt;</span> <span class="number">999</span>, <span class="string">&quot;Excessive number of iteration&quot;</span>);
-                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+                <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">local_temp</span> <span class="op">=</span> <span class="ident">temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="ident">temperatures</span>.<span class="ident">add_to_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="ident">local_temp</span>).<span class="ident">unwrap</span>();
                     <span class="ident">temperatures</span>.<span class="ident">scale_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="number">0.5</span>).<span class="ident">unwrap</span>();
-                           
                 }
-                
             }
-        } 
+        }
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 3rd: Calculate K and C matrices for the massive walls</span>
         <span class="comment">/////////////////////</span>
 
-        
-        <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="ident">mass</span>{
+        <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="ident">mass</span> {
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">discretization</span>
                 .<span class="ident">segments</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">skip</span>(<span class="ident">ini</span>)
-                .<span class="ident">take</span>(<span class="ident">fin</span><span class="op">-</span><span class="ident">ini</span>)
+                .<span class="ident">take</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">mass</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">mass</span>)
                 .<span class="ident">collect</span>();
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Matrix::diag</span>(<span class="ident">c</span>);
@@ -2131,7 +2119,7 @@ SOFTWARE.
             );
 
             <span class="comment">// ... here we add solar gains</span>
-            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                 <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="ident">global_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                 <span class="ident">local_q</span>.<span class="ident">add_to_element</span>(<span class="ident">local_i</span>, <span class="number">0</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
             }
@@ -2140,19 +2128,19 @@ SOFTWARE.
             <span class="comment">// 4rd: March massive nodes</span>
             <span class="comment">/////////////////////</span>
             <span class="comment">// Use RT4 for updating temperatures of massive nodes.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">local_temps</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">fin</span><span class="op">-</span><span class="ident">ini</span>, <span class="number">1</span>);
-            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">local_temps</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>, <span class="number">1</span>);
+            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                 <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">global_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                 <span class="ident">local_temps</span>.<span class="ident">set</span>(<span class="ident">local_i</span>, <span class="number">0</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
             }
 
             <span class="ident">rk4</span>(<span class="ident">dt</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">k</span>, <span class="ident">local_q</span>, <span class="kw-2">&amp;mut</span> <span class="ident">local_temps</span>);
 
-            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>(){
+            <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">global_i</span>) <span class="kw">in</span> (<span class="ident">ini</span>..<span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                 <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">local_temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                 <span class="ident">temperatures</span>.<span class="ident">set</span>(<span class="ident">global_i</span>, <span class="number">0</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
             }
-        } 
+        }
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 5th: Set temperatures, calc heat-flows and return</span>
@@ -2232,8 +2220,6 @@ SOFTWARE.
         <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">mat</span>)
     }
 
-   
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_march_massive</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">model</span> <span class="op">=</span> <span class="ident">SimpleModel::new</span>(<span class="string">&quot;Some model&quot;</span>.<span class="ident">to_string</span>());
@@ -2268,7 +2254,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">300.0</span>;
         <span class="kw">let</span> <span class="ident">max_dx</span> <span class="op">=</span> <span class="ident">m1</span>.<span class="ident">thickness</span> <span class="op">/</span> <span class="number">2.0</span>;
         <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">1.0</span>;
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="number">1.</span>, <span class="number">0.</span>).<span class="ident">unwrap</span>();        
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="number">1.</span>, <span class="number">0.</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="kw">as</span> <span class="ident">Float</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
@@ -2293,7 +2279,7 @@ SOFTWARE.
             <span class="macro">assert!</span>(<span class="ident">q_in</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>, <span class="string">&quot;q_in = {} | c = {}&quot;</span>, <span class="ident">q_in</span>, <span class="ident">counter</span>);
             <span class="macro">assert!</span>(<span class="ident">q_out</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.</span>, <span class="string">&quot;q_out = {} | c = {}&quot;</span>, <span class="ident">q_out</span>, <span class="ident">counter</span>);
 
-            <span class="comment">// q_in needs to be getting smaller            </span>
+            <span class="comment">// q_in needs to be getting smaller</span>
             <span class="ident">q</span> <span class="op">=</span> <span class="ident">q_in</span>;
 
             <span class="ident">counter</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -2552,9 +2538,7 @@ SOFTWARE.
             }
         }
     }
-
-    
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

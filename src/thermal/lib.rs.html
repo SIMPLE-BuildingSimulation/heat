@@ -91,11 +91,6 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -126,32 +121,28 @@ SOFTWARE.
 <span class="doccomment">/// and `f64` is used otherwise.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f32</span>;
-
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f64</span>;
 
+<span class="doccomment">/// Well, Pi</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f32::consts::PI</span>;
-
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f32::consts::PI</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f64::consts::PI</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f64::consts::PI</span>;
 
-
-
-<span class="doccomment">/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W/m^2K`$), </span>
+<span class="doccomment">/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W/m^2K`$),</span>
 <span class="doccomment">/// necessary for Radiation calculations</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIGMA</span> : <span class="ident">Float</span> <span class="op">=</span> <span class="number">5.670374419e-8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIGMA</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">5.670374419e-8</span>;
 
-
-
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cavity</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">construction</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">environment</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gas</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glazing</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">heating_cooling</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">model</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">surface</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">zone</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glazing</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cavity</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">environment</span>;</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>

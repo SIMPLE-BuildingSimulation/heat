@@ -690,9 +690,9 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">raleigh</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span>, <span class="ident">thickness</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">const</span> <span class="ident">G</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">9.81</span>;
 
-        <span class="kw">if</span> (<span class="ident">t_front</span> <span class="op">-</span> <span class="ident">t_back</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-10</span>{
-            <span class="kw">return</span> <span class="number">0.0000001</span>
-        } 
+        <span class="kw">if</span> (<span class="ident">t_front</span> <span class="op">-</span> <span class="ident">t_back</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-10</span> {
+            <span class="kw">return</span> <span class="number">0.0000001</span>;
+        }
 
         <span class="comment">// Gas mean temperature</span>
         <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> (<span class="ident">in_kelvin</span>(<span class="ident">t_front</span>) <span class="op">+</span> <span class="ident">in_kelvin</span>(<span class="ident">t_back</span>)) <span class="op">/</span> <span class="number">2.</span>;
@@ -704,7 +704,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">mu</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dynamic_viscosity</span>(<span class="ident">temp</span>);
         <span class="kw">let</span> <span class="ident">lambda</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thermal_conductivity</span>(<span class="ident">temp</span>);
         <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">density</span>(<span class="ident">temp</span>);
-        
+
         <span class="comment">// Eq. 40 of iso15099/2003</span>
         <span class="ident">rho</span>.<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">*</span> <span class="ident">thickness</span>.<span class="ident">powi</span>(<span class="number">3</span>) <span class="op">*</span> <span class="ident">G</span> <span class="op">*</span> <span class="ident">beta</span> <span class="op">*</span> <span class="ident">c_p</span> <span class="op">*</span> (<span class="ident">t_front</span> <span class="op">-</span> <span class="ident">t_back</span>).<span class="ident">abs</span>() <span class="op">/</span> (<span class="ident">mu</span> <span class="op">*</span> <span class="ident">lambda</span>)
     }
@@ -847,7 +847,7 @@ SOFTWARE.
     <span class="kw">const</span> <span class="ident">EPSILON_RAD</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.5</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">180.</span>;
 
     <span class="comment">// if gamma &gt;= 0.0 &amp;&amp; gamma &lt; 2. * THIRTY_RAD - EPSILON_RAD {</span>
-    <span class="kw">if</span> (<span class="number">0.0</span>..<span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">-</span> <span class="ident">EPSILON_RAD</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">gamma</span>){
+    <span class="kw">if</span> (<span class="number">0.0</span>..<span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">-</span> <span class="ident">EPSILON_RAD</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">gamma</span>) {
         <span class="comment">// Between 0 and 60 degrees</span>
         <span class="ident">nu_0_60</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>)
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">gamma</span> <span class="op">&lt;</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">+</span> <span class="ident">EPSILON_RAD</span> {
@@ -1238,5 +1238,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (99930ac7f 2022-06-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>
