@@ -725,6 +725,7 @@ mod testing {
 
         assert_eq!(d.tstep_subdivision, tstep_sub);
         assert_eq!(d.segments.len(), 2);
+
         // mass of node 0
         let exp_mass = thickness * density * cp / 2.;
         let mass = d.segments[0].0;
@@ -743,11 +744,7 @@ mod testing {
             (exp_mass - mass).abs() < 1e-17,
             "Expecting mass to be {exp_mass}... found {mass}"
         );
-        if let UValue::Back = d.segments[1].1 {
-            assert!(true)
-        } else {
-            panic!("Expecting Back!")
-        }
+        assert!(matches!(d.segments[1].1, UValue::Back));
     }
 
     #[test]
