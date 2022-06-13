@@ -113,7 +113,7 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     // get k1
     let mut k1 = &k * &*t;
     k1 += &q;
-    
+
     // returning "temperatures + k1" is Euler... continuing is
     // Runge–Kutta 4th order
     // *t += &k1;
@@ -214,12 +214,12 @@ pub trait SurfaceTrait {
 
     fn back_temperature(&self, state: &SimulationState) -> Float {
         let i = self.last_node_temperature_index();
-        state[i - 1]
+        state[i]
     }
 
     fn get_node_temperatures(&self, state: &SimulationState) -> Matrix {
         let ini = self.first_node_temperature_index();
-        let fin = self.last_node_temperature_index()+1;
+        let fin = self.last_node_temperature_index() + 1;
         let n_nodes = fin - ini;
         let mut ret = Matrix::new(0.0, n_nodes, 1);
         for (node_index, i) in (ini..fin).enumerate() {
@@ -231,9 +231,9 @@ pub trait SurfaceTrait {
 
     fn set_node_temperatures(&self, state: &mut SimulationState, matrix: &Matrix) {
         let ini = self.first_node_temperature_index();
-        let fin = self.last_node_temperature_index();
+        let fin = self.last_node_temperature_index() + 1;
 
-        for (node_index, i) in (ini..=fin).enumerate() {
+        for (node_index, i) in (ini..fin).enumerate() {
             let new_t = matrix.get(node_index, 0).unwrap();
             state[i] = new_t;
         }
@@ -400,7 +400,7 @@ impl SurfaceTrait for Surface {
         }
         let last_node = state.len();
         self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node-1);
+        self.set_last_node_temperature_index(last_node - 1);
     }
 }
 
@@ -549,7 +549,7 @@ impl SurfaceTrait for Fenestration {
         }
         let last_node = state.len();
         self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node-1);
+        self.set_last_node_temperature_index(last_node - 1);
     }
 }
 
@@ -753,8 +753,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
-        
-        let (mass, nomass) = self.discretization.get_chunks();        
+
+        let (mass, nomass) = self.discretization.get_chunks();
 
         for (ini, fin) in nomass {
             let mut count = 0;
@@ -772,49 +772,46 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 );
 
                 // ... here we can add solar gains
-                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                for (local_i, i) in (ini..fin).into_iter().enumerate() {
                     let v = q.get(i, 0).unwrap();
                     local_q.add_to_element(local_i, 0, v).unwrap();
-                }                
+                }
                 local_q *= -1.; // transfrom equation from kT + q = 0 --> kT = -q
 
-                let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures                                
+                let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures
 
                 let mut err = 0.0;
-                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                for (local_i, i) in (ini..fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     let global_temp = temperatures.get(i, 0).unwrap();
-                    err += (local_temp - global_temp).abs();                    
+                    err += (local_temp - global_temp).abs();
                 }
-                
+
                 if err / (n_nodes as Float) < 0.01 {
                     break;
                 }
-                
+
                 count += 1;
                 assert!(count < 999, "Excessive number of iteration");
-                for (local_i, i) in (ini..fin).into_iter().enumerate(){
+                for (local_i, i) in (ini..fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
-                           
                 }
-                
             }
-        } 
+        }
 
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
         /////////////////////
 
-        
-        for (ini, fin) in mass{
+        for (ini, fin) in mass {
             let c = self
                 .discretization
                 .segments
                 .iter()
                 .skip(ini)
-                .take(fin-ini)
+                .take(fin - ini)
                 .map(|(mass, _)| *mass)
                 .collect();
             let c = Matrix::diag(c);
@@ -832,7 +829,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             );
 
             // ... here we add solar gains
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
                 let v = q.get(global_i, 0).unwrap();
                 local_q.add_to_element(local_i, 0, v).unwrap();
             }
@@ -841,19 +838,19 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             // 4rd: March massive nodes
             /////////////////////
             // Use RT4 for updating temperatures of massive nodes.
-            let mut local_temps = Matrix::new(0.0, fin-ini, 1);
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+            let mut local_temps = Matrix::new(0.0, fin - ini, 1);
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
                 let v = temperatures.get(global_i, 0).unwrap();
                 local_temps.set(local_i, 0, v).unwrap();
             }
 
             rk4(dt, &c, k, local_q, &mut local_temps);
 
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate(){
+            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
                 let v = local_temps.get(local_i, 0).unwrap();
                 temperatures.set(global_i, 0, v).unwrap();
             }
-        } 
+        }
 
         /////////////////////
         // 5th: Set temperatures, calc heat-flows and return
@@ -933,8 +930,6 @@ mod testing {
         model.add_material(mat)
     }
 
-   
-
     #[test]
     fn test_march_massive() {
         let mut model = SimpleModel::new("Some model".to_string());
@@ -969,7 +964,7 @@ mod testing {
         let main_dt = 300.0;
         let max_dx = m1.thickness / 2.0;
         let min_dt = 1.0;
-        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();        
+        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let mut state_header = SimulationStateHeader::new();
@@ -994,7 +989,7 @@ mod testing {
             assert!(q_in >= 0., "q_in = {} | c = {}", q_in, counter);
             assert!(q_out >= 0., "q_out = {} | c = {}", q_out, counter);
 
-            // q_in needs to be getting smaller            
+            // q_in needs to be getting smaller
             q = q_in;
 
             counter += 1;
@@ -1253,6 +1248,4 @@ mod testing {
             }
         }
     }
-
-    
 }

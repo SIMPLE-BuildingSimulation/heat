@@ -192,7 +192,7 @@ impl Glazing {
 
         let mut acc_alpha = 0.0;
 
-        for i in 1..layers.len() {            
+        for i in 1..layers.len() {
             let g0 = Self::combine_layers(&layers[0..i]);
             let g1 = Self::combine_layers(&layers[i..]);
             let (a0, _) = g0.combined_alphas(&g1);
@@ -203,7 +203,7 @@ impl Glazing {
         // fill the last one
         let g0 = Self::combine_layers(&layers[0..layers.len() - 1]);
         let g1 = layers.last().unwrap();
-        let (_, a1) = g0.combined_alphas(g1);        
+        let (_, a1) = g0.combined_alphas(g1);
         ret.push(a1);
         ret
     }

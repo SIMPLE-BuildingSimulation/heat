@@ -8,7 +8,7 @@ use validate::*;
 use weather::SyntheticWeather;
 
 use simple_model::{SimulationStateElement, HVAC};
-use simple_test_models::{SingleZoneTestBuildingOptions, TestMat, get_single_zone_test_building};
+use simple_test_models::{get_single_zone_test_building, SingleZoneTestBuildingOptions, TestMat};
 
 /// A single-zone test model with walls assumed to have
 /// no mass. It has a closed solution, which is nice.
@@ -67,7 +67,7 @@ impl SingleZoneTestModel {
     }
 }
 
-fn march_with_window() ->(Vec<Float>, Vec<Float>) {
+fn march_with_window() -> (Vec<Float>, Vec<Float>) {
     let surface_area = 4.;
     let window_area = 1.;
     let zone_volume = 40.;
@@ -155,7 +155,7 @@ fn march_with_window() ->(Vec<Float>, Vec<Float>) {
         exp.push(exp_v);
         found.push(found_v);
     }
-    (exp,found)
+    (exp, found)
 }
 
 fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
@@ -266,16 +266,13 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
     let mut state = state_header.take_values().unwrap();
 
-    
     // turn the lights on
     let lum_state_i = simple_model.luminaires[0]
         .power_consumption_index()
-        .unwrap();        
+        .unwrap();
     state[lum_state_i] = lighting_power;
 
     // START TESTING.
-
-    
 
     let hs_front = simple_model.surfaces[0]
         .front_convection_coefficient(&state)
@@ -283,18 +280,17 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
     let hs_back = simple_model.surfaces[0]
         .back_convection_coefficient(&state)
         .unwrap();
-    let r = thermal_model.surfaces[0].discretization.r_value() + 1./hs_front + 1./hs_back;
+    let r = thermal_model.surfaces[0].discretization.r_value() + 1. / hs_front + 1. / hs_back;
 
     // Initial T of the zone
     let t_start = 22.;
-    
+
     thermal_model.zones[0]
         .reference_space
         .set_dry_bulb_temperature(&mut state, t_start);
-        
 
     let t_out: Float = 30.0; // T of surroundings
-    
+
     // test model
     let tester = SingleZoneTestModel {
         zone_volume,
@@ -323,8 +319,6 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
     let mut exp = Vec::with_capacity(n);
     let mut found = Vec::with_capacity(n);
     for i in 0..n {
-        
-        
         let time = (i as Float) * dt;
         date.add_seconds(time);
 
@@ -342,8 +336,6 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
         exp.push(exp_v);
         found.push(found_v);
-
-        
     }
 
     (exp, found)
@@ -391,7 +383,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
     let hs_back = simple_model.surfaces[0]
         .back_convection_coefficient(&state)
         .unwrap();
-    let r = thermal_model.surfaces[0].discretization.r_value() + 1./hs_front + 1./hs_back;
+    let r = thermal_model.surfaces[0].discretization.r_value() + 1. / hs_front + 1. / hs_back;
 
     // Initial T of the zone
     let t_start = thermal_model.zones[0]
@@ -449,7 +441,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
     (exp, found)
 }
 
-fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>)  {
+fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     let surface_area = 4.;
     let zone_volume = 40.;
     let heating_power = 10.;
@@ -505,7 +497,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>)  {
     let hs_back = simple_model.surfaces[0]
         .back_convection_coefficient(&state)
         .unwrap();
-    let r = thermal_model.surfaces[0].discretization.r_value() + 1./hs_front + 1./hs_back;
+    let r = thermal_model.surfaces[0].discretization.r_value() + 1. / hs_front + 1. / hs_back;
 
     // Initial T of the zone
     let t_start = thermal_model.zones[0]
@@ -563,8 +555,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>)  {
     (exp, found)
 }
 
-
-fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>)  {
+fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>) {
     let surface_area = 20. * 3.;
     let zone_volume = 600.;
 
@@ -584,10 +575,13 @@ fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>)  {
     let n: usize = 20;
     // let main_dt = 60. * 60. / n as Float;
     let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
-    
+
     let mut state = state_header.take_values().unwrap();
 
-    let cols = validate::from_csv("./tests/solar_radiation_massive/eplusout.csv", &[3, 9,10,11, 13]);
+    let cols = validate::from_csv(
+        "./tests/solar_radiation_massive/eplusout.csv",
+        &[3, 9, 10, 11, 13],
+    );
     let incident_solar_radiation = &cols[0]; //3
     let _indoor_thermal_heat_gain = &cols[1]; //9
     let outdoor_temp = &cols[2]; //10
@@ -602,16 +596,17 @@ fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>)  {
         day: 1,
         hour: 0.0,
     };
-    let n  = outdoor_temp.len();
+    let n = outdoor_temp.len();
     let mut exp = Vec::with_capacity(n);
     let mut found = Vec::with_capacity(n);
-    for i in 0..n {        
+    for i in 0..n {
         // Get zone's temp
         let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
         let exp_temp = exp_zone_air_temp[i];
-        if i > 300 { // skip warmup
+        if i > 300 {
+            // skip warmup
             exp.push(exp_temp);
-            found.push(found_temp);                       
+            found.push(found_temp);
         }
 
         // Set outdoor temp
@@ -621,19 +616,20 @@ fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>)  {
         let surface = &simple_model.surfaces[0];
 
         // Set Solar Radiation
-        if incident_solar_radiation[i] > 1e-5{
-            surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
-        }
         surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
         // Set IR radiation
-        // thermal_heat_gain[i] / surface_area/  0.9  = crate::SIGMA  ( tout.powi(4) - ts.powi(4) );
         let ts = surface.first_node_temperature(&state).unwrap();
-        surface.set_back_ir_irradiance(&mut state, outdoor_thermal_heat_gain[i] / surface_area / 0.9 + thermal::SIGMA * (ts + 273.15).powi(4));
+        let v = outdoor_thermal_heat_gain[i] / surface_area / 0.9
+            + thermal::SIGMA * (ts + 273.15).powi(4);
+        surface.set_back_ir_irradiance(&mut state, v);
         // let ts = surface.last_node_temperature(&state).unwrap();
         // let v = indoor_thermal_heat_gain[i] / surface_area / 0.9 + thermal::SIGMA * (ts + 273.15).powi(4);
         // surface.set_front_ir_irradiance(&mut state, v);
-        surface.set_front_ir_irradiance(&mut state, thermal::SIGMA * (exp_temp + 273.15 as Float).powi(4));
+        surface.set_front_ir_irradiance(
+            &mut state,
+            thermal::SIGMA * (found_temp + 273.15 as Float).powi(4),
+        );
 
         // March
         thermal_model
@@ -642,13 +638,11 @@ fn march_solar_radiation_massive() -> (Vec<Float>, Vec<Float>)  {
 
         // Advance
         date.add_hours(1. / n as Float);
-        
-
     }
     (exp, found)
 }
 
-fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
+fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>) {
     let surface_area = 20. * 3.;
     let zone_volume = 600.;
 
@@ -657,7 +651,11 @@ fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
         &SingleZoneTestBuildingOptions {
             zone_volume,
             surface_area,
-            construction: vec![TestMat::Polyurethane(0.02), TestMat::Concrete(0.2), TestMat::Polyurethane(0.02)],
+            construction: vec![
+                TestMat::Polyurethane(0.02),
+                TestMat::Concrete(0.2),
+                TestMat::Polyurethane(0.02),
+            ],
             emmisivity: 0.9,
             ..Default::default()
         },
@@ -668,12 +666,15 @@ fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
     let n: usize = 20;
     // let main_dt = 60. * 60. / n as Float;
     let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
-    
+
     let mut state = state_header.take_values().unwrap();
 
-    let cols = validate::from_csv("./tests/solar_radiation_mixed/eplusout.csv", &[3, 9,10,11, 13]);
+    let cols = validate::from_csv(
+        "./tests/solar_radiation_mixed/eplusout.csv",
+        &[3, 9, 10, 11, 13],
+    );
     let incident_solar_radiation = &cols[0];
-    let _indoor_thermal_heat_gain = &cols[1];    
+    let _indoor_thermal_heat_gain = &cols[1];
     let outdoor_temp = &cols[2];
     let outdoor_thermal_heat_gain = &cols[3];
     let exp_zone_air_temp = &cols[4];
@@ -686,16 +687,17 @@ fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
         day: 1,
         hour: 0.0,
     };
-    let n  = outdoor_temp.len();
+    let n = outdoor_temp.len();
     let mut exp = Vec::with_capacity(n);
     let mut found = Vec::with_capacity(n);
-    for i in 0..n {        
+    for i in 0..n {
         // Get zone's temp
         let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
         let exp_temp = exp_zone_air_temp[i];
-        if i > 300 { // skip warmup
+        if i > 300 {
+            // skip warmup
             exp.push(exp_temp);
-            found.push(found_temp);                       
+            found.push(found_temp);
         }
 
         // Set outdoor temp
@@ -710,12 +712,18 @@ fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
         // Set IR radiation
         // thermal_heat_gain[i] / surface_area/  0.9  = crate::SIGMA  ( tout.powi(4) - ts.powi(4) );
         let ts = surface.first_node_temperature(&state).unwrap();
-        surface.set_back_ir_irradiance(&mut state, outdoor_thermal_heat_gain[i] / surface_area / 0.9 + thermal::SIGMA * (ts + 273.15).powi(4));
-        let _ts = surface.last_node_temperature(&state).unwrap();                
+        surface.set_back_ir_irradiance(
+            &mut state,
+            outdoor_thermal_heat_gain[i] / surface_area / 0.9
+                + thermal::SIGMA * (ts + 273.15).powi(4),
+        );
+        let _ts = surface.last_node_temperature(&state).unwrap();
         // let v = indoor_thermal_heat_gain[i] / surface_area / 0.9 + thermal::SIGMA * (ts + 273.15).powi(4);
         // surface.set_front_ir_irradiance(&mut state, v);
-        surface.set_front_ir_irradiance(&mut state, thermal::SIGMA * (exp_temp + 273.15 as Float).powi(4));
-
+        surface.set_front_ir_irradiance(
+            &mut state,
+            thermal::SIGMA * (found_temp + 273.15 as Float).powi(4),
+        );
 
         // March
         thermal_model
@@ -724,100 +732,85 @@ fn march_solar_radiation_mixed_mass() -> (Vec<Float>, Vec<Float>)  {
 
         // Advance
         date.add_hours(1. / n as Float);
-        
-
     }
     (exp, found)
 }
 
-
-
 #[test]
 fn validate() {
-    
     let mut validations = Validations::new("report.md", ".");
-    
-    let (expected, found) = very_simple_march();
-    let v = validate::SeriesValidator {
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
 
-        expected,
-        found,
+    // let (expected, found) = very_simple_march();
+    // let v = validate::SeriesValidator {
+    //     x_label: Some("time step"),
+    //     y_label: Some("Zone Temperature"),
+    //     y_units: Some("C"),
 
-        ..validate::SeriesValidator::default()
-    };
+    //     expected,
+    //     found,
 
-    validations.push(Box::new(v));
-    validations.validate().unwrap();
+    //     ..validate::SeriesValidator::default()
+    // };
 
+    // validations.push(Box::new(v));
+    // validations.validate().unwrap();
 
+    // let (expected, found) = march_with_window();
+    // let v = validate::SeriesValidator {
+    //     x_label: Some("time step"),
+    //     y_label: Some("Zone Temperature"),
+    //     y_units: Some("C"),
 
+    //     expected,
+    //     found,
 
+    //     ..validate::SeriesValidator::default()
+    // };
+    // validations.push(Box::new(v));
+    // validations.validate().unwrap();
 
-    let (expected, found) = march_with_window();
-    let v = validate::SeriesValidator {
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
+    // let (expected, found) = march_with_window_and_luminaire();
+    // let v = validate::SeriesValidator {
+    //     x_label: Some("time step"),
+    //     y_label: Some("Zone Temperature"),
+    //     y_units: Some("C"),
 
-        expected,
-        found,
+    //     expected,
+    //     found,
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-    validations.validate().unwrap();
+    //     ..validate::SeriesValidator::default()
+    // };
+    // validations.push(Box::new(v));
+    // validations.validate().unwrap();
 
+    // let (expected, found) = march_with_window_and_heater();
+    // let v = validate::SeriesValidator {
+    //     x_label: Some("time step"),
+    //     y_label: Some("Zone Temperature"),
+    //     y_units: Some("C"),
 
-    let (expected, found) = march_with_window_and_luminaire();
-    let v = validate::SeriesValidator {
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
+    //     expected,
+    //     found,
 
-        expected,
-        found,
+    //     ..validate::SeriesValidator::default()
+    // };
+    // validations.push(Box::new(v));
+    // validations.validate().unwrap();
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-    validations.validate().unwrap();
+    // let (expected, found) = march_with_window_heater_and_infiltration();
+    // let v = validate::SeriesValidator {
+    //     x_label: Some("time step"),
+    //     y_label: Some("Zone Temperature"),
+    //     y_units: Some("C"),
 
+    //     expected,
+    //     found,
 
+    //     ..validate::SeriesValidator::default()
+    // };
+    // validations.push(Box::new(v));
+    // validations.validate().unwrap();
 
-    let (expected, found) = march_with_window_and_heater();
-    let v = validate::SeriesValidator {
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-    validations.validate().unwrap();
-
-
-    let (expected, found) = march_with_window_heater_and_infiltration();
-    let v = validate::SeriesValidator {
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-    validations.validate().unwrap();
-
-
-    
     let (expected, found) = march_solar_radiation_massive();
     let v = validate::SeriesValidator {
         x_label: Some("time step"),
@@ -833,7 +826,6 @@ fn validate() {
     };
     validations.push(Box::new(v));
     validations.validate().unwrap();
-
 
     let (expected, found) = march_solar_radiation_mixed_mass();
     let v = validate::SeriesValidator {

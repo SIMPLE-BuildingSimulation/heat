@@ -18,14 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 use crate::Float;
 
 /// Represents a border condition of between a Surface
 /// and a Zone or the exterior
 #[derive(Debug, Clone, Copy)]
 pub struct Environment {
-    
     /// The dry bulb temperature of the air, in $`C`$
     pub air_temperature: Float,
 
@@ -41,27 +39,24 @@ pub struct Environment {
     /// The environmental emmisivity, used for calculating incident IR
     /// irradiance, if needed
     pub env_emmisivity: Float,
-    
 }
 
-
 impl std::default::Default for Environment {
-    fn default()->Self{
+    fn default() -> Self {
         const DEFAULT_ENV_EMMISIVITY: Float = 1.;
         const DEFAULT_AIR_TEMP: Float = 22.;
-        Self { 
-            air_temperature: DEFAULT_AIR_TEMP, 
-            air_speed: 0., 
-            ir_irrad: crate::SIGMA * DEFAULT_ENV_EMMISIVITY * ( DEFAULT_AIR_TEMP + 273.15 ).powi(4), 
+        Self {
+            air_temperature: DEFAULT_AIR_TEMP,
+            air_speed: 0.,
+            ir_irrad: crate::SIGMA * DEFAULT_ENV_EMMISIVITY * (DEFAULT_AIR_TEMP + 273.15).powi(4),
             solar_radiation: 0.,
-            env_emmisivity: DEFAULT_ENV_EMMISIVITY 
+            env_emmisivity: DEFAULT_ENV_EMMISIVITY,
         }
     }
 }
 
 impl Environment {
-
-    pub fn get_hs(&self)->Float{
+    pub fn get_hs(&self) -> Float {
         // dbg!("Calculate back Rs");
         10.
         // if self.air_speed > 0.{
@@ -73,8 +68,4 @@ impl Environment {
 
         // }
     }
-
-    
-
 }
-

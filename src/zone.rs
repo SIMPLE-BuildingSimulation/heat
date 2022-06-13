@@ -57,9 +57,9 @@ impl ThermalZone {
     /// Retrieves the heat capacity of the ThermalZone's air
     pub fn mcp(&self, temp: Float) -> Float {
         let air = crate::gas::Gas::air();
-        let air_density = air.density(temp + 273.15); //kg/m3        
+        let air_density = air.density(temp + 273.15); //kg/m3
         let air_specific_heat = air.heat_capacity(temp + 273.15); //J/kg.K
 
-        self.volume * air_density * air_specific_heat
+        self.volume * air_density * air_specific_heat / 1.
     }
 }

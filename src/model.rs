@@ -17,14 +17,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-use crate::Float;
 use crate::construction::Discretization;
+use crate::Float;
 use calendar::Date;
 use communication_protocols::error_handling::ErrorHandling;
 use communication_protocols::simulation_model::SimulationModel;
 use weather::Weather;
 
-use crate::surface::{ThermalFenestration, ThermalSurface, SurfaceTrait, ThermalSurfaceData};
+use crate::surface::{SurfaceTrait, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
 
 use crate::heating_cooling::calc_cooling_heating_power;
 
@@ -79,9 +79,9 @@ impl SimulationModel for ThermalModel {
         }
 
         /* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
-        
+
         // choose the smallest timestep in all constructions
-        
+
         let max_dx = 0.04; // 4cm
         let min_dt = 60.; // 60 seconds
 
@@ -91,7 +91,7 @@ impl SimulationModel for ThermalModel {
         // Store the dts and n_nodes somwehere. Take note of the largest
         // number of subditivions required
         let mut thermal_surfaces = Vec::with_capacity(model.surfaces.len());
-        for (i,surf) in model.surfaces.iter().enumerate() {
+        for (i, surf) in model.surfaces.iter().enumerate() {
             let constr = &surf.construction;
 
             let height = 1.;
@@ -99,7 +99,7 @@ impl SimulationModel for ThermalModel {
             let area = surf.area();
 
             let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
-            
+
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
@@ -116,7 +116,7 @@ impl SimulationModel for ThermalModel {
         }
 
         let mut thermal_fens = Vec::with_capacity(model.fenestrations.len());
-        for (i,surf) in model.fenestrations.iter().enumerate() {
+        for (i, surf) in model.fenestrations.iter().enumerate() {
             let constr = &surf.construction;
 
             let height = 1.;
@@ -124,11 +124,11 @@ impl SimulationModel for ThermalModel {
             let area = surf.area();
 
             let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
-            
+
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
-            let mut tsurf = ThermalFenestration::new(state, i, surf, area, constr,  d)?;
+            let mut tsurf = ThermalFenestration::new(state, i, surf, area, constr, d)?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -145,9 +145,6 @@ impl SimulationModel for ThermalModel {
         // safety.
         dt *= 0.5;
         n_subdivisions *= 2;
-
-        
-
 
         Ok(ThermalModel {
             zones: thermal_zones,
@@ -242,8 +239,8 @@ impl SimulationModel for ThermalModel {
 
             /* UPDATE ZONES' TEMPERATURE */
             // This is done analytically.
-            let (a, b, c) = self.calculate_zones_abc(model, state);            
-            
+            let (a, b, c) = self.calculate_zones_abc(model, state);
+
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
             for (i, zone) in self.zones.iter().enumerate() {
@@ -349,7 +346,7 @@ impl ThermalModel {
         let mut a = vec![0.0; nzones];
         let mut b = vec![0.0; nzones];
         let mut c = vec![0.0; nzones];
-                
+
         /* Qi */
         // Heating/Cooling
         for hvac in model.hvacs.iter() {
@@ -364,27 +361,26 @@ impl ThermalModel {
                 let target_space_index = *target_space.index().unwrap();
                 let consumption = luminaire
                     .power_consumption(state)
-                    .expect("Luminaire has no Power Consumption state");                
+                    .expect("Luminaire has no Power Consumption state");
                 a[target_space_index] += consumption;
             }
         }
-        
+
         let air = crate::gas::Gas::air();
         // Other
         for (i, zone) in self.zones.iter().enumerate() {
-            let space = &model.spaces[i];  
-            /* INFILTRATION AND VENTILATION */            
+            let space = &model.spaces[i];
+            /* INFILTRATION AND VENTILATION */
             // infiltration from outside
             if let Some(t_inf_inwards) = space.infiltration_temperature(state) {
                 let v_inf = space
                     .infiltration_volume(state)
                     .expect("Space has infiltration temperature but not volume");
-                
+
                 let cp_inf_inwards = air.heat_capacity(t_inf_inwards + 273.15);
                 let rho_inf_inwards = air.density(t_inf_inwards + 273.15);
                 a[i] += rho_inf_inwards * v_inf * cp_inf_inwards * t_inf_inwards;
                 b[i] += rho_inf_inwards * v_inf * cp_inf_inwards;
-                
             }
 
             // ventilation
@@ -395,16 +391,18 @@ impl ThermalModel {
                 let cp_vent_inwards = air.heat_capacity(t_vent_inwards + 273.15);
                 let rho_vent_inwards = air.density(t_vent_inwards + 273.15);
                 a[i] += rho_vent_inwards * v_vent * cp_vent_inwards * t_vent_inwards;
-                b[i] += rho_vent_inwards * v_vent * cp_vent_inwards;                
+                b[i] += rho_vent_inwards * v_vent * cp_vent_inwards;
             }
-            
+
             // Mixing with other zones
 
-            /* CAPACITANCE */                      
-            let temp = space.dry_bulb_temperature(state).expect("Zone has no Temperature!");            
+            /* CAPACITANCE */
+            let temp = space
+                .dry_bulb_temperature(state)
+                .expect("Zone has no Temperature!");
             c[i] = zone.mcp(temp);
         }
-        
+
         /* SURFACES */
         fn iterate_surfaces<T: SurfaceTrait>(
             surfaces: &[ThermalSurfaceData<T>],
@@ -413,19 +411,17 @@ impl ThermalModel {
             b: &mut [Float],
         ) {
             for surface in surfaces {
-                
                 let parent = &surface.parent;
                 let h_front = parent.front_convection_coefficient(state).unwrap();
                 let h_back = parent.back_convection_coefficient(state).unwrap();
-               
 
                 let ai = surface.area;
                 // if front leads to a Zone
                 if let Some(Boundary::Space(space)) = &surface.front_boundary {
                     let z_index = space.index().unwrap();
-                    
-                    let temp = surface.parent.front_temperature(state);                                                          
-                    
+
+                    let temp = surface.parent.front_temperature(state);
+
                     a[*z_index] += h_front * ai * temp;
                     b[*z_index] += h_front * ai;
                 }
@@ -433,8 +429,8 @@ impl ThermalModel {
                 // if back leads to a Zone
                 if let Some(Boundary::Space(space)) = &surface.back_boundary {
                     let z_index = space.index().unwrap();
-                    
-                    let temp = surface.parent.back_temperature(state);                                                                            
+
+                    let temp = surface.parent.back_temperature(state);
                     a[*z_index] += h_back * ai * temp;
                     b[*z_index] += h_back * ai;
                 }
@@ -538,10 +534,8 @@ mod testing {
     use super::*;
     // use crate::construction::*;
 
-    
     use simple_test_models::*;
-    
-    
+
     #[test]
     fn test_calculate_zones_abc() {
         let (simple_model, mut state_header) = get_single_zone_test_building(
@@ -549,8 +543,8 @@ mod testing {
             &SingleZoneTestBuildingOptions {
                 zone_volume: 40.,
                 surface_area: 4.,
-                construction: vec![TestMat::Polyurethane(0.02)],      
-                emmisivity: 0.0,       
+                construction: vec![TestMat::Polyurethane(0.02)],
+                emmisivity: 0.0,
                 ..Default::default()
             },
         );
@@ -570,17 +564,10 @@ mod testing {
         let hi = simple_model.surfaces[0]
             .front_convection_coefficient(&state)
             .unwrap();
-        
+
         let temp = &thermal_model.surfaces[0].parent.front_temperature(&state);
         let area = &thermal_model.surfaces[0].area;
         assert_eq!(a[0], area * hi * temp);
         assert_eq!(b[0], area * hi);
     }
-
-    
-
-    
-
-
-    
 }
