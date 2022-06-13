@@ -1649,6 +1649,9 @@
 <span id="1608">1608</span>
 <span id="1609">1609</span>
 <span id="1610">1610</span>
+<span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2376,7 +2379,6 @@ SOFTWARE.
 
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">tstep_subdivision</span>, <span class="ident">tstep_sub</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">segments</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-
         <span class="comment">// mass of node 0</span>
         <span class="kw">let</span> <span class="ident">exp_mass</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">*</span> <span class="ident">density</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">/</span> <span class="number">2.</span>;
         <span class="kw">let</span> <span class="ident">mass</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">0</span>;
@@ -2395,7 +2397,11 @@ SOFTWARE.
             (<span class="ident">exp_mass</span> <span class="op">-</span> <span class="ident">mass</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-17</span>,
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span>, <span class="ident">UValue::Back</span>));
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Back</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span> {
+            <span class="macro">assert!</span>(<span class="bool-val">true</span>)
+        } <span class="kw">else</span> {
+            <span class="macro">panic!</span>(<span class="string">&quot;Expecting Back!&quot;</span>)
+        }
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
