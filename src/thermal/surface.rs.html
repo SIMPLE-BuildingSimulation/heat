@@ -1290,6 +1290,9 @@
 <span id="1249">1249</span>
 <span id="1250">1250</span>
 <span id="1251">1251</span>
+<span id="1252">1252</span>
+<span id="1253">1253</span>
+<span id="1254">1254</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2002,10 +2005,12 @@ SOFTWARE.
 
         <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
         <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);        
 
+        <span class="kw">if</span> <span class="ident">solar_back</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">solar_front</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
+            <span class="macro">dbg!</span>(<span class="ident">solar_back</span>, <span class="ident">solar_front</span>);
+        }
         <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
-        <span class="comment">// let (ir_front, ir_back) = (crate::SIGMA * ( t_front + 273.15 ).powi(4), crate::SIGMA * ( t_back + 273.15 ).powi(4));</span>
         <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">ir_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_infrared_irradiance</span>(<span class="ident">state</span>);
 
@@ -2034,7 +2039,7 @@ SOFTWARE.
         <span class="comment">// 1st: Calculate the solar absorption in each node</span>
         <span class="comment">/////////////////////</span>
         <span class="kw">let</span> <span class="ident">n_nodes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">segments</span>.<span class="ident">len</span>();
-        <span class="macro">dbg!</span>(<span class="string">&quot;call glazing::alphas!&quot;</span>);
+        <span class="comment">// dbg!(&quot;call glazing::alphas!&quot;);</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">n_nodes</span>, <span class="number">1</span>);
         <span class="ident">q</span>.<span class="ident">add_to_element</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">solar_front</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">front_solar_absorbtance</span>)
             .<span class="ident">unwrap</span>();
@@ -2079,9 +2084,7 @@ SOFTWARE.
                     <span class="ident">err</span> <span class="op">+</span><span class="op">=</span> (<span class="ident">local_temp</span> <span class="op">-</span> <span class="ident">global_temp</span>).<span class="ident">abs</span>();
                 }
 
-                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> (<span class="ident">n_nodes</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
-                    <span class="kw">break</span>;
-                }
+                
 
                 <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="macro">assert!</span>(<span class="ident">count</span> <span class="op">&lt;</span> <span class="number">999</span>, <span class="string">&quot;Excessive number of iteration&quot;</span>);
@@ -2090,13 +2093,16 @@ SOFTWARE.
                     <span class="ident">temperatures</span>.<span class="ident">add_to_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="ident">local_temp</span>).<span class="ident">unwrap</span>();
                     <span class="ident">temperatures</span>.<span class="ident">scale_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="number">0.5</span>).<span class="ident">unwrap</span>();
                 }
+                
+                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> (<span class="ident">n_nodes</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
+                    <span class="kw">break</span>;
+                }
             }
         }
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 3rd: Calculate K and C matrices for the massive walls</span>
-        <span class="comment">/////////////////////</span>
-
+        <span class="comment">/////////////////////        </span>
         <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="ident">mass</span> {
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">discretization</span>
@@ -2542,5 +2548,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (b31f9cc22 2022-06-15)" ></div>
 </body></html>

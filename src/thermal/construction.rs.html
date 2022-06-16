@@ -1652,6 +1652,7 @@
 <span id="1611">1611</span>
 <span id="1612">1612</span>
 <span id="1613">1613</span>
+<span id="1614">1614</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2261,7 +2262,10 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">get_t_after</span> <span class="op">=</span> <span class="op">|</span><span class="ident">i</span>: <span class="ident">usize</span><span class="op">|</span> -&gt; <span class="ident">Float</span> {
             <span class="kw">match</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>, <span class="number">0</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">air_temperature</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+
+                    <span class="ident">back_env</span>.<span class="ident">air_temperature</span>
+                },
             }
         };
 
@@ -2294,9 +2298,11 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="number">273.15</span> <span class="op">+</span> <span class="ident">ts</span>;
             <span class="comment">// Solar radiation is added later because it also depends</span>
             <span class="comment">// on the solar absorption of different layers.</span>
+            
             <span class="kw">let</span> <span class="ident">front_q</span> <span class="op">=</span> <span class="ident">front_env</span>.<span class="ident">air_temperature</span> <span class="op">*</span> <span class="ident">front_hs</span>  <span class="comment">// convection</span>
                 <span class="op">+</span> <span class="ident">front_env</span>.<span class="ident">ir_irrad</span> <span class="op">*</span> <span class="ident">front_emmisivity</span> <span class="comment">// incident radiation</span>
                 <span class="op">-</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="ident">front_emmisivity</span> <span class="op">*</span> <span class="ident">ts</span>.<span class="ident">powi</span>(<span class="number">4</span>); <span class="comment">// outgoing radiation</span>
+                
 
             (<span class="ident">front_hs</span>, <span class="ident">front_q</span>)
         } <span class="kw">else</span> {
@@ -2316,7 +2322,7 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">fin</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="number">273.15</span> <span class="op">+</span> <span class="ident">ts</span>;
             <span class="comment">// Solar radiation is added later because it also depends</span>
-            <span class="comment">// on the solar absorption of different layers.</span>
+            <span class="comment">// on the solar absorption of different layers.            </span>
             <span class="kw">let</span> <span class="ident">back_q</span> <span class="op">=</span> <span class="ident">back_env</span>.<span class="ident">air_temperature</span> <span class="op">*</span> <span class="ident">back_hs</span>  <span class="comment">// convection</span>
                 <span class="op">+</span> <span class="ident">back_env</span>.<span class="ident">ir_irrad</span> <span class="op">*</span> <span class="ident">back_emmisivity</span> <span class="comment">// incident radiation</span>
                 <span class="op">-</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="ident">back_emmisivity</span> <span class="op">*</span> <span class="ident">ts</span>.<span class="ident">powi</span>(<span class="number">4</span>); <span class="comment">// outgoing radiation</span>
@@ -2344,8 +2350,7 @@ SOFTWARE.
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">testing</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::gas::Gas</span>;
-
+    
     <span class="kw">fn</span> <span class="ident">get_normal</span>(
         <span class="ident">thermal_cond</span>: <span class="ident">Float</span>,
         <span class="ident">density</span>: <span class="ident">Float</span>,
@@ -2379,6 +2384,7 @@ SOFTWARE.
 
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">tstep_subdivision</span>, <span class="ident">tstep_sub</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">segments</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+
         <span class="comment">// mass of node 0</span>
         <span class="kw">let</span> <span class="ident">exp_mass</span> <span class="op">=</span> <span class="ident">thickness</span> <span class="op">*</span> <span class="ident">density</span> <span class="op">*</span> <span class="ident">cp</span> <span class="op">/</span> <span class="number">2.</span>;
         <span class="kw">let</span> <span class="ident">mass</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">0</span>].<span class="number">0</span>;
@@ -2397,11 +2403,7 @@ SOFTWARE.
             (<span class="ident">exp_mass</span> <span class="op">-</span> <span class="ident">mass</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-17</span>,
             <span class="string">&quot;Expecting mass to be {exp_mass}... found {mass}&quot;</span>
         );
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">UValue::Back</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span> {
-            <span class="macro">assert!</span>(<span class="bool-val">true</span>)
-        } <span class="kw">else</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Expecting Back!&quot;</span>)
-        }
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">d</span>.<span class="ident">segments</span>[<span class="number">1</span>].<span class="number">1</span>, <span class="ident">UValue::Back</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -3020,167 +3022,167 @@ SOFTWARE.
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_u</span>() {
-        <span class="comment">// https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp</span>
+    <span class="comment">// #[test]</span>
+    <span class="comment">// fn test_u() {</span>
+    <span class="comment">//     // https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp</span>
 
-        <span class="kw">let</span> <span class="ident">gap_thickness</span> <span class="op">=</span> <span class="number">0.0127</span>;
-        <span class="kw">let</span> <span class="ident">solid_thickness</span> <span class="op">=</span> <span class="number">0.003048</span>; <span class="comment">// [m]</span>
-        <span class="kw">let</span> <span class="ident">solid_conductance</span> <span class="op">=</span> <span class="number">1.0</span>;
+    <span class="comment">//     let gap_thickness = 0.0127;</span>
+    <span class="comment">//     let solid_thickness = 0.003048; // [m]</span>
+    <span class="comment">//     let solid_conductance = 1.0;</span>
 
-        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span> {
-            <span class="ident">thickness</span>: <span class="ident">gap_thickness</span>,
-            <span class="ident">height</span>: <span class="number">1.</span>,
-            <span class="ident">gas</span>: <span class="ident">Gas::air</span>(),
-            <span class="ident">eout</span>: <span class="number">0.84</span>,
-            <span class="ident">ein</span>: <span class="number">0.84</span>,
-            <span class="ident">angle</span>: <span class="number">0.</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">2.</span>,
-        };
+    <span class="comment">//     let gap = Cavity {</span>
+    <span class="comment">//         thickness: gap_thickness,</span>
+    <span class="comment">//         height: 1.,</span>
+    <span class="comment">//         gas: Gas::air(),</span>
+    <span class="comment">//         eout: 0.84,</span>
+    <span class="comment">//         ein: 0.84,</span>
+    <span class="comment">//         angle: 0. * crate::PI / 2.,</span>
+    <span class="comment">//     };</span>
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">segments</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">4</span>);
-        <span class="comment">// layer 1.</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span> <span class="op">/</span> <span class="ident">solid_thickness</span>)));
+    <span class="comment">//     let mut segments = Vec::with_capacity(4);</span>
+    <span class="comment">//     // layer 1.</span>
+    <span class="comment">//     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));</span>
 
-        <span class="comment">// Layer 2: Gap</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Cavity</span>(<span class="ident">Box::new</span>(<span class="ident">gap</span>))));
+    <span class="comment">//     // Layer 2: Gap</span>
+    <span class="comment">//     segments.push((0.0, UValue::Cavity(Box::new(gap))));</span>
 
-        <span class="comment">// layer 3.</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.</span>, <span class="ident">UValue::Solid</span>(<span class="ident">solid_conductance</span> <span class="op">/</span> <span class="ident">solid_thickness</span>)));
+    <span class="comment">//     // layer 3.</span>
+    <span class="comment">//     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));</span>
 
-        <span class="comment">// Last node</span>
-        <span class="ident">segments</span>.<span class="ident">push</span>((<span class="number">0.0</span>, <span class="ident">UValue::Back</span>));
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization</span> {
-            <span class="ident">segments</span>,
-            <span class="ident">tstep_subdivision</span>: <span class="number">1</span>,
-        };
+    <span class="comment">//     // Last node</span>
+    <span class="comment">//     segments.push((0.0, UValue::Back));</span>
+    <span class="comment">//     let d = Discretization {</span>
+    <span class="comment">//         segments,</span>
+    <span class="comment">//         tstep_subdivision: 1,</span>
+    <span class="comment">//     };</span>
 
-        <span class="comment">// Borders</span>
-        <span class="kw">let</span> <span class="ident">air_temperature</span> <span class="op">=</span> <span class="number">255.15</span> <span class="op">-</span> <span class="number">273.15</span>; <span class="comment">// Kelvins into C</span>
-        <span class="kw">let</span> <span class="ident">air_speed</span> <span class="op">=</span> <span class="number">5.5</span>; <span class="comment">// meters per second</span>
-        <span class="kw">let</span> <span class="ident">t_sky</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">255.15</span>; <span class="comment">// Kelvins into C</span>
-        <span class="kw">let</span> <span class="ident">solar_radiation</span> <span class="op">=</span> <span class="number">789.0</span>;
-        <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
-            <span class="ident">air_speed</span>,
-            <span class="ident">air_temperature</span>,
-            <span class="ident">solar_radiation</span>,
-            <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="ident">t_sky</span>.<span class="ident">powi</span>(<span class="number">4</span>)),
-            ..<span class="ident">Environment::default</span>()
-        };
+    <span class="comment">//     // Borders</span>
+    <span class="comment">//     let air_temperature = 255.15 - 273.15; // Kelvins into C</span>
+    <span class="comment">//     let air_speed = 5.5; // meters per second</span>
+    <span class="comment">//     let t_sky: Float = 255.15; // Kelvins into C</span>
+    <span class="comment">//     let solar_radiation = 789.0;</span>
+    <span class="comment">//     let front_env = Environment {</span>
+    <span class="comment">//         air_speed,</span>
+    <span class="comment">//         air_temperature,</span>
+    <span class="comment">//         solar_radiation,</span>
+    <span class="comment">//         ir_irrad: SIGMA * (t_sky.powi(4)),</span>
+    <span class="comment">//         ..Environment::default()</span>
+    <span class="comment">//     };</span>
 
-        <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">Environment</span> {
-            <span class="ident">air_speed</span>: <span class="number">0.0</span>,
-            <span class="ident">air_temperature</span>: <span class="number">294.15</span> <span class="op">-</span> <span class="number">273.15</span>, <span class="comment">// K into C</span>
-            <span class="ident">solar_radiation</span>: <span class="number">0.</span>,
-            <span class="ident">ir_irrad</span>: <span class="ident">SIGMA</span> <span class="op">*</span> (<span class="number">294.15</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powi</span>(<span class="number">4</span>),
-            ..<span class="ident">Environment::default</span>()
-        };
+    <span class="comment">//     let back_env = Environment {</span>
+    <span class="comment">//         air_speed: 0.0,</span>
+    <span class="comment">//         air_temperature: 294.15 - 273.15, // K into C</span>
+    <span class="comment">//         solar_radiation: 0.,</span>
+    <span class="comment">//         ir_irrad: SIGMA * (294.15 as Float).powi(4),</span>
+    <span class="comment">//         ..Environment::default()</span>
+    <span class="comment">//     };</span>
 
-        <span class="kw">let</span> <span class="ident">kelvin</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">273.14</span>, <span class="number">4</span>, <span class="number">1</span>);
+    <span class="comment">//     let kelvin = Matrix::new(273.14, 4, 1);</span>
 
-        <span class="comment">// First, u-value</span>
-        <span class="kw">let</span> <span class="ident">exp_temps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">258.791640</span>, <span class="number">259.116115</span>, <span class="number">279.323983</span>, <span class="number">279.648458</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">4</span>, <span class="number">1</span>, <span class="ident">exp_temps</span>.<span class="ident">clone</span>());
-        <span class="ident">temperatures</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>;
+    <span class="comment">//     // First, u-value</span>
+    <span class="comment">//     let exp_temps = vec![258.791640, 259.116115, 279.323983, 279.648458];</span>
+    <span class="comment">//     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());</span>
+    <span class="comment">//     temperatures -= &amp;kelvin;</span>
 
-        <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="number">36.34359273</span>; <span class="comment">// these were found by analyzing WINDOW&#39;s response</span>
-        <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="number">5.</span>;
+    <span class="comment">//     let front_hs = 36.34359273; // these were found by analyzing WINDOW&#39;s response</span>
+    <span class="comment">//     let back_hs = 5.;</span>
 
-        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
-            <span class="number">0</span>,
-            <span class="number">4</span>,
-            <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
-            <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
-            <span class="number">0.9</span>,
-            <span class="ident">front_hs</span>,
-            <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
-            <span class="number">0.9</span>,
-            <span class="ident">back_hs</span>,
-        );
-        <span class="ident">q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
-        <span class="comment">// let mut temps = Matrix::new(0.0, 4, 1);</span>
+    <span class="comment">//     let (k, mut q) = d.get_k_q(</span>
+    <span class="comment">//         0,</span>
+    <span class="comment">//         4,</span>
+    <span class="comment">//         &amp;temperatures,</span>
+    <span class="comment">//         &amp;front_env,</span>
+    <span class="comment">//         0.9,</span>
+    <span class="comment">//         front_hs,</span>
+    <span class="comment">//         &amp;back_env,</span>
+    <span class="comment">//         0.9,</span>
+    <span class="comment">//         back_hs,</span>
+    <span class="comment">//     );</span>
+    <span class="comment">//     q *= -1.;</span>
+    <span class="comment">//     // let mut temps = Matrix::new(0.0, 4, 1);</span>
 
-        <span class="macro">println!</span>(<span class="string">&quot;K = {}&quot;</span>, <span class="ident">k</span>);
-        <span class="kw">let</span> <span class="ident">keep_k</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">clone</span>();
-        <span class="macro">println!</span>(<span class="string">&quot;q = {}&quot;</span>, <span class="ident">q</span>);
-        <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
+    <span class="comment">//     println!(&quot;K = {}&quot;, k);</span>
+    <span class="comment">//     let keep_k = k.clone();</span>
+    <span class="comment">//     println!(&quot;q = {}&quot;, q);</span>
+    <span class="comment">//     let keep_q = q.clone();</span>
+    <span class="comment">//     let t = k.mut_n_diag_gaussian(q, 3).unwrap();</span>
 
-        <span class="macro">println!</span>(<span class="string">&quot;T = {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">t</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>);
+    <span class="comment">//     println!(&quot;T = {}&quot;, &amp;t + &amp;kelvin);</span>
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">273.15</span>;
-            <span class="macro">assert!</span>(
-                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.17</span>,
-                <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>,
-                <span class="ident">exp</span>,
-                <span class="ident">found</span>,
-                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>()
-            );
-        }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
-        <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_q</span>;
-        <span class="macro">println!</span>(<span class="string">&quot;check = {}&quot;</span>, <span class="ident">check</span>);
+    <span class="comment">//     for (i, exp) in exp_temps.iter().enumerate() {</span>
+    <span class="comment">//         let found = t.get(i, 0).unwrap() + 273.15;</span>
+    <span class="comment">//         assert!(</span>
+    <span class="comment">//             (exp - found).abs() &lt; 0.17,</span>
+    <span class="comment">//             &quot;Expecting {}, found {}... delta is {}&quot;,</span>
+    <span class="comment">//             exp,</span>
+    <span class="comment">//             found,</span>
+    <span class="comment">//             (exp - found).abs()</span>
+    <span class="comment">//         );</span>
+    <span class="comment">//     }</span>
+    <span class="comment">//     let mut check = &amp;keep_k * &amp;t; // this should be equals to keep_q</span>
+    <span class="comment">//     check -= &amp;keep_q;</span>
+    <span class="comment">//     println!(&quot;check = {}&quot;, check);</span>
 
-        <span class="comment">// Then, with sun</span>
-        <span class="kw">let</span> <span class="ident">exp_temps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">261.920088</span>, <span class="number">262.408524</span>, <span class="number">284.752662</span>, <span class="number">285.038190</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">temperatures</span> <span class="op">=</span> <span class="ident">Matrix::from_data</span>(<span class="number">4</span>, <span class="number">1</span>, <span class="ident">exp_temps</span>.<span class="ident">clone</span>());
-        <span class="ident">temperatures</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>; <span class="comment">// into C</span>
+    <span class="comment">//     // Then, with sun</span>
+    <span class="comment">//     let exp_temps = vec![261.920088, 262.408524, 284.752662, 285.038190];</span>
+    <span class="comment">//     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());</span>
+    <span class="comment">//     temperatures -= &amp;kelvin; // into C</span>
 
-        <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="number">32.6</span>; <span class="comment">// these were found by analyzing WINDOW&#39;s response</span>
-        <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="number">6.8</span>;
-        <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">q</span>) <span class="op">=</span> <span class="ident">d</span>.<span class="ident">get_k_q</span>(
-            <span class="number">0</span>,
-            <span class="number">4</span>,
-            <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
-            <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
-            <span class="number">0.9</span>,
-            <span class="ident">front_hs</span>,
-            <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
-            <span class="number">0.9</span>,
-            <span class="ident">back_hs</span>,
-        );
+    <span class="comment">//     let front_hs = 32.6; // these were found by analyzing WINDOW&#39;s response</span>
+    <span class="comment">//     let back_hs = 6.8;</span>
+    <span class="comment">//     let (k, mut q) = d.get_k_q(</span>
+    <span class="comment">//         0,</span>
+    <span class="comment">//         4,</span>
+    <span class="comment">//         &amp;temperatures,</span>
+    <span class="comment">//         &amp;front_env,</span>
+    <span class="comment">//         0.9,</span>
+    <span class="comment">//         front_hs,</span>
+    <span class="comment">//         &amp;back_env,</span>
+    <span class="comment">//         0.9,</span>
+    <span class="comment">//         back_hs,</span>
+    <span class="comment">//     );</span>
 
-        <span class="comment">// add sun?</span>
-        <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.096489921212</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
-            .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.096489921212</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
-            .<span class="ident">unwrap</span>();
+    <span class="comment">//     // add sun?</span>
+    <span class="comment">//     let old = q.get(0, 0).unwrap();</span>
+    <span class="comment">//     q.set(0, 0, old + 0.096489921212 / 2. * solar_radiation)</span>
+    <span class="comment">//         .unwrap();</span>
+    <span class="comment">//     let old = q.get(1, 0).unwrap();</span>
+    <span class="comment">//     q.set(1, 0, old + 0.096489921212 / 2. * solar_radiation)</span>
+    <span class="comment">//         .unwrap();</span>
 
-        <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">2</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">2</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.072256758809</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
-            .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="number">3</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="ident">q</span>.<span class="ident">set</span>(<span class="number">3</span>, <span class="number">0</span>, <span class="ident">old</span> <span class="op">+</span> <span class="number">0.072256758809</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">solar_radiation</span>)
-            .<span class="ident">unwrap</span>();
+    <span class="comment">//     let old = q.get(2, 0).unwrap();</span>
+    <span class="comment">//     q.set(2, 0, old + 0.072256758809 / 2. * solar_radiation)</span>
+    <span class="comment">//         .unwrap();</span>
+    <span class="comment">//     let old = q.get(3, 0).unwrap();</span>
+    <span class="comment">//     q.set(3, 0, old + 0.072256758809 / 2. * solar_radiation)</span>
+    <span class="comment">//         .unwrap();</span>
 
-        <span class="ident">q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
+    <span class="comment">//     q *= -1.;</span>
 
-        <span class="kw">let</span> <span class="ident">keep_k</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="ident">keep_q</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">clone</span>();
+    <span class="comment">//     let keep_k = k.clone();</span>
+    <span class="comment">//     let keep_q = q.clone();</span>
 
-        <span class="macro">println!</span>(<span class="string">&quot;K = {}&quot;</span>, <span class="ident">k</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;q = {}&quot;</span>, <span class="ident">q</span>);
+    <span class="comment">//     println!(&quot;K = {}&quot;, k);</span>
+    <span class="comment">//     println!(&quot;q = {}&quot;, q);</span>
 
-        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>();
+    <span class="comment">//     let t = k.mut_n_diag_gaussian(q, 3).unwrap();</span>
 
-        <span class="macro">println!</span>(<span class="string">&quot;T = {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">t</span> <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">kelvin</span>);
+    <span class="comment">//     println!(&quot;T = {}&quot;, &amp;t - &amp;kelvin);</span>
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">exp_temps</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">found</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">273.15</span>;
-            <span class="macro">assert!</span>(
-                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.15</span>,
-                <span class="string">&quot;Expecting {}, found {}... delta is {}&quot;</span>,
-                <span class="ident">exp</span>,
-                <span class="ident">found</span>,
-                (<span class="ident">exp</span> <span class="op">-</span> <span class="ident">found</span>).<span class="ident">abs</span>()
-            );
-        }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">check</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_k</span> <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">t</span>; <span class="comment">// this should be equals to keep_q</span>
-        <span class="ident">check</span> <span class="op">-</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">keep_q</span>;
-        <span class="macro">println!</span>(<span class="string">&quot;check = {}&quot;</span>, <span class="ident">check</span>);
-    }
+    <span class="comment">//     for (i, exp) in exp_temps.iter().enumerate() {</span>
+    <span class="comment">//         let found = t.get(i, 0).unwrap() + 273.15;</span>
+    <span class="comment">//         assert!(</span>
+    <span class="comment">//             (exp - found).abs() &lt; 0.15,</span>
+    <span class="comment">//             &quot;Expecting {}, found {}... delta is {}&quot;,</span>
+    <span class="comment">//             exp,</span>
+    <span class="comment">//             found,</span>
+    <span class="comment">//             (exp - found).abs()</span>
+    <span class="comment">//         );</span>
+    <span class="comment">//     }</span>
+    <span class="comment">//     let mut check = &amp;keep_k * &amp;t; // this should be equals to keep_q</span>
+    <span class="comment">//     check -= &amp;keep_q;</span>
+    <span class="comment">//     println!(&quot;check = {}&quot;, check);</span>
+    <span class="comment">// }</span>
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_chunks</span>() {
@@ -3266,5 +3268,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (b31f9cc22 2022-06-15)" ></div>
 </body></html>
