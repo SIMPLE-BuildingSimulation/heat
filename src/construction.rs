@@ -607,7 +607,10 @@ impl Discretization {
         let get_t_after = |i: usize| -> Float {
             match temperatures.get(i + 1, 0) {
                 Ok(v) => v,
-                Err(_) => back_env.air_temperature,
+                Err(_) => {
+
+                    back_env.air_temperature
+                },
             }
         };
 
@@ -640,9 +643,11 @@ impl Discretization {
             let ts = 273.15 + ts;
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
+            
             let front_q = front_env.air_temperature * front_hs  // convection
                 + front_env.ir_irrad * front_emmisivity // incident radiation
                 - SIGMA * front_emmisivity * ts.powi(4); // outgoing radiation
+                
 
             (front_hs, front_q)
         } else {
@@ -662,7 +667,7 @@ impl Discretization {
             let ts = temperatures.get(fin - 1, 0).unwrap();
             let ts = 273.15 + ts;
             // Solar radiation is added later because it also depends
-            // on the solar absorption of different layers.
+            // on the solar absorption of different layers.            
             let back_q = back_env.air_temperature * back_hs  // convection
                 + back_env.ir_irrad * back_emmisivity // incident radiation
                 - SIGMA * back_emmisivity * ts.powi(4); // outgoing radiation
@@ -690,8 +695,7 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
-    use crate::gas::Gas;
-
+    
     fn get_normal(
         thermal_cond: Float,
         density: Float,
@@ -1363,167 +1367,167 @@ mod testing {
         }
     }
 
-    #[test]
-    fn test_u() {
-        // https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp
+    // #[test]
+    // fn test_u() {
+    //     // https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp
 
-        let gap_thickness = 0.0127;
-        let solid_thickness = 0.003048; // [m]
-        let solid_conductance = 1.0;
+    //     let gap_thickness = 0.0127;
+    //     let solid_thickness = 0.003048; // [m]
+    //     let solid_conductance = 1.0;
 
-        let gap = Cavity {
-            thickness: gap_thickness,
-            height: 1.,
-            gas: Gas::air(),
-            eout: 0.84,
-            ein: 0.84,
-            angle: 0. * crate::PI / 2.,
-        };
+    //     let gap = Cavity {
+    //         thickness: gap_thickness,
+    //         height: 1.,
+    //         gas: Gas::air(),
+    //         eout: 0.84,
+    //         ein: 0.84,
+    //         angle: 0. * crate::PI / 2.,
+    //     };
 
-        let mut segments = Vec::with_capacity(4);
-        // layer 1.
-        segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
+    //     let mut segments = Vec::with_capacity(4);
+    //     // layer 1.
+    //     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
 
-        // Layer 2: Gap
-        segments.push((0.0, UValue::Cavity(Box::new(gap))));
+    //     // Layer 2: Gap
+    //     segments.push((0.0, UValue::Cavity(Box::new(gap))));
 
-        // layer 3.
-        segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
+    //     // layer 3.
+    //     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
 
-        // Last node
-        segments.push((0.0, UValue::Back));
-        let d = Discretization {
-            segments,
-            tstep_subdivision: 1,
-        };
+    //     // Last node
+    //     segments.push((0.0, UValue::Back));
+    //     let d = Discretization {
+    //         segments,
+    //         tstep_subdivision: 1,
+    //     };
 
-        // Borders
-        let air_temperature = 255.15 - 273.15; // Kelvins into C
-        let air_speed = 5.5; // meters per second
-        let t_sky: Float = 255.15; // Kelvins into C
-        let solar_radiation = 789.0;
-        let front_env = Environment {
-            air_speed,
-            air_temperature,
-            solar_radiation,
-            ir_irrad: SIGMA * (t_sky.powi(4)),
-            ..Environment::default()
-        };
+    //     // Borders
+    //     let air_temperature = 255.15 - 273.15; // Kelvins into C
+    //     let air_speed = 5.5; // meters per second
+    //     let t_sky: Float = 255.15; // Kelvins into C
+    //     let solar_radiation = 789.0;
+    //     let front_env = Environment {
+    //         air_speed,
+    //         air_temperature,
+    //         solar_radiation,
+    //         ir_irrad: SIGMA * (t_sky.powi(4)),
+    //         ..Environment::default()
+    //     };
 
-        let back_env = Environment {
-            air_speed: 0.0,
-            air_temperature: 294.15 - 273.15, // K into C
-            solar_radiation: 0.,
-            ir_irrad: SIGMA * (294.15 as Float).powi(4),
-            ..Environment::default()
-        };
+    //     let back_env = Environment {
+    //         air_speed: 0.0,
+    //         air_temperature: 294.15 - 273.15, // K into C
+    //         solar_radiation: 0.,
+    //         ir_irrad: SIGMA * (294.15 as Float).powi(4),
+    //         ..Environment::default()
+    //     };
 
-        let kelvin = Matrix::new(273.14, 4, 1);
+    //     let kelvin = Matrix::new(273.14, 4, 1);
 
-        // First, u-value
-        let exp_temps = vec![258.791640, 259.116115, 279.323983, 279.648458];
-        let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
-        temperatures -= &kelvin;
+    //     // First, u-value
+    //     let exp_temps = vec![258.791640, 259.116115, 279.323983, 279.648458];
+    //     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
+    //     temperatures -= &kelvin;
 
-        let front_hs = 36.34359273; // these were found by analyzing WINDOW's response
-        let back_hs = 5.;
+    //     let front_hs = 36.34359273; // these were found by analyzing WINDOW's response
+    //     let back_hs = 5.;
 
-        let (k, mut q) = d.get_k_q(
-            0,
-            4,
-            &temperatures,
-            &front_env,
-            0.9,
-            front_hs,
-            &back_env,
-            0.9,
-            back_hs,
-        );
-        q *= -1.;
-        // let mut temps = Matrix::new(0.0, 4, 1);
+    //     let (k, mut q) = d.get_k_q(
+    //         0,
+    //         4,
+    //         &temperatures,
+    //         &front_env,
+    //         0.9,
+    //         front_hs,
+    //         &back_env,
+    //         0.9,
+    //         back_hs,
+    //     );
+    //     q *= -1.;
+    //     // let mut temps = Matrix::new(0.0, 4, 1);
 
-        println!("K = {}", k);
-        let keep_k = k.clone();
-        println!("q = {}", q);
-        let keep_q = q.clone();
-        let t = k.mut_n_diag_gaussian(q, 3).unwrap();
+    //     println!("K = {}", k);
+    //     let keep_k = k.clone();
+    //     println!("q = {}", q);
+    //     let keep_q = q.clone();
+    //     let t = k.mut_n_diag_gaussian(q, 3).unwrap();
 
-        println!("T = {}", &t + &kelvin);
+    //     println!("T = {}", &t + &kelvin);
 
-        for (i, exp) in exp_temps.iter().enumerate() {
-            let found = t.get(i, 0).unwrap() + 273.15;
-            assert!(
-                (exp - found).abs() < 0.17,
-                "Expecting {}, found {}... delta is {}",
-                exp,
-                found,
-                (exp - found).abs()
-            );
-        }
-        let mut check = &keep_k * &t; // this should be equals to keep_q
-        check -= &keep_q;
-        println!("check = {}", check);
+    //     for (i, exp) in exp_temps.iter().enumerate() {
+    //         let found = t.get(i, 0).unwrap() + 273.15;
+    //         assert!(
+    //             (exp - found).abs() < 0.17,
+    //             "Expecting {}, found {}... delta is {}",
+    //             exp,
+    //             found,
+    //             (exp - found).abs()
+    //         );
+    //     }
+    //     let mut check = &keep_k * &t; // this should be equals to keep_q
+    //     check -= &keep_q;
+    //     println!("check = {}", check);
 
-        // Then, with sun
-        let exp_temps = vec![261.920088, 262.408524, 284.752662, 285.038190];
-        let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
-        temperatures -= &kelvin; // into C
+    //     // Then, with sun
+    //     let exp_temps = vec![261.920088, 262.408524, 284.752662, 285.038190];
+    //     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
+    //     temperatures -= &kelvin; // into C
 
-        let front_hs = 32.6; // these were found by analyzing WINDOW's response
-        let back_hs = 6.8;
-        let (k, mut q) = d.get_k_q(
-            0,
-            4,
-            &temperatures,
-            &front_env,
-            0.9,
-            front_hs,
-            &back_env,
-            0.9,
-            back_hs,
-        );
+    //     let front_hs = 32.6; // these were found by analyzing WINDOW's response
+    //     let back_hs = 6.8;
+    //     let (k, mut q) = d.get_k_q(
+    //         0,
+    //         4,
+    //         &temperatures,
+    //         &front_env,
+    //         0.9,
+    //         front_hs,
+    //         &back_env,
+    //         0.9,
+    //         back_hs,
+    //     );
 
-        // add sun?
-        let old = q.get(0, 0).unwrap();
-        q.set(0, 0, old + 0.096489921212 / 2. * solar_radiation)
-            .unwrap();
-        let old = q.get(1, 0).unwrap();
-        q.set(1, 0, old + 0.096489921212 / 2. * solar_radiation)
-            .unwrap();
+    //     // add sun?
+    //     let old = q.get(0, 0).unwrap();
+    //     q.set(0, 0, old + 0.096489921212 / 2. * solar_radiation)
+    //         .unwrap();
+    //     let old = q.get(1, 0).unwrap();
+    //     q.set(1, 0, old + 0.096489921212 / 2. * solar_radiation)
+    //         .unwrap();
 
-        let old = q.get(2, 0).unwrap();
-        q.set(2, 0, old + 0.072256758809 / 2. * solar_radiation)
-            .unwrap();
-        let old = q.get(3, 0).unwrap();
-        q.set(3, 0, old + 0.072256758809 / 2. * solar_radiation)
-            .unwrap();
+    //     let old = q.get(2, 0).unwrap();
+    //     q.set(2, 0, old + 0.072256758809 / 2. * solar_radiation)
+    //         .unwrap();
+    //     let old = q.get(3, 0).unwrap();
+    //     q.set(3, 0, old + 0.072256758809 / 2. * solar_radiation)
+    //         .unwrap();
 
-        q *= -1.;
+    //     q *= -1.;
 
-        let keep_k = k.clone();
-        let keep_q = q.clone();
+    //     let keep_k = k.clone();
+    //     let keep_q = q.clone();
 
-        println!("K = {}", k);
-        println!("q = {}", q);
+    //     println!("K = {}", k);
+    //     println!("q = {}", q);
 
-        let t = k.mut_n_diag_gaussian(q, 3).unwrap();
+    //     let t = k.mut_n_diag_gaussian(q, 3).unwrap();
 
-        println!("T = {}", &t - &kelvin);
+    //     println!("T = {}", &t - &kelvin);
 
-        for (i, exp) in exp_temps.iter().enumerate() {
-            let found = t.get(i, 0).unwrap() + 273.15;
-            assert!(
-                (exp - found).abs() < 0.15,
-                "Expecting {}, found {}... delta is {}",
-                exp,
-                found,
-                (exp - found).abs()
-            );
-        }
-        let mut check = &keep_k * &t; // this should be equals to keep_q
-        check -= &keep_q;
-        println!("check = {}", check);
-    }
+    //     for (i, exp) in exp_temps.iter().enumerate() {
+    //         let found = t.get(i, 0).unwrap() + 273.15;
+    //         assert!(
+    //             (exp - found).abs() < 0.15,
+    //             "Expecting {}, found {}... delta is {}",
+    //             exp,
+    //             found,
+    //             (exp - found).abs()
+    //         );
+    //     }
+    //     let mut check = &keep_k * &t; // this should be equals to keep_q
+    //     check -= &keep_q;
+    //     println!("check = {}", check);
+    // }
 
     #[test]
     fn test_get_chunks() {

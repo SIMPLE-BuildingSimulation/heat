@@ -712,6 +712,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let solar_front = self.parent.front_solar_irradiance(state);
         let solar_back = self.parent.back_solar_irradiance(state);        
 
+        if solar_back > 0.0 || solar_front > 0.0 {
+            dbg!(solar_back, solar_front);
+        }
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
         let ir_back = self.parent.back_infrared_irradiance(state);
@@ -741,7 +744,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 1st: Calculate the solar absorption in each node
         /////////////////////
         let n_nodes = self.discretization.segments.len();
-        dbg!("call glazing::alphas!");
+        // dbg!("call glazing::alphas!");
         let mut q = Matrix::new(0.0, n_nodes, 1);
         q.add_to_element(0, 0, solar_front * self.front_solar_absorbtance)
             .unwrap();
@@ -786,9 +789,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     err += (local_temp - global_temp).abs();
                 }
 
-                if err / (n_nodes as Float) < 0.01 {
-                    break;
-                }
+                
 
                 count += 1;
                 assert!(count < 999, "Excessive number of iteration");
@@ -797,13 +798,16 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
+                
+                if err / (n_nodes as Float) < 0.01 {
+                    break;
+                }
             }
         }
 
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
-        /////////////////////
-
+        /////////////////////        
         for (ini, fin) in mass {
             let c = self
                 .discretization

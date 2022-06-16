@@ -26,7 +26,7 @@ RunPeriod,
     1,                       !- Begin Day of Month
     ,                        !- Begin Year
     1,                       !- End Month
-    3,                      !- End Day of Month
+    21,                      !- End Day of Month
     ,                        !- End Year
     ,                        !- Day of Week for Start Day
     Yes,                     !- Use Weather File Holidays and Special Days
@@ -52,18 +52,24 @@ Material,
     0.7,                     !- Solar Absorptance
     0.7;                     !- Visible Absorptance
 
-Material,
+!- Material,
+!-     Polyurethane,          !- Name
+!-     Rough,                   !- Roughness
+!-     0.02,                     !- Thickness {m}
+!-     0.0252,                     !- Conductivity {W/m-K}
+!-     17.5,                    !- Density {kg/m3}
+!-     2400,                     !- Specific Heat {J/kg-K}
+!-     0.9,                     !- Thermal Absorptance
+!-     0.7,                     !- Solar Absorptance
+!-     0.7;                     !- Visible Absorptance
+
+Material:NoMass,
     Polyurethane,          !- Name
-    Rough,                   !- Roughness
-    0.02,                     !- Thickness {m}
-    0.0252,                     !- Conductivity {W/m-K}
-    17.5,                    !- Density {kg/m3}
-    2400,                     !- Specific Heat {J/kg-K}
+    Rough,                   !- Roughness    
+    0.7936507937, !- Resistance {M**2K/W} | 0.02/0.0252
     0.9,                     !- Thermal Absorptance
     0.7,                     !- Solar Absorptance
     0.7;                     !- Visible Absorptance
-
-
 
 !- CONSTRUCTIONS
 

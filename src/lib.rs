@@ -37,7 +37,7 @@ pub const PI: Float = std::f32::consts::PI;
 #[cfg(not(feature = "float"))]
 pub const PI: Float = std::f64::consts::PI;
 
-/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W/m^2K`$),
+/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W m^{-2} K^4`$),
 /// necessary for Radiation calculations
 pub const SIGMA: Float = 5.670374419e-8;
 
