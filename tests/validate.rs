@@ -623,7 +623,7 @@ fn march_one_wall(
         // Set Solar Radiation
         surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
-        // Set IR radiation
+        // Set Long Wave radiation
         if emmisivity > 1e-3 {
             let ts = surface.first_node_temperature(&state).unwrap();
             let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
@@ -654,9 +654,12 @@ fn march_one_wall(
 fn theoretical(validations: &mut Validator) {
     let (expected, found) = very_simple_march();
     let v = validate::SeriesValidator {
+        title: "Nomass Wall — Walls only",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "Theoretical Solution",
 
         expected,
         found,
@@ -668,9 +671,12 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window();
     let v = validate::SeriesValidator {
+        title: "Nomass Wall — Walls and Fenestration",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "Theoretical Solution",
 
         expected,
         found,
@@ -681,9 +687,12 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_and_luminaire();
     let v = validate::SeriesValidator {
+        title: "Nomass Wall — Walls and Fenestration, with Luminaire on",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "Theoretical Solution",
 
         expected,
         found,
@@ -694,9 +703,12 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_and_heater();
     let v = validate::SeriesValidator {
+        title: "Nomass Wall — Walls and Fenestration, with heater on",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "Theoretical Solution",
 
         expected,
         found,
@@ -707,9 +719,12 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_heater_and_infiltration();
     let v = validate::SeriesValidator {
+        title: "Nomass Wall — Walls and Fenestration, with heater on and infiltration",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "Theoretical Solution",
 
         expected,
         found,
@@ -719,8 +734,10 @@ fn theoretical(validations: &mut Validator) {
     validations.push(Box::new(v));
 }
 
+
+
 fn massive(validations: &mut Validator) {
-    // Massive, With solar Radiation and IR
+    // Massive, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_massive",
         0.9,
@@ -728,7 +745,7 @@ fn massive(validations: &mut Validator) {
         vec![TestMat::Concrete(0.2)],
     );
     let v = validate::SeriesValidator {
-        title: "Massive Wall, with Solar Radiation and IR Radiation",
+        title: "Massive Wall, with Solar and Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -743,7 +760,7 @@ fn massive(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Massive, NO solar and NO IR
+    // Massive, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_massive_no_ir_no_solar",
         0.0,
@@ -751,7 +768,7 @@ fn massive(validations: &mut Validator) {
         vec![TestMat::Concrete(0.2)],
     );
     let v = validate::SeriesValidator {
-        title: "Massive Wall, with NO Solar Radiation and NO IR Radiation",
+        title: "Massive Wall, with no Solar or Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -765,7 +782,7 @@ fn massive(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Massive, WITH  solar and NO IR
+    // Massive, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_massive_no_ir_yes_solar",
         0.0,
@@ -773,7 +790,7 @@ fn massive(validations: &mut Validator) {
         vec![TestMat::Concrete(0.2)],
     );
     let v = validate::SeriesValidator {
-        title: "Massive Wall, WITH Solar Radiation and NO IR Radiation",
+        title: "Massive Wall, with Solar Radiation but not Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -787,7 +804,7 @@ fn massive(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Massive, No  solar and WITH IR
+    // Massive, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_massive_yes_ir_no_solar",
         0.9,
@@ -795,7 +812,7 @@ fn massive(validations: &mut Validator) {
         vec![TestMat::Concrete(0.2)],
     );
     let v = validate::SeriesValidator {
-        title: "Massive Wall, with IR Radiation but NO Solar Radiation",
+        title: "Massive Wall, with Long Wave Radiation but not Solar Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -811,7 +828,7 @@ fn massive(validations: &mut Validator) {
 }
 
 fn mixed(validations: &mut Validator) {
-    // Mixed Mass, With solar Radiation and IR
+    // Mixed Mass, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_mixed",
         0.9,
@@ -823,7 +840,7 @@ fn mixed(validations: &mut Validator) {
         ],
     );
     let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with Solar Radiation and IR Radiation",
+        title: "Mixed Mass Wall, with Solar Radiation and Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -837,7 +854,7 @@ fn mixed(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Mixed Mass, NO solar and NO IR
+    // Mixed Mass, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_mixed_no_ir_no_solar",
         0.0,
@@ -849,7 +866,7 @@ fn mixed(validations: &mut Validator) {
         ],
     );
     let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with NO Solar Radiation and NO IR Radiation",
+        title: "Mixed Mass Wall, without Solar or Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -863,7 +880,7 @@ fn mixed(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Mixed Mass, WITH  solar and NO IR
+    // Mixed Mass, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_mixed_no_ir_yes_solar",
         0.0,
@@ -875,7 +892,7 @@ fn mixed(validations: &mut Validator) {
         ],
     );
     let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, WITH Solar Radiation and NO IR Radiation",
+        title: "Mixed Mass Wall, with Solar Radiation but no Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -889,7 +906,7 @@ fn mixed(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // Mixed Mass, No  solar and WITH IR
+    // Mixed Mass, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_mixed_yes_ir_no_solar",
         0.9,
@@ -901,7 +918,7 @@ fn mixed(validations: &mut Validator) {
         ],
     );
     let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with IR Radiation but NO Solar Radiation",
+        title: "Mixed Mass Wall, with Long Wave Radiation but no Solar Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -917,7 +934,7 @@ fn mixed(validations: &mut Validator) {
 }
 
 fn nomass(validations: &mut Validator) {
-    // No Mass, With solar Radiation and IR
+    // No Mass, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_nomass",
         0.9,
@@ -925,7 +942,7 @@ fn nomass(validations: &mut Validator) {
         vec![TestMat::Polyurethane(0.02)],
     );
     let v = validate::SeriesValidator {
-        title: "No Mass Wall, with Solar Radiation and IR Radiation",
+        title: "No Mass Wall, with Solar Radiation and Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -939,7 +956,7 @@ fn nomass(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // No Mass, NO solar and NO IR
+    // No Mass, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_nomass_no_ir_no_solar",
         0.0,
@@ -947,7 +964,7 @@ fn nomass(validations: &mut Validator) {
         vec![TestMat::Polyurethane(0.02)],
     );
     let v = validate::SeriesValidator {
-        title: "No Mass Wall, with NO Solar Radiation and NO IR Radiation",
+        title: "No Mass Wall, without Solar or Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -961,7 +978,7 @@ fn nomass(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // No Mass, WITH  solar and NO IR
+    // No Mass, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_nomass_no_ir_yes_solar",
         0.0,
@@ -969,7 +986,7 @@ fn nomass(validations: &mut Validator) {
         vec![TestMat::Polyurethane(0.02)],
     );
     let v = validate::SeriesValidator {
-        title: "No Mass Wall, WITH Solar Radiation and NO IR Radiation",
+        title: "No Mass Wall, with Solar Radiation but no Long Wave Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -983,7 +1000,7 @@ fn nomass(validations: &mut Validator) {
     };
     validations.push(Box::new(v));
 
-    // No Mass, No  solar and WITH IR
+    // No Mass, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
         "solar_radiation_nomass_yes_ir_no_solar",
         0.9,
@@ -991,7 +1008,7 @@ fn nomass(validations: &mut Validator) {
         vec![TestMat::Polyurethane(0.02)],
     );
     let v = validate::SeriesValidator {
-        title: "No Mass Wall, with IR Radiation but NO Solar Radiation",
+        title: "No Mass Wall, with Long Wave Radiation but no Solar Radiation",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
