@@ -12,7 +12,7 @@ tests/*/*
 !tests/**/**/*.epw
 
 # Documentation
-validation/**/*
-!validation/index.html
+docs
+!docs/index.html
 
 
