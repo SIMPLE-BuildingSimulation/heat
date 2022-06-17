@@ -21,9 +21,7 @@ jobs:
       - name: Build Validation
         run: cargo test --release --package thermal --test validate -- validate --exact --nocapture
       - name: Build doc
-        run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps --target-dir ./docs/rustdoc
-      - name: Set Index
-        run: echo '<meta http-equiv=refresh content=0;url=thermal/index.html>' > target/doc/index.html
+        run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps --target-dir ./docs/rustdoc      
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
