@@ -11,4 +11,8 @@ tests/*/*
 !tests/**/**/*.idf
 !tests/**/**/*.epw
 
+# Documentation
+validation/**/*
+!validation/index.html
+
 

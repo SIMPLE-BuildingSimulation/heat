@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Cavity","Represents some gas enclosed by two solid materials"]]});

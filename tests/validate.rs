@@ -1008,6 +1008,7 @@ fn nomass(validations: &mut Validator) {
 
 #[test]
 fn validate() {
+    std::fs::create_dir("./docs/validation").unwrap();
     let mut validations = Validator::new("SIMPLE Thermal validation report", "./docs/validation/walls.html");
 
     theoretical(&mut validations);
