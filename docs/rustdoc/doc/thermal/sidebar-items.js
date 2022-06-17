@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["PI",""],["SIGMA","The Stefan–Boltzmann constant (in $`W m^{-2} K^4`$), necessary for Radiation calculations"]],"mod":[["cavity",""],["construction",""],["environment",""],["gas",""],["glazing",""],["heating_cooling",""],["model",""],["surface",""],["zone",""]],"type":[["Float",""]]});

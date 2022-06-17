@@ -1,10 +1,10 @@
 name: Docs
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Tests"]
+    types:
+      - completed
 
 env:
   CARGO_TERM_COLOR: always
@@ -18,8 +18,10 @@ jobs:
         run: rustup default nightly    
       - name: Update
         run: rustup update 
+      - name: Build Validation
+        run: cargo test --release --package thermal --test validate -- validate --exact --nocapture
       - name: Build doc
-        run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps
+        run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps --target-dir ./docs/rustdoc
       - name: Set Index
         run: echo '<meta http-equiv=refresh content=0;url=thermal/index.html>' > target/doc/index.html
       - name: Deploy

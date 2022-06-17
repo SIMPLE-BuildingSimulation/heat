@@ -607,10 +607,7 @@ impl Discretization {
         let get_t_after = |i: usize| -> Float {
             match temperatures.get(i + 1, 0) {
                 Ok(v) => v,
-                Err(_) => {
-
-                    back_env.air_temperature
-                },
+                Err(_) => back_env.air_temperature,
             }
         };
 
@@ -643,11 +640,10 @@ impl Discretization {
             let ts = 273.15 + ts;
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
-            
+
             let front_q = front_env.air_temperature * front_hs  // convection
                 + front_env.ir_irrad * front_emmisivity // incident radiation
                 - SIGMA * front_emmisivity * ts.powi(4); // outgoing radiation
-                
 
             (front_hs, front_q)
         } else {
@@ -667,7 +663,7 @@ impl Discretization {
             let ts = temperatures.get(fin - 1, 0).unwrap();
             let ts = 273.15 + ts;
             // Solar radiation is added later because it also depends
-            // on the solar absorption of different layers.            
+            // on the solar absorption of different layers.
             let back_q = back_env.air_temperature * back_hs  // convection
                 + back_env.ir_irrad * back_emmisivity // incident radiation
                 - SIGMA * back_emmisivity * ts.powi(4); // outgoing radiation
@@ -695,7 +691,7 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
-    
+
     fn get_normal(
         thermal_cond: Float,
         density: Float,

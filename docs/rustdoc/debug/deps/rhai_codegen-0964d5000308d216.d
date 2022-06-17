@@ -1,0 +1,10 @@
+/Users/germolinal/Documents/simple/thermal/./docs/rustdoc/debug/deps/librhai_codegen-0964d5000308d216.dylib: /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/lib.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/attrs.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/function.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/module.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/register.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/rhai_module.rs
+
+/Users/germolinal/Documents/simple/thermal/./docs/rustdoc/debug/deps/rhai_codegen-0964d5000308d216.d: /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/lib.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/attrs.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/function.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/module.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/register.rs /Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/rhai_module.rs
+
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/lib.rs:
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/attrs.rs:
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/function.rs:
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/module.rs:
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/register.rs:
+/Users/germolinal/.cargo/registry/src/github.com-1ecc6299db9ec823/rhai_codegen-1.4.1/src/rhai_module.rs:

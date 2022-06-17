@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Glazing","An abstraction of a glazing layer for optical purposes."]]});

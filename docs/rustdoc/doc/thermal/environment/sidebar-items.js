@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Environment","Represents a border condition of between a Surface and a Zone or the exterior"]]});

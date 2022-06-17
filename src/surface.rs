@@ -710,11 +710,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
-        let solar_back = self.parent.back_solar_irradiance(state);        
-
-        if solar_back > 0.0 || solar_front > 0.0 {
-            dbg!(solar_back, solar_front);
-        }
+        let solar_back = self.parent.back_solar_irradiance(state);
+        
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
         let ir_back = self.parent.back_infrared_irradiance(state);
@@ -789,8 +786,6 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     err += (local_temp - global_temp).abs();
                 }
 
-                
-
                 count += 1;
                 assert!(count < 999, "Excessive number of iteration");
                 for (local_i, i) in (ini..fin).into_iter().enumerate() {
@@ -798,7 +793,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
-                
+
                 if err / (n_nodes as Float) < 0.01 {
                     break;
                 }
@@ -807,7 +802,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
-        /////////////////////        
+        /////////////////////
         for (ini, fin) in mass {
             let c = self
                 .discretization
