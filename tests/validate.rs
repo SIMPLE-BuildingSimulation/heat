@@ -613,6 +613,7 @@ fn march_one_wall(
             exp.push(exp_temp);
             found.push(found_temp);
         }
+        
 
         // Set outdoor temp
         let mut weather = SyntheticWeather::new();
@@ -629,14 +630,10 @@ fn march_one_wall(
             let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
                 + thermal::SIGMA * (ts + 273.15).powi(4);
             surface.set_back_ir_irradiance(&mut state, v);
-            // https://github.com/NREL/EnergyPlus/blob/0870fe20109572246549802844cbb0601033bedf/src/EnergyPlus/HeatBalanceIntRadExchange.cc#L342
-            let ts = surface.last_node_temperature(&state).unwrap();
-            // let v = _indoor_thermal_heat_gain[i] / surface_area / emmisivity + thermal::SIGMA * (ts + 273.15).powi(4);
-            // surface.set_front_ir_irradiance(&mut state, v);
-            let a = 0.75; // 0.5/0.65;
+            // https://github.com/NREL/EnergyPlus/blob/0870fe20109572246549802844cbb0601033bedf/src/EnergyPlus/HeatBalanceIntRadExchange.cc#L342            
             surface.set_front_ir_irradiance(
                 &mut state,
-                thermal::SIGMA * (((a * exp_temp + (1. - a) * ts) + 273.15).powi(4)),
+                thermal::SIGMA * ((exp_temp  + 273.15).powi(4)),
             );
         }
 

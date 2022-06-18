@@ -733,8 +733,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calculate and set Front and Back convection coefficients
         let front_hs = front_env.get_hs();
         let back_hs = back_env.get_hs();
-        self.parent
-            .set_front_convection_coefficient(state, front_hs);
+        self.parent.set_front_convection_coefficient(state, front_hs);
         self.parent.set_back_convection_coefficient(state, back_hs);
 
         /////////////////////
@@ -794,7 +793,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
 
-                if err / (n_nodes as Float) < 0.01 {
+                if err / ((fin - ini) as Float) < 0.01 {
                     break;
                 }
             }
