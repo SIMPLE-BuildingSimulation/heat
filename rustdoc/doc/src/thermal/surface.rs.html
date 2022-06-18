@@ -1287,7 +1287,6 @@
 <span id="1246">1246</span>
 <span id="1247">1247</span>
 <span id="1248">1248</span>
-<span id="1249">1249</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2023,8 +2022,7 @@ SOFTWARE.
         <span class="comment">// Calculate and set Front and Back convection coefficients</span>
         <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="ident">front_env</span>.<span class="ident">get_hs</span>();
         <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="ident">back_env</span>.<span class="ident">get_hs</span>();
-        <span class="self">self</span>.<span class="ident">parent</span>
-            .<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">front_hs</span>);
+        <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">front_hs</span>);
         <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">back_hs</span>);
 
         <span class="comment">/////////////////////</span>
@@ -2084,7 +2082,7 @@ SOFTWARE.
                     <span class="ident">temperatures</span>.<span class="ident">scale_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="number">0.5</span>).<span class="ident">unwrap</span>();
                 }
 
-                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> (<span class="ident">n_nodes</span> <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
+                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
                     <span class="kw">break</span>;
                 }
             }
@@ -2538,5 +2536,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (cacc75c82 2022-06-16)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (c3b7d7b49 2022-06-17)" ></div>
 </body></html>
