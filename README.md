@@ -22,7 +22,7 @@ Check the automatic Validation report [HERE](https://simple-buildingsimulation.g
 
 Some To Do's (we would love your help)
 
-* We have some Longwave Radiation issue.
+* We have some issue in materials with Mass and No-Mass materials (check [HERE](https://simple-buildingsimulation.github.io/thermal/validation/walls.html))
 
 
 

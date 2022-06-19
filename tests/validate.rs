@@ -588,7 +588,7 @@ fn march_one_wall(
     let path = path_string.as_str();
     let cols = validate::from_csv(path, &[3, 9, 10, 11, 13]);
     let incident_solar_radiation = &cols[0]; //3
-    let _indoor_thermal_heat_gain = &cols[1]; //9
+    let indoor_thermal_heat_gain = &cols[1]; //9
     let outdoor_temp = &cols[2]; //10
     let outdoor_thermal_heat_gain = &cols[3]; //11
     let exp_zone_air_temp = &cols[4]; //13
@@ -626,14 +626,19 @@ fn march_one_wall(
 
         // Set Long Wave radiation
         if emmisivity > 1e-3 {
-            let ts = surface.first_node_temperature(&state).unwrap();
+            let ts = surface.last_node_temperature(&state).unwrap();
             let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
                 + thermal::SIGMA * (ts + 273.15).powi(4);
             surface.set_back_ir_irradiance(&mut state, v);
+
+            let ts = surface.first_node_temperature(&state).unwrap();
+            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+                + thermal::SIGMA * (ts + 273.15).powi(4);
+            // let v = thermal::SIGMA * (exp_temp + 273.15).powi(4);            
             // https://github.com/NREL/EnergyPlus/blob/0870fe20109572246549802844cbb0601033bedf/src/EnergyPlus/HeatBalanceIntRadExchange.cc#L342            
             surface.set_front_ir_irradiance(
                 &mut state,
-                thermal::SIGMA * ((exp_temp  + 273.15).powi(4)),
+                v,
             );
         }
 
@@ -651,7 +656,7 @@ fn march_one_wall(
 fn theoretical(validations: &mut Validator) {
     let (expected, found) = very_simple_march();
     let v = validate::SeriesValidator {
-        title: "Nomass Wall — Walls only",
+        title: "Nomass Wall - Walls only",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -668,7 +673,7 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window();
     let v = validate::SeriesValidator {
-        title: "Nomass Wall — Walls and Fenestration",
+        title: "Nomass Wall - Walls and Fenestration",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -684,7 +689,7 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_and_luminaire();
     let v = validate::SeriesValidator {
-        title: "Nomass Wall — Walls and Fenestration, with Luminaire on",
+        title: "Nomass Wall - Walls and Fenestration, with Luminaire on",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -700,7 +705,7 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_and_heater();
     let v = validate::SeriesValidator {
-        title: "Nomass Wall — Walls and Fenestration, with heater on",
+        title: "Nomass Wall - Walls and Fenestration, with heater on",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
@@ -716,7 +721,7 @@ fn theoretical(validations: &mut Validator) {
 
     let (expected, found) = march_with_window_heater_and_infiltration();
     let v = validate::SeriesValidator {
-        title: "Nomass Wall — Walls and Fenestration, with heater on and infiltration",
+        title: "Nomass Wall - Walls and Fenestration, with heater on and infiltration",
         x_label: Some("time step"),
         y_label: Some("Zone Temperature"),
         y_units: Some("C"),
