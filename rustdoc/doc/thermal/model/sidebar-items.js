@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ThermalModel",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["ThermalModel",""]]};

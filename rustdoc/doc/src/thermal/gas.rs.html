@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/gas.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gas.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/gas.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gas.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -638,6 +637,7 @@
 <span id="597">597</span>
 <span id="598">598</span>
 <span id="599">599</span>
+<span id="600">600</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -846,7 +846,8 @@ SOFTWARE.
     <span class="kw">const</span> <span class="ident">THIRTY_RAD</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">180.</span>;
     <span class="kw">const</span> <span class="ident">EPSILON_RAD</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.5</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">180.</span>;
 
-    <span class="comment">// if gamma &gt;= 0.0 &amp;&amp; gamma &lt; 2. * THIRTY_RAD - EPSILON_RAD {</span>
+    <span class="kw">let</span> <span class="ident">gamma</span> <span class="op">=</span> <span class="ident">gamma</span> <span class="op">%</span> <span class="ident"><span class="kw">crate</span>::PI</span>;
+    
     <span class="kw">if</span> (<span class="number">0.0</span>..<span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">-</span> <span class="ident">EPSILON_RAD</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">gamma</span>) {
         <span class="comment">// Between 0 and 60 degrees</span>
         <span class="ident">nu_0_60</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>)
@@ -863,7 +864,7 @@ SOFTWARE.
         <span class="comment">// between 90 and 180 degrees</span>
         <span class="ident">nu_90_180</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>, <span class="ident">gamma</span>)
     } <span class="kw">else</span> {
-        <span class="macro">unreachable!</span>()
+        <span class="macro">unreachable!</span>(<span class="string">&quot;gamma is {}&quot;</span>, <span class="ident">gamma</span>)
     }
 }
 
@@ -872,11 +873,11 @@ SOFTWARE.
 <span class="doccomment">///</span>
 <span class="doccomment">/// From Equation 43 and 44 of ISO15099/2003 (based on ref. 7 of that standard)</span>
 <span class="kw">fn</span> <span class="ident">nu_0_60</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">gamma</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&gt;</span> <span class="number">1e5</span> <span class="op">|</span><span class="op">|</span> <span class="ident">a_gi</span> <span class="op">&lt;</span> <span class="number">20.</span> {
-        <span class="comment">// This clause is written in section 5.3.3.2... does</span>
-        <span class="comment">// not say what to do when this happens</span>
-        <span class="macro">dbg!</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>, <span class="string">&quot;Not expecting these values&quot;</span>);
-    }
+    <span class="comment">// if ra &gt; 1e5 || a_gi &lt; 20. {</span>
+    <span class="comment">//     // This clause is written in section 5.3.3.2... does</span>
+    <span class="comment">//     // not say what to do when this happens</span>
+    <span class="comment">//     dbg!(ra, a_gi, &quot;Not expecting these values&quot;);</span>
+    <span class="comment">// }</span>
     <span class="comment">// Eq. 44 of ISO15099/2003</span>
     <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="op">|</span><span class="ident">x</span>: <span class="ident">Float</span><span class="op">|</span> -&gt; <span class="ident">Float</span> { (<span class="ident">x</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">abs</span>()) <span class="op">/</span> <span class="number">2.</span> };
     <span class="kw">let</span> <span class="ident">cos_gamma</span> <span class="op">=</span> <span class="ident">gamma</span>.<span class="ident">cos</span>();
@@ -1238,5 +1239,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (21e9336fe 2022-06-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (fdca237d5 2022-06-24)" ></div>
 </body></html>
