@@ -18,6 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+use simple_model::{Construction, Substance};
+
 use crate::Float;
 
 /// An abstraction of a glazing layer for optical purposes.
@@ -46,13 +48,12 @@ pub struct Glazing {
 impl Glazing {
     /// Creates a new `Glazing`
     pub fn new(tau: Float, rho_front: Float, rho_back: Float) -> Self {
-        debug_assert!(tau >= 0.0);
-        debug_assert!(rho_front >= 0.0);
-        debug_assert!(rho_back >= 0.0);
-
-        debug_assert!(tau <= 1.);
-        debug_assert!(rho_front <= 1.);
-        debug_assert!(rho_back <= 1.);
+        assert!(tau >= 0.0, "Found transmittance less than Zero");
+        assert!(tau <= 1., "Found transmittance more than 1");
+        assert!(rho_front >= 0.0, "Found front reflectance less than 0.");
+        assert!(rho_back >= 0.0, "Found back reflectance less than 0");
+        assert!(rho_front <= 1., "Found front reflectance more than 1.");
+        assert!(rho_back <= 1., "Found back reflectance more than 1.");
 
         Self {
             tau,
@@ -61,6 +62,64 @@ impl Glazing {
             alpha_front: 1. - tau - rho_front,
             alpha_back: 1. - tau - rho_back,
         }
+    }
+
+    fn get_glazing_from_iter<T>(mut i: T, cap: usize) -> Result<Vec<Glazing>, String>
+    where
+        T: std::iter::Iterator<Item = std::rc::Rc<simple_model::Material>>,
+    {
+        let mut ret = Vec::with_capacity(cap);
+        loop {
+            // Get layer
+            let l = i.next().unwrap();
+            match &l.substance {
+                Substance::Gas(_) => {
+                    panic!("NOT expecting a gas")
+                }
+                Substance::Normal(s) => {
+                    let tau = s.solar_transmittance().unwrap_or(&0.0);
+                    let alpha_front = s.front_solar_absorbtance().unwrap_or(&0.84);
+                    let alpha_back = s.back_solar_absorbtance().unwrap_or(&0.84);
+                    let rho_front = 1. - tau - alpha_front;
+                    let rho_back = 1. - tau - alpha_back;
+                    ret.push(Glazing::new(*tau, rho_front, rho_back));
+
+                    if *tau < 1e-9 {
+                        break;
+                    }
+                }
+            }
+
+            // Get cavity... if any
+            if let Some(mat) = i.next() {
+                // If there is one, check that it is a Cavity
+                let sub = &mat.substance;
+                if let Substance::Normal(_) = sub {
+                    panic!("Expecting a Gas")
+                }
+            } else {
+                // Else, we are done
+                break;
+            }
+        }
+        Ok(ret)
+    }
+
+    pub fn get_front_glazing_system(construction: &Construction) -> Result<Vec<Glazing>, String> {
+        if construction.materials.is_empty() {
+            return Err(format!(
+                "Trying to get front_glazing_system of an empty construction, called '{}'",
+                construction.name()
+            ));
+        }
+
+        let i = construction.materials.iter().cloned();
+        Self::get_glazing_from_iter(i, construction.materials.len())
+    }
+
+    pub fn get_back_glazing_system(construction: &Construction) -> Result<Vec<Glazing>, String> {
+        let i = construction.materials.iter().cloned().rev();
+        Self::get_glazing_from_iter(i, construction.materials.len())
     }
 
     /// Gets the transmittance
@@ -178,7 +237,11 @@ impl Glazing {
         (a1, a2)
     }
 
-    /// Calculates the absorbtances of each `Glazing` of the system
+    /// Calculates the absorbtances of each `Glazing` of the system, proportional
+    /// to the incident radiation (i.e., they do not add up to 1.0)
+    ///
+    /// This function assumes that there is a layer of air (i.e., a cavity)
+    /// between the glazing layers.
     pub fn alphas(layers: &[Glazing]) -> Vec<Float> {
         let mut ret = Vec::with_capacity(layers.len());
 
@@ -212,6 +275,123 @@ impl Glazing {
 #[cfg(test)]
 mod testing {
     use super::*;
+    use simple_model::Material;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_get_glazing_two_layers() {
+        // Layer 0
+        let mut s0 = simple_model::substance::Normal::new("sub0".to_string());
+        s0.set_solar_transmittance(0.2)
+            .set_front_solar_absorbtance(0.3)
+            .set_back_solar_absorbtance(0.4);
+        let s0 = s0.wrap();
+        let m0 = Material::new("m0".to_string(), s0.clone(), 0.001);
+
+        // Cavity
+        let mut c0 = simple_model::substance::gas::Gas::new("c0".to_string());
+        c0.set_gas(simple_model::substance::gas::StandardGas::Air);
+        let c0 = c0.wrap();
+        let c0 = Material::new("cavity".to_string(), c0, 0.01);
+
+        // Layer 1
+        let mut s1 = simple_model::substance::Normal::new("sub1".to_string());
+        s1.set_solar_transmittance(0.1)
+            .set_front_solar_absorbtance(0.2)
+            .set_back_solar_absorbtance(0.3);
+        let s1 = s1.wrap();
+        let m1 = Material::new("m1".to_string(), s1.clone(), 0.001);
+
+        let mut construction = Construction::new("constr".to_string());
+        construction.materials.push(Rc::new(m0));
+        construction.materials.push(Rc::new(c0));
+        construction.materials.push(Rc::new(m1));
+
+        // Test
+        let glazings = Glazing::get_front_glazing_system(&construction).unwrap();
+        assert_eq!(glazings.len(), 2);
+        let props: Vec<(Float, Float, Float)> = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
+        assert_eq!(
+            props,
+            vec![
+                (0.2, 1.0 - 0.2 - 0.3, 1.0 - 0.2 - 0.4),
+                (0.1, 1.0 - 0.1 - 0.2, 1.0 - 0.1 - 0.3),
+            ]
+        );
+
+        let glazings = Glazing::get_back_glazing_system(&construction).unwrap();
+        assert_eq!(glazings.len(), 2);
+        let props: Vec<(Float, Float, Float)> = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
+        assert_eq!(
+            props,
+            vec![
+                (0.1, 1.0 - 0.1 - 0.2, 1.0 - 0.1 - 0.3),
+                (0.2, 1.0 - 0.2 - 0.3, 1.0 - 0.2 - 0.4),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_get_glazing_two_layers_2() {
+        // Layer 0
+        let mut s0 = simple_model::substance::Normal::new("sub0".to_string());
+        s0.set_solar_transmittance(0.0)
+            .set_front_solar_absorbtance(0.1)
+            .set_back_solar_absorbtance(0.2);
+        let s0 = s0.wrap();
+        let m0 = Material::new("m0".to_string(), s0.clone(), 0.001);
+
+        // Cavity
+        let mut c0 = simple_model::substance::gas::Gas::new("c0".to_string());
+        c0.set_gas(simple_model::substance::gas::StandardGas::Air);
+        let c0 = c0.wrap();
+        let c0 = Material::new("cavity".to_string(), c0, 0.01);
+
+        // Layer 1
+        let mut s1 = simple_model::substance::Normal::new("sub1".to_string());
+        s1.set_solar_transmittance(0.1)
+            .set_front_solar_absorbtance(0.2)
+            .set_back_solar_absorbtance(0.3);
+        let s1 = s1.wrap();
+        let m1 = Material::new("m1".to_string(), s1.clone(), 0.001);
+
+        let mut construction = Construction::new("constr".to_string());
+        construction.materials.push(Rc::new(m0));
+        construction.materials.push(Rc::new(c0));
+        construction.materials.push(Rc::new(m1));
+
+        // Test
+        let glazings = Glazing::get_front_glazing_system(&construction).unwrap();
+        assert_eq!(glazings.len(), 1);
+        let props: Vec<(Float, Float, Float)> = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
+        assert_eq!(props, vec![(0.0, 0.9, 0.8)]);
+        let alphas = Glazing::alphas(&glazings);
+        let exp = vec![0.1];
+        for (found, exp) in alphas.iter().zip(exp.iter()){
+            validate::assert_close!(*exp, *found);
+        }
+
+        let glazings = Glazing::get_back_glazing_system(&construction).unwrap();
+        assert_eq!(glazings.len(), 2);
+        let props: Vec<(Float, Float, Float)> = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();            
+        let exp = vec![(0.1, 1.0 - 0.1 - 0.2, 1.0 - 0.1 - 0.3), (0.0, 0.9, 0.8)];
+        assert_eq!(
+            props,
+            exp
+        );
+    }
 
     #[test]
     fn test_9050() {

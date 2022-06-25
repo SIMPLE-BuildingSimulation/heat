@@ -613,7 +613,6 @@ fn march_one_wall(
             exp.push(exp_temp);
             found.push(found_temp);
         }
-        
 
         // Set outdoor temp
         let mut weather = SyntheticWeather::new();
@@ -634,12 +633,9 @@ fn march_one_wall(
             let ts = surface.first_node_temperature(&state).unwrap();
             let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
                 + thermal::SIGMA * (ts + 273.15).powi(4);
-            // let v = thermal::SIGMA * (exp_temp + 273.15).powi(4);            
-            // https://github.com/NREL/EnergyPlus/blob/0870fe20109572246549802844cbb0601033bedf/src/EnergyPlus/HeatBalanceIntRadExchange.cc#L342            
-            surface.set_front_ir_irradiance(
-                &mut state,
-                v,
-            );
+            // let v = thermal::SIGMA * (exp_temp + 273.15).powi(4);
+            // https://github.com/NREL/EnergyPlus/blob/0870fe20109572246549802844cbb0601033bedf/src/EnergyPlus/HeatBalanceIntRadExchange.cc#L342
+            surface.set_front_ir_irradiance(&mut state, v);
         }
 
         // March
@@ -736,12 +732,10 @@ fn theoretical(validations: &mut Validator) {
     validations.push(Box::new(v));
 }
 
-
-
 fn massive(validations: &mut Validator) {
     // Massive, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_massive",
+        "massive_full",
         0.9,
         0.7,
         vec![TestMat::Concrete(0.2)],
@@ -764,7 +758,7 @@ fn massive(validations: &mut Validator) {
 
     // Massive, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_massive_no_ir_no_solar",
+        "massive_no_ir_no_solar",
         0.0,
         0.0,
         vec![TestMat::Concrete(0.2)],
@@ -786,7 +780,7 @@ fn massive(validations: &mut Validator) {
 
     // Massive, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_massive_no_ir_yes_solar",
+        "massive_no_ir_yes_solar",
         0.0,
         0.7,
         vec![TestMat::Concrete(0.2)],
@@ -808,7 +802,7 @@ fn massive(validations: &mut Validator) {
 
     // Massive, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_massive_yes_ir_no_solar",
+        "massive_yes_ir_no_solar",
         0.9,
         0.0,
         vec![TestMat::Concrete(0.2)],
@@ -832,7 +826,7 @@ fn massive(validations: &mut Validator) {
 fn mixed(validations: &mut Validator) {
     // Mixed Mass, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_mixed",
+        "mixed_full",
         0.9,
         0.7,
         vec![
@@ -858,7 +852,7 @@ fn mixed(validations: &mut Validator) {
 
     // Mixed Mass, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_mixed_no_ir_no_solar",
+        "mixed_no_ir_no_solar",
         0.0,
         0.0,
         vec![
@@ -884,7 +878,7 @@ fn mixed(validations: &mut Validator) {
 
     // Mixed Mass, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_mixed_no_ir_yes_solar",
+        "mixed_no_ir_yes_solar",
         0.0,
         0.7,
         vec![
@@ -910,7 +904,7 @@ fn mixed(validations: &mut Validator) {
 
     // Mixed Mass, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_mixed_yes_ir_no_solar",
+        "mixed_yes_ir_no_solar",
         0.9,
         0.0,
         vec![
@@ -938,7 +932,7 @@ fn mixed(validations: &mut Validator) {
 fn nomass(validations: &mut Validator) {
     // No Mass, With solar Radiation and Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_nomass",
+        "nomass_full",
         0.9,
         0.7,
         vec![TestMat::Polyurethane(0.02)],
@@ -960,7 +954,7 @@ fn nomass(validations: &mut Validator) {
 
     // No Mass, NO solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_nomass_no_ir_no_solar",
+        "nomass_no_ir_no_solar",
         0.0,
         0.0,
         vec![TestMat::Polyurethane(0.02)],
@@ -982,7 +976,7 @@ fn nomass(validations: &mut Validator) {
 
     // No Mass, WITH  solar and NO Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_nomass_no_ir_yes_solar",
+        "nomass_no_ir_yes_solar",
         0.0,
         0.7,
         vec![TestMat::Polyurethane(0.02)],
@@ -1004,7 +998,7 @@ fn nomass(validations: &mut Validator) {
 
     // No Mass, No  solar and WITH Long Wave
     let (expected, found) = march_one_wall(
-        "solar_radiation_nomass_yes_ir_no_solar",
+        "nomass_yes_ir_no_solar",
         0.9,
         0.0,
         vec![TestMat::Polyurethane(0.02)],
@@ -1025,10 +1019,133 @@ fn nomass(validations: &mut Validator) {
     validations.push(Box::new(v));
 }
 
+
+fn march_trombe_wall(
+    dir: &'static str,
+    emmisivity: Float,
+    solar_abs: Float,
+    construction: Vec<TestMat>,
+) -> (Vec<Float>, Vec<Float>) {
+    let surface_area = 20. * 3.;
+    let zone_volume = 600.;
+
+    let (simple_model, mut state_header) = get_single_zone_test_building(
+        // &mut state,
+        &SingleZoneTestBuildingOptions {
+            zone_volume,
+            surface_area,
+            construction,
+            emmisivity,
+            solar_absorbtance: solar_abs,
+            ..Default::default()
+        },
+    );
+
+    // Finished model the SimpleModel
+
+    let n: usize = 20;
+    // let main_dt = 60. * 60. / n as Float;
+    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+
+    let mut state = state_header.take_values().unwrap();
+
+    let path_string = format!("./tests/{}/eplusout.csv", dir);
+    let path = path_string.as_str();
+    let cols = validate::from_csv(path, &[3, 15, 17, 18, 24]);
+    let incident_solar_radiation = &cols[0]; //3
+    let indoor_thermal_heat_gain = &cols[1]; //15
+    let outdoor_temp = &cols[2]; //17
+    let outdoor_thermal_heat_gain = &cols[3]; //18
+    let exp_zone_air_temp = &cols[4]; //24
+
+    // Set initial temperature
+    simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]);
+
+    let mut date = Date {
+        month: 1,
+        day: 1,
+        hour: 0.0,
+    };
+    let n = outdoor_temp.len();
+    let mut exp = Vec::with_capacity(n);
+    let mut found = Vec::with_capacity(n);
+    for i in 0..n {
+        // Get zone's temp
+        let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
+        let exp_temp = exp_zone_air_temp[i];
+        if i > 000 {
+            // skip warmup
+            exp.push(exp_temp);
+            found.push(found_temp);
+        }
+
+        // Set outdoor temp
+        let mut weather = SyntheticWeather::new();
+        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(outdoor_temp[i]));
+
+        let surface = &simple_model.surfaces[0];
+
+        // Set Solar Radiation
+        surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
+
+        // Set Long Wave radiation
+        if emmisivity > 1e-3 {
+            let ts = surface.last_node_temperature(&state).unwrap();
+            let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
+                + thermal::SIGMA * (ts + 273.15).powi(4);
+            surface.set_back_ir_irradiance(&mut state, v);
+
+            let ts = surface.first_node_temperature(&state).unwrap();
+            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+                + thermal::SIGMA * (ts + 273.15).powi(4);
+            surface.set_front_ir_irradiance(&mut state, v);
+        }
+
+        // March
+        thermal_model
+            .march(date, &weather, &simple_model, &mut state)
+            .unwrap();
+
+        // Advance
+        date.add_hours(1. / n as Float);
+    }
+    (exp, found)
+}
+
+
+fn trombe_wall(validations: &mut Validator) {
+    // No Mass, With solar Radiation and Long Wave
+    let (expected, found) = march_trombe_wall(
+        "trombe_wall_full",
+        0.9,
+        0.08,
+        vec![
+            TestMat::Concrete(0.2),
+            TestMat::Air(0.05),
+            TestMat::Glass(0.03, 0.82), 
+        ],
+    );
+    let v = validate::SeriesValidator {
+        title: "Trombe Wall, with Solar Radiation and Long Wave Radiation",
+        x_label: Some("time step"),
+        y_label: Some("Zone Temperature"),
+        y_units: Some("C"),
+        found_name: "Simple",
+        expected_name: "EnergyPlus",
+
+        expected,
+        found,
+
+        ..validate::SeriesValidator::default()
+    };
+    validations.push(Box::new(v));
+}
+
 #[test]
 fn validate() {
+    // cargo test --package thermal --test validate -- validate --exact --nocapture
     let p = "./docs/validation";
-    if !std::path::Path::new(&p).exists(){
+    if !std::path::Path::new(&p).exists() {
         std::fs::create_dir(p).unwrap();
     }
 
@@ -1039,5 +1156,6 @@ fn validate() {
     massive(&mut validations);
     mixed(&mut validations);
     nomass(&mut validations);
+    // trombe_wall(&mut validations);
     validations.validate().unwrap();
 }

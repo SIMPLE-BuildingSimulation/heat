@@ -20,6 +20,7 @@ SOFTWARE.
 
 use crate::construction::Discretization;
 use crate::environment::Environment;
+use crate::glazing::Glazing;
 use crate::Float;
 use matrix::Matrix;
 use simple_model::{
@@ -585,6 +586,20 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
 
     /// The area of the Surface
     pub area: Float,
+
+    /// The chunks of nodes that have mass
+    pub massive_chunks: Vec<(usize, usize)>,
+
+    /// The chunks of nodes that have nomass
+    pub nomass_chunks: Vec<(usize, usize)>,
+
+    /// The absorbtances of each node in the system, proportional
+    /// to the front incident radiation (i.e., they do not add up to 1.0)
+    pub front_alphas: Matrix,
+
+    /// The absorbtances of each node in the system, proportional
+    /// to the back incident radiation (i.e., they do not add up to 1.0)
+    pub back_alphas: Matrix,
 }
 
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
@@ -617,7 +632,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         const DEFAULT_SOLAR: Float = 0.7;
         let front_solar_absorbtance = match &construction.materials[0].substance {
-            Substance::Normal(s) => match s.solar_absorbtance() {
+            Substance::Normal(s) => match s.front_solar_absorbtance() {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
@@ -631,7 +646,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
         let back_solar_absorbtance = match &construction.materials.last().unwrap().substance {
-            Substance::Normal(s) => match s.solar_absorbtance() {
+            Substance::Normal(s) => match s.back_solar_absorbtance() {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
@@ -647,7 +662,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         const DEFAULT_EM: Float = 0.84;
         let front_emmisivity = match &construction.materials[0].substance {
-            Substance::Normal(s) => match s.thermal_absorbtance() {
+            Substance::Normal(s) => match s.front_thermal_absorbtance() {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
@@ -661,7 +676,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
         let back_emmisivity = match &construction.materials.last().unwrap().substance {
-            Substance::Normal(s) => match s.thermal_absorbtance() {
+            Substance::Normal(s) => match s.back_thermal_absorbtance() {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
@@ -675,6 +690,75 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
 
+        let (massive_chunks, nomass_chunks) = discretization.get_chunks();
+
+        // Calculate solar absoption
+        let front_glazing = Glazing::get_front_glazing_system(&construction)?;
+        let back_glazing = Glazing::get_back_glazing_system(&construction)?;
+        // These two are the absorbtion of each glazing layer. We need the absorption of each node
+        let front_alphas_prev = Glazing::alphas(&front_glazing);
+        let n_nodes = discretization.segments.len();
+        let n_layers = construction.materials.len();
+
+        let mut front_alphas = Matrix::new(0.0, n_nodes, 1);
+        let mut global_i = 0;
+        for (alpha_i, alpha) in front_alphas_prev.iter().enumerate() {
+            let layer_index = 2 * alpha_i; // We need to skip cavities
+            let n = if discretization.n_elements[layer_index] == 0 {
+                1
+            } else {
+                discretization.n_elements[layer_index]
+            };
+            if let Substance::Normal(sub) = &construction.materials[layer_index].substance {
+                let tau = *sub.solar_transmittance().unwrap_or(&0.0);
+                if tau > 0.0 {
+                    // Distribute across all the nodes
+                    for local_i in 0..=n {
+                        front_alphas
+                            .add_to_element(global_i + local_i, 0, *alpha / (n + 1) as Float)
+                            .unwrap();
+                    }
+                } else {
+                    // Add only to the first node
+                    front_alphas.add_to_element(global_i, 0, *alpha).unwrap();
+                }
+            } else {
+                unreachable!()
+            }
+            global_i += n + 1;
+        }
+
+        let back_alphas_prev = Glazing::alphas(&back_glazing);
+        let mut back_alphas = Matrix::new(0.0, n_nodes, 1);
+        let mut global_i = n_nodes;
+        for (alpha_i, alpha) in back_alphas_prev.iter().enumerate() {
+            let layer_index = n_layers - 2 * alpha_i - 1; // We need to skip cavities
+            let n = if discretization.n_elements[layer_index] == 0 {
+                1
+            } else {
+                discretization.n_elements[layer_index]
+            };
+
+            if let Substance::Normal(sub) = &construction.materials[layer_index].substance {
+                let tau = *sub.solar_transmittance().unwrap_or(&0.0);
+                if tau > 0.0 {
+                    // Distribute across all the nodes
+                    for local_i in 0..=n {
+                        let row = global_i - local_i - 1;
+                        back_alphas
+                            .add_to_element(row, 0, *alpha / (n + 1) as Float)
+                            .unwrap();
+                    }
+                } else {
+                    // Add only to the last node
+                    back_alphas.add_to_element(global_i - 1, 0, *alpha).unwrap();
+                }
+            } else {
+                unreachable!()
+            }
+            global_i -= n + 1;
+        }
+
         // Build resulting
         Ok(ThermalSurfaceData {
             parent: parent.clone(),
@@ -686,6 +770,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             back_emmisivity,
             front_solar_absorbtance,
             back_solar_absorbtance,
+            front_alphas,
+            back_alphas,
+            massive_chunks,
+            nomass_chunks,
         })
     }
 
@@ -711,7 +799,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
         let solar_back = self.parent.back_solar_irradiance(state);
-        
+
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
         let ir_back = self.parent.back_infrared_irradiance(state);
@@ -733,33 +821,27 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calculate and set Front and Back convection coefficients
         let front_hs = front_env.get_hs();
         let back_hs = back_env.get_hs();
-        self.parent.set_front_convection_coefficient(state, front_hs);
+        self.parent
+            .set_front_convection_coefficient(state, front_hs);
         self.parent.set_back_convection_coefficient(state, back_hs);
 
         /////////////////////
         // 1st: Calculate the solar absorption in each node
         /////////////////////
-        let n_nodes = self.discretization.segments.len();
-        // dbg!("call glazing::alphas!");
-        let mut q = Matrix::new(0.0, n_nodes, 1);
-        q.add_to_element(0, 0, solar_front * self.front_solar_absorbtance)
-            .unwrap();
-        q.add_to_element(n_nodes - 1, 0, solar_back * self.back_solar_absorbtance)
-            .unwrap();
+        let mut q = &self.front_alphas * solar_front;
+        q += &(&self.back_alphas * solar_back);
 
         /////////////////////
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
 
-        let (mass, nomass) = self.discretization.get_chunks();
-
-        for (ini, fin) in nomass {
+        for (ini, fin) in &self.nomass_chunks {
             let mut count = 0;
             loop {
                 let (k, mut local_q) = self.discretization.get_k_q(
-                    ini,
-                    fin,
+                    *ini,
+                    *fin,
                     &temperatures,
                     &front_env,
                     self.front_emmisivity,
@@ -770,7 +852,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 );
 
                 // ... here we can add solar gains
-                for (local_i, i) in (ini..fin).into_iter().enumerate() {
+                for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let v = q.get(i, 0).unwrap();
                     local_q.add_to_element(local_i, 0, v).unwrap();
                 }
@@ -779,7 +861,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures
 
                 let mut err = 0.0;
-                for (local_i, i) in (ini..fin).into_iter().enumerate() {
+                for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     let global_temp = temperatures.get(i, 0).unwrap();
                     err += (local_temp - global_temp).abs();
@@ -787,7 +869,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
                 count += 1;
                 assert!(count < 999, "Excessive number of iteration");
-                for (local_i, i) in (ini..fin).into_iter().enumerate() {
+                for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
@@ -802,20 +884,20 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
         /////////////////////
-        for (ini, fin) in mass {
+        for (ini, fin) in &self.massive_chunks {
             let c = self
                 .discretization
                 .segments
                 .iter()
-                .skip(ini)
+                .skip(*ini)
                 .take(fin - ini)
                 .map(|(mass, _)| *mass)
                 .collect();
             let c = Matrix::diag(c);
 
             let (k, mut local_q) = self.discretization.get_k_q(
-                ini,
-                fin,
+                *ini,
+                *fin,
                 &temperatures,
                 &front_env,
                 self.front_emmisivity,
@@ -826,7 +908,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             );
 
             // ... here we add solar gains
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
+            for (local_i, global_i) in (*ini..*fin).into_iter().enumerate() {
                 let v = q.get(global_i, 0).unwrap();
                 local_q.add_to_element(local_i, 0, v).unwrap();
             }
@@ -836,14 +918,14 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             /////////////////////
             // Use RT4 for updating temperatures of massive nodes.
             let mut local_temps = Matrix::new(0.0, fin - ini, 1);
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
+            for (local_i, global_i) in (*ini..*fin).into_iter().enumerate() {
                 let v = temperatures.get(global_i, 0).unwrap();
                 local_temps.set(local_i, 0, v).unwrap();
             }
 
             rk4(dt, &c, k, local_q, &mut local_temps);
 
-            for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
+            for (local_i, global_i) in (*ini..*fin).into_iter().enumerate() {
                 let v = local_temps.get(local_i, 0).unwrap();
                 temperatures.set(global_i, 0, v).unwrap();
             }
@@ -894,7 +976,8 @@ mod testing {
         let mut poly = NormalSubstance::new("polyurethane".to_string());
         poly.set_density(17.5) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(2400.) // J/kg.K
-            .set_thermal_absorbtance(0.)
+            .set_front_thermal_absorbtance(0.)
+            .set_back_thermal_absorbtance(0.)
             .set_thermal_conductivity(0.0252); // W/m.K
 
         assert_eq!(poly.thermal_diffusivity().unwrap(), 0.6E-6);
@@ -908,7 +991,8 @@ mod testing {
         brickwork
             .set_density(1700.) // kg/m3... reverse engineered from paper
             .set_specific_heat_capacity(800.) // J/kg.K
-            .set_thermal_absorbtance(0.)
+            .set_front_thermal_absorbtance(0.)
+            .set_back_thermal_absorbtance(0.)
             .set_thermal_conductivity(0.816); // W/m.K
 
         assert!((brickwork.thermal_diffusivity().unwrap() - 0.6E-6).abs() < 0.00000001);

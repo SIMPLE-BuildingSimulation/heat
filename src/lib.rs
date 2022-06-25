@@ -18,6 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// #![warn(missing_docs)]
+
 //! A Finite Difference-based Thermal simulation module.
 //!
 //! It uses finite differences for marching forward in time and also
@@ -28,12 +30,17 @@ SOFTWARE.
 /// and `f64` is used otherwise.
 #[cfg(feature = "float")]
 pub type Float = f32;
+
+/// The kind of Floating point number used in the
+/// library... the `"float"` feature means it becomes `f32`
+/// and `f64` is used otherwise.
 #[cfg(not(feature = "float"))]
 pub type Float = f64;
 
 /// Well, Pi
 #[cfg(feature = "float")]
 pub const PI: Float = std::f32::consts::PI;
+/// Well, Pi
 #[cfg(not(feature = "float"))]
 pub const PI: Float = std::f64::consts::PI;
 

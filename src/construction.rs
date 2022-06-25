@@ -82,6 +82,9 @@ pub struct Discretization {
     /// This means that—on each timestep in the caller model—the thermal model needs
     /// to perform `time_subdivision` sub-timesteps.
     pub tstep_subdivision: usize,
+
+    /// The number of elements on each layer
+    pub n_elements: Vec<usize>,
 }
 
 impl Discretization {
@@ -100,9 +103,10 @@ impl Discretization {
     ) -> Result<Self, String> {
         let (tstep_subdivision, n_elements) =
             Self::discretize_construction(construction, model_dt, max_dx, min_dt);
-        Self::build(construction, tstep_subdivision, &n_elements, height, angle)
+        Self::build(construction, tstep_subdivision, n_elements, height, angle)
     }
 
+    /// Auxiliary function for `get_chunks()` function
     fn chunk_segments(&self, indexes: &[usize]) -> Vec<(usize, usize)> {
         if indexes.is_empty() {
             return Vec::with_capacity(0);
@@ -124,6 +128,11 @@ impl Discretization {
         ret.push((start, prev + 1));
         ret
     }
+
+    /// Gets a a the segments that correspond to Massive and non-massive chunks.
+    ///
+    /// The purpose of this is that—when marching—we can know which nodes are massive
+    /// and which ones are not, and thus solving them through different methods.
     pub fn get_chunks(&self) -> (Vec<(usize, usize)>, Vec<(usize, usize)>) {
         let mass_nodes: Vec<usize> = self
             .segments
@@ -146,7 +155,7 @@ impl Discretization {
     fn build(
         construction: &Rc<Construction>,
         tstep_subdivision: usize,
-        n_elements: &[usize],
+        n_elements: Vec<usize>,
         height: Float,
         angle: Float,
     ) -> Result<Self, String> {
@@ -241,10 +250,10 @@ impl Discretization {
 
                         const DEFAULT_EM: Float = 0.84;
                         let ein = match &next_mat.substance{
-                            Substance::Normal(s)=>match s.thermal_absorbtance(){
+                            Substance::Normal(s)=>match s.front_thermal_absorbtance(){
                                 Ok(v)=>*v,
                                 Err(_)=>{
-                                    eprintln!("Substance '{}' has no thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
+                                    eprintln!("Substance '{}' has no front thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
                                     DEFAULT_EM
                                 }
                             },
@@ -252,10 +261,10 @@ impl Discretization {
                         };
 
                         let eout = match &prev_mat.substance{
-                            Substance::Normal(s)=>match s.thermal_absorbtance(){
+                            Substance::Normal(s)=>match s.back_thermal_absorbtance(){
                                 Ok(v)=>*v,
                                 Err(_)=>{
-                                    eprintln!("Substance '{}' has no thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
+                                    eprintln!("Substance '{}' has no back thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
                                     DEFAULT_EM
                                 }
                             },
@@ -282,6 +291,7 @@ impl Discretization {
         Ok(Self {
             segments,
             tstep_subdivision,
+            n_elements,
         })
     }
 
@@ -720,7 +730,7 @@ mod testing {
         let tstep_sub = 10;
 
         let construction = get_normal(thermal_cond, density, cp, thickness);
-        let d = Discretization::build(&construction, tstep_sub, &[1], 1., 0.).unwrap();
+        let d = Discretization::build(&construction, tstep_sub, vec![1], 1., 0.).unwrap();
         // normal --> linear
 
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -757,7 +767,7 @@ mod testing {
 
         let construction = get_normal(thermal_cond, density, cp, thickness);
 
-        let d = Discretization::build(&construction, tstep_sub, &[0], 1., 0.).unwrap();
+        let d = Discretization::build(&construction, tstep_sub, vec![0], 1., 0.).unwrap();
 
         // normal --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -801,7 +811,8 @@ mod testing {
         normal
             .set_thermal_conductivity(thermal_cond)
             .set_density(density)
-            .set_thermal_absorbtance(0.9)
+            .set_front_thermal_absorbtance(0.9)
+            .set_back_thermal_absorbtance(0.8)
             .set_specific_heat_capacity(cp);
         let normal = normal.wrap();
         let normal = simple_model::Material::new("the mat".into(), normal, thickness);
@@ -821,7 +832,7 @@ mod testing {
         construction.materials.push(normal);
 
         let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, tstep_sub, &[1, 1, 1], 1., 0.).unwrap();
+        let d = Discretization::build(&construction, tstep_sub, vec![1, 1, 1], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -911,7 +922,7 @@ mod testing {
         construction.materials.push(normal);
 
         let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, tstep_sub, &[0, 0, 0], 1., 0.).unwrap();
+        let d = Discretization::build(&construction, tstep_sub, vec![0, 0, 0], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -1001,6 +1012,7 @@ mod testing {
         let d = Discretization {
             segments,
             tstep_subdivision: 1,
+            n_elements: vec![n],
         };
 
         let front_env = Environment {
@@ -1284,6 +1296,7 @@ mod testing {
         let d = Discretization {
             segments,
             tstep_subdivision: 1,
+            n_elements: vec![n],
         };
 
         let front_env = Environment {
@@ -1531,6 +1544,7 @@ mod testing {
         let d = Discretization {
             tstep_subdivision: 1,
             segments: vec![(1., UValue::None)],
+            n_elements: vec![1], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
@@ -1542,6 +1556,7 @@ mod testing {
         let d = Discretization {
             tstep_subdivision: 1,
             segments: vec![(0., UValue::None)],
+            n_elements: vec![1], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
@@ -1553,6 +1568,7 @@ mod testing {
         let d = Discretization {
             tstep_subdivision: 1,
             segments: vec![(1., UValue::None); 10],
+            n_elements: vec![1], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
@@ -1564,6 +1580,7 @@ mod testing {
         let d = Discretization {
             tstep_subdivision: 1,
             segments: vec![(0., UValue::None); 10],
+            n_elements: vec![1], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
@@ -1581,6 +1598,7 @@ mod testing {
                 (0., UValue::None),
                 (0., UValue::None),
             ],
+            n_elements: vec![0, 1, 1, 0, 0], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
@@ -1599,6 +1617,7 @@ mod testing {
                 (0., UValue::None),
                 (0., UValue::None),
             ],
+            n_elements: vec![1, 1, 1, 0, 0], // Does not matter for this test
         };
 
         let (mass_chunks, nomass_chunks) = d.get_chunks();
