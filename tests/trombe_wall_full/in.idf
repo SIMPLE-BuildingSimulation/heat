@@ -106,7 +106,7 @@ SurfaceProperty:ConvectionCoefficients,
     ,                   ! Convection Coefficient 1 User Curve Name
     Inside,             ! Convection Coefficient 2 Location
     Value,           ! Convection Coefficient 2 Type
-    20,                 ! Convection Coefficient 2 
+    10,                 ! Convection Coefficient 2 
     ,                   ! Convection Coefficient 2 Schedule Name
     ;                   ! Convection Coefficient 2 User Curve Name
 

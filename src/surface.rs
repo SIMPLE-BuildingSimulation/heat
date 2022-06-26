@@ -697,6 +697,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let back_glazing = Glazing::get_back_glazing_system(&construction)?;
         // These two are the absorbtion of each glazing layer. We need the absorption of each node
         let front_alphas_prev = Glazing::alphas(&front_glazing);
+        if front_alphas_prev.len() != 1 && front_alphas_prev.len() != construction.materials.len() {
+            panic!("Construction '{}' seems to have a mixture of transparent and opaque layers. This is not currently supported.", construction.name());
+        }
         let n_nodes = discretization.segments.len();
         let n_layers = construction.materials.len();
 
@@ -729,6 +732,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         }
 
         let back_alphas_prev = Glazing::alphas(&back_glazing);
+        if back_alphas_prev.len() != 1 && back_alphas_prev.len() != construction.materials.len() {
+            panic!("Construction '{}' seems to have a mixture of transparent and opaque layers. This is not currently supported.", construction.name());
+        }
         let mut back_alphas = Matrix::new(0.0, n_nodes, 1);
         let mut global_i = n_nodes;
         for (alpha_i, alpha) in back_alphas_prev.iter().enumerate() {
@@ -798,7 +804,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
-        let solar_back = self.parent.back_solar_irradiance(state);
+        let solar_back = self.parent.back_solar_irradiance(state);        
 
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
@@ -868,7 +874,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 }
 
                 count += 1;
-                assert!(count < 999, "Excessive number of iteration");
+                assert!(count < 999, "Excessive number of iterations");
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
