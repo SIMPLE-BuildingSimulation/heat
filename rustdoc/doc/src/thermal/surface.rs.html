@@ -1370,6 +1370,12 @@
 <span id="1330">1330</span>
 <span id="1331">1331</span>
 <span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2069,6 +2075,9 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">back_glazing</span> <span class="op">=</span> <span class="ident">Glazing::get_back_glazing_system</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>)<span class="question-mark">?</span>;
         <span class="comment">// These two are the absorbtion of each glazing layer. We need the absorption of each node</span>
         <span class="kw">let</span> <span class="ident">front_alphas_prev</span> <span class="op">=</span> <span class="ident">Glazing::alphas</span>(<span class="kw-2">&amp;</span><span class="ident">front_glazing</span>);
+        <span class="kw">if</span> <span class="ident">front_alphas_prev</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">front_alphas_prev</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
+            <span class="macro">panic!</span>(<span class="string">&quot;Construction &#39;{}&#39; seems to have a mixture of transparent and opaque layers. This is not currently supported.&quot;</span>, <span class="ident">construction</span>.<span class="ident">name</span>());
+        }
         <span class="kw">let</span> <span class="ident">n_nodes</span> <span class="op">=</span> <span class="ident">discretization</span>.<span class="ident">segments</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="ident">n_layers</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>();
 
@@ -2101,6 +2110,9 @@ SOFTWARE.
         }
 
         <span class="kw">let</span> <span class="ident">back_alphas_prev</span> <span class="op">=</span> <span class="ident">Glazing::alphas</span>(<span class="kw-2">&amp;</span><span class="ident">back_glazing</span>);
+        <span class="kw">if</span> <span class="ident">back_alphas_prev</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">back_alphas_prev</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>() {
+            <span class="macro">panic!</span>(<span class="string">&quot;Construction &#39;{}&#39; seems to have a mixture of transparent and opaque layers. This is not currently supported.&quot;</span>, <span class="ident">construction</span>.<span class="ident">name</span>());
+        }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">back_alphas</span> <span class="op">=</span> <span class="ident">Matrix::new</span>(<span class="number">0.0</span>, <span class="ident">n_nodes</span>, <span class="number">1</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">global_i</span> <span class="op">=</span> <span class="ident">n_nodes</span>;
         <span class="kw">for</span> (<span class="ident">alpha_i</span>, <span class="ident">alpha</span>) <span class="kw">in</span> <span class="ident">back_alphas_prev</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
@@ -2170,7 +2182,7 @@ SOFTWARE.
 
         <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
         <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);        
 
         <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
         <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
@@ -2240,7 +2252,7 @@ SOFTWARE.
                 }
 
                 <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="macro">assert!</span>(<span class="ident">count</span> <span class="op">&lt;</span> <span class="number">999</span>, <span class="string">&quot;Excessive number of iteration&quot;</span>);
+                <span class="macro">assert!</span>(<span class="ident">count</span> <span class="op">&lt;</span> <span class="number">999</span>, <span class="string">&quot;Excessive number of iterations&quot;</span>);
                 <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="kw-2">*</span><span class="ident">ini</span>..<span class="kw-2">*</span><span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">local_temp</span> <span class="op">=</span> <span class="ident">temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="ident">temperatures</span>.<span class="ident">add_to_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="ident">local_temp</span>).<span class="ident">unwrap</span>();
@@ -2703,5 +2715,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (fdca237d5 2022-06-24)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (20a6f3a8a 2022-06-25)" ></div>
 </body></html>
