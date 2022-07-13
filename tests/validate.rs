@@ -1,4 +1,4 @@
-use communication_protocols::simulation_model::SimulationModel;
+use communication_protocols::SimulationModel;
 use thermal::model::ThermalModel;
 use thermal::Float;
 
@@ -6,9 +6,27 @@ use calendar::Date;
 use schedule::ScheduleConstant;
 use validate::*;
 use weather::SyntheticWeather;
-
+use communication_protocols::MetaOptions;
 use simple_model::{SimulationStateElement, HVAC};
 use simple_test_models::{get_single_zone_test_building, SingleZoneTestBuildingOptions, TestMat};
+
+const META_OPTIONS : MetaOptions = MetaOptions{
+    latitude: 0., longitude: 0., standard_meridian: 0.,
+};
+
+fn get_validator(expected: Vec<f64>, found: Vec<f64>, expected_legend: &'static str) -> Box<SeriesValidator> {
+    Box::new(SeriesValidator {
+        x_label: Some("time step"),
+        y_label: Some("Zone Temperature"),
+        y_units: Some("C"),
+
+        expected_legend: Some(expected_legend),
+        found_legend: Some("SIMPLE"),
+        expected,
+        found,
+        ..validate::SeriesValidator::default()
+    })
+}
 
 /// A single-zone test model with walls assumed to have
 /// no mass. It has a closed solution, which is nice.
@@ -87,7 +105,7 @@ fn march_with_window() -> (Vec<Float>, Vec<Float>) {
     // Finished model the SimpleModel
     let n: usize = 6;
     let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -111,7 +129,7 @@ fn march_with_window() -> (Vec<Float>, Vec<Float>) {
 
     let t_out: Float = 30.0; // T of surroundings
 
-    let mut weather = SyntheticWeather::new();
+    let mut weather = SyntheticWeather::default();
     weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
     let dt = main_dt;
@@ -174,7 +192,7 @@ fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 60;
     let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -206,7 +224,7 @@ fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
     };
     let exp_fn = tester.get_closed_solution();
 
-    let mut weather = SyntheticWeather::new();
+    let mut weather = SyntheticWeather::default();
     weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
     let mut date = Date {
@@ -262,7 +280,7 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -303,7 +321,7 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
     };
     let exp_fn = tester.get_closed_solution();
 
-    let mut weather = SyntheticWeather::new();
+    let mut weather = SyntheticWeather::default();
     weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
     let dt = main_dt; // / model.dt_subdivisions() as Float;
@@ -362,7 +380,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
     // MAP THE STATE
@@ -404,7 +422,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
     };
     let exp_fn = tester.get_closed_solution();
 
-    let mut weather = SyntheticWeather::new();
+    let mut weather = SyntheticWeather::default();
     weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
     let dt = main_dt; // / model.dt_subdivisions() as Float;
@@ -465,7 +483,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
 
     // Set infiltration
     let inf_vol_index = state_header.push(
@@ -518,7 +536,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     };
     let exp_fn = tester.get_closed_solution();
 
-    let mut weather = SyntheticWeather::new();
+    let mut weather = SyntheticWeather::default();
     weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(t_out));
 
     let dt = main_dt; // / model.dt_subdivisions() as Float;
@@ -580,7 +598,7 @@ fn march_one_wall(
 
     let n: usize = 20;
     // let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+    let thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -615,7 +633,7 @@ fn march_one_wall(
         }
 
         // Set outdoor temp
-        let mut weather = SyntheticWeather::new();
+        let mut weather = SyntheticWeather::default();
         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(outdoor_temp[i]));
 
         let surface = &simple_model.surfaces[0];
@@ -649,497 +667,370 @@ fn march_one_wall(
     (exp, found)
 }
 
+
+
+
+
+
+
 fn theoretical(validations: &mut Validator) {
-    let (expected, found) = very_simple_march();
-    let v = validate::SeriesValidator {
-        title: "Nomass Wall - Walls only",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "Theoretical Solution",
+    const EXPECTED_LEGEND : &'static str = "Theoretical Solution";
 
-        expected,
-        found,
+    #[valid(Nomass Wall - Walls only)]
+    fn nomass_wallonly()-> Box<dyn Validate> {
+        let (expected, found) = very_simple_march();
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(Nomass Wall - Walls and Fenestration)]
+    fn nomass_wall_and_window()-> Box<dyn Validate> {
+        let (expected, found) = march_with_window();
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(Nomass Wall - Walls and Fenestration, with Luminaire on)]
+    fn window_and_luminaire()-> Box<dyn Validate> {
+        let (expected, found) = march_with_window_and_luminaire();
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(Nomass Wall - Walls and Window and heater)]
+    fn nomass_wall_and_window_and_heater()-> Box<dyn Validate> {
+        let (expected, found) = march_with_window_and_heater();
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }    
+        
 
-        ..validate::SeriesValidator::default()
-    };
+    #[valid(Nomass Wall - Walls and Fenestration, with heater on and infiltration)]
+    fn window_heater_and_infiltration()-> Box<dyn Validate> {
+        let (expected, found) = march_with_window_heater_and_infiltration();
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    validations.push(nomass_wallonly());
+    validations.push(nomass_wall_and_window());
+    validations.push(window_and_luminaire());
+    validations.push(nomass_wall_and_window_and_heater());
+    validations.push(window_heater_and_infiltration());
 
-    validations.push(Box::new(v));
-
-    let (expected, found) = march_with_window();
-    let v = validate::SeriesValidator {
-        title: "Nomass Wall - Walls and Fenestration",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "Theoretical Solution",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    let (expected, found) = march_with_window_and_luminaire();
-    let v = validate::SeriesValidator {
-        title: "Nomass Wall - Walls and Fenestration, with Luminaire on",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "Theoretical Solution",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    let (expected, found) = march_with_window_and_heater();
-    let v = validate::SeriesValidator {
-        title: "Nomass Wall - Walls and Fenestration, with heater on",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "Theoretical Solution",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    let (expected, found) = march_with_window_heater_and_infiltration();
-    let v = validate::SeriesValidator {
-        title: "Nomass Wall - Walls and Fenestration, with heater on and infiltration",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "Theoretical Solution",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
 }
 
 fn massive(validations: &mut Validator) {
-    // Massive, With solar Radiation and Long Wave
-    let (expected, found) = march_one_wall(
-        "massive_full",
-        0.9,
-        0.7,
-        vec![TestMat::Concrete(0.2)],
-    );
-    let v = validate::SeriesValidator {
-        title: "Massive Wall, with Solar and Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-        // allowed_mean_bias_error: Some(0.),
-        // allowed_root_mean_squared_error: Some(0.0),
-        expected,
-        found,
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+    const EXPECTED_LEGEND: &'static str = "EnergyPlus";
 
-    // Massive, NO solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "massive_no_ir_no_solar",
-        0.0,
-        0.0,
-        vec![TestMat::Concrete(0.2)],
-    );
-    let v = validate::SeriesValidator {
-        title: "Massive Wall, with no Solar or Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+    #[valid(Massive Wall, with Solar and Long Wave Radiation)]
+    fn wall1()-> Box<dyn Validate> {
+        let (expected, found) = march_one_wall(
+            "massive_full",
+            0.9,
+            0.7,
+            vec![TestMat::Concrete(0.2)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-        expected,
-        found,
+    #[valid(Massive Wall, with no Solar or Long Wave Radiation)]
+    fn wall2()-> Box<dyn Validate> {
+        // Massive, NO solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "massive_no_ir_no_solar",
+            0.0,
+            0.0,
+            vec![TestMat::Concrete(0.2)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+    #[valid(Massive Wall, with Solar Radiation but not Long Wave Radiation)]
+    fn wall3()-> Box<dyn Validate> {
+        // Massive, WITH  solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "massive_no_ir_yes_solar",
+            0.0,
+            0.7,
+            vec![TestMat::Concrete(0.2)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(Massive Wall, with Long Wave Radiation but not Solar Radiation)]
+    fn wall4()-> Box<dyn Validate> {
+        // Massive, No  solar and WITH Long Wave
+        let (expected, found) = march_one_wall(
+            "massive_yes_ir_no_solar",
+            0.9,
+            0.0,
+            vec![TestMat::Concrete(0.2)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-    // Massive, WITH  solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "massive_no_ir_yes_solar",
-        0.0,
-        0.7,
-        vec![TestMat::Concrete(0.2)],
-    );
-    let v = validate::SeriesValidator {
-        title: "Massive Wall, with Solar Radiation but not Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    // Massive, No  solar and WITH Long Wave
-    let (expected, found) = march_one_wall(
-        "massive_yes_ir_no_solar",
-        0.9,
-        0.0,
-        vec![TestMat::Concrete(0.2)],
-    );
-    let v = validate::SeriesValidator {
-        title: "Massive Wall, with Long Wave Radiation but not Solar Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+    validations.push(wall1());
+    validations.push(wall2());
+    validations.push(wall3());
+    validations.push(wall4());
+    
 }
 
 fn mixed(validations: &mut Validator) {
-    // Mixed Mass, With solar Radiation and Long Wave
-    let (expected, found) = march_one_wall(
-        "mixed_full",
-        0.9,
-        0.7,
-        vec![
-            TestMat::Polyurethane(0.02),
-            TestMat::Concrete(0.2),
-            TestMat::Polyurethane(0.02),
-        ],
-    );
-    let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with Solar Radiation and Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+    const EXPECTED_LEGEND: &'static str = "EnergyPlus";
 
-        expected,
-        found,
+    #[valid(Mixed Mass Wall, with Solar Radiation and Long Wave Radiation)]
+    fn wall1()-> Box<dyn Validate> {
+        // Mixed Mass, With solar Radiation and Long Wave
+        let (expected, found) = march_one_wall(
+            "mixed_full",
+            0.9,
+            0.7,
+            vec![
+                TestMat::Polyurethane(0.02),
+                TestMat::Concrete(0.2),
+                TestMat::Polyurethane(0.02),
+            ],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(Mixed Mass Wall, without Solar or Long Wave Radiation)]
+    fn wall2()-> Box<dyn Validate> {
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+        // Mixed Mass, NO solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "mixed_no_ir_no_solar",
+            0.0,
+            0.0,
+            vec![
+                TestMat::Polyurethane(0.02),
+                TestMat::Concrete(0.2),
+                TestMat::Polyurethane(0.02),
+            ],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-    // Mixed Mass, NO solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "mixed_no_ir_no_solar",
-        0.0,
-        0.0,
-        vec![
-            TestMat::Polyurethane(0.02),
-            TestMat::Concrete(0.2),
-            TestMat::Polyurethane(0.02),
-        ],
-    );
-    let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, without Solar or Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+    #[valid(Mixed Mass Wall, with Solar Radiation but no Long Wave Radiation)]
+    fn wall3()-> Box<dyn Validate> {
+        // Mixed Mass, WITH  solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "mixed_no_ir_yes_solar",
+            0.0,
+            0.7,
+            vec![
+                TestMat::Polyurethane(0.02),
+                TestMat::Concrete(0.2),
+                TestMat::Polyurethane(0.02),
+            ],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-        expected,
-        found,
+    #[valid(Mixed Mass Wall, with Long Wave Radiation but no Solar Radiation)]
+    fn wall4()-> Box<dyn Validate> {
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+        // Mixed Mass, No  solar and WITH Long Wave
+        let (expected, found) = march_one_wall(
+            "mixed_yes_ir_no_solar",
+            0.9,
+            0.0,
+            vec![
+                TestMat::Polyurethane(0.02),
+                TestMat::Concrete(0.2),
+                TestMat::Polyurethane(0.02),
+            ],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
 
-    // Mixed Mass, WITH  solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "mixed_no_ir_yes_solar",
-        0.0,
-        0.7,
-        vec![
-            TestMat::Polyurethane(0.02),
-            TestMat::Concrete(0.2),
-            TestMat::Polyurethane(0.02),
-        ],
-    );
-    let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with Solar Radiation but no Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+    validations.push(wall1());
+    validations.push(wall2());
+    validations.push(wall3());
+    validations.push(wall4());
 
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    // Mixed Mass, No  solar and WITH Long Wave
-    let (expected, found) = march_one_wall(
-        "mixed_yes_ir_no_solar",
-        0.9,
-        0.0,
-        vec![
-            TestMat::Polyurethane(0.02),
-            TestMat::Concrete(0.2),
-            TestMat::Polyurethane(0.02),
-        ],
-    );
-    let v = validate::SeriesValidator {
-        title: "Mixed Mass Wall, with Long Wave Radiation but no Solar Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
+    
 }
 
 fn nomass(validations: &mut Validator) {
-    // No Mass, With solar Radiation and Long Wave
-    let (expected, found) = march_one_wall(
-        "nomass_full",
-        0.9,
-        0.7,
-        vec![TestMat::Polyurethane(0.02)],
-    );
-    let v = validate::SeriesValidator {
-        title: "No Mass Wall, with Solar Radiation and Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+    
+    const EXPECTED_LEGEND: &'static str = "EnergyPlus";
 
-        expected,
-        found,
+    #[valid(No Mass Wall, with Solar Radiation and Long Wave Radiation)]
+    fn wall1()-> Box<dyn Validate> {
+        // No Mass, With solar Radiation and Long Wave
+        let (expected, found) = march_one_wall(
+            "nomass_full",
+            0.9,
+            0.7,
+            vec![TestMat::Polyurethane(0.02)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }   
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    // No Mass, NO solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "nomass_no_ir_no_solar",
-        0.0,
-        0.0,
-        vec![TestMat::Polyurethane(0.02)],
-    );
-    let v = validate::SeriesValidator {
-        title: "No Mass Wall, without Solar or Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    // No Mass, WITH  solar and NO Long Wave
-    let (expected, found) = march_one_wall(
-        "nomass_no_ir_yes_solar",
-        0.0,
-        0.7,
-        vec![TestMat::Polyurethane(0.02)],
-    );
-    let v = validate::SeriesValidator {
-        title: "No Mass Wall, with Solar Radiation but no Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-
-    // No Mass, No  solar and WITH Long Wave
-    let (expected, found) = march_one_wall(
-        "nomass_yes_ir_no_solar",
-        0.9,
-        0.0,
-        vec![TestMat::Polyurethane(0.02)],
-    );
-    let v = validate::SeriesValidator {
-        title: "No Mass Wall, with Long Wave Radiation but no Solar Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
-
-        expected,
-        found,
-
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-}
-
-
-fn march_trombe_wall(
-    dir: &'static str,
-    emmisivity: Float,
-    solar_abs: Float,
-    construction: Vec<TestMat>,
-) -> (Vec<Float>, Vec<Float>) {
-    let surface_area = 20. * 3.;
-    let zone_volume = 600.;
-
-    let (simple_model, mut state_header) = get_single_zone_test_building(
-        // &mut state,
-        &SingleZoneTestBuildingOptions {
-            zone_volume,
-            surface_area,
-            construction,
-            emmisivity,
-            solar_absorbtance: solar_abs,
-            ..Default::default()
-        },
-    );
-
-    // Finished model the SimpleModel
-
-    let n: usize = 20;
-    // let main_dt = 60. * 60. / n as Float;
-    let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
-
-    let mut state = state_header.take_values().unwrap();
-
-    let path_string = format!("./tests/{}/eplusout.csv", dir);
-    let path = path_string.as_str();
-    let cols = validate::from_csv(path, &[3, 15, 17, 18, 24]);
-    let incident_solar_radiation = &cols[0]; //3
-    let indoor_thermal_heat_gain = &cols[1]; //15
-    let outdoor_temp = &cols[2]; //17
-    let outdoor_thermal_heat_gain = &cols[3]; //18
-    let exp_zone_air_temp = &cols[4]; //24
-
-    // Set initial temperature
-    simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]);
-
-    let mut date = Date {
-        month: 1,
-        day: 1,
-        hour: 0.0,
-    };
-    let n = outdoor_temp.len();
-    let mut exp = Vec::with_capacity(n);
-    let mut found = Vec::with_capacity(n);
-    for i in 0..n {
-        // Get zone's temp
-        let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
-        let exp_temp = exp_zone_air_temp[i];
-        if i > 000 {
-            // skip warmup
-            exp.push(exp_temp);
-            found.push(found_temp);
-        }
-
-        // Set outdoor temp
-        let mut weather = SyntheticWeather::new();
-        weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(outdoor_temp[i]));
-
-        let surface = &simple_model.surfaces[0];
-
-        // Set Solar Radiation
-        surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
-
-        // Set Long Wave radiation
-        if emmisivity > 1e-3 {
-            let ts = surface.last_node_temperature(&state).unwrap();
-            let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
-                + thermal::SIGMA * (ts + 273.15).powi(4);
-            surface.set_back_ir_irradiance(&mut state, v);
-
-            let ts = surface.first_node_temperature(&state).unwrap();
-            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
-                + thermal::SIGMA * (ts + 273.15).powi(4);
-            surface.set_front_ir_irradiance(&mut state, v);
-        }
-
-        // March
-        thermal_model
-            .march(date, &weather, &simple_model, &mut state)
-            .unwrap();
-
-        // Advance
-        date.add_hours(1. / n as Float);
+    #[valid(No Mass Wall, without Solar or Long Wave Radiation)]
+    fn wall2()-> Box<dyn Validate> {
+        // No Mass, NO solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "nomass_no_ir_no_solar",
+            0.0,
+            0.0,
+            vec![TestMat::Polyurethane(0.02)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
     }
-    (exp, found)
+
+    #[valid(No Mass Wall, with Solar Radiation but no Long Wave Radiation)]
+    fn wall3()-> Box<dyn Validate> {
+        // No Mass, WITH  solar and NO Long Wave
+        let (expected, found) = march_one_wall(
+            "nomass_no_ir_yes_solar",
+            0.0,
+            0.7,
+            vec![TestMat::Polyurethane(0.02)],
+        );
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    
+    #[valid(No Mass Wall, with Long Wave Radiation but no Solar Radiation)]
+    fn wall4()-> Box<dyn Validate> {
+        // No Mass, No  solar and WITH Long Wave
+        let (expected, found) = march_one_wall(
+            "nomass_yes_ir_no_solar",
+            0.9,
+            0.0,
+            vec![TestMat::Polyurethane(0.02)],
+        );
+
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+
+    validations.push(wall1());
+    validations.push(wall2());
+    validations.push(wall3());
+    validations.push(wall4());
+
 }
 
 
-fn trombe_wall(validations: &mut Validator) {
-    // No Mass, With solar Radiation and Long Wave
-    let (expected, found) = march_trombe_wall(
-        "trombe_wall_full",
-        0.9,
-        0.08,
-        vec![
-            TestMat::Concrete(0.2),
-            TestMat::Air(0.05),
-            TestMat::Glass(0.03, 0.82), 
-        ],
-    );
-    let v = validate::SeriesValidator {
-        title: "Trombe Wall, with Solar Radiation and Long Wave Radiation",
-        x_label: Some("time step"),
-        y_label: Some("Zone Temperature"),
-        y_units: Some("C"),
-        found_name: "Simple",
-        expected_name: "EnergyPlus",
+// fn march_trombe_wall(
+//     dir: &'static str,
+//     emmisivity: Float,
+//     solar_abs: Float,
+//     construction: Vec<TestMat>,
+// ) -> (Vec<Float>, Vec<Float>) {
+//     let surface_area = 20. * 3.;
+//     let zone_volume = 600.;
 
-        expected,
-        found,
+//     let (simple_model, mut state_header) = get_single_zone_test_building(
+//         // &mut state,
+//         &SingleZoneTestBuildingOptions {
+//             zone_volume,
+//             surface_area,
+//             construction,
+//             emmisivity,
+//             solar_absorbtance: solar_abs,
+//             ..Default::default()
+//         },
+//     );
 
-        ..validate::SeriesValidator::default()
-    };
-    validations.push(Box::new(v));
-}
+//     // Finished model the SimpleModel
+
+//     let n: usize = 20;
+//     // let main_dt = 60. * 60. / n as Float;
+//     let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+
+//     let mut state = state_header.take_values().unwrap();
+
+//     let path_string = format!("./tests/{}/eplusout.csv", dir);
+//     let path = path_string.as_str();
+//     let cols = validate::from_csv(path, &[3, 15, 17, 18, 24]);
+//     let incident_solar_radiation = &cols[0]; //3
+//     let indoor_thermal_heat_gain = &cols[1]; //15
+//     let outdoor_temp = &cols[2]; //17
+//     let outdoor_thermal_heat_gain = &cols[3]; //18
+//     let exp_zone_air_temp = &cols[4]; //24
+
+//     // Set initial temperature
+//     simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]);
+
+//     let mut date = Date {
+//         month: 1,
+//         day: 1,
+//         hour: 0.0,
+//     };
+//     let n = outdoor_temp.len();
+//     let mut exp = Vec::with_capacity(n);
+//     let mut found = Vec::with_capacity(n);
+//     for i in 0..n {
+//         // Get zone's temp
+//         let found_temp = simple_model.spaces[0].dry_bulb_temperature(&state).unwrap();
+//         let exp_temp = exp_zone_air_temp[i];
+//         if i > 000 {
+//             // skip warmup
+//             exp.push(exp_temp);
+//             found.push(found_temp);
+//         }
+
+//         // Set outdoor temp
+//         let mut weather = SyntheticWeather::default();
+//         weather.dry_bulb_temperature = Box::new(ScheduleConstant::new(outdoor_temp[i]));
+
+//         let surface = &simple_model.surfaces[0];
+
+//         // Set Solar Radiation
+//         surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
+
+//         // Set Long Wave radiation
+//         if emmisivity > 1e-3 {
+//             let ts = surface.last_node_temperature(&state).unwrap();
+//             let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
+//                 + thermal::SIGMA * (ts + 273.15).powi(4);
+//             surface.set_back_ir_irradiance(&mut state, v);
+
+//             let ts = surface.first_node_temperature(&state).unwrap();
+//             let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+//                 + thermal::SIGMA * (ts + 273.15).powi(4);
+//             surface.set_front_ir_irradiance(&mut state, v);
+//         }
+
+//         // March
+//         thermal_model
+//             .march(date, &weather, &simple_model, &mut state)
+//             .unwrap();
+
+//         // Advance
+//         date.add_hours(1. / n as Float);
+//     }
+//     (exp, found)
+// }
+
+
+// fn trombe_wall(validations: &mut Validator) {
+//     // No Mass, With solar Radiation and Long Wave
+//     let (expected, found) = march_trombe_wall(
+//         "trombe_wall_full",
+//         0.9,
+//         0.08,
+//         vec![
+//             TestMat::Concrete(0.2),
+//             TestMat::Air(0.05),
+//             TestMat::Glass(0.03, 0.82), 
+//         ],
+//     );
+//     let v = validate::SeriesValidator {
+//         title: "Trombe Wall, with Solar Radiation and Long Wave Radiation",
+//         x_label: Some("time step"),
+//         y_label: Some("Zone Temperature"),
+//         y_units: Some("C"),
+//         found_name: "Simple",
+//         expected_name: "EnergyPlus",
+
+//         expected,
+//         found,
+
+//         ..validate::SeriesValidator::default()
+//     };
+//     validations.push(Box::new(v));
+// }
 
 #[test]
 fn validate() {

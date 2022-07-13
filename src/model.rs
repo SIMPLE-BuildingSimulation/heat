@@ -20,8 +20,8 @@ SOFTWARE.
 use crate::construction::Discretization;
 use crate::Float;
 use calendar::Date;
-use communication_protocols::error_handling::ErrorHandling;
-use communication_protocols::simulation_model::SimulationModel;
+
+use communication_protocols::{ErrorHandling, SimulationModel, MetaOptions};
 use weather::Weather;
 
 use crate::surface::{SurfaceTrait, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
@@ -58,6 +58,7 @@ impl ErrorHandling for ThermalModel {
 
 impl SimulationModel for ThermalModel {
     type Type = Self;
+    type OptionType = (); // No options
 
     /// Creates a new ThermalModel from a SimpleModel.
     ///    
@@ -66,6 +67,8 @@ impl SimulationModel for ThermalModel {
     /// * state: the `SimulationStateHeader` attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
     fn new(
+        _meta_options: &MetaOptions,
+        _options: (),
         model: &SimpleModel,
         state: &mut SimulationStateHeader,
         n: usize,
@@ -536,6 +539,10 @@ mod testing {
 
     use simple_test_models::*;
 
+    const META_OPTIONS : MetaOptions = MetaOptions{
+        latitude: 0., longitude: 0., standard_meridian: 0.,
+    };
+
     #[test]
     fn test_calculate_zones_abc() {
         let (simple_model, mut state_header) = get_single_zone_test_building(
@@ -549,8 +556,10 @@ mod testing {
             },
         );
 
+
+
         let n: usize = 1;
-        let thermal_model = ThermalModel::new(&simple_model, &mut state_header, n).unwrap();
+        let thermal_model = ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
         let state = state_header.take_values().unwrap();
         // MAP THE STATE
         // model.map_simulation_state(&mut state).unwrap();
