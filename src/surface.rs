@@ -297,11 +297,13 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index),
-            10.,
-        );
-        self.set_front_convection_coefficient_index(i);
+        if let None = self.front_convection_coefficient_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index),
+                10.,
+            );
+            self.set_front_convection_coefficient_index(i);
+        }
     }
 
     fn add_back_convection_state(
@@ -309,11 +311,13 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index),
-            10.,
-        );
-        self.set_back_convection_coefficient_index(i);
+        if let None = self.back_convection_coefficient_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index),
+                10.,
+            );
+            self.set_back_convection_coefficient_index(i);
+        }
     }
 
     fn add_front_convective_heatflow_state(
@@ -321,22 +325,26 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index),
-            0.0,
-        );
-        self.set_front_convective_heat_flow_index(i);
+        if let None = self.front_convective_heat_flow_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index),
+                0.0,
+            );
+            self.set_front_convective_heat_flow_index(i);
+        }
     }
     fn add_back_convective_heatflow_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index),
-            0.0,
-        );
-        self.set_back_convective_heat_flow_index(i);
+        if let None = self.back_convective_heat_flow_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index),
+                0.0,
+            );
+            self.set_back_convective_heat_flow_index(i);
+        }
     }
 
     fn add_front_solar_irradiance_state(
@@ -344,22 +352,26 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_front_incident_solar_irradiance_index(i);
+        if let None = self.front_incident_solar_irradiance_index(){        
+            let i = state.push(
+                SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_front_incident_solar_irradiance_index(i);
+        }
     }
     fn add_back_solar_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceBackSolarIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_back_incident_solar_irradiance_index(i);
+        if let None = self.back_incident_solar_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceBackSolarIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_back_incident_solar_irradiance_index(i);
+        }
     }
 
     fn add_front_ir_irradiance_state(
@@ -367,22 +379,26 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceFrontIRIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_front_ir_irradiance_index(i);
+        if let None = self.front_ir_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceFrontIRIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_front_ir_irradiance_index(i);
+        }
     }
     fn add_back_ir_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::SurfaceBackIRIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_back_ir_irradiance_index(i);
+        if let None = self.back_ir_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::SurfaceBackIRIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_back_ir_irradiance_index(i);
+        }
     }
 
     fn add_node_temperature_states(
@@ -391,17 +407,19 @@ impl SurfaceTrait for Surface {
         ref_surface_index: usize,
         n_nodes: usize,
     ) {
-        // let n_nodes = d.segments.len();
-        let first_node = state.len();
-        for node_index in 0..n_nodes {
-            state.push(
-                SimulationStateElement::SurfaceNodeTemperature(ref_surface_index, node_index),
-                22.0,
-            );
+        if let None = self.first_node_temperature_index(){
+            // let n_nodes = d.segments.len();
+            let first_node = state.len();
+            for node_index in 0..n_nodes {
+                state.push(
+                    SimulationStateElement::SurfaceNodeTemperature(ref_surface_index, node_index),
+                    22.0,
+                );
+            }
+            let last_node = state.len();
+            self.set_first_node_temperature_index(first_node);
+            self.set_last_node_temperature_index(last_node - 1);
         }
-        let last_node = state.len();
-        self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node - 1);
     }
 }
 
@@ -446,11 +464,13 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index),
-            10.,
-        );
-        self.set_front_convection_coefficient_index(i);
+        if let None = self.front_convection_coefficient_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index),
+                10.,
+            );
+            self.set_front_convection_coefficient_index(i);
+        }
     }
 
     fn add_back_convection_state(
@@ -458,11 +478,13 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index),
-            10.,
-        );
-        self.set_back_convection_coefficient_index(i);
+        if let None = self.back_convection_coefficient_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index),
+                10.,
+            );
+            self.set_back_convection_coefficient_index(i);
+        }
     }
 
     fn add_front_convective_heatflow_state(
@@ -470,22 +492,26 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index),
-            0.0,
-        );
-        self.set_front_convective_heat_flow_index(i);
+        if let None = self.front_convective_heat_flow_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index),
+                0.0,
+            );
+            self.set_front_convective_heat_flow_index(i);
+        }
     }
     fn add_back_convective_heatflow_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index),
-            0.0,
-        );
-        self.set_back_convective_heat_flow_index(i);
+        if let None = self.back_convective_heat_flow_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index),
+                0.0,
+            );
+            self.set_back_convective_heat_flow_index(i);
+        }
     }
 
     fn add_front_solar_irradiance_state(
@@ -493,45 +519,53 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationFrontSolarIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_front_incident_solar_irradiance_index(i);
+        if let None = self.front_incident_solar_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationFrontSolarIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_front_incident_solar_irradiance_index(i);
+        }
     }
     fn add_back_solar_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationBackSolarIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_back_incident_solar_irradiance_index(i);
+        if let None = self.back_incident_solar_irradiance_index(){            
+            let i = state.push(
+                SimulationStateElement::FenestrationBackSolarIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_back_incident_solar_irradiance_index(i);
+        }
     }
 
     fn add_front_ir_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationFrontIRIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_front_ir_irradiance_index(i);
+    ) { 
+        if let None = self.front_ir_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationFrontIRIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_front_ir_irradiance_index(i);
+        }
     }
     fn add_back_ir_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        let i = state.push(
-            SimulationStateElement::FenestrationBackIRIrradiance(ref_surface_index),
-            0.0,
-        );
-        self.set_back_ir_irradiance_index(i);
+        if let None = self.back_ir_irradiance_index(){
+            let i = state.push(
+                SimulationStateElement::FenestrationBackIRIrradiance(ref_surface_index),
+                0.0,
+            );
+            self.set_back_ir_irradiance_index(i);
+        }
     }
 
     fn add_node_temperature_states(
@@ -540,17 +574,18 @@ impl SurfaceTrait for Fenestration {
         ref_surface_index: usize,
         n_nodes: usize,
     ) {
-        // let n_nodes = d.segments.len();
-        let first_node = state.len();
-        for node_index in 0..n_nodes {
-            state.push(
-                SimulationStateElement::FenestrationNodeTemperature(ref_surface_index, node_index),
-                22.0,
-            );
+        if let None = self.first_node_temperature_index(){
+            let first_node = state.len();
+            for node_index in 0..n_nodes {
+                state.push(
+                    SimulationStateElement::FenestrationNodeTemperature(ref_surface_index, node_index),
+                    22.0,
+                );
+            }
+            let last_node = state.len();
+            self.set_first_node_temperature_index(first_node);
+            self.set_last_node_temperature_index(last_node - 1);
         }
-        let last_node = state.len();
-        self.set_first_node_temperature_index(first_node);
-        self.set_last_node_temperature_index(last_node - 1);
     }
 }
 
