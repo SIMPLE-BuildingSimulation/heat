@@ -1376,6 +1376,41 @@
 <span id="1336">1336</span>
 <span id="1337">1337</span>
 <span id="1338">1338</span>
+<span id="1339">1339</span>
+<span id="1340">1340</span>
+<span id="1341">1341</span>
+<span id="1342">1342</span>
+<span id="1343">1343</span>
+<span id="1344">1344</span>
+<span id="1345">1345</span>
+<span id="1346">1346</span>
+<span id="1347">1347</span>
+<span id="1348">1348</span>
+<span id="1349">1349</span>
+<span id="1350">1350</span>
+<span id="1351">1351</span>
+<span id="1352">1352</span>
+<span id="1353">1353</span>
+<span id="1354">1354</span>
+<span id="1355">1355</span>
+<span id="1356">1356</span>
+<span id="1357">1357</span>
+<span id="1358">1358</span>
+<span id="1359">1359</span>
+<span id="1360">1360</span>
+<span id="1361">1361</span>
+<span id="1362">1362</span>
+<span id="1363">1363</span>
+<span id="1364">1364</span>
+<span id="1365">1365</span>
+<span id="1366">1366</span>
+<span id="1367">1367</span>
+<span id="1368">1368</span>
+<span id="1369">1369</span>
+<span id="1370">1370</span>
+<span id="1371">1371</span>
+<span id="1372">1372</span>
+<span id="1373">1373</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1675,11 +1710,13 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceFrontConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">10.</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_convection_coefficient_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_convection_coefficient_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceFrontConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">10.</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_convection_coefficient_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_back_convection_state</span>(
@@ -1687,11 +1724,13 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceBackConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">10.</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_convection_coefficient_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_convection_coefficient_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceBackConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">10.</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_convection_coefficient_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_convective_heatflow_state</span>(
@@ -1699,22 +1738,26 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceFrontConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_convective_heat_flow_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceFrontConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_convective_heatflow_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceBackConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_convective_heat_flow_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceBackConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_solar_irradiance_state</span>(
@@ -1722,22 +1765,26 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_incident_solar_irradiance_index</span>(){        
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_solar_irradiance_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_incident_solar_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_ir_irradiance_state</span>(
@@ -1745,22 +1792,26 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_ir_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_ir_irradiance_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::SurfaceBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_ir_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::SurfaceBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_node_temperature_states</span>(
@@ -1769,17 +1820,19 @@ SOFTWARE.
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
         <span class="ident">n_nodes</span>: <span class="ident">usize</span>,
     ) {
-        <span class="comment">// let n_nodes = d.segments.len();</span>
-        <span class="kw">let</span> <span class="ident">first_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
-        <span class="kw">for</span> <span class="ident">node_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span> {
-            <span class="ident">state</span>.<span class="ident">push</span>(
-                <span class="ident">SimulationStateElement::SurfaceNodeTemperature</span>(<span class="ident">ref_surface_index</span>, <span class="ident">node_index</span>),
-                <span class="number">22.0</span>,
-            );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">first_node_temperature_index</span>(){
+            <span class="comment">// let n_nodes = d.segments.len();</span>
+            <span class="kw">let</span> <span class="ident">first_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
+            <span class="kw">for</span> <span class="ident">node_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span> {
+                <span class="ident">state</span>.<span class="ident">push</span>(
+                    <span class="ident">SimulationStateElement::SurfaceNodeTemperature</span>(<span class="ident">ref_surface_index</span>, <span class="ident">node_index</span>),
+                    <span class="number">22.0</span>,
+                );
+            }
+            <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
+            <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
+            <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
         }
-        <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
-        <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
-        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
     }
 }
 
@@ -1824,11 +1877,13 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationFrontConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">10.</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_convection_coefficient_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_convection_coefficient_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationFrontConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">10.</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_convection_coefficient_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_back_convection_state</span>(
@@ -1836,11 +1891,13 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationBackConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">10.</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_convection_coefficient_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_convection_coefficient_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationBackConvectionCoefficient</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">10.</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_convection_coefficient_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_convective_heatflow_state</span>(
@@ -1848,22 +1905,26 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationFrontConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_convective_heat_flow_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationFrontConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_convective_heatflow_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationBackConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_convective_heat_flow_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationBackConvectiveHeatFlow</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_convective_heat_flow_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_solar_irradiance_state</span>(
@@ -1871,45 +1932,53 @@ SOFTWARE.
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_incident_solar_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationFrontSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_solar_irradiance_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_incident_solar_irradiance_index</span>(){            
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationBackSolarIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_incident_solar_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_front_ir_irradiance_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
-    ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+    ) { 
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">front_ir_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationFrontIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_front_ir_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
     <span class="kw">fn</span> <span class="ident">add_back_ir_irradiance_state</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="ident">SimulationStateElement::FenestrationBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
-            <span class="number">0.0</span>,
-        );
-        <span class="self">self</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">back_ir_irradiance_index</span>(){
+            <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
+                <span class="ident">SimulationStateElement::FenestrationBackIRIrradiance</span>(<span class="ident">ref_surface_index</span>),
+                <span class="number">0.0</span>,
+            );
+            <span class="self">self</span>.<span class="ident">set_back_ir_irradiance_index</span>(<span class="ident">i</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">add_node_temperature_states</span>(
@@ -1918,17 +1987,18 @@ SOFTWARE.
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
         <span class="ident">n_nodes</span>: <span class="ident">usize</span>,
     ) {
-        <span class="comment">// let n_nodes = d.segments.len();</span>
-        <span class="kw">let</span> <span class="ident">first_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
-        <span class="kw">for</span> <span class="ident">node_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span> {
-            <span class="ident">state</span>.<span class="ident">push</span>(
-                <span class="ident">SimulationStateElement::FenestrationNodeTemperature</span>(<span class="ident">ref_surface_index</span>, <span class="ident">node_index</span>),
-                <span class="number">22.0</span>,
-            );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">None</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">first_node_temperature_index</span>(){
+            <span class="kw">let</span> <span class="ident">first_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
+            <span class="kw">for</span> <span class="ident">node_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n_nodes</span> {
+                <span class="ident">state</span>.<span class="ident">push</span>(
+                    <span class="ident">SimulationStateElement::FenestrationNodeTemperature</span>(<span class="ident">ref_surface_index</span>, <span class="ident">node_index</span>),
+                    <span class="number">22.0</span>,
+                );
+            }
+            <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
+            <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
+            <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
         }
-        <span class="kw">let</span> <span class="ident">last_node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">len</span>();
-        <span class="self">self</span>.<span class="ident">set_first_node_temperature_index</span>(<span class="ident">first_node</span>);
-        <span class="self">self</span>.<span class="ident">set_last_node_temperature_index</span>(<span class="ident">last_node</span> <span class="op">-</span> <span class="number">1</span>);
     }
 }
 
