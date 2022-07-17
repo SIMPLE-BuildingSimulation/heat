@@ -1666,7 +1666,6 @@
 <span id="1626">1626</span>
 <span id="1627">1627</span>
 <span id="1628">1628</span>
-<span id="1629">1629</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1770,8 +1769,7 @@ SOFTWARE.
         <span class="ident">height</span>: <span class="ident">Float</span>,
         <span class="ident">angle</span>: <span class="ident">Float</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">tstep_subdivision</span>, <span class="ident">n_elements</span>) <span class="op">=</span>
-            <span class="ident"><span class="self">Self</span>::discretize_construction</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>);
+        <span class="kw">let</span> (<span class="ident">tstep_subdivision</span>, <span class="ident">n_elements</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::discretize_construction</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>)<span class="question-mark">?</span>;
         <span class="ident"><span class="self">Self</span>::build</span>(<span class="ident">construction</span>, <span class="ident">tstep_subdivision</span>, <span class="ident">n_elements</span>, <span class="ident">height</span>, <span class="ident">angle</span>)
     }
 
@@ -2077,7 +2075,7 @@ SOFTWARE.
         <span class="ident">model_dt</span>: <span class="ident">Float</span>,
         <span class="ident">max_dx</span>: <span class="ident">Float</span>,
         <span class="ident">min_dt</span>: <span class="ident">Float</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>), <span class="ident">String</span><span class="op">&gt;</span> {
         <span class="comment">// I could only think of how to make this recursively... so I did this.</span>
         <span class="kw">fn</span> <span class="ident">aux</span>(
             <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
@@ -2085,7 +2083,7 @@ SOFTWARE.
             <span class="ident">n</span>: <span class="ident">usize</span>,
             <span class="ident">max_dx</span>: <span class="ident">Float</span>,
             <span class="ident">min_dt</span>: <span class="ident">Float</span>,
-        ) -&gt; (<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>), <span class="ident">String</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">main_dt</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>);
 
             <span class="comment">// So, for each layer</span>
@@ -2101,9 +2099,9 @@ SOFTWARE.
                 <span class="kw">let</span> <span class="ident">thickness</span> <span class="op">=</span> <span class="ident">material</span>.<span class="ident">thickness</span>;
                 <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">rho</span>, <span class="ident">cp</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">substance</span> {
                     <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; {
-                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;thermal conductivity&#39;&quot;</span>);
-                        <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">density</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;density&#39;&quot;</span>);
-                        <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">expect</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;specific heat capacity&#39;&quot;</span>);
+                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">thermal_conductivity</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">_x</span><span class="op">|</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;thermal conductivity&#39;&quot;</span>))<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">density</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">_x</span><span class="op">|</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;density&#39;&quot;</span>))<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">specific_heat_capacity</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">_x</span><span class="op">|</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Trying to discretize a construction that contains a Normal Substance without a &#39;specific heat capacity&#39;&quot;</span>))<span class="question-mark">?</span>;
                         (<span class="kw-2">*</span><span class="ident">k</span>, <span class="kw-2">*</span><span class="ident">rho</span>, <span class="kw-2">*</span><span class="ident">cp</span>)
                     }
                     <span class="ident">Substance::Gas</span>(<span class="kw">_</span>) =&gt; {
@@ -2198,7 +2196,7 @@ SOFTWARE.
             }
 
             <span class="comment">// return</span>
-            (<span class="ident">n</span>, <span class="ident">n_elements</span>)
+            <span class="prelude-val">Ok</span>((<span class="ident">n</span>, <span class="ident">n_elements</span>))
         }
         <span class="ident">aux</span>(<span class="ident">construction</span>, <span class="ident">model_dt</span>, <span class="number">1</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>)
     }
@@ -3297,5 +3295,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1c7b36d4d 2022-07-12)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thermal" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (d5e7f4782 2022-07-16)" ></div>
 </body></html>
