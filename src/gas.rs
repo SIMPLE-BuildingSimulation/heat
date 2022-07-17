@@ -232,7 +232,7 @@ fn nusselt(ra: Float, gamma: Float, a_gi: Float) -> Float {
 /// $`0^o`$ and $`60^o`$
 ///
 /// From Equation 43 and 44 of ISO15099/2003 (based on ref. 7 of that standard)
-fn nu_0_60(ra: Float, gamma: Float, a_gi: Float) -> Float {
+fn nu_0_60(ra: Float, gamma: Float, _a_gi: Float) -> Float {
     // if ra > 1e5 || a_gi < 20. {
     //     // This clause is written in section 5.3.3.2... does
     //     // not say what to do when this happens

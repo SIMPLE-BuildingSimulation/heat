@@ -101,8 +101,7 @@ impl Discretization {
         height: Float,
         angle: Float,
     ) -> Result<Self, String> {
-        let (tstep_subdivision, n_elements) =
-            Self::discretize_construction(construction, model_dt, max_dx, min_dt);
+        let (tstep_subdivision, n_elements) = Self::discretize_construction(construction, model_dt, max_dx, min_dt)?;
         Self::build(construction, tstep_subdivision, n_elements, height, angle)
     }
 
@@ -408,7 +407,7 @@ impl Discretization {
         model_dt: Float,
         max_dx: Float,
         min_dt: Float,
-    ) -> (usize, Vec<usize>) {
+    ) -> Result<(usize, Vec<usize>), String> {
         // I could only think of how to make this recursively... so I did this.
         fn aux(
             construction: &Rc<Construction>,
@@ -416,7 +415,7 @@ impl Discretization {
             n: usize,
             max_dx: Float,
             min_dt: Float,
-        ) -> (usize, Vec<usize>) {
+        ) -> Result<(usize, Vec<usize>), String> {
             let dt = main_dt / (n as Float);
 
             // So, for each layer
@@ -432,9 +431,9 @@ impl Discretization {
                 let thickness = material.thickness;
                 let (k, rho, cp) = match substance {
                     Substance::Normal(s) => {
-                        let k = s.thermal_conductivity().expect("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'");
-                        let rho = s.density().expect("Trying to discretize a construction that contains a Normal Substance without a 'density'");
-                        let cp = s.specific_heat_capacity().expect("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'");
+                        let k = s.thermal_conductivity().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'"))?;
+                        let rho = s.density().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'density'"))?;
+                        let cp = s.specific_heat_capacity().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'"))?;
                         (*k, *rho, *cp)
                     }
                     Substance::Gas(_) => {
@@ -529,7 +528,7 @@ impl Discretization {
             }
 
             // return
-            (n, n_elements)
+            Ok((n, n_elements))
         }
         aux(construction, model_dt, 1, max_dx, min_dt)
     }

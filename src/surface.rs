@@ -636,7 +636,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
-                        "Substance '{}' has no solar absorbtance... assuming {}",
+                        "Substance '{}' has no front solar absorbtance... assuming {}",
                         &construction.materials[0].substance.name(),
                         DEFAULT_SOLAR
                     );
@@ -650,7 +650,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
-                        "Substance '{}' has no solar absorbtance... assuming {}",
+                        "Substance '{}' has no bask solar absorbtance... assuming {}",
                         &construction.materials[0].substance.name(),
                         DEFAULT_SOLAR
                     );
@@ -666,7 +666,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
-                        "Substance '{}' has no thermal absorbtance... assuming {}",
+                        "Substance '{}' has no front thermal absorbtance... assuming {}",
                         &construction.materials[0].substance.name(),
                         DEFAULT_EM
                     );
@@ -680,7 +680,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 Ok(v) => *v,
                 Err(_) => {
                     eprintln!(
-                        "Substance '{}' has no thermal absorbtance... assuming {}",
+                        "Substance '{}' has no back thermal absorbtance... assuming {}",
                         &construction.materials[0].substance.name(),
                         DEFAULT_EM
                     );
