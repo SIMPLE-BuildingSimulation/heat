@@ -1043,10 +1043,10 @@ fn validate() {
     let target_file = format!("{}/walls.html", p);
     let mut validations = Validator::new("SIMPLE Thermal validation report", &target_file);
 
-    theoretical(&mut validations);
+    // theoretical(&mut validations);
     massive(&mut validations);
-    mixed(&mut validations);
-    nomass(&mut validations);
+    // mixed(&mut validations);
+    // nomass(&mut validations);
     // trombe_wall(&mut validations);
     validations.validate().unwrap();
 }

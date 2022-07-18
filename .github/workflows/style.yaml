@@ -5,8 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set Toolchain
-        run: rustup default nightly   
       - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
         with:

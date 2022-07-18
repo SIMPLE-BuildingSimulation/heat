@@ -112,7 +112,7 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     }
 
     // get k1
-    let mut k1 = &k * &*t;
+    let mut k1 = k.from_prod_n_diag(&t, 3).unwrap();//&k * &*t;
     k1 += &q;
 
     // returning "temperatures + k1" is Euler... continuing is
@@ -124,19 +124,19 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     aux += t;
 
     // k2
-    let mut k2 = &k * &aux;
+    let mut k2 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
     k2 += &q;
 
     // k3
     k2.scale_into(0.5, &mut aux).unwrap();
     aux += t;
-    let mut k3 = &k * &aux;
+    let mut k3 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
     k3 += &q;
 
     // k4
     aux.copy_from(&k3);
     aux += t;
-    let mut k4 = &k * &aux;
+    let mut k4 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
     k4 += &q;
 
     // Scale them and add them all up

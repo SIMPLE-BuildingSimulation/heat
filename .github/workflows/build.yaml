@@ -12,16 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest    
     steps:
-    - uses: actions/checkout@v3
-    - name: Set Toolchain
-      run: rustup default nightly     
+    - uses: actions/checkout@v3   
     - name: Build
       run: cargo build --verbose
   build_float:    
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1  
-    - name: Set Toolchain
-      run: rustup default nightly      
+    - uses: actions/checkout@v1      
     - name: Build Float
       run: cargo build --verbose --features float 
