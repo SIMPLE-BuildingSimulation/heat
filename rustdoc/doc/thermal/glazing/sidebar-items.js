@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Glazing","An abstraction of a glazing layer for optical purposes."]]};
+initSidebarItems({"struct":[["Glazing","An abstraction of a glazing layer for optical purposes."]]});

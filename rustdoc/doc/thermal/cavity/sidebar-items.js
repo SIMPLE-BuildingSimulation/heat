@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Cavity","Represents some gas enclosed by two solid materials"]]};
+initSidebarItems({"struct":[["Cavity","Represents some gas enclosed by two solid materials"]]});
