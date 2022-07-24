@@ -37,10 +37,10 @@ pub type Float = f32;
 #[cfg(not(feature = "float"))]
 pub type Float = f64;
 
-/// Well, Pi
+/// Well, $`\pi`$
 #[cfg(feature = "float")]
 pub const PI: Float = std::f32::consts::PI;
-/// Well, Pi
+/// Well, $`\pi`$
 #[cfg(not(feature = "float"))]
 pub const PI: Float = std::f64::consts::PI;
 
@@ -50,7 +50,7 @@ pub const SIGMA: Float = 5.670374419e-8;
 
 pub mod cavity;
 pub mod construction;
-pub mod environment;
+pub mod convection;
 pub mod gas;
 pub mod glazing;
 pub mod heating_cooling;

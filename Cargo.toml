@@ -1,5 +1,5 @@
 [package]
-name = "thermal"
+name = "heat"
 version = "0.1.0"
 authors = ["German Molina <germolinal@gmail.com>"]
 edition = "2021"

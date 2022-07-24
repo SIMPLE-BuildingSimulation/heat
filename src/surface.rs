@@ -19,9 +19,10 @@ SOFTWARE.
 */
 
 use crate::construction::Discretization;
-use crate::environment::Environment;
+use crate::convection::ConvectionParams;
 use crate::glazing::Glazing;
 use crate::Float;
+use geometry3d::Vector3D;
 use matrix::Matrix;
 use simple_model::{
     Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface,
@@ -112,7 +113,7 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     }
 
     // get k1
-    let mut k1 = k.from_prod_n_diag(&t, 3).unwrap();//&k * &*t;
+    let mut k1 = k.from_prod_n_diag(t, 3).unwrap(); //&k * &*t;
     k1 += &q;
 
     // returning "temperatures + k1" is Euler... continuing is
@@ -124,19 +125,19 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     aux += t;
 
     // k2
-    let mut k2 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
+    let mut k2 = k.from_prod_n_diag(&aux, 3).unwrap(); //&k * &aux;
     k2 += &q;
 
     // k3
     k2.scale_into(0.5, &mut aux).unwrap();
     aux += t;
-    let mut k3 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
+    let mut k3 = k.from_prod_n_diag(&aux, 3).unwrap(); //&k * &aux;
     k3 += &q;
 
     // k4
     aux.copy_from(&k3);
     aux += t;
-    let mut k4 = k.from_prod_n_diag(&aux, 3).unwrap();//&k * &aux;
+    let mut k4 = k.from_prod_n_diag(&aux, 3).unwrap(); //&k * &aux;
     k4 += &q;
 
     // Scale them and add them all up
@@ -297,10 +298,10 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_convection_coefficient_index(){
+        if self.front_convection_coefficient_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index),
-                10.,
+                1.739658084820765,
             );
             self.set_front_convection_coefficient_index(i);
         }
@@ -311,10 +312,10 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_convection_coefficient_index(){
+        if self.back_convection_coefficient_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index),
-                10.,
+                1.739658084820765,
             );
             self.set_back_convection_coefficient_index(i);
         }
@@ -325,7 +326,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_convective_heat_flow_index(){
+        if self.front_convective_heat_flow_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index),
                 0.0,
@@ -338,7 +339,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_convective_heat_flow_index(){
+        if self.back_convective_heat_flow_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index),
                 0.0,
@@ -352,7 +353,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_incident_solar_irradiance_index(){        
+        if self.front_incident_solar_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
                 0.0,
@@ -365,7 +366,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_incident_solar_irradiance_index(){
+        if self.back_incident_solar_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceBackSolarIrradiance(ref_surface_index),
                 0.0,
@@ -379,7 +380,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_ir_irradiance_index(){
+        if self.front_ir_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceFrontIRIrradiance(ref_surface_index),
                 0.0,
@@ -392,7 +393,7 @@ impl SurfaceTrait for Surface {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_ir_irradiance_index(){
+        if self.back_ir_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::SurfaceBackIRIrradiance(ref_surface_index),
                 0.0,
@@ -407,7 +408,7 @@ impl SurfaceTrait for Surface {
         ref_surface_index: usize,
         n_nodes: usize,
     ) {
-        if let None = self.first_node_temperature_index(){
+        if self.first_node_temperature_index().is_none() {
             // let n_nodes = d.segments.len();
             let first_node = state.len();
             for node_index in 0..n_nodes {
@@ -464,10 +465,10 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_convection_coefficient_index(){
+        if self.front_convection_coefficient_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index),
-                10.,
+                1.739658084820765,
             );
             self.set_front_convection_coefficient_index(i);
         }
@@ -478,10 +479,10 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_convection_coefficient_index(){
+        if self.back_convection_coefficient_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index),
-                10.,
+                1.739658084820765,
             );
             self.set_back_convection_coefficient_index(i);
         }
@@ -492,7 +493,7 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_convective_heat_flow_index(){
+        if self.front_convective_heat_flow_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index),
                 0.0,
@@ -505,7 +506,7 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_convective_heat_flow_index(){
+        if self.back_convective_heat_flow_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index),
                 0.0,
@@ -519,7 +520,7 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.front_incident_solar_irradiance_index(){
+        if self.front_incident_solar_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationFrontSolarIrradiance(ref_surface_index),
                 0.0,
@@ -532,7 +533,7 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_incident_solar_irradiance_index(){            
+        if self.back_incident_solar_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationBackSolarIrradiance(ref_surface_index),
                 0.0,
@@ -545,8 +546,8 @@ impl SurfaceTrait for Fenestration {
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
-    ) { 
-        if let None = self.front_ir_irradiance_index(){
+    ) {
+        if self.front_ir_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationFrontIRIrradiance(ref_surface_index),
                 0.0,
@@ -559,7 +560,7 @@ impl SurfaceTrait for Fenestration {
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     ) {
-        if let None = self.back_ir_irradiance_index(){
+        if self.back_ir_irradiance_index().is_none() {
             let i = state.push(
                 SimulationStateElement::FenestrationBackIRIrradiance(ref_surface_index),
                 0.0,
@@ -574,11 +575,14 @@ impl SurfaceTrait for Fenestration {
         ref_surface_index: usize,
         n_nodes: usize,
     ) {
-        if let None = self.first_node_temperature_index(){
+        if self.first_node_temperature_index().is_none() {
             let first_node = state.len();
             for node_index in 0..n_nodes {
                 state.push(
-                    SimulationStateElement::FenestrationNodeTemperature(ref_surface_index, node_index),
+                    SimulationStateElement::FenestrationNodeTemperature(
+                        ref_surface_index,
+                        node_index,
+                    ),
                     22.0,
                 );
             }
@@ -622,6 +626,15 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The area of the Surface
     pub area: Float,
 
+    /// The perimeter of the surface
+    pub perimeter: Float,
+
+    /// The normal of the surface
+    pub normal: Vector3D,
+
+    /// The cosine of the tilt angle (normal * Vector3D(0., 0., 1.))
+    pub cos_tilt: Float,
+
     /// The chunks of nodes that have mass
     pub massive_chunks: Vec<(usize, usize)>,
 
@@ -638,11 +651,14 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
 }
 
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
         parent: &Rc<T>,
         area: Float,
+        perimeter: Float,
+        normal: Vector3D,
         construction: &Rc<Construction>,
         discretization: Discretization,
     ) -> Result<ThermalSurfaceData<T>, String> {
@@ -728,8 +744,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let (massive_chunks, nomass_chunks) = discretization.get_chunks();
 
         // Calculate solar absoption
-        let front_glazing = Glazing::get_front_glazing_system(&construction)?;
-        let back_glazing = Glazing::get_back_glazing_system(&construction)?;
+        let front_glazing = Glazing::get_front_glazing_system(construction)?;
+        let back_glazing = Glazing::get_back_glazing_system(construction)?;
         // These two are the absorbtion of each glazing layer. We need the absorption of each node
         let front_alphas_prev = Glazing::alphas(&front_glazing);
         if front_alphas_prev.len() != 1 && front_alphas_prev.len() != construction.materials.len() {
@@ -804,6 +820,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         Ok(ThermalSurfaceData {
             parent: parent.clone(),
             area,
+            perimeter,
+            normal,
+            cos_tilt: normal * Vector3D::new(0., 0., 1.),
             discretization,
             front_boundary: None,
             back_boundary: None,
@@ -816,6 +835,20 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             massive_chunks,
             nomass_chunks,
         })
+    }
+
+    /// Calculates whether a surface is facing the wind direction
+    /// wind_direction in Radians
+    fn is_windward(&self, wind_direction: Float) -> bool {
+        if self.cos_tilt.abs() < 0.98 {
+            // tilted
+            let wind_direction =
+                Vector3D::new(wind_direction.sin(), wind_direction.to_radians().cos(), 0.0);
+            self.normal * wind_direction < 0.0
+        } else {
+            // if it is horizontal
+            true
+        }
     }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
@@ -832,39 +865,72 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         state: &mut SimulationState,
         t_front: Float,
         t_back: Float,
+        wind_direction: Float,
+        wind_speed: Float,
         dt: Float,
     ) -> (Float, Float) {
         let mut temperatures = self.parent.get_node_temperatures(state);
+
         let (rows, ..) = temperatures.size();
 
         // Calculate and set Front and Back Solar Irradiance
         let solar_front = self.parent.front_solar_irradiance(state);
-        let solar_back = self.parent.back_solar_irradiance(state);        
+        let solar_back = self.parent.back_solar_irradiance(state);
 
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
         let ir_back = self.parent.back_infrared_irradiance(state);
 
-        let front_env = Environment {
+        let mut front_env = ConvectionParams {
             air_temperature: t_front,
+            air_speed: 0.,
             ir_irrad: ir_front,
-            solar_radiation: solar_front,
-            ..Environment::default()
+            surface_temperature: self.parent.front_temperature(state),
+            roughness_index: 2,
+            cos_surface_tilt: self.cos_tilt,
         };
-        // // dbg!(front_env);
-        let back_env = Environment {
+        let mut back_env = ConvectionParams {
             air_temperature: t_back,
+            air_speed: 0.0,
             ir_irrad: ir_back,
-            solar_radiation: solar_back,
-            ..Environment::default()
+            surface_temperature: self.parent.back_temperature(state),
+            roughness_index: 2,
+            cos_surface_tilt: self.cos_tilt,
         };
 
-        // Calculate and set Front and Back convection coefficients
-        let front_hs = front_env.get_hs();
-        let back_hs = back_env.get_hs();
-        self.parent
-            .set_front_convection_coefficient(state, front_hs);
-        self.parent.set_back_convection_coefficient(state, back_hs);
+        let calc_convection_coefs =
+            |front_env: &mut ConvectionParams, back_env: &mut ConvectionParams| -> (Float, Float) {
+                // TODO: There is something to do here if we are talking about windows
+                let front_hs = if let Some(b) = &self.front_boundary {
+                    match &b {
+                        Boundary::Space(_) => front_env.get_tarp_natural_convection_coefficient(),
+                        Boundary::Ground => unreachable!(),
+                    }
+                } else {
+                    front_env.air_speed = wind_speed;
+                    let windward = self.is_windward(wind_direction.to_radians());
+                    front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
+                    // 5.
+                };
+
+                let back_hs = if let Some(b) = &self.back_boundary {
+                    match &b {
+                        Boundary::Space(_) => back_env.get_tarp_natural_convection_coefficient(),
+                        Boundary::Ground => unreachable!(),
+                    }
+                } else {
+                    // Exterior
+                    back_env.air_speed = wind_speed;
+                    let windward = self.is_windward(wind_direction.to_radians());
+                    back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
+                    // 5.
+                };
+
+                if front_hs.is_nan() || back_hs.is_nan() {
+                    println!("{},{}", front_hs, back_hs);
+                }
+                (front_hs, back_hs)
+            };
 
         /////////////////////
         // 1st: Calculate the solar absorption in each node
@@ -876,10 +942,13 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
-
+        let mut old_err = 99999.;
         for (ini, fin) in &self.nomass_chunks {
             let mut count = 0;
             loop {
+                // Update convection coefficients
+                let (front_hs, back_hs) = calc_convection_coefs(&mut front_env, &mut back_env);
+
                 let (k, mut local_q) = self.discretization.get_k_q(
                     *ini,
                     *fin,
@@ -892,7 +961,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     back_hs,
                 );
 
-                // ... here we can add solar gains
+                // add solar gains
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let v = q.get(i, 0).unwrap();
                     local_q.add_to_element(local_i, 0, v).unwrap();
@@ -907,18 +976,35 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     let global_temp = temperatures.get(i, 0).unwrap();
                     err += (local_temp - global_temp).abs();
                 }
+                if err > old_err {
+                    #[cfg(debug_assertions)]
+                    if count > 100 {
+                        dbg!("Breaking after {} iterations... because GOOD!", count);
+                    }
+                    break;
+                }
 
                 count += 1;
-                assert!(count < 999, "Excessive number of iterations");
+                assert!(
+                    count < 99000,
+                    "Excessive number of iterations... front_hc = {} | back_hs = {}",
+                    front_hs,
+                    back_hs
+                );
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
 
-                if err / ((fin - ini) as Float) < 0.01 {
+                if err / ((fin - ini) as Float) < 0.05 {
+                    #[cfg(debug_assertions)]
+                    if count > 100 {
+                        dbg!("Breaking after {} iterations... because GOOD!", count);
+                    }
                     break;
                 }
+                old_err = err;
             }
         }
 
@@ -935,6 +1021,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 .map(|(mass, _)| *mass)
                 .collect();
             let c = Matrix::diag(c);
+            let (front_hs, back_hs) = calc_convection_coefs(&mut front_env, &mut back_env);
 
             let (k, mut local_q) = self.discretization.get_k_q(
                 *ini,
@@ -980,16 +1067,13 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calc heat flow
         let ts_front = temperatures.get(0, 0).unwrap();
         let ts_back = temperatures.get(rows - 1, 0).unwrap();
+        let (front_hs, back_hs) = calc_convection_coefs(&mut front_env, &mut back_env);
+        self.parent
+            .set_front_convection_coefficient(state, front_hs);
+        self.parent.set_back_convection_coefficient(state, back_hs);
 
         let flow_front = (ts_front - t_front) * front_hs;
         let flow_back = (ts_back - t_back) * back_hs;
-        // dbg!(ts_front);
-        // dbg!(ts_back);
-        // dbg!(t_front);
-        // dbg!(t_back);
-
-        // Set state
-        // self.parent.set_front_convective_heat_flow();
 
         (flow_front, flow_back)
     }
@@ -1088,10 +1172,20 @@ mod testing {
         let min_dt = 1.0;
         let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
-
+        let normal = geometry3d::Vector3D::new(0., 0., 1.);
+        let perimeter = 8. * l;
         let mut state_header = SimulationStateHeader::new();
-        let ts =
-            ThermalSurface::new(&mut state_header, 0, &surface, surface.area(), &c, d).unwrap();
+        let ts = ThermalSurface::new(
+            &mut state_header,
+            0,
+            &surface,
+            surface.area(),
+            perimeter,
+            normal,
+            &c,
+            d,
+        )
+        .unwrap();
 
         let mut state = state_header.take_values().unwrap();
 
@@ -1100,18 +1194,25 @@ mod testing {
         // Try marching until q_in and q_out are zero.
         let mut q: Float = 9999000009.0;
         let mut counter: usize = 0;
+        let t_environment = 10.;
+        let v = crate::SIGMA * (t_environment + 273.15 as Float).powi(4);
         while q.abs() > 0.00015 {
-            let (q_out, q_in) = ts.march(&mut state, 10.0, 10.0, dt);
+            ts.parent.set_front_ir_irradiance(&mut state, v);
+            ts.parent.set_back_ir_irradiance(&mut state, v);
+            let (q_out, q_in) = ts.march(&mut state, t_environment, t_environment, 0.0, 0.0, dt);
 
             // the same amount of heat needs to leave in each direction
             // println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
-            assert!((q_in - q_out).abs() < 1E-5);
+            assert!(
+                (q_in - q_out).abs() < 1E-5,
+                "diff is {} (count is {counter})",
+                (q_in - q_out).abs()
+            );
 
             // q_front is positive
             assert!(q_in >= 0., "q_in = {} | c = {}", q_in, counter);
             assert!(q_out >= 0., "q_out = {} | c = {}", q_out, counter);
 
-            // q_in needs to be getting smaller
             q = q_in;
 
             counter += 1;
@@ -1125,7 +1226,11 @@ mod testing {
         let (n_nodes, ..) = temperatures.size();
         for i in 0..n_nodes {
             let t = temperatures.get(i, 0).unwrap();
-            assert!((t - 10.0).abs() < 0.00015);
+            assert!(
+                (t - 10.0).abs() < 0.002,
+                "Error found is {}",
+                (t - 10.0).abs()
+            );
         }
 
         // SECOND TEST -- 10 degrees in and 30 out.
@@ -1140,7 +1245,15 @@ mod testing {
         let mut final_qfront: Float = -12312.;
         let mut final_qback: Float = 123123123.;
         while change.abs() > 1E-10 {
-            let (q_front, q_back) = ts.march(&mut state, 10.0, 30.0, dt);
+            let (q_front, q_back) = ts.march(&mut state, 10.0, 30.0, 0.0, 0.0, dt);
+
+            ts.parent.set_front_ir_irradiance(
+                &mut state,
+                crate::SIGMA * (10. + 273.15 as Float).powi(4),
+            );
+            ts.parent
+                .set_back_ir_irradiance(&mut state, crate::SIGMA * (30. + 273.15 as Float).powi(4));
+
             final_qfront = q_front;
             final_qback = q_back;
 
@@ -1206,8 +1319,19 @@ mod testing {
         let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
-        let ts =
-            ThermalSurface::new(&mut state_header, 0, &surface, surface.area(), &c, d).unwrap();
+        let normal = geometry3d::Vector3D::new(0., 0., 1.);
+        let perimeter = 8. * l;
+        let ts = ThermalSurface::new(
+            &mut state_header,
+            0,
+            &surface,
+            surface.area(),
+            perimeter,
+            normal,
+            &c,
+            d,
+        )
+        .unwrap();
         // assert!(!d.is_massive);
 
         let mut state = state_header.take_values().unwrap();
@@ -1216,7 +1340,7 @@ mod testing {
 
         // Try marching until q_in and q_out are zero.
 
-        let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, dt);
+        let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, 0.0, 0.0, dt);
 
         // this should show instantaneous update. So,
         let temperatures = ts.parent.get_node_temperatures(&state);
@@ -1275,8 +1399,19 @@ mod testing {
         let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
-        let ts =
-            ThermalSurface::new(&mut state_header, 0, &surface, surface.area(), &c, d).unwrap();
+        let normal = geometry3d::Vector3D::new(0., 0., 1.);
+        let perimeter = 8. * l;
+        let ts = ThermalSurface::new(
+            &mut state_header,
+            0,
+            &surface,
+            surface.area(),
+            perimeter,
+            normal,
+            &c,
+            d,
+        )
+        .unwrap();
         // assert!(!d.is_massive);
 
         let mut state = state_header.take_values().unwrap();
@@ -1288,7 +1423,7 @@ mod testing {
 
         let t_front = 10.0;
         let t_back = 30.0;
-        let (q_front, q_back) = ts.march(&mut state, t_front, t_back, dt);
+        let (q_front, q_back) = ts.march(&mut state, t_front, t_back, 0.0, 0.0, dt);
 
         // Expecting
         let temperatures = ts.parent.get_node_temperatures(&state);

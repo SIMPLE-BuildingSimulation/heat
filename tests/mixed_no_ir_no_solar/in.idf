@@ -1,3 +1,7 @@
+
+SurfaceConvectionAlgorithm:Inside,TARP;
+SurfaceConvectionAlgorithm:Outside,TARP;
+
 Version,9.6;
 
 Timestep, 20;
@@ -101,18 +105,6 @@ BuildingSurface:Detailed,
     30.00000,14.90000,0.0000000E+00,  !- X,Y,Z ==> Vertex 3 {m}
     30.00000,14.90000,3.000000;  !- X,Y,Z ==> Vertex 4 {m}
 
-SurfaceProperty:ConvectionCoefficients,
-    Wall Exterior,      ! Surface Name
-    Outside,            ! Convection Coefficient 1 Location
-    Value,              ! Convection Coefficient 1 Type 
-    10,                 ! Convection Coefficient 1
-    ,                   ! Convection Coefficient 1 Schedule Name
-    ,                   ! Convection Coefficient 1 User Curve Name
-    Inside,             ! Convection Coefficient 2 Location
-    Value,           ! Convection Coefficient 2 Type
-    10,                 ! Convection Coefficient 2 
-    ,                   ! Convection Coefficient 2 Schedule Name
-    ;                   ! Convection Coefficient 2 User Curve Name
 
   Zone,
     Interior Space,                  !- Name
@@ -152,22 +144,18 @@ ZoneInfiltration:DesignFlowRate,
     0;                       !- Velocity Squared Term Coefficient
 
 
-
-
-
 Output:VariableDictionary, IDF;
-Output:Variable,*,Surface Outside Face Outdoor Air Drybulb Temperature,timestep; !- Zone Average [C]
-Output:Variable,*,Zone Mean Air Temperature,timestep; !- Zone Average [C]
-Output:Variable,*,Surface Outside Face Net Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
-Output:Variable,*,Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
-Output:Variable,*,Surface Outside Face Solar Radiation Heat Gain Rate per Area,timestep; !- Zone Average [W/m2]
+
 
 Output:Variable,*,Surface Outside Face Incident Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Surface Outside Face Incident Beam Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Surface Outside Face Incident Sky Diffuse Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Surface Outside Face Incident Beam To Diffuse Ground Reflected Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Surface Outside Face Incident Sky Diffuse Ground Reflected Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
+Output:Variable,*,Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
+Output:Variable,*,Surface Outside Face Outdoor Air Drybulb Temperature,timestep; !- Zone Average [C]
+Output:Variable,*,Surface Outside Face Net Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
+Output:Variable,*,Zone Mean Air Temperature,timestep; !- Zone Average [C]
+Output:Variable,*,Site Wind Speed,timestep; !- Zone Average [m/s]
+Output:Variable,*,Site Wind Direction,timestep; !- Zone Average [deg]
 
-Output:Variable,*,Site Diffuse Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Site Direct Solar Radiation Rate per Area,timestep; !- Zone Average [W/m2]
-Output:Variable,*,Surface Outside Face Beam Solar Incident Angle Cosine Value,timestep; !- Zone Average []
+Output:Variable,*,Surface Outside Face Convection Heat Transfer Coefficient,timestep; !- Zone Average [W/m2-K]
+Output:Variable,*,Surface Inside Face Convection Heat Transfer Coefficient,timestep; !- Zone Average [W/m2-K]
+Output:Variable,*,Surface Inside Face Temperature,timestep; !- Zone Average [C]
+Output:Variable,*,Surface Outside Face Temperature,timestep; !- Zone Average [C]

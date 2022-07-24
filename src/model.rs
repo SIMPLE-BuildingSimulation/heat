@@ -21,7 +21,8 @@ use crate::construction::Discretization;
 use crate::Float;
 use calendar::Date;
 
-use communication_protocols::{ErrorHandling, SimulationModel, MetaOptions};
+use communication_protocols::{ErrorHandling, MetaOptions, SimulationModel};
+use geometry3d::Vector3D;
 use weather::Weather;
 
 use crate::surface::{SurfaceTrait, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
@@ -97,16 +98,22 @@ impl SimulationModel for ThermalModel {
         for (i, surf) in model.surfaces.iter().enumerate() {
             let constr = &surf.construction;
 
+            let normal = surf.vertices.normal();
+            let cos_tilt = normal * Vector3D::new(0., 0., 1.);
+            #[cfg(debug_assertions)]
+            dbg!("height is 1");
             let height = 1.;
-            let angle = 0.;
+            let angle = cos_tilt.acos();
             let area = surf.area();
+            let perimeter = surf.vertices.outer().perimeter().unwrap();
 
             let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
 
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
-            let mut tsurf = ThermalSurface::new(state, i, surf, area, constr, d)?;
+            let mut tsurf =
+                ThermalSurface::new(state, i, surf, area, perimeter, normal, constr, d)?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -122,16 +129,23 @@ impl SimulationModel for ThermalModel {
         for (i, surf) in model.fenestrations.iter().enumerate() {
             let constr = &surf.construction;
 
-            let height = 1.;
-            let angle = 0.;
+            let normal = surf.vertices.normal();
+            let cos_tilt = normal * Vector3D::new(0., 0., 1.);
+            let angle = cos_tilt.acos();
             let area = surf.area();
+            let perimeter = surf.vertices.outer().perimeter().unwrap();
+
+            #[cfg(debug_assertions)]
+            dbg!("height is 1");
+            let height = 1.;
 
             let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
 
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
-            let mut tsurf = ThermalFenestration::new(state, i, surf, area, constr, d)?;
+            let mut tsurf =
+                ThermalFenestration::new(state, i, surf, area, perimeter, normal, constr, d)?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -146,8 +160,9 @@ impl SimulationModel for ThermalModel {
         let mut dt = 60. * 60. / (n as Float * n_subdivisions as Float);
 
         // safety.
-        dt *= 0.5;
-        n_subdivisions *= 2;
+        const SAFETY: usize = 1;
+        dt /= SAFETY as Float;
+        n_subdivisions *= SAFETY;
 
         Ok(ThermalModel {
             zones: thermal_zones,
@@ -173,6 +188,8 @@ impl SimulationModel for ThermalModel {
             // advance in time
             date.add_seconds(self.dt);
             let current_weather = weather.get_weather_data(date);
+            let wind_direction = current_weather.wind_direction.unwrap().to_radians();
+            let wind_speed = current_weather.wind_speed.unwrap();
 
             let t_out = match current_weather.dry_bulb_temperature {
                 Some(v) => v,
@@ -183,8 +200,6 @@ impl SimulationModel for ThermalModel {
             };
 
             let t_current = self.get_current_zones_temperatures(state);
-            // let (a_before, b_before, c_before) = self.calculate_zones_abc(model, state);
-            // let t_current = self.estimate_zones_future_temperatures(&t_current, &a_before, &b_before, &c_before, self.dt);
 
             /* UPDATE SURFACE'S TEMPERATURES */
             for i in 0..self.surfaces.len() {
@@ -208,7 +223,8 @@ impl SimulationModel for ThermalModel {
                 };
 
                 // Update temperatures
-                let (q_front, q_back) = s.march(state, t_front, t_back, self.dt);
+                let (q_front, q_back) =
+                    s.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
                 model.surfaces[i].set_front_convective_heat_flow(state, q_front);
                 model.surfaces[i].set_back_convective_heat_flow(state, q_back);
             } // end of iterating surface
@@ -235,7 +251,8 @@ impl SimulationModel for ThermalModel {
                 };
 
                 // Update temperatures
-                let (q_front, q_back) = s.march(state, t_front, t_back, self.dt);
+                let (q_front, q_back) =
+                    s.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
                 model.fenestrations[i].set_front_convective_heat_flow(state, q_front);
                 model.fenestrations[i].set_back_convective_heat_flow(state, q_back);
             } // end of iterating surface
@@ -247,6 +264,7 @@ impl SimulationModel for ThermalModel {
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
             for (i, zone) in self.zones.iter().enumerate() {
+                debug_assert!(!future_temperatures[i].is_nan());
                 zone.reference_space
                     .set_dry_bulb_temperature(state, future_temperatures[i]);
             }
@@ -539,8 +557,10 @@ mod testing {
 
     use simple_test_models::*;
 
-    const META_OPTIONS : MetaOptions = MetaOptions{
-        latitude: 0., longitude: 0., standard_meridian: 0.,
+    const META_OPTIONS: MetaOptions = MetaOptions {
+        latitude: 0.,
+        longitude: 0.,
+        standard_meridian: 0.,
     };
 
     #[test]
@@ -556,10 +576,9 @@ mod testing {
             },
         );
 
-
-
         let n: usize = 1;
-        let thermal_model = ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
+        let thermal_model =
+            ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
         let state = state_header.take_values().unwrap();
         // MAP THE STATE
         // model.map_simulation_state(&mut state).unwrap();

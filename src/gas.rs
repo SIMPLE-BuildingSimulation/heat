@@ -207,7 +207,7 @@ fn nusselt(ra: Float, gamma: Float, a_gi: Float) -> Float {
     const EPSILON_RAD: Float = 0.5 * crate::PI / 180.;
 
     let gamma = gamma % crate::PI;
-    
+
     if (0.0..2. * THIRTY_RAD - EPSILON_RAD).contains(&gamma) {
         // Between 0 and 60 degrees
         nu_0_60(ra, gamma, a_gi)
@@ -233,11 +233,11 @@ fn nusselt(ra: Float, gamma: Float, a_gi: Float) -> Float {
 ///
 /// From Equation 43 and 44 of ISO15099/2003 (based on ref. 7 of that standard)
 fn nu_0_60(ra: Float, gamma: Float, _a_gi: Float) -> Float {
-    // if ra > 1e5 || a_gi < 20. {
-    //     // This clause is written in section 5.3.3.2... does
-    //     // not say what to do when this happens
-    //     dbg!(ra, a_gi, "Not expecting these values");
-    // }
+    if ra > 1e5 || _a_gi < 20. {
+        // This clause is written in section 5.3.3.2... does
+        // not say what to do when this happens
+        dbg!(ra, _a_gi, "Not expecting these values");
+    }
     // Eq. 44 of ISO15099/2003
     let aux = |x: Float| -> Float { (x + x.abs()) / 2. };
     let cos_gamma = gamma.cos();

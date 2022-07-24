@@ -18,8 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+pub(crate) const MAX_RS: Float = 0.05;
 use crate::cavity::Cavity;
-use crate::environment::Environment;
+use crate::convection::ConvectionParams;
 use crate::{Float, SIGMA};
 use matrix::Matrix;
 use simple_model::{Construction, Substance};
@@ -49,7 +50,6 @@ impl UValue {
             Self::Solid(u) => *u,
             Self::Cavity(c) => c.u_value(t_before, t_after),
             Self::Back => 0., // This should be calculated appart
-            // Self::Front => {dbg!("Calc front Rs"); 0.1},
             Self::None => panic!("Attempting to get the u-value of None"),
         }
     }
@@ -101,7 +101,8 @@ impl Discretization {
         height: Float,
         angle: Float,
     ) -> Result<Self, String> {
-        let (tstep_subdivision, n_elements) = Self::discretize_construction(construction, model_dt, max_dx, min_dt)?;
+        let (tstep_subdivision, n_elements) =
+            Self::discretize_construction(construction, model_dt, max_dx, min_dt)?;
         Self::build(construction, tstep_subdivision, n_elements, height, angle)
     }
 
@@ -132,6 +133,7 @@ impl Discretization {
     ///
     /// The purpose of this is that—when marching—we can know which nodes are massive
     /// and which ones are not, and thus solving them through different methods.
+    #[allow(clippy::type_complexity)]
     pub fn get_chunks(&self) -> (Vec<(usize, usize)>, Vec<(usize, usize)>) {
         let mass_nodes: Vec<usize> = self
             .segments
@@ -326,6 +328,8 @@ impl Discretization {
     ///
     /// # The math behind it
     ///
+    /// > *I am not sure how correct this is... seems to work, but there is room for improvements and optimizations, surely*
+    ///
     /// The first thing to know is that the walls in this module march
     /// through time using a 4th order [Runga-Kutte](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods)
     /// (a.k.a., RK4). The second thing to know is that the RK4 method is
@@ -348,7 +352,7 @@ impl Discretization {
     ///
     /// Specifically, we don't want any of its [eigenvalues](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)
     /// $`\xi_1, \xi_2,\xi_3, ...`$ to be outside of the Euler method's stability region. Since this
-    /// matrix has onle Real eigenvalues, this is equivalent to saying:
+    /// matrix has only Real eigenvalues, this is equivalent to saying:
     ///
     /// ```math
     /// -2 < \xi_i < 0 ; \forall i
@@ -371,11 +375,11 @@ impl Discretization {
     ///  \frac{\Delta t}{C\times R} & -\frac{\Delta t}{C\times R} - \frac{\Delta t}{C\times R_s}\\
     /// \end{bmatrix}   
     ///```
-    /// Note that, in that equation, $`R_{si} = R_{so}`$. The reason for this is that this method
-    /// does not know the real values of $`R_{si}`$ and $`R_{so}`$, so it simply using a placeholder
+    /// Note that, in that equation, $`R_{si} = R_{so}`$. The reason for this is that, at the point of using this method,
+    /// we do not not know waht the values of $`R_{si}`$ and $`R_{so}`$ will be. TO overcome this, I use a
     /// value low enough to cover most general cases (`0.05`).
     ///
-    /// Then, it can be found that the eigenvaues of this case—which we are treating as the limit case—are:
+    /// Then, it can be found that the eigenvalues of this case—which we are treating as the limit case—are:
     /// ```math
     /// \xi_1 = -\frac{\Delta t} { R_s \rho c_p \Delta x }
     /// ```
@@ -386,14 +390,14 @@ impl Discretization {
     /// $`\xi_i < 0 `$. Also, it can be noticed that $`\xi_2 < \xi_1`$, meaning that
     /// what we need to comply with for Euler's stability criteria is:
     /// ```math
-    /// -\frac{\Delta t} { R_s \rho c_p \Delta x } - 2 \frac{\Delta t \lambda}{ \rho  c_p  {\Delta x}^2} < -2
+    /// -\frac{\Delta t} { R_s \rho c_p \Delta x } - 2 \frac{\Delta t \lambda}{ \rho  c_p  {\Delta x}^2} > -1
     /// ```
     ///
-    /// Which means that the chosen $`\Delta x`$ must be greater than the (apparently only) positive
+    /// Which means that the chosen $`\Delta x`$ must be greater than the (I am pretty sure, only) positive
     /// solution to equation:
     ///
     /// ```math
-    /// 0 = 2 {\Delta x}^2 - \left( \frac{\Delta t}{\rho c_p R_s} \right) \Delta x - \frac{2 \Delta t \lambda}{\rho c_p}
+    /// 0 = {\Delta x}^2 - \left( \frac{\Delta t}{\rho c_p R_s} \right) \Delta x - \frac{2 \Delta t \lambda}{\rho c_p}
     /// ```
     ///
     /// So, this method will identify a combination of $`\Delta t`$ and $`\Delta x`$ that
@@ -421,7 +425,6 @@ impl Discretization {
             // So, for each layer
             let n_layers = construction.materials.len();
             let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
-            const MAX_RS: Float = 0.05;
 
             for n_layer in 0..n_layers {
                 let material = &construction.materials[n_layer];
@@ -431,9 +434,9 @@ impl Discretization {
                 let thickness = material.thickness;
                 let (k, rho, cp) = match substance {
                     Substance::Normal(s) => {
-                        let k = s.thermal_conductivity().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'"))?;
-                        let rho = s.density().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'density'"))?;
-                        let cp = s.specific_heat_capacity().or_else(|_x| Err("Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'"))?;
+                        let k = s.thermal_conductivity().map_err(|_x| "Trying to discretize a construction that contains a Normal Substance without a 'thermal conductivity'")?;
+                        let rho = s.density().map_err(|_x| "Trying to discretize a construction that contains a Normal Substance without a 'density'")?;
+                        let cp = s.specific_heat_capacity().map_err(|_x| "Trying to discretize a construction that contains a Normal Substance without a 'specific heat capacity'")?;
                         (*k, *rho, *cp)
                     }
                     Substance::Gas(_) => {
@@ -442,7 +445,7 @@ impl Discretization {
                     }
                 };
 
-                let a_coef = 2.;
+                let a_coef = 1.;
                 let b_coef = -dt / (rho * cp * MAX_RS);
                 let c_coef = -2. * dt * k / (rho * cp);
                 let disc = b_coef * b_coef - 4. * a_coef * c_coef;
@@ -582,15 +585,16 @@ impl Discretization {
     /// emmisivity of the surface. On the contrary, if the border condition is a cavity, then a value of $`T_{pane} U_{cavity}`$
     /// should be added. $`T_{pane}`$ is the temperature of the surface before or after.
     ///         
-    pub fn get_k_q(
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn get_k_q(
         &self,
         ini: usize,
         fin: usize,
         temperatures: &Matrix,
-        front_env: &Environment,
+        front_env: &ConvectionParams,
         front_emmisivity: Float,
         front_hs: Float,
-        back_env: &Environment,
+        back_env: &ConvectionParams,
         back_emmisivity: Float,
         back_hs: Float,
     ) -> (Matrix, Matrix) {
@@ -700,6 +704,23 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
+
+    impl std::default::Default for ConvectionParams {
+        fn default() -> Self {
+            const DEFAULT_ENV_EMMISIVITY: Float = 1.;
+            const DEFAULT_AIR_TEMP: Float = 22.;
+            ConvectionParams {
+                air_temperature: DEFAULT_AIR_TEMP,
+                surface_temperature: DEFAULT_AIR_TEMP,
+                air_speed: 0.,
+                ir_irrad: crate::SIGMA
+                    * DEFAULT_ENV_EMMISIVITY
+                    * (DEFAULT_AIR_TEMP + 273.15).powi(4),
+                roughness_index: 2,
+                cos_surface_tilt: 0.0,
+            }
+        }
+    }
 
     fn get_normal(
         thermal_cond: Float,
@@ -990,10 +1011,10 @@ mod testing {
     ) -> (
         Discretization,
         Matrix,
-        Environment,
+        ConvectionParams,
         Float,
         Float,
-        Environment,
+        ConvectionParams,
         Float,
         Float,
     ) {
@@ -1014,27 +1035,25 @@ mod testing {
             n_elements: vec![n],
         };
 
-        let front_env = Environment {
-            solar_radiation: 0.0,
+        let front_env = ConvectionParams {
             air_temperature: 0.,
             air_speed: 0.,
             ir_irrad: SIGMA * (273.15 as Float).powi(4),
-            ..Environment::default()
+            ..ConvectionParams::default()
         };
         let front_emmisivity = 0.9;
 
-        let back_env = Environment {
-            solar_radiation: 0.0,
+        let back_env = ConvectionParams {
             air_temperature: 7.,
             air_speed: 0.,
             ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
-            ..Environment::default()
+            ..ConvectionParams::default()
         };
         let back_emmisivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
-        let front_hs = front_env.get_hs();
-        let back_hs = back_env.get_hs();
+        let front_hs = front_env.get_tarp_natural_convection_coefficient();
+        let back_hs = back_env.get_tarp_convection_coefficient(1., 4., false);
 
         return (
             d,
@@ -1298,27 +1317,25 @@ mod testing {
             n_elements: vec![n],
         };
 
-        let front_env = Environment {
+        let front_env = ConvectionParams {
             air_temperature: 1.,
             air_speed: 0.,
             ir_irrad: SIGMA * (273.15 as Float).powi(4),
-            solar_radiation: 0.0,
-            ..Environment::default()
+            ..ConvectionParams::default()
         };
         let front_emmisivity = 0.9;
 
-        let back_env = Environment {
+        let back_env = ConvectionParams {
             air_temperature: 6.,
             air_speed: 0.,
             ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
-            solar_radiation: 0.0,
-            ..Environment::default()
+            ..ConvectionParams::default()
         };
         let back_emmisivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
-        let front_hs = 10.;
-        let back_hs = 10.;
+        let front_hs = 1.739658084820765;
+        let back_hs = 1.739658084820765;
         let (k, q) = d.get_k_q(
             1,
             n,

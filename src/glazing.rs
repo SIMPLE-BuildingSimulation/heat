@@ -376,7 +376,7 @@ mod testing {
         assert_eq!(props, vec![(0.0, 0.9, 0.8)]);
         let alphas = Glazing::alphas(&glazings);
         let exp = vec![0.1];
-        for (found, exp) in alphas.iter().zip(exp.iter()){
+        for (found, exp) in alphas.iter().zip(exp.iter()) {
             validate::assert_close!(*exp, *found);
         }
 
@@ -385,12 +385,9 @@ mod testing {
         let props: Vec<(Float, Float, Float)> = glazings
             .iter()
             .map(|g| (g.tau, g.rho_front, g.rho_back))
-            .collect();            
+            .collect();
         let exp = vec![(0.1, 1.0 - 0.1 - 0.2, 1.0 - 0.1 - 0.3), (0.0, 0.9, 0.8)];
-        assert_eq!(
-            props,
-            exp
-        );
+        assert_eq!(props, exp);
     }
 
     #[test]
