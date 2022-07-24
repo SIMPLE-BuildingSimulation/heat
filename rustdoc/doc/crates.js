@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["thermal"];
+window.ALL_CRATES = ["heat"];

@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["MIN_H",""]],"struct":[["ConvectionParams","Represents a border condition of between a Surface and a Zone or the exterior"]]});

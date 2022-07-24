@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["MAX_RS",""]],"enum":[["UValue","Represents a thermal connection in the thermal network. It can be a Cavity, a Solid, or other."]],"struct":[["Discretization","Represents the discretization of a [`Construction`] for heat transfer calculation purposes."]]});
