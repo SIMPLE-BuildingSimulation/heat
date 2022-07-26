@@ -80,10 +80,10 @@ BuildingSurface:Detailed,
     WindExposed,             !- Wind Exposure
     0.5000000,               !- View Factor to Ground
     4,                       !- Number of Vertices
-    10.00000,14.90000,3.000000,  !- X,Y,Z ==> Vertex 1 {m}
-    10.00000,14.90000,0.0000000E+00,  !- X,Y,Z ==> Vertex 2 {m}
-    30.00000,14.90000,0.0000000E+00,  !- X,Y,Z ==> Vertex 3 {m}
-    30.00000,14.90000,3.000000;  !- X,Y,Z ==> Vertex 4 {m}
+    10.00000,  3.000000,      14.90000,  !- X,Y,Z ==> Vertex 1 {m}
+    10.00000,  0.0000000E+00, 14.90000, !- X,Y,Z ==> Vertex 2 {m}
+    30.00000,  0.0000000E+00, 14.90000, !- X,Y,Z ==> Vertex 3 {m}
+    30.00000,  3.000000,      14.90000; !- X,Y,Z ==> Vertex 4 {m}
 
 
   Zone,

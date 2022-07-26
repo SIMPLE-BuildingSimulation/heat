@@ -15,4 +15,7 @@ tests/*/*
 docs
 !docs/index.html
 
+# Checks and others
+clippy.txt
+
 

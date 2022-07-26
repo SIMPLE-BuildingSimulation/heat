@@ -716,7 +716,7 @@ mod testing {
                 ir_irrad: crate::SIGMA
                     * DEFAULT_ENV_EMMISIVITY
                     * (DEFAULT_AIR_TEMP + 273.15).powi(4),
-                roughness_index: 2,
+                roughness_index: 1,
                 cos_surface_tilt: 0.0,
             }
         }

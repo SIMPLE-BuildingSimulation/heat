@@ -9,7 +9,7 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVoIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -106,6 +106,7 @@ impl SimulationModel for ThermalModel {
             let angle = cos_tilt.acos();
             let area = surf.area();
             let perimeter = surf.vertices.outer().perimeter().unwrap();
+            let centroid = surf.vertices.outer().centroid().unwrap();
 
             let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
 
@@ -113,7 +114,7 @@ impl SimulationModel for ThermalModel {
                 n_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf =
-                ThermalSurface::new(state, i, surf, area, perimeter, normal, constr, d)?;
+                ThermalSurface::new(state, &model.site_details, i, surf, area, perimeter, centroid.z, normal, constr, d)?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -134,6 +135,7 @@ impl SimulationModel for ThermalModel {
             let angle = cos_tilt.acos();
             let area = surf.area();
             let perimeter = surf.vertices.outer().perimeter().unwrap();
+            let centroid = surf.vertices.outer().centroid().unwrap();
 
             #[cfg(debug_assertions)]
             dbg!("height is 1");
@@ -145,7 +147,7 @@ impl SimulationModel for ThermalModel {
                 n_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf =
-                ThermalFenestration::new(state, i, surf, area, perimeter, normal, constr, d)?;
+                ThermalFenestration::new(state, &&model.site_details, i, surf, area, perimeter, centroid.z, normal, constr, d)?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -160,7 +162,7 @@ impl SimulationModel for ThermalModel {
         let mut dt = 60. * 60. / (n as Float * n_subdivisions as Float);
 
         // safety.
-        const SAFETY: usize = 1;
+        const SAFETY: usize = 2;
         dt /= SAFETY as Float;
         n_subdivisions *= SAFETY;
 
@@ -561,6 +563,7 @@ mod testing {
         latitude: 0.,
         longitude: 0.,
         standard_meridian: 0.,
+        altitude: 0.0,
     };
 
     #[test]
@@ -569,7 +572,8 @@ mod testing {
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume: 40.,
-                surface_area: 4.,
+                surface_height: 2.,
+                surface_width: 2.,
                 construction: vec![TestMat::Polyurethane(0.02)],
                 emmisivity: 0.0,
                 ..Default::default()

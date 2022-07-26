@@ -24,7 +24,7 @@ const MIN_H: Float = 0.1;
 /// Represents a border condition of between a Surface
 /// and a Zone or the exterior
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct ConvectionParams {
+pub struct ConvectionParams {
     /// The dry bulb temperature of the air, in $`C`$
     pub air_temperature: Float,
 
@@ -44,7 +44,7 @@ pub(crate) struct ConvectionParams {
     pub surface_temperature: Float,
 
     /// The roughness index, between 1 (Very Rough) and 6 (Very smooth)
-    pub roughness_index: u8,
+    pub roughness_index: usize,
 
     /// The cosine of the surface tilt. Zero is 90 degrees; >0 means
     /// facing up; <0 means facing down
@@ -87,16 +87,12 @@ impl ConvectionParams {
     pub fn get_tarp_natural_convection_coefficient(&self) -> Float {
         let delta_t = self.air_temperature - self.surface_temperature;
         let abs_delta_t = delta_t.abs();
-
-        let aux = abs_delta_t * self.cos_surface_tilt;
-
-        let h = if aux.abs() < 1e-3 {
-            // we can easily get an hs of Zero
+                
+        let h = if delta_t.abs() < 1e-3 || self.cos_surface_tilt.abs() < 1e-3 {
             1.31 * abs_delta_t.powf(1. / 3.)
-        } else if aux < 0.0 {
-            // is this the same? opposite signs
+        }else if (delta_t < 0. && self.cos_surface_tilt < 0.) || (delta_t > 0. && self.cos_surface_tilt > 0.) {
             9.482 * abs_delta_t.powf(1. / 3.) / (7.238 - self.cos_surface_tilt.abs())
-        } else if aux > 0.0 {
+        }else if (delta_t > 0. && self.cos_surface_tilt < 0.) || (delta_t < 0. && self.cos_surface_tilt > 0.) {
             1.81 * abs_delta_t.powf(1. / 3.) / (1.382 + self.cos_surface_tilt.abs())
         } else {
             unreachable!()
@@ -133,11 +129,7 @@ impl ConvectionParams {
     ///
     /// Where $`A`$ is the area of the surface; $`V_z`$, the local wind speed; $`P`$,
     /// the perimeter of the surface; and  $`W_f`$ is $`1.0`$ for surfaces facing the
-    /// wind and $`0.5`$ for others
-    ///
-    /// Despite the equation in the documentation, EnergyPlus' source code seems to use `0.75`
-    /// as its fucntion `InitExteriorConvectionCoeff` states that the coefficient is `(CalcSparrowWindward(..)+CalcSparrowWindward(..))/2.0`
-    /// and `CalcSparrowLeeward` is `0.5 * CalcSparrowWindward` (so, `(1.0*X + 0.5*X)/2 = 0.75*X`).
+    /// wind and $`0.5`$ for others    
     ///
     /// The value of $`R_f`$, on its part, is based on the roughness of the material.
     ///
@@ -158,29 +150,19 @@ impl ConvectionParams {
         perimeter: Float,
         windward: bool,
     ) -> Float {
-        let rf = match self.roughness_index {
-            1 => 2.17,
-            2 => 1.67,
-            3 => 1.52,
-            4 => 1.13,
-            5 => 1.11,
-            6 => 1.,
-            _ => panic!("Impossible roughness index when calculating TARP convection"),
-        };
+        const COEFFICIENTS : [Float;6] = [2.17, 1.67, 1.52, 1.13, 1.11, 1.];
+        
+        let rf = COEFFICIENTS[self.roughness_index];
+        
 
-        let wf = if windward { 1.0 } else { 0.75 };
+        let wf =  if windward { 1.0 } else { 0.5 };
 
         let forced = 2.537 * wf * rf * (perimeter * self.air_speed / area).sqrt();
 
         let natural = self.get_tarp_natural_convection_coefficient();
 
-        let h = forced + natural;
-
-        if h < MIN_H {
-            MIN_H
-        } else {
-            h
-        }
+        forced + natural // this will never be less than MIN_HS because natural is already limited
+        
     }
 }
 

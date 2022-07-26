@@ -25,10 +25,87 @@ use crate::Float;
 use geometry3d::Vector3D;
 use matrix::Matrix;
 use simple_model::{
-    Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface,
+    Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface, TerrainClass,
 };
-use simple_model::{SimulationState, SimulationStateElement};
+use simple_model::{SimulationState, SimulationStateElement, SiteDetails};
 use std::rc::Rc;
+
+/// Calculates whether a surface is facing the wind direction
+/// **wind_direction in Radians**
+pub fn is_windward(wind_direction: Float, cos_tilt: Float, normal: Vector3D) -> bool {
+    if cos_tilt.abs() < 0.98 {
+        // tilted
+        let wind_direction = Vector3D::new(wind_direction.sin(), wind_direction.cos(), 0.0);
+        normal * wind_direction > 0.0
+    } else {
+        // if it is horizontal
+        true
+    }
+}
+
+/// Calculates a surface's wind speed modifier; that is to say, the value by which
+/// the weather file wind speed needs to be multiplied in order to estimate the wind
+/// speed next to the window
+///
+/// This is a rip off from EnergyPlus' Engineering Reference, where they explain that
+/// the corrected wind speed ($`V_z`$ in $`m/s`$) at a certain altitude $`z`$ in $`m`$
+/// (e.g., the height of the window's centroid) can be estimated through an equation that
+/// relates the measurements at the meteorological station and those in the site.
+///
+/// Specifically, this equation depends on the altitude
+/// at which the wind speed was measured at the meteorological station ($`z_{met}`$,
+/// assumed to be $`10m`$), the so-called "wind speed profile boundary layer" at the
+/// weather station ($`\delta_{met}`$, assumed to be $`240m`$) and the "wind speed profile
+/// exponent" at the meteorological station $`\alpha_{met}`$. Also, it depends on the
+/// "wind speed profile boundary layer" at the site ($`\delta`$) and the "wind speed profile
+/// exponent" $`\alpha`$.
+///
+/// ```math
+/// V_z = \left(\frac{\delta_{met}}{z_{met}}\right)^{\alpha_{met}}\left(\frac{z}{\delta} \right)^{\alpha}
+/// ```
+/// The values for $`\alpha`$ and $`\delta`$ depend on the kind of terrain.
+///
+/// | Terrain Class | $`\alpha`$ | $`\delta`$ |
+/// |---------------|------------|------------|
+/// | Country       | 0.14       | 270        |
+/// | Suburbs       | 0.22       | 370        |
+/// | City          | 0.33       | 460        |
+/// | Ocean         | 0.10       | 210        |
+/// | Urban         | 0.22       | 370        |
+///
+/// > Note: if height is Zero, then we assume the wind speed to be Zero
+pub fn wind_speed_modifier(height: Float, site_details: &Option<SiteDetails>) -> Float {
+    // Surface touching the ground... no wind
+    if height < 1e-5 {
+        return 0.0;
+    }
+    // this bit does not change... it is assumed constant for all meterological stations
+
+    let mut alpha = 0.0;
+    let mut delta = 0.0;
+
+    if let Some(details) = site_details {
+        // raise all surfaces, if needed
+        // if let Ok(z_terrain) = details.altitude(){
+        //     height += z_terrain;
+        // }
+        if let Ok(terrain) = details.terrain() {
+            (alpha, delta) = match terrain {
+                TerrainClass::Country => (0.14, 270.),
+                TerrainClass::Suburbs => (0.22, 370.),
+                TerrainClass::City => (0.33, 460.),
+                TerrainClass::Ocean => (0.10, 210.),
+                TerrainClass::Urban => (0.22, 370.),
+            }
+        }
+    } else {
+        // default to Urban
+        alpha = 0.22;
+        delta = 370.;
+    }
+
+    (270. / 10. as Float).powf(0.14) * (height / delta).powf(alpha)
+}
 
 /// Marches forward through time, solving the
 /// Ordinary Differential Equation that governs the heat transfer in walls.
@@ -632,6 +709,12 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The normal of the surface
     pub normal: Vector3D,
 
+    /// The wind velocity changes with altitude. This field
+    /// stores the factor with which the wind velocity of the weather
+    /// file needs to be multiplied in order to estimate the wind speed
+    /// at the exterior of the surface.
+    pub wind_speed_modifier: Float,
+
     /// The cosine of the tilt angle (normal * Vector3D(0., 0., 1.))
     pub cos_tilt: Float,
 
@@ -648,16 +731,24 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The absorbtances of each node in the system, proportional
     /// to the back incident radiation (i.e., they do not add up to 1.0)
     pub back_alphas: Matrix,
+
+    #[cfg(debug_assertions)]
+    pub front_hs: Option<Float>,
+
+    #[cfg(debug_assertions)]
+    pub back_hs: Option<Float>,
 }
 
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         state: &mut SimulationStateHeader,
+        site_details: &Option<SiteDetails>,
         ref_surface_index: usize,
         parent: &Rc<T>,
         area: Float,
         perimeter: Float,
+        height: Float,
         normal: Vector3D,
         construction: &Rc<Construction>,
         discretization: Discretization,
@@ -816,39 +907,33 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             global_i -= n + 1;
         }
 
+        let cos_tilt = normal * Vector3D::new(0., 0., 1.);
+        let wind_speed_modifier = wind_speed_modifier(height, site_details);
+
         // Build resulting
         Ok(ThermalSurfaceData {
             parent: parent.clone(),
             area,
             perimeter,
             normal,
-            cos_tilt: normal * Vector3D::new(0., 0., 1.),
+            cos_tilt,
             discretization,
             front_boundary: None,
             back_boundary: None,
             front_emmisivity,
             back_emmisivity,
+            wind_speed_modifier,
             front_solar_absorbtance,
             back_solar_absorbtance,
             front_alphas,
             back_alphas,
             massive_chunks,
             nomass_chunks,
+            #[cfg(debug_assertions)]
+            front_hs: None,
+            #[cfg(debug_assertions)]
+            back_hs: None,
         })
-    }
-
-    /// Calculates whether a surface is facing the wind direction
-    /// wind_direction in Radians
-    fn is_windward(&self, wind_direction: Float) -> bool {
-        if self.cos_tilt.abs() < 0.98 {
-            // tilted
-            let wind_direction =
-                Vector3D::new(wind_direction.sin(), wind_direction.to_radians().cos(), 0.0);
-            self.normal * wind_direction < 0.0
-        } else {
-            // if it is horizontal
-            true
-        }
     }
 
     pub fn set_front_boundary(&mut self, b: Boundary) {
@@ -886,7 +971,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_speed: 0.,
             ir_irrad: ir_front,
             surface_temperature: self.parent.front_temperature(state),
-            roughness_index: 2,
+            roughness_index: 1,
             cos_surface_tilt: self.cos_tilt,
         };
         let mut back_env = ConvectionParams {
@@ -894,43 +979,50 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_speed: 0.0,
             ir_irrad: ir_back,
             surface_temperature: self.parent.back_temperature(state),
-            roughness_index: 2,
-            cos_surface_tilt: self.cos_tilt,
+            roughness_index: 1,
+            cos_surface_tilt: -self.cos_tilt,
         };
 
-        let calc_convection_coefs =
-            |front_env: &mut ConvectionParams, back_env: &mut ConvectionParams| -> (Float, Float) {
-                // TODO: There is something to do here if we are talking about windows
-                let front_hs = if let Some(b) = &self.front_boundary {
-                    match &b {
-                        Boundary::Space(_) => front_env.get_tarp_natural_convection_coefficient(),
-                        Boundary::Ground => unreachable!(),
-                    }
-                } else {
-                    front_env.air_speed = wind_speed;
-                    let windward = self.is_windward(wind_direction.to_radians());
-                    front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
-                    // 5.
-                };
-
-                let back_hs = if let Some(b) = &self.back_boundary {
-                    match &b {
-                        Boundary::Space(_) => back_env.get_tarp_natural_convection_coefficient(),
-                        Boundary::Ground => unreachable!(),
-                    }
-                } else {
-                    // Exterior
-                    back_env.air_speed = wind_speed;
-                    let windward = self.is_windward(wind_direction.to_radians());
-                    back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
-                    // 5.
-                };
-
-                if front_hs.is_nan() || back_hs.is_nan() {
-                    println!("{},{}", front_hs, back_hs);
+        let calc_convection_coefs = |front_env: &mut ConvectionParams,
+                                     back_env: &mut ConvectionParams|
+         -> (Float, Float) {
+            // TODO: There is something to do here if we are talking about windows
+            let front_hs = if let Some(b) = &self.front_boundary {
+                match &b {
+                    Boundary::Space(_) => front_env.get_tarp_natural_convection_coefficient(),
+                    Boundary::Ground => unreachable!(),
                 }
-                (front_hs, back_hs)
+            } else {
+                front_env.air_speed = wind_speed * self.wind_speed_modifier;
+                let windward = is_windward(wind_direction.to_radians(), self.cos_tilt, self.normal);
+                front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
+                // 5.
             };
+
+            let back_hs = if let Some(b) = &self.back_boundary {
+                match &b {
+                    Boundary::Space(_) => back_env.get_tarp_natural_convection_coefficient(),
+                    Boundary::Ground => unreachable!(),
+                }
+            } else {
+                // Exterior
+                back_env.air_speed = wind_speed * self.wind_speed_modifier;
+                let windward = is_windward(wind_direction.to_radians(), self.cos_tilt, self.normal);
+                back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
+                // 5.
+            };
+
+            if front_hs.is_nan() || back_hs.is_nan() {
+                println!("{},{}", front_hs, back_hs);
+            }
+            #[cfg(debug_assertions)]
+            return (
+                self.front_hs.unwrap_or(front_hs),
+                self.back_hs.unwrap_or(back_hs),
+            );
+            #[cfg(not(debug_assertions))]
+            (front_hs, back_hs)
+        };
 
         /////////////////////
         // 1st: Calculate the solar absorption in each node
@@ -1175,17 +1267,22 @@ mod testing {
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
         let perimeter = 8. * l;
         let mut state_header = SimulationStateHeader::new();
-        let ts = ThermalSurface::new(
+        let mut ts = ThermalSurface::new(
             &mut state_header,
+            &None,
             0,
             &surface,
             surface.area(),
             perimeter,
+            10.,
             normal,
             &c,
             d,
         )
         .unwrap();
+
+        ts.front_hs = Some(10.);
+        ts.back_hs = Some(10.);
 
         let mut state = state_header.take_values().unwrap();
 
@@ -1321,17 +1418,21 @@ mod testing {
 
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
         let perimeter = 8. * l;
-        let ts = ThermalSurface::new(
+        let mut ts = ThermalSurface::new(
             &mut state_header,
+            &None,
             0,
             &surface,
             surface.area(),
             perimeter,
+            10.,
             normal,
             &c,
             d,
         )
         .unwrap();
+        ts.front_hs = Some(10.);
+        ts.back_hs = Some(10.);
         // assert!(!d.is_massive);
 
         let mut state = state_header.take_values().unwrap();
@@ -1403,10 +1504,12 @@ mod testing {
         let perimeter = 8. * l;
         let ts = ThermalSurface::new(
             &mut state_header,
+            &None,
             0,
             &surface,
             surface.area(),
             perimeter,
+            10.,
             normal,
             &c,
             d,

@@ -134,10 +134,12 @@ Output:Variable,*,Surface Inside Face Net Surface Thermal Radiation Heat Gain Ra
 Output:Variable,*,Surface Outside Face Outdoor Air Drybulb Temperature,timestep; !- Zone Average [C]
 Output:Variable,*,Surface Outside Face Net Thermal Radiation Heat Gain Rate,timestep; !- Zone Average [W]
 Output:Variable,*,Zone Mean Air Temperature,timestep; !- Zone Average [C]
-Output:Variable,*,Site Wind Speed,timestep; !- Zone Average [m/s]
+Output:Variable,*,Surface Outside Face Outdoor Air Wind Speed,timestep; !- Zone Average [m/s]
 Output:Variable,*,Site Wind Direction,timestep; !- Zone Average [deg]
 
 Output:Variable,*,Surface Outside Face Convection Heat Transfer Coefficient,timestep; !- Zone Average [W/m2-K]
 Output:Variable,*,Surface Inside Face Convection Heat Transfer Coefficient,timestep; !- Zone Average [W/m2-K]
 Output:Variable,*,Surface Inside Face Temperature,timestep; !- Zone Average [C]
 Output:Variable,*,Surface Outside Face Temperature,timestep; !- Zone Average [C]
+
+Output:Variable,*,Site Wind Speed,timestep; !- Zone Average [m/s]
