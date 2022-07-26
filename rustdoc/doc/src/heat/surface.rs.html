@@ -1648,6 +1648,8 @@
 <span id="1609">1609</span>
 <span id="1610">1610</span>
 <span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2620,7 +2622,7 @@ SOFTWARE.
             <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_front</span>,
-            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
+            <span class="ident">surface_temperature</span>: <span class="number">25.9307928164378</span>,<span class="comment">//self.parent.front_temperature(state),</span>
             <span class="ident">roughness_index</span>: <span class="number">1</span>,
             <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
         };
@@ -2628,14 +2630,17 @@ SOFTWARE.
             <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
             <span class="ident">air_speed</span>: <span class="number">0.0</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_back</span>,
-            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
+            <span class="ident">surface_temperature</span>: <span class="number">18.6417622520474</span>,<span class="comment">//self.parent.back_temperature(state),</span>
             <span class="ident">roughness_index</span>: <span class="number">1</span>,
-            <span class="ident">cos_surface_tilt</span>: <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>,
+            <span class="ident">cos_surface_tilt</span>: <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="comment">// back, so tilt is reversed</span>
         };
 
         <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span> <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>,
                                      <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span>
          -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
+
+            <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+
             <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
             <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
                 <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
@@ -2644,9 +2649,9 @@ SOFTWARE.
                 }
             } <span class="kw">else</span> {
                 <span class="ident">front_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
-                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+                
                 <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                <span class="comment">// 5.</span>
+                
             };
 
             <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
@@ -2655,11 +2660,10 @@ SOFTWARE.
                     <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
                 }
             } <span class="kw">else</span> {
-                <span class="comment">// Exterior</span>
+                <span class="comment">// Back...  so, windward calculation is reversed</span>
                 <span class="ident">back_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
-                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
-                <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                <span class="comment">// 5.</span>
+                <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="op">!</span><span class="ident">windward</span>)
+                
             };
 
             <span class="kw">if</span> <span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">back_hs</span>.<span class="ident">is_nan</span>() {
@@ -2684,8 +2688,8 @@ SOFTWARE.
         <span class="comment">// 2nd: Calculate the temperature in all no-mass nodes.</span>
         <span class="comment">// Also, the heat flow into</span>
         <span class="comment">/////////////////////</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_err</span> <span class="op">=</span> <span class="number">99999.</span>;
         <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nomass_chunks</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_err</span> <span class="op">=</span> <span class="number">99999.</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
             <span class="kw">loop</span> {
                 <span class="comment">// Update convection coefficients</span>
@@ -2721,7 +2725,7 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">err</span> <span class="op">&gt;</span> <span class="ident">old_err</span> {
                     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
                     <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">100</span> {
-                        <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because GOOD!&quot;</span>, <span class="ident">count</span>);
+                        <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because BAD!&quot;</span>, <span class="ident">count</span>);
                     }
                     <span class="kw">break</span>;
                 }
@@ -2739,7 +2743,7 @@ SOFTWARE.
                     <span class="ident">temperatures</span>.<span class="ident">scale_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="number">0.5</span>).<span class="ident">unwrap</span>();
                 }
 
-                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.05</span> {
+                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
                     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
                     <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">100</span> {
                         <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because GOOD!&quot;</span>, <span class="ident">count</span>);
