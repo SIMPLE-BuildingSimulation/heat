@@ -1545,6 +1545,109 @@
 <span id="1506">1506</span>
 <span id="1507">1507</span>
 <span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
+<span id="1549">1549</span>
+<span id="1550">1550</span>
+<span id="1551">1551</span>
+<span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
+<span id="1565">1565</span>
+<span id="1566">1566</span>
+<span id="1567">1567</span>
+<span id="1568">1568</span>
+<span id="1569">1569</span>
+<span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
+<span id="1576">1576</span>
+<span id="1577">1577</span>
+<span id="1578">1578</span>
+<span id="1579">1579</span>
+<span id="1580">1580</span>
+<span id="1581">1581</span>
+<span id="1582">1582</span>
+<span id="1583">1583</span>
+<span id="1584">1584</span>
+<span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
+<span id="1611">1611</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -1572,10 +1675,87 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident">geometry3d::Vector3D</span>;
 <span class="kw">use</span> <span class="ident">matrix::Matrix</span>;
 <span class="kw">use</span> <span class="ident">simple_model</span>::{
-    <span class="ident">Boundary</span>, <span class="ident">Construction</span>, <span class="ident">Fenestration</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>,
+    <span class="ident">Boundary</span>, <span class="ident">Construction</span>, <span class="ident">Fenestration</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>, <span class="ident">TerrainClass</span>,
 };
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationState</span>, <span class="ident">SimulationStateElement</span>};
+<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationState</span>, <span class="ident">SimulationStateElement</span>, <span class="ident">SiteDetails</span>};
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
+
+<span class="doccomment">/// Calculates whether a surface is facing the wind direction</span>
+<span class="doccomment">/// **wind_direction in Radians**</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>: <span class="ident">Float</span>, <span class="ident">cos_tilt</span>: <span class="ident">Float</span>, <span class="ident">normal</span>: <span class="ident">Vector3D</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">if</span> <span class="ident">cos_tilt</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.98</span> {
+        <span class="comment">// tilted</span>
+        <span class="kw">let</span> <span class="ident">wind_direction</span> <span class="op">=</span> <span class="ident">Vector3D::new</span>(<span class="ident">wind_direction</span>.<span class="ident">sin</span>(), <span class="ident">wind_direction</span>.<span class="ident">cos</span>(), <span class="number">0.0</span>);
+        <span class="ident">normal</span> <span class="op">*</span> <span class="ident">wind_direction</span> <span class="op">&gt;</span> <span class="number">0.0</span>
+    } <span class="kw">else</span> {
+        <span class="comment">// if it is horizontal</span>
+        <span class="bool-val">true</span>
+    }
+}
+
+<span class="doccomment">/// Calculates a surface&#39;s wind speed modifier; that is to say, the value by which</span>
+<span class="doccomment">/// the weather file wind speed needs to be multiplied in order to estimate the wind</span>
+<span class="doccomment">/// speed next to the window</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is a rip off from EnergyPlus&#39; Engineering Reference, where they explain that</span>
+<span class="doccomment">/// the corrected wind speed ($`V_z`$ in $`m/s`$) at a certain altitude $`z`$ in $`m`$</span>
+<span class="doccomment">/// (e.g., the height of the window&#39;s centroid) can be estimated through an equation that</span>
+<span class="doccomment">/// relates the measurements at the meteorological station and those in the site.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Specifically, this equation depends on the altitude</span>
+<span class="doccomment">/// at which the wind speed was measured at the meteorological station ($`z_{met}`$,</span>
+<span class="doccomment">/// assumed to be $`10m`$), the so-called &quot;wind speed profile boundary layer&quot; at the</span>
+<span class="doccomment">/// weather station ($`\delta_{met}`$, assumed to be $`240m`$) and the &quot;wind speed profile</span>
+<span class="doccomment">/// exponent&quot; at the meteorological station $`\alpha_{met}`$. Also, it depends on the</span>
+<span class="doccomment">/// &quot;wind speed profile boundary layer&quot; at the site ($`\delta`$) and the &quot;wind speed profile</span>
+<span class="doccomment">/// exponent&quot; $`\alpha`$.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```math</span>
+<span class="doccomment">/// V_z = \left(\frac{\delta_{met}}{z_{met}}\right)^{\alpha_{met}}\left(\frac{z}{\delta} \right)^{\alpha}</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// The values for $`\alpha`$ and $`\delta`$ depend on the kind of terrain.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// | Terrain Class | $`\alpha`$ | $`\delta`$ |</span>
+<span class="doccomment">/// |---------------|------------|------------|</span>
+<span class="doccomment">/// | Country       | 0.14       | 270        |</span>
+<span class="doccomment">/// | Suburbs       | 0.22       | 370        |</span>
+<span class="doccomment">/// | City          | 0.33       | 460        |</span>
+<span class="doccomment">/// | Ocean         | 0.10       | 210        |</span>
+<span class="doccomment">/// | Urban         | 0.22       | 370        |</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// &gt; Note: if height is Zero, then we assume the wind speed to be Zero</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wind_speed_modifier</span>(<span class="ident">height</span>: <span class="ident">Float</span>, <span class="ident">site_details</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SiteDetails</span><span class="op">&gt;</span>) -&gt; <span class="ident">Float</span> {
+    <span class="comment">// Surface touching the ground... no wind</span>
+    <span class="kw">if</span> <span class="ident">height</span> <span class="op">&lt;</span> <span class="number">1e-5</span> {
+        <span class="kw">return</span> <span class="number">0.0</span>;
+    }
+    <span class="comment">// this bit does not change... it is assumed constant for all meterological stations</span>
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">alpha</span> <span class="op">=</span> <span class="number">0.0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">delta</span> <span class="op">=</span> <span class="number">0.0</span>;
+
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">details</span>) <span class="op">=</span> <span class="ident">site_details</span> {
+        <span class="comment">// raise all surfaces, if needed</span>
+        <span class="comment">// if let Ok(z_terrain) = details.altitude(){</span>
+        <span class="comment">//     height += z_terrain;</span>
+        <span class="comment">// }</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">terrain</span>) <span class="op">=</span> <span class="ident">details</span>.<span class="ident">terrain</span>() {
+            (<span class="ident">alpha</span>, <span class="ident">delta</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">terrain</span> {
+                <span class="ident">TerrainClass::Country</span> =&gt; (<span class="number">0.14</span>, <span class="number">270.</span>),
+                <span class="ident">TerrainClass::Suburbs</span> =&gt; (<span class="number">0.22</span>, <span class="number">370.</span>),
+                <span class="ident">TerrainClass::City</span> =&gt; (<span class="number">0.33</span>, <span class="number">460.</span>),
+                <span class="ident">TerrainClass::Ocean</span> =&gt; (<span class="number">0.10</span>, <span class="number">210.</span>),
+                <span class="ident">TerrainClass::Urban</span> =&gt; (<span class="number">0.22</span>, <span class="number">370.</span>),
+            }
+        }
+    } <span class="kw">else</span> {
+        <span class="comment">// default to Urban</span>
+        <span class="ident">alpha</span> <span class="op">=</span> <span class="number">0.22</span>;
+        <span class="ident">delta</span> <span class="op">=</span> <span class="number">370.</span>;
+    }
+
+    (<span class="number">270.</span> <span class="op">/</span> <span class="number">10.</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">powf</span>(<span class="number">0.14</span>) <span class="op">*</span> (<span class="ident">height</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">powf</span>(<span class="ident">alpha</span>)
+}
 
 <span class="doccomment">/// Marches forward through time, solving the</span>
 <span class="doccomment">/// Ordinary Differential Equation that governs the heat transfer in walls.</span>
@@ -2179,6 +2359,12 @@ SOFTWARE.
     <span class="doccomment">/// The normal of the surface</span>
     <span class="kw">pub</span> <span class="ident">normal</span>: <span class="ident">Vector3D</span>,
 
+    <span class="doccomment">/// The wind velocity changes with altitude. This field</span>
+    <span class="doccomment">/// stores the factor with which the wind velocity of the weather</span>
+    <span class="doccomment">/// file needs to be multiplied in order to estimate the wind speed</span>
+    <span class="doccomment">/// at the exterior of the surface.</span>
+    <span class="kw">pub</span> <span class="ident">wind_speed_modifier</span>: <span class="ident">Float</span>,
+
     <span class="doccomment">/// The cosine of the tilt angle (normal * Vector3D(0., 0., 1.))</span>
     <span class="kw">pub</span> <span class="ident">cos_tilt</span>: <span class="ident">Float</span>,
 
@@ -2195,16 +2381,24 @@ SOFTWARE.
     <span class="doccomment">/// The absorbtances of each node in the system, proportional</span>
     <span class="doccomment">/// to the back incident radiation (i.e., they do not add up to 1.0)</span>
     <span class="kw">pub</span> <span class="ident">back_alphas</span>: <span class="ident">Matrix</span>,
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">front_hs</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>,
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">back_hs</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SurfaceTrait</span><span class="op">&gt;</span> <span class="ident">ThermalSurfaceData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
+        <span class="ident">site_details</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SiteDetails</span><span class="op">&gt;</span>,
         <span class="ident">ref_surface_index</span>: <span class="ident">usize</span>,
         <span class="ident">parent</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
         <span class="ident">area</span>: <span class="ident">Float</span>,
         <span class="ident">perimeter</span>: <span class="ident">Float</span>,
+        <span class="ident">height</span>: <span class="ident">Float</span>,
         <span class="ident">normal</span>: <span class="ident">Vector3D</span>,
         <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Construction</span><span class="op">&gt;</span>,
         <span class="ident">discretization</span>: <span class="ident">Discretization</span>,
@@ -2363,39 +2557,33 @@ SOFTWARE.
             <span class="ident">global_i</span> <span class="op">-</span><span class="op">=</span> <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>;
         }
 
+        <span class="kw">let</span> <span class="ident">cos_tilt</span> <span class="op">=</span> <span class="ident">normal</span> <span class="op">*</span> <span class="ident">Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
+        <span class="kw">let</span> <span class="ident">wind_speed_modifier</span> <span class="op">=</span> <span class="ident">wind_speed_modifier</span>(<span class="ident">height</span>, <span class="ident">site_details</span>);
+
         <span class="comment">// Build resulting</span>
         <span class="prelude-val">Ok</span>(<span class="ident">ThermalSurfaceData</span> {
             <span class="ident">parent</span>: <span class="ident">parent</span>.<span class="ident">clone</span>(),
             <span class="ident">area</span>,
             <span class="ident">perimeter</span>,
             <span class="ident">normal</span>,
-            <span class="ident">cos_tilt</span>: <span class="ident">normal</span> <span class="op">*</span> <span class="ident">Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>),
+            <span class="ident">cos_tilt</span>,
             <span class="ident">discretization</span>,
             <span class="ident">front_boundary</span>: <span class="prelude-val">None</span>,
             <span class="ident">back_boundary</span>: <span class="prelude-val">None</span>,
             <span class="ident">front_emmisivity</span>,
             <span class="ident">back_emmisivity</span>,
+            <span class="ident">wind_speed_modifier</span>,
             <span class="ident">front_solar_absorbtance</span>,
             <span class="ident">back_solar_absorbtance</span>,
             <span class="ident">front_alphas</span>,
             <span class="ident">back_alphas</span>,
             <span class="ident">massive_chunks</span>,
             <span class="ident">nomass_chunks</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+            <span class="ident">front_hs</span>: <span class="prelude-val">None</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+            <span class="ident">back_hs</span>: <span class="prelude-val">None</span>,
         })
-    }
-
-    <span class="doccomment">/// Calculates whether a surface is facing the wind direction</span>
-    <span class="doccomment">/// wind_direction in Radians</span>
-    <span class="kw">fn</span> <span class="ident">is_windward</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">wind_direction</span>: <span class="ident">Float</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cos_tilt</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.98</span> {
-            <span class="comment">// tilted</span>
-            <span class="kw">let</span> <span class="ident">wind_direction</span> <span class="op">=</span>
-                <span class="ident">Vector3D::new</span>(<span class="ident">wind_direction</span>.<span class="ident">sin</span>(), <span class="ident">wind_direction</span>.<span class="ident">to_radians</span>().<span class="ident">cos</span>(), <span class="number">0.0</span>);
-            <span class="self">self</span>.<span class="ident">normal</span> <span class="op">*</span> <span class="ident">wind_direction</span> <span class="op">&lt;</span> <span class="number">0.0</span>
-        } <span class="kw">else</span> {
-            <span class="comment">// if it is horizontal</span>
-            <span class="bool-val">true</span>
-        }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_front_boundary</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">Boundary</span>) {
@@ -2433,7 +2621,7 @@ SOFTWARE.
             <span class="ident">air_speed</span>: <span class="number">0.</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_front</span>,
             <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
-            <span class="ident">roughness_index</span>: <span class="number">2</span>,
+            <span class="ident">roughness_index</span>: <span class="number">1</span>,
             <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
@@ -2441,43 +2629,50 @@ SOFTWARE.
             <span class="ident">air_speed</span>: <span class="number">0.0</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_back</span>,
             <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
-            <span class="ident">roughness_index</span>: <span class="number">2</span>,
-            <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
+            <span class="ident">roughness_index</span>: <span class="number">1</span>,
+            <span class="ident">cos_surface_tilt</span>: <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>,
         };
 
-        <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span>
-            <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>, <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span> -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
-                <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
-                <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
-                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                    }
-                } <span class="kw">else</span> {
-                    <span class="ident">front_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span>;
-                    <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>());
-                    <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                    <span class="comment">// 5.</span>
-                };
-
-                <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
-                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                    }
-                } <span class="kw">else</span> {
-                    <span class="comment">// Exterior</span>
-                    <span class="ident">back_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span>;
-                    <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>());
-                    <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                    <span class="comment">// 5.</span>
-                };
-
-                <span class="kw">if</span> <span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">back_hs</span>.<span class="ident">is_nan</span>() {
-                    <span class="macro">println!</span>(<span class="string">&quot;{},{}&quot;</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>);
+        <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span> <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>,
+                                     <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span>
+         -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
+            <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
+            <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
+                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                    <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
+                    <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
                 }
-                (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">front_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
+                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+                <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
+                <span class="comment">// 5.</span>
             };
+
+            <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
+                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                    <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
+                    <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
+                }
+            } <span class="kw">else</span> {
+                <span class="comment">// Exterior</span>
+                <span class="ident">back_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
+                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+                <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
+                <span class="comment">// 5.</span>
+            };
+
+            <span class="kw">if</span> <span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">back_hs</span>.<span class="ident">is_nan</span>() {
+                <span class="macro">println!</span>(<span class="string">&quot;{},{}&quot;</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>);
+            }
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+            <span class="kw">return</span> (
+                <span class="self">self</span>.<span class="ident">front_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">front_hs</span>),
+                <span class="self">self</span>.<span class="ident">back_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">back_hs</span>),
+            );
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span>
+            (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
+        };
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 1st: Calculate the solar absorption in each node</span>
@@ -2722,17 +2917,22 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">normal</span> <span class="op">=</span> <span class="ident">geometry3d::Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
         <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="number">8.</span> <span class="op">*</span> <span class="ident">l</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
             <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
+            <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
             <span class="number">0</span>,
             <span class="kw-2">&amp;</span><span class="ident">surface</span>,
             <span class="ident">surface</span>.<span class="ident">area</span>(),
             <span class="ident">perimeter</span>,
+            <span class="number">10.</span>,
             <span class="ident">normal</span>,
             <span class="kw-2">&amp;</span><span class="ident">c</span>,
             <span class="ident">d</span>,
         )
         .<span class="ident">unwrap</span>();
+
+        <span class="ident">ts</span>.<span class="ident">front_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
+        <span class="ident">ts</span>.<span class="ident">back_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
 
@@ -2868,17 +3068,21 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">normal</span> <span class="op">=</span> <span class="ident">geometry3d::Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
         <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="number">8.</span> <span class="op">*</span> <span class="ident">l</span>;
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
             <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
+            <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
             <span class="number">0</span>,
             <span class="kw-2">&amp;</span><span class="ident">surface</span>,
             <span class="ident">surface</span>.<span class="ident">area</span>(),
             <span class="ident">perimeter</span>,
+            <span class="number">10.</span>,
             <span class="ident">normal</span>,
             <span class="kw-2">&amp;</span><span class="ident">c</span>,
             <span class="ident">d</span>,
         )
         .<span class="ident">unwrap</span>();
+        <span class="ident">ts</span>.<span class="ident">front_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
+        <span class="ident">ts</span>.<span class="ident">back_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
         <span class="comment">// assert!(!d.is_massive);</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
@@ -2950,10 +3154,12 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="number">8.</span> <span class="op">*</span> <span class="ident">l</span>;
         <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
             <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
+            <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
             <span class="number">0</span>,
             <span class="kw-2">&amp;</span><span class="ident">surface</span>,
             <span class="ident">surface</span>.<span class="ident">area</span>(),
             <span class="ident">perimeter</span>,
+            <span class="number">10.</span>,
             <span class="ident">normal</span>,
             <span class="kw-2">&amp;</span><span class="ident">c</span>,
             <span class="ident">d</span>,

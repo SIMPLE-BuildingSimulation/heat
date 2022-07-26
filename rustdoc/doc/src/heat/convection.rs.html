@@ -217,24 +217,6 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -261,7 +243,7 @@ SOFTWARE.
 <span class="doccomment">/// Represents a border condition of between a Surface</span>
 <span class="doccomment">/// and a Zone or the exterior</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">ConvectionParams</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConvectionParams</span> {
     <span class="doccomment">/// The dry bulb temperature of the air, in $`C`$</span>
     <span class="kw">pub</span> <span class="ident">air_temperature</span>: <span class="ident">Float</span>,
 
@@ -281,7 +263,7 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="ident">surface_temperature</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The roughness index, between 1 (Very Rough) and 6 (Very smooth)</span>
-    <span class="kw">pub</span> <span class="ident">roughness_index</span>: <span class="ident">u8</span>,
+    <span class="kw">pub</span> <span class="ident">roughness_index</span>: <span class="ident">usize</span>,
 
     <span class="doccomment">/// The cosine of the surface tilt. Zero is 90 degrees; &gt;0 means</span>
     <span class="doccomment">/// facing up; &lt;0 means facing down</span>
@@ -324,16 +306,12 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tarp_natural_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
         <span class="kw">let</span> <span class="ident">delta_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">air_temperature</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">surface_temperature</span>;
         <span class="kw">let</span> <span class="ident">abs_delta_t</span> <span class="op">=</span> <span class="ident">delta_t</span>.<span class="ident">abs</span>();
-
-        <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="ident">abs_delta_t</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>;
-
-        <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">aux</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span> {
-            <span class="comment">// we can easily get an hs of Zero</span>
+                
+        <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta_t</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span> {
             <span class="number">1.31</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">aux</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
-            <span class="comment">// is this the same? opposite signs</span>
+        }<span class="kw">else</span> <span class="kw">if</span> (<span class="ident">delta_t</span> <span class="op">&lt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&lt;</span> <span class="number">0.</span>) <span class="op">|</span><span class="op">|</span> (<span class="ident">delta_t</span> <span class="op">&gt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&gt;</span> <span class="number">0.</span>) {
             <span class="number">9.482</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">/</span> (<span class="number">7.238</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>())
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">aux</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
+        }<span class="kw">else</span> <span class="kw">if</span> (<span class="ident">delta_t</span> <span class="op">&gt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&lt;</span> <span class="number">0.</span>) <span class="op">|</span><span class="op">|</span> (<span class="ident">delta_t</span> <span class="op">&lt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&gt;</span> <span class="number">0.</span>) {
             <span class="number">1.81</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">/</span> (<span class="number">1.382</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>())
         } <span class="kw">else</span> {
             <span class="macro">unreachable!</span>()
@@ -370,11 +348,7 @@ SOFTWARE.
     <span class="doccomment">///</span>
     <span class="doccomment">/// Where $`A`$ is the area of the surface; $`V_z`$, the local wind speed; $`P`$,</span>
     <span class="doccomment">/// the perimeter of the surface; and  $`W_f`$ is $`1.0`$ for surfaces facing the</span>
-    <span class="doccomment">/// wind and $`0.5`$ for others</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Despite the equation in the documentation, EnergyPlus&#39; source code seems to use `0.75`</span>
-    <span class="doccomment">/// as its fucntion `InitExteriorConvectionCoeff` states that the coefficient is `(CalcSparrowWindward(..)+CalcSparrowWindward(..))/2.0`</span>
-    <span class="doccomment">/// and `CalcSparrowLeeward` is `0.5 * CalcSparrowWindward` (so, `(1.0*X + 0.5*X)/2 = 0.75*X`).</span>
+    <span class="doccomment">/// wind and $`0.5`$ for others    </span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The value of $`R_f`$, on its part, is based on the roughness of the material.</span>
     <span class="doccomment">///</span>
@@ -395,29 +369,19 @@ SOFTWARE.
         <span class="ident">perimeter</span>: <span class="ident">Float</span>,
         <span class="ident">windward</span>: <span class="ident">bool</span>,
     ) -&gt; <span class="ident">Float</span> {
-        <span class="kw">let</span> <span class="ident">rf</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">roughness_index</span> {
-            <span class="number">1</span> =&gt; <span class="number">2.17</span>,
-            <span class="number">2</span> =&gt; <span class="number">1.67</span>,
-            <span class="number">3</span> =&gt; <span class="number">1.52</span>,
-            <span class="number">4</span> =&gt; <span class="number">1.13</span>,
-            <span class="number">5</span> =&gt; <span class="number">1.11</span>,
-            <span class="number">6</span> =&gt; <span class="number">1.</span>,
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Impossible roughness index when calculating TARP convection&quot;</span>),
-        };
+        <span class="kw">const</span> <span class="ident">COEFFICIENTS</span> : [<span class="ident">Float</span>;<span class="number">6</span>] <span class="op">=</span> [<span class="number">2.17</span>, <span class="number">1.67</span>, <span class="number">1.52</span>, <span class="number">1.13</span>, <span class="number">1.11</span>, <span class="number">1.</span>];
+        
+        <span class="kw">let</span> <span class="ident">rf</span> <span class="op">=</span> <span class="ident">COEFFICIENTS</span>[<span class="self">self</span>.<span class="ident">roughness_index</span>];
+        
 
-        <span class="kw">let</span> <span class="ident">wf</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">windward</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.75</span> };
+        <span class="kw">let</span> <span class="ident">wf</span> <span class="op">=</span>  <span class="kw">if</span> <span class="ident">windward</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.5</span> };
 
         <span class="kw">let</span> <span class="ident">forced</span> <span class="op">=</span> <span class="number">2.537</span> <span class="op">*</span> <span class="ident">wf</span> <span class="op">*</span> <span class="ident">rf</span> <span class="op">*</span> (<span class="ident">perimeter</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">air_speed</span> <span class="op">/</span> <span class="ident">area</span>).<span class="ident">sqrt</span>();
 
         <span class="kw">let</span> <span class="ident">natural</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>();
 
-        <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">forced</span> <span class="op">+</span> <span class="ident">natural</span>;
-
-        <span class="kw">if</span> <span class="ident">h</span> <span class="op">&lt;</span> <span class="ident">MIN_H</span> {
-            <span class="ident">MIN_H</span>
-        } <span class="kw">else</span> {
-            <span class="ident">h</span>
-        }
+        <span class="ident">forced</span> <span class="op">+</span> <span class="ident">natural</span> <span class="comment">// this will never be less than MIN_HS because natural is already limited</span>
+        
     }
 }
 

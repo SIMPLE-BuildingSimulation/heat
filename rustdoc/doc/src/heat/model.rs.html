@@ -638,6 +638,10 @@
 <span id="599">599</span>
 <span id="600">600</span>
 <span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -649,7 +653,7 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVoIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -746,6 +750,7 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">angle</span> <span class="op">=</span> <span class="ident">cos_tilt</span>.<span class="ident">acos</span>();
             <span class="kw">let</span> <span class="ident">area</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">area</span>();
             <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">perimeter</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">centroid</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">centroid</span>().<span class="ident">unwrap</span>();
 
             <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">Discretization::new</span>(<span class="ident">constr</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="ident">height</span>, <span class="ident">angle</span>)<span class="question-mark">?</span>;
 
@@ -753,7 +758,7 @@ SOFTWARE.
                 <span class="ident">n_subdivisions</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span>;
             }
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tsurf</span> <span class="op">=</span>
-                <span class="ident">ThermalSurface::new</span>(<span class="ident">state</span>, <span class="ident">i</span>, <span class="ident">surf</span>, <span class="ident">area</span>, <span class="ident">perimeter</span>, <span class="ident">normal</span>, <span class="ident">constr</span>, <span class="ident">d</span>)<span class="question-mark">?</span>;
+                <span class="ident">ThermalSurface::new</span>(<span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">site_details</span>, <span class="ident">i</span>, <span class="ident">surf</span>, <span class="ident">area</span>, <span class="ident">perimeter</span>, <span class="ident">centroid</span>.<span class="ident">z</span>, <span class="ident">normal</span>, <span class="ident">constr</span>, <span class="ident">d</span>)<span class="question-mark">?</span>;
             <span class="comment">// Match surface and zones</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">front_boundary</span>() {
                 <span class="ident">tsurf</span>.<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
@@ -774,6 +779,7 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">angle</span> <span class="op">=</span> <span class="ident">cos_tilt</span>.<span class="ident">acos</span>();
             <span class="kw">let</span> <span class="ident">area</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">area</span>();
             <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">perimeter</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">centroid</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">centroid</span>().<span class="ident">unwrap</span>();
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
             <span class="macro">dbg!</span>(<span class="string">&quot;height is 1&quot;</span>);
@@ -785,7 +791,7 @@ SOFTWARE.
                 <span class="ident">n_subdivisions</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span>;
             }
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tsurf</span> <span class="op">=</span>
-                <span class="ident">ThermalFenestration::new</span>(<span class="ident">state</span>, <span class="ident">i</span>, <span class="ident">surf</span>, <span class="ident">area</span>, <span class="ident">perimeter</span>, <span class="ident">normal</span>, <span class="ident">constr</span>, <span class="ident">d</span>)<span class="question-mark">?</span>;
+                <span class="ident">ThermalFenestration::new</span>(<span class="ident">state</span>, <span class="op">&amp;&amp;</span><span class="ident">model</span>.<span class="ident">site_details</span>, <span class="ident">i</span>, <span class="ident">surf</span>, <span class="ident">area</span>, <span class="ident">perimeter</span>, <span class="ident">centroid</span>.<span class="ident">z</span>, <span class="ident">normal</span>, <span class="ident">constr</span>, <span class="ident">d</span>)<span class="question-mark">?</span>;
             <span class="comment">// Match surface and zones</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">front_boundary</span>() {
                 <span class="ident">tsurf</span>.<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
@@ -800,7 +806,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span> <span class="op">*</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>);
 
         <span class="comment">// safety.</span>
-        <span class="kw">const</span> <span class="ident">SAFETY</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">const</span> <span class="ident">SAFETY</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span>;
         <span class="ident">dt</span> <span class="op">/</span><span class="op">=</span> <span class="ident">SAFETY</span> <span class="kw">as</span> <span class="ident">Float</span>;
         <span class="ident">n_subdivisions</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">SAFETY</span>;
 
@@ -1201,6 +1207,7 @@ SOFTWARE.
         <span class="ident">latitude</span>: <span class="number">0.</span>,
         <span class="ident">longitude</span>: <span class="number">0.</span>,
         <span class="ident">standard_meridian</span>: <span class="number">0.</span>,
+        <span class="ident">altitude</span>: <span class="number">0.0</span>,
     };
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1209,7 +1216,8 @@ SOFTWARE.
             <span class="comment">// &amp;mut state,</span>
             <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
                 <span class="ident">zone_volume</span>: <span class="number">40.</span>,
-                <span class="ident">surface_area</span>: <span class="number">4.</span>,
+                <span class="ident">surface_height</span>: <span class="number">2.</span>,
+                <span class="ident">surface_width</span>: <span class="number">2.</span>,
                 <span class="ident">construction</span>: <span class="macro">vec!</span>[<span class="ident">TestMat::Polyurethane</span>(<span class="number">0.02</span>)],
                 <span class="ident">emmisivity</span>: <span class="number">0.0</span>,
                 ..<span class="ident">Default::default</span>()
