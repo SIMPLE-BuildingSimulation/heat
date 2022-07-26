@@ -970,7 +970,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_temperature: t_front,
             air_speed: 0.,
             ir_irrad: ir_front,
-            surface_temperature: self.parent.front_temperature(state),
+            surface_temperature: 25.9307928164378,//self.parent.front_temperature(state),
             roughness_index: 1,
             cos_surface_tilt: self.cos_tilt,
         };
@@ -978,14 +978,17 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_temperature: t_back,
             air_speed: 0.0,
             ir_irrad: ir_back,
-            surface_temperature: self.parent.back_temperature(state),
+            surface_temperature: 18.6417622520474,//self.parent.back_temperature(state),
             roughness_index: 1,
-            cos_surface_tilt: -self.cos_tilt,
+            cos_surface_tilt: -self.cos_tilt, // back, so tilt is reversed
         };
 
         let calc_convection_coefs = |front_env: &mut ConvectionParams,
                                      back_env: &mut ConvectionParams|
          -> (Float, Float) {
+
+            let windward = is_windward(wind_direction.to_radians(), self.cos_tilt, self.normal);
+
             // TODO: There is something to do here if we are talking about windows
             let front_hs = if let Some(b) = &self.front_boundary {
                 match &b {
@@ -994,9 +997,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 }
             } else {
                 front_env.air_speed = wind_speed * self.wind_speed_modifier;
-                let windward = is_windward(wind_direction.to_radians(), self.cos_tilt, self.normal);
+                
                 front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
-                // 5.
+                
             };
 
             let back_hs = if let Some(b) = &self.back_boundary {
@@ -1005,11 +1008,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     Boundary::Ground => unreachable!(),
                 }
             } else {
-                // Exterior
+                // Back...  so, windward calculation is reversed
                 back_env.air_speed = wind_speed * self.wind_speed_modifier;
-                let windward = is_windward(wind_direction.to_radians(), self.cos_tilt, self.normal);
-                back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
-                // 5.
+                back_env.get_tarp_convection_coefficient(self.area, self.perimeter, !windward)
+                
             };
 
             if front_hs.is_nan() || back_hs.is_nan() {
@@ -1034,8 +1036,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
-        let mut old_err = 99999.;
         for (ini, fin) in &self.nomass_chunks {
+            let mut old_err = 99999.;
             let mut count = 0;
             loop {
                 // Update convection coefficients
@@ -1071,7 +1073,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 if err > old_err {
                     #[cfg(debug_assertions)]
                     if count > 100 {
-                        dbg!("Breaking after {} iterations... because GOOD!", count);
+                        dbg!("Breaking after {} iterations... because BAD!", count);
                     }
                     break;
                 }
@@ -1089,7 +1091,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
 
-                if err / ((fin - ini) as Float) < 0.05 {
+                if err / ((fin - ini) as Float) < 0.01 {
                     #[cfg(debug_assertions)]
                     if count > 100 {
                         dbg!("Breaking after {} iterations... because GOOD!", count);

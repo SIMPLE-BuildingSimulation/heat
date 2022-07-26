@@ -19,7 +19,7 @@ SOFTWARE.
 */
 
 use crate::Float;
-const MIN_H: Float = 0.1;
+const MIN_H: Float = 1.;
 
 /// Represents a border condition of between a Surface
 /// and a Zone or the exterior
