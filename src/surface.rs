@@ -970,7 +970,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_temperature: t_front,
             air_speed: 0.,
             ir_irrad: ir_front,
-            surface_temperature: 25.9307928164378,//self.parent.front_temperature(state),
+            surface_temperature: self.parent.front_temperature(state),
             roughness_index: 1,
             cos_surface_tilt: self.cos_tilt,
         };
@@ -978,7 +978,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             air_temperature: t_back,
             air_speed: 0.0,
             ir_irrad: ir_back,
-            surface_temperature: 18.6417622520474,//self.parent.back_temperature(state),
+            surface_temperature: self.parent.back_temperature(state),
             roughness_index: 1,
             cos_surface_tilt: -self.cos_tilt, // back, so tilt is reversed
         };
