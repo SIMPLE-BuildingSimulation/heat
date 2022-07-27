@@ -87,12 +87,16 @@ impl ConvectionParams {
     pub fn get_tarp_natural_convection_coefficient(&self) -> Float {
         let delta_t = self.air_temperature - self.surface_temperature;
         let abs_delta_t = delta_t.abs();
-                
+
         let h = if delta_t.abs() < 1e-3 || self.cos_surface_tilt.abs() < 1e-3 {
             1.31 * abs_delta_t.powf(1. / 3.)
-        }else if (delta_t < 0. && self.cos_surface_tilt < 0.) || (delta_t > 0. && self.cos_surface_tilt > 0.) {
+        } else if (delta_t < 0. && self.cos_surface_tilt < 0.)
+            || (delta_t > 0. && self.cos_surface_tilt > 0.)
+        {
             9.482 * abs_delta_t.powf(1. / 3.) / (7.238 - self.cos_surface_tilt.abs())
-        }else if (delta_t > 0. && self.cos_surface_tilt < 0.) || (delta_t < 0. && self.cos_surface_tilt > 0.) {
+        } else if (delta_t > 0. && self.cos_surface_tilt < 0.)
+            || (delta_t < 0. && self.cos_surface_tilt > 0.)
+        {
             1.81 * abs_delta_t.powf(1. / 3.) / (1.382 + self.cos_surface_tilt.abs())
         } else {
             unreachable!()
@@ -150,19 +154,17 @@ impl ConvectionParams {
         perimeter: Float,
         windward: bool,
     ) -> Float {
-        const COEFFICIENTS : [Float;6] = [2.17, 1.67, 1.52, 1.13, 1.11, 1.];
-        
-        let rf = COEFFICIENTS[self.roughness_index];
-        
+        const COEFFICIENTS: [Float; 6] = [2.17, 1.67, 1.52, 1.13, 1.11, 1.];
 
-        let wf =  if windward { 1.0 } else { 0.5 };
+        let rf = COEFFICIENTS[self.roughness_index];
+
+        let wf = if windward { 1.0 } else { 0.5 };
 
         let forced = 2.537 * wf * rf * (perimeter * self.air_speed / area).sqrt();
 
         let natural = self.get_tarp_natural_convection_coefficient();
 
         forced + natural // this will never be less than MIN_HS because natural is already limited
-        
     }
 }
 

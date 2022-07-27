@@ -5,12 +5,10 @@ use heat::Float;
 use calendar::Date;
 use communication_protocols::MetaOptions;
 use schedule::ScheduleConstant;
+use simple_model::{SimpleModel, SimulationStateElement, SimulationStateHeader, HVAC};
+use simple_test_models::{get_single_zone_test_building, SingleZoneTestBuildingOptions, TestMat};
 use validate::*;
 use weather::SyntheticWeather;
-use simple_model::{SimulationStateElement, HVAC, SimpleModel, SimulationStateHeader};
-use simple_test_models::{get_single_zone_test_building, SingleZoneTestBuildingOptions, TestMat};
-
-
 
 fn get_validator(
     expected: Vec<f64>,
@@ -87,9 +85,6 @@ impl SingleZoneTestModel {
     }
 }
 
-
-
-
 const META_OPTIONS: MetaOptions = MetaOptions {
     latitude: 0.,
     longitude: 0.,
@@ -121,7 +116,8 @@ fn march_with_window() -> (Vec<Float>, Vec<Float>) {
     // Finished model the SimpleModel
     let n: usize = 6;
     let main_dt = 60. * 60. / n as Float;
-    let mut thermal_model = ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
+    let mut thermal_model =
+        ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -159,7 +155,7 @@ fn march_with_window() -> (Vec<Float>, Vec<Float>) {
 
     // test model
     let tester = SingleZoneTestModel {
-        surface_area: surface_height*surface_width, // the window is a hole on the wall... does not add area
+        surface_area: surface_height * surface_width, // the window is a hole on the wall... does not add area
         zone_volume,
         facade_r: r,
         temp_out: t_out,
@@ -211,7 +207,8 @@ fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 60;
     let main_dt = 60. * 60. / n as Float;
-    let mut thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
+    let mut thermal_model =
+        ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -233,7 +230,7 @@ fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
     // test model
     let tester = SingleZoneTestModel {
         zone_volume,
-        surface_area: surface_height*surface_width,
+        surface_area: surface_height * surface_width,
         facade_r: r,
         temp_out: t_out,
         temp_start: t_start,
@@ -301,7 +298,8 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let mut thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
+    let mut thermal_model =
+        ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
 
@@ -331,7 +329,7 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
     // test model
     let tester = SingleZoneTestModel {
         zone_volume,
-        surface_area: surface_height*surface_width, // the window is a hole on the wall... does not add area
+        surface_area: surface_height * surface_width, // the window is a hole on the wall... does not add area
         lighting_power,
         facade_r: r,
         temp_out: t_out,
@@ -403,7 +401,8 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let mut thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
+    let mut thermal_model =
+        ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     let mut state = state_header.take_values().unwrap();
     // MAP THE STATE
@@ -435,7 +434,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
     // test model
     let tester = SingleZoneTestModel {
         zone_volume,
-        surface_area: surface_height*surface_width, // the window is a hole on the wall... does not add area
+        surface_area: surface_height * surface_width, // the window is a hole on the wall... does not add area
         heating_power,
         facade_r: r,
         temp_out: t_out,
@@ -509,7 +508,8 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
 
     let n: usize = 20;
     let main_dt = 60. * 60. / n as Float;
-    let mut thermal_model = ThermalModel::new(&META_OPTIONS, (),&simple_model, &mut state_header, n).unwrap();
+    let mut thermal_model =
+        ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
 
     // Set infiltration
     let inf_vol_index = state_header.push(
@@ -551,7 +551,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     // test model
     let tester = SingleZoneTestModel {
         zone_volume,
-        surface_area: surface_height*surface_width, // the window is a hole on the wall... does not add area
+        surface_area: surface_height * surface_width, // the window is a hole on the wall... does not add area
         heating_power,
         facade_r: r,
         temp_out: t_out,
@@ -600,15 +600,13 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     (exp, found)
 }
 
-
-
 fn march_model(
-    dir: &'static str, 
-    simple_model: SimpleModel, 
+    dir: &'static str,
+    simple_model: SimpleModel,
     mut state_header: SimulationStateHeader,
     emmisivity: Float,
     surface_area: Float,
-)-> (Vec<Float>, Vec<Float>) {
+) -> (Vec<Float>, Vec<Float>) {
     // Finished model the SimpleModel
 
     let n: usize = 20;
@@ -623,22 +621,18 @@ fn march_model(
     let cols = validate::from_csv(path, &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
     //     0	Date/Time
-    let site_wind_speed = &cols[0];             // 1	Environment:Site Wind Speed [m/s](TimeStep)
-    let site_wind_direction = &cols[1];         // 2	Environment:Site Wind Direction [deg](TimeStep)
-    let incident_solar_radiation = &cols[2];    // 3	WALL EXTERIOR:Surface Outside Face Incident Solar Radiation Rate per Area [W/m2](TimeStep)
-    // let inside_surface_temp = &cols[3];                 // 4	WALL EXTERIOR:Surface Inside Face Temperature [C](TimeStep)
-    // let outside_surface_temp = &cols[4];                // 5	WALL EXTERIOR:Surface Outside Face Temperature [C](TimeStep)
-    // let exp_hs_in = &cols[5];                           // 6	WALL EXTERIOR:Surface Inside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)
-    let indoor_thermal_heat_gain = &cols[6];    // 7	WALL EXTERIOR:Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate [W](TimeStep)
-    let outdoor_temp = &cols[7];                // 8	WALL EXTERIOR:Surface Outside Face Outdoor Air Drybulb Temperature [C](TimeStep)
-    // let surface_wind_speed = &cols[8];          // 9	WALL EXTERIOR:Surface Outside Face Outdoor Air Wind Speed [m/s](TimeStep)
-    // let exp_hs_out = &cols[9];                          // 10	WALL EXTERIOR:Surface Outside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)
-    let outdoor_thermal_heat_gain = &cols[10];   // 11	WALL EXTERIOR:Surface Outside Face Net Thermal Radiation Heat Gain Rate [W](TimeStep)
-    let exp_zone_air_temp = &cols[11];          // 12	INTERIOR SPACE:Zone Mean Air Temperature [C](TimeStep) 
-
-    
-     
-
+    let site_wind_speed = &cols[0]; // 1	Environment:Site Wind Speed [m/s](TimeStep)
+    let site_wind_direction = &cols[1]; // 2	Environment:Site Wind Direction [deg](TimeStep)
+    let incident_solar_radiation = &cols[2]; // 3	WALL EXTERIOR:Surface Outside Face Incident Solar Radiation Rate per Area [W/m2](TimeStep)
+                                             // let inside_surface_temp = &cols[3];                 // 4	WALL EXTERIOR:Surface Inside Face Temperature [C](TimeStep)
+                                             // let outside_surface_temp = &cols[4];                // 5	WALL EXTERIOR:Surface Outside Face Temperature [C](TimeStep)
+                                             // let exp_hs_in = &cols[5];                           // 6	WALL EXTERIOR:Surface Inside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)
+    let indoor_thermal_heat_gain = &cols[6]; // 7	WALL EXTERIOR:Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate [W](TimeStep)
+    let outdoor_temp = &cols[7]; // 8	WALL EXTERIOR:Surface Outside Face Outdoor Air Drybulb Temperature [C](TimeStep)
+                                 // let surface_wind_speed = &cols[8];          // 9	WALL EXTERIOR:Surface Outside Face Outdoor Air Wind Speed [m/s](TimeStep)
+                                 // let exp_hs_out = &cols[9];                          // 10	WALL EXTERIOR:Surface Outside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)
+    let outdoor_thermal_heat_gain = &cols[10]; // 11	WALL EXTERIOR:Surface Outside Face Net Thermal Radiation Heat Gain Rate [W](TimeStep)
+    let exp_zone_air_temp = &cols[11]; // 12	INTERIOR SPACE:Zone Mean Air Temperature [C](TimeStep)
 
     // Set initial temperature
     simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]);
@@ -696,17 +690,16 @@ fn march_model(
     (exp, found)
 }
 
-
 fn march_test_model(
     dir: &'static str,
     emmisivity: Float,
     solar_abs: Float,
     construction: Vec<TestMat>,
 ) -> (Vec<Float>, Vec<Float>) {
-    let surface_height=3.;
+    let surface_height = 3.;
     let surface_width = 20.;
     let zone_volume = 600.;
-    let surface_area = surface_height*surface_width;
+    let surface_area = surface_height * surface_width;
 
     let (simple_model, state_header) = get_single_zone_test_building(
         // &mut state,
@@ -721,51 +714,50 @@ fn march_test_model(
         },
     );
 
-    march_model(dir, simple_model, state_header, emmisivity, surface_area)   
+    march_model(dir, simple_model, state_header, emmisivity, surface_area)
 }
 
 fn march_simple_model(
     dir: &'static str,
-    filename: &'static str,    
+    filename: &'static str,
     emmisivity: Float,
-    surface_area: Float
+    surface_area: Float,
 ) -> (Vec<Float>, Vec<Float>) {
-    
     let filename = format!("./tests/{dir}/{filename}.spl");
     let (simple_model, state_header) = SimpleModel::from_file(filename).unwrap();
 
-    march_model(dir, simple_model, state_header, emmisivity, surface_area)   
+    march_model(dir, simple_model, state_header, emmisivity, surface_area)
 }
 
 fn theoretical(validations: &mut Validator) {
-    const EXPECTED_LEGEND : &'static str = "Theoretical Solution";
+    const EXPECTED_LEGEND: &'static str = "Theoretical Solution";
 
     #[valid(Nomass Wall - Walls only)]
-    fn nomass_wallonly()-> Box<dyn Validate> {
+    fn nomass_wallonly() -> Box<dyn Validate> {
         let (expected, found) = very_simple_march();
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(Nomass Wall - Walls and Fenestration)]
-    fn nomass_wall_and_window()-> Box<dyn Validate> {
+    fn nomass_wall_and_window() -> Box<dyn Validate> {
         let (expected, found) = march_with_window();
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(Nomass Wall - Walls and Fenestration, with Luminaire on)]
-    fn window_and_luminaire()-> Box<dyn Validate> {
+    fn window_and_luminaire() -> Box<dyn Validate> {
         let (expected, found) = march_with_window_and_luminaire();
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(Nomass Wall - Walls and Window and heater)]
-    fn nomass_wall_and_window_and_heater()-> Box<dyn Validate> {
+    fn nomass_wall_and_window_and_heater() -> Box<dyn Validate> {
         let (expected, found) = march_with_window_and_heater();
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(Nomass Wall - Walls and Fenestration, with heater on and infiltration)]
-    fn window_heater_and_infiltration()-> Box<dyn Validate> {
+    fn window_heater_and_infiltration() -> Box<dyn Validate> {
         let (expected, found) = march_with_window_heater_and_infiltration();
         get_validator(expected, found, EXPECTED_LEGEND)
     }
@@ -775,24 +767,19 @@ fn theoretical(validations: &mut Validator) {
     validations.push(window_and_luminaire());
     validations.push(nomass_wall_and_window_and_heater());
     validations.push(window_heater_and_infiltration());
-
 }
 
 fn tilted(validations: &mut Validator) {
     const EXPECTED_LEGEND: &'static str = "EnergyPlus";
-   
+
     /// This test intends to test non-vertical convection coefficients and their correct placement
     #[valid(Massive and Tilted Wall, with the Space at its front)]
     fn wall1() -> Box<dyn Validate> {
-        let (expected, found) =
-            march_simple_model("tilted", "back", 0.9, 60.);
+        let (expected, found) = march_simple_model("tilted", "back", 0.9, 60.);
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
-    
-
     validations.push(wall1());
-    
 }
 
 fn horizontal(validations: &mut Validator) {
@@ -801,8 +788,7 @@ fn horizontal(validations: &mut Validator) {
     /// This test intends to test non-vertical convection coefficients and their correct placement
     #[valid(Massive Horizontal Wall, with Solar and Long Wave Radiation)]
     fn wall1() -> Box<dyn Validate> {
-        let (expected, found) =
-            march_simple_model("horizontal", "back", 0.9, 60.);
+        let (expected, found) = march_simple_model("horizontal", "back", 0.9, 60.);
         get_validator(expected, found, EXPECTED_LEGEND)
     }
     validations.push(wall1());
@@ -1109,15 +1095,18 @@ fn nomass(validations: &mut Validator) {
 // }
 
 #[test]
-fn validate() {    
-    // cargo test --package heat --test validate_wall_heat_transfer -- validate --exact --nocapture 
+fn validate() {
+    // cargo test --package heat --test validate_wall_heat_transfer -- validate --exact --nocapture
     let p = "./docs/validation";
     if !std::path::Path::new(&p).exists() {
         std::fs::create_dir(p).unwrap();
     }
 
     let target_file = format!("{}/walls.html", p);
-    let mut validations = Validator::new("SIMPLE Heat - Wall Heat Transfer Validation Report", &target_file);
+    let mut validations = Validator::new(
+        "SIMPLE Heat - Wall Heat Transfer Validation Report",
+        &target_file,
+    );
 
     theoretical(&mut validations);
     massive(&mut validations);

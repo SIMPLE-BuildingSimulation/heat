@@ -980,7 +980,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             ir_irrad: ir_back,
             surface_temperature: self.parent.back_temperature(state),
             roughness_index: 1,
-            cos_surface_tilt: self.cos_tilt, 
+            cos_surface_tilt: self.cos_tilt,
         };
 
         let calc_convection_coefs =
@@ -990,26 +990,27 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 // TODO: There is something to do here if we are talking about windows
                 let front_hs = if let Some(b) = &self.front_boundary {
                     match &b {
-                        Boundary::Space(_) => {                            
-                            front_env.get_tarp_natural_convection_coefficient()
-                        },
+                        Boundary::Space(_) => front_env.get_tarp_natural_convection_coefficient(),
                         Boundary::Ground => unreachable!(),
                     }
-                } else {      
-                    front_env.cos_surface_tilt = -self.cos_tilt;              
+                } else {
+                    front_env.cos_surface_tilt = -self.cos_tilt;
                     front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
                 };
 
                 let back_hs = if let Some(b) = &self.back_boundary {
                     match &b {
-                        Boundary::Space(_) =>back_env.get_tarp_natural_convection_coefficient(),
+                        Boundary::Space(_) => back_env.get_tarp_natural_convection_coefficient(),
                         Boundary::Ground => unreachable!(),
                     }
-                } else {                                    
-                    back_env.get_tarp_convection_coefficient(self.area, self.perimeter,windward)
+                } else {
+                    back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward)
                 };
 
-                assert!(!front_hs.is_nan() && !back_hs.is_nan(), "Found NaN convection coefficients: Front={front_hs} | back={back_hs}");
+                assert!(
+                    !front_hs.is_nan() && !back_hs.is_nan(),
+                    "Found NaN convection coefficients: Front={front_hs} | back={back_hs}"
+                );
                 #[cfg(debug_assertions)]
                 return (
                     self.front_hs.unwrap_or(front_hs),
@@ -1087,13 +1088,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
-                
-                let max_allowed_error = if count < 100 {
-                    0.01
-                }else{
-                    0.5
-                };
 
+                let max_allowed_error = if count < 100 { 0.01 } else { 0.5 };
 
                 if err / ((fin - ini) as Float) < max_allowed_error {
                     #[cfg(debug_assertions)]

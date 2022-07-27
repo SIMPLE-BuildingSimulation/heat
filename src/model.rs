@@ -113,8 +113,18 @@ impl SimulationModel for ThermalModel {
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
-            let mut tsurf =
-                ThermalSurface::new(state, &model.site_details, i, surf, area, perimeter, centroid.z, normal, constr, d)?;
+            let mut tsurf = ThermalSurface::new(
+                state,
+                &model.site_details,
+                i,
+                surf,
+                area,
+                perimeter,
+                centroid.z,
+                normal,
+                constr,
+                d,
+            )?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
@@ -146,8 +156,18 @@ impl SimulationModel for ThermalModel {
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
-            let mut tsurf =
-                ThermalFenestration::new(state, &&model.site_details, i, surf, area, perimeter, centroid.z, normal, constr, d)?;
+            let mut tsurf = ThermalFenestration::new(
+                state,
+                &model.site_details,
+                i,
+                surf,
+                area,
+                perimeter,
+                centroid.z,
+                normal,
+                constr,
+                d,
+            )?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
                 tsurf.set_front_boundary(b.clone());
