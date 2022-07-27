@@ -9,6 +9,7 @@ tests/Energy+.idd
 tests/*/*
 !tests/*/*.csv
 !tests/**/**/*.idf
+!tests/**/**/*.spl
 !tests/**/**/*.epw
 
 # Documentation
