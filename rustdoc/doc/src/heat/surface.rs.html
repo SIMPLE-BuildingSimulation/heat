@@ -2620,63 +2620,57 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
             <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
-            <span class="ident">air_speed</span>: <span class="number">0.</span>,
+            <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_front</span>,
-            <span class="ident">surface_temperature</span>: <span class="number">25.9307928164378</span>,<span class="comment">//self.parent.front_temperature(state),</span>
+            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
             <span class="ident">roughness_index</span>: <span class="number">1</span>,
             <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
             <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
-            <span class="ident">air_speed</span>: <span class="number">0.0</span>,
+            <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
             <span class="ident">ir_irrad</span>: <span class="ident">ir_back</span>,
-            <span class="ident">surface_temperature</span>: <span class="number">18.6417622520474</span>,<span class="comment">//self.parent.back_temperature(state),</span>
+            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
             <span class="ident">roughness_index</span>: <span class="number">1</span>,
-            <span class="ident">cos_surface_tilt</span>: <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="comment">// back, so tilt is reversed</span>
+            <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
         };
 
-        <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span> <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>,
-                                     <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span>
-         -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
+        <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span>
+            <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>, <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span> -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
+                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>, <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
 
-            <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>.<span class="ident">to_radians</span>(), <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+                <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
+                <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
+                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
+                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
+                    }
+                } <span class="kw">else</span> {
+                    <span class="ident">front_env</span>.<span class="ident">cos_surface_tilt</span> <span class="op">=</span> <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>;
+                    <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
+                };
 
-            <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
-            <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
-                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                    <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                    <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                }
-            } <span class="kw">else</span> {
-                <span class="ident">front_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
-                
-                <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                
+                <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
+                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
+                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
+                    }
+                } <span class="kw">else</span> {
+                    <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
+                };
+
+                <span class="macro">assert!</span>(
+                    <span class="op">!</span><span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">back_hs</span>.<span class="ident">is_nan</span>(),
+                    <span class="string">&quot;Found NaN convection coefficients: Front={front_hs} | back={back_hs}&quot;</span>
+                );
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+                <span class="kw">return</span> (
+                    <span class="self">self</span>.<span class="ident">front_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">front_hs</span>),
+                    <span class="self">self</span>.<span class="ident">back_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">back_hs</span>),
+                );
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span>
+                (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
             };
-
-            <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
-                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                    <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                    <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                }
-            } <span class="kw">else</span> {
-                <span class="comment">// Back...  so, windward calculation is reversed</span>
-                <span class="ident">back_env</span>.<span class="ident">air_speed</span> <span class="op">=</span> <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>;
-                <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="op">!</span><span class="ident">windward</span>)
-                
-            };
-
-            <span class="kw">if</span> <span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">back_hs</span>.<span class="ident">is_nan</span>() {
-                <span class="macro">println!</span>(<span class="string">&quot;{},{}&quot;</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>);
-            }
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-            <span class="kw">return</span> (
-                <span class="self">self</span>.<span class="ident">front_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">front_hs</span>),
-                <span class="self">self</span>.<span class="ident">back_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">back_hs</span>),
-            );
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span>
-            (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
-        };
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 1st: Calculate the solar absorption in each node</span>
@@ -2730,6 +2724,10 @@ SOFTWARE.
                     <span class="kw">break</span>;
                 }
 
+                <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">5000</span> {
+                    <span class="macro">dbg!</span>(<span class="ident">count</span>);
+                }
+
                 <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="macro">assert!</span>(
                     <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">99000</span>,
@@ -2743,7 +2741,9 @@ SOFTWARE.
                     <span class="ident">temperatures</span>.<span class="ident">scale_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="number">0.5</span>).<span class="ident">unwrap</span>();
                 }
 
-                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="number">0.01</span> {
+                <span class="kw">let</span> <span class="ident">max_allowed_error</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">100</span> { <span class="number">0.01</span> } <span class="kw">else</span> { <span class="number">0.5</span> };
+
+                <span class="kw">if</span> <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>) <span class="op">&lt;</span> <span class="ident">max_allowed_error</span> {
                     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
                     <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">100</span> {
                         <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because GOOD!&quot;</span>, <span class="ident">count</span>);
