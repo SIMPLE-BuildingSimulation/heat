@@ -49,6 +49,7 @@ Material,
     Concrete,          !- Name
     Rough,                   !- Roughness
     0.2,                     !- Thickness {m}
+    
     0.816,                     !- Conductivity {W/m-K}
     1700,                    !- Density {kg/m3}
     800,                     !- Specific Heat {J/kg-K}

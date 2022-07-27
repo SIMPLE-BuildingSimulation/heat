@@ -7,7 +7,7 @@ use communication_protocols::MetaOptions;
 use schedule::ScheduleConstant;
 use validate::*;
 use weather::SyntheticWeather;
-use simple_model::{SimulationStateElement, HVAC};
+use simple_model::{SimulationStateElement, HVAC, SimpleModel, SimulationStateHeader};
 use simple_test_models::{get_single_zone_test_building, SingleZoneTestBuildingOptions, TestMat};
 
 
@@ -600,30 +600,15 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     (exp, found)
 }
 
-fn march_one_wall(
-    dir: &'static str,
+
+
+fn march_model(
+    dir: &'static str, 
+    simple_model: SimpleModel, 
+    mut state_header: SimulationStateHeader,
     emmisivity: Float,
-    solar_abs: Float,
-    construction: Vec<TestMat>,
-) -> (Vec<Float>, Vec<Float>) {
-    let surface_height=3.;
-    let surface_width = 20.;
-    let zone_volume = 600.;
-    let surface_area = surface_height*surface_width;
-
-    let (simple_model, mut state_header) = get_single_zone_test_building(
-        // &mut state,
-        &SingleZoneTestBuildingOptions {
-            zone_volume,
-            surface_height,
-            surface_width,
-            construction,
-            emmisivity,
-            solar_absorbtance: solar_abs,
-            ..Default::default()
-        },
-    );
-
+    surface_area: Float,
+)-> (Vec<Float>, Vec<Float>) {
     // Finished model the SimpleModel
 
     let n: usize = 20;
@@ -685,17 +670,17 @@ fn march_one_wall(
         let surface = &simple_model.surfaces[0];
 
         // Set Solar Radiation
-        surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
+        surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
         // Set Long Wave radiation
         if emmisivity > 1e-3 {
             let ts = surface.last_node_temperature(&state).unwrap();
-            let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
+            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
             surface.set_back_ir_irradiance(&mut state, v);
 
             let ts = surface.first_node_temperature(&state).unwrap();
-            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+            let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
             surface.set_front_ir_irradiance(&mut state, v);
         }
@@ -709,6 +694,47 @@ fn march_one_wall(
         date.add_hours(1. / n as Float);
     }
     (exp, found)
+}
+
+
+fn march_test_model(
+    dir: &'static str,
+    emmisivity: Float,
+    solar_abs: Float,
+    construction: Vec<TestMat>,
+) -> (Vec<Float>, Vec<Float>) {
+    let surface_height=3.;
+    let surface_width = 20.;
+    let zone_volume = 600.;
+    let surface_area = surface_height*surface_width;
+
+    let (simple_model, state_header) = get_single_zone_test_building(
+        // &mut state,
+        &SingleZoneTestBuildingOptions {
+            zone_volume,
+            surface_height,
+            surface_width,
+            construction,
+            emmisivity,
+            solar_absorbtance: solar_abs,
+            ..Default::default()
+        },
+    );
+
+    march_model(dir, simple_model, state_header, emmisivity, surface_area)   
+}
+
+fn march_simple_model(
+    dir: &'static str,
+    filename: &'static str,    
+    emmisivity: Float,
+    surface_area: Float
+) -> (Vec<Float>, Vec<Float>) {
+    
+    let filename = format!("./tests/{dir}/{filename}.spl");
+    let (simple_model, state_header) = SimpleModel::from_file(filename).unwrap();
+
+    march_model(dir, simple_model, state_header, emmisivity, surface_area)   
 }
 
 fn theoretical(validations: &mut Validator) {
@@ -752,20 +778,50 @@ fn theoretical(validations: &mut Validator) {
 
 }
 
+fn tilted(validations: &mut Validator) {
+    const EXPECTED_LEGEND: &'static str = "EnergyPlus";
+   
+    /// This test intends to test non-vertical convection coefficients and their correct placement
+    #[valid(Massive and Tilted Wall, with the Space at its front)]
+    fn wall1() -> Box<dyn Validate> {
+        let (expected, found) =
+            march_simple_model("tilted", "back", 0.9, 60.);
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+
+    
+
+    validations.push(wall1());
+    
+}
+
+fn horizontal(validations: &mut Validator) {
+    const EXPECTED_LEGEND: &'static str = "EnergyPlus";
+
+    /// This test intends to test non-vertical convection coefficients and their correct placement
+    #[valid(Massive Horizontal Wall, with Solar and Long Wave Radiation)]
+    fn wall1() -> Box<dyn Validate> {
+        let (expected, found) =
+            march_simple_model("horizontal", "back", 0.9, 60.);
+        get_validator(expected, found, EXPECTED_LEGEND)
+    }
+    validations.push(wall1());
+}
+
 fn massive(validations: &mut Validator) {
     const EXPECTED_LEGEND: &'static str = "EnergyPlus";
 
     #[valid(Massive Wall, with Solar and Long Wave Radiation)]
     fn wall1() -> Box<dyn Validate> {
         let (expected, found) =
-            march_one_wall("massive_full", 0.9, 0.7, vec![TestMat::Concrete(0.2)]);
+            march_test_model("massive_full", 0.9, 0.7, vec![TestMat::Concrete(0.2)]);
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(Massive Wall, with no Solar or Long Wave Radiation)]
     fn wall2() -> Box<dyn Validate> {
         // Massive, NO solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "massive_no_ir_no_solar",
             0.0,
             0.0,
@@ -777,7 +833,7 @@ fn massive(validations: &mut Validator) {
     #[valid(Massive Wall, with Solar Radiation but not Long Wave Radiation)]
     fn wall3() -> Box<dyn Validate> {
         // Massive, WITH  solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "massive_no_ir_yes_solar",
             0.0,
             0.7,
@@ -789,7 +845,7 @@ fn massive(validations: &mut Validator) {
     #[valid(Massive Wall, with Long Wave Radiation but not Solar Radiation)]
     fn wall4() -> Box<dyn Validate> {
         // Massive, No  solar and WITH Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "massive_yes_ir_no_solar",
             0.9,
             0.0,
@@ -810,7 +866,7 @@ fn mixed(validations: &mut Validator) {
     #[valid(Mixed Mass Wall, with Solar Radiation and Long Wave Radiation)]
     fn wall1() -> Box<dyn Validate> {
         // Mixed Mass, With solar Radiation and Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "mixed_full",
             0.9,
             0.7,
@@ -826,7 +882,7 @@ fn mixed(validations: &mut Validator) {
     #[valid(Mixed Mass Wall, without Solar or Long Wave Radiation)]
     fn wall2() -> Box<dyn Validate> {
         // Mixed Mass, NO solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "mixed_no_ir_no_solar",
             0.0,
             0.0,
@@ -842,7 +898,7 @@ fn mixed(validations: &mut Validator) {
     #[valid(Mixed Mass Wall, with Solar Radiation but no Long Wave Radiation)]
     fn wall3() -> Box<dyn Validate> {
         // Mixed Mass, WITH  solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "mixed_no_ir_yes_solar",
             0.0,
             0.7,
@@ -858,7 +914,7 @@ fn mixed(validations: &mut Validator) {
     #[valid(Mixed Mass Wall, with Long Wave Radiation but no Solar Radiation)]
     fn wall4() -> Box<dyn Validate> {
         // Mixed Mass, No  solar and WITH Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "mixed_yes_ir_no_solar",
             0.9,
             0.0,
@@ -884,14 +940,14 @@ fn nomass(validations: &mut Validator) {
     fn wall1() -> Box<dyn Validate> {
         // No Mass, With solar Radiation and Long Wave
         let (expected, found) =
-            march_one_wall("nomass_full", 0.9, 0.7, vec![TestMat::Polyurethane(0.02)]);
+            march_test_model("nomass_full", 0.9, 0.7, vec![TestMat::Polyurethane(0.02)]);
         get_validator(expected, found, EXPECTED_LEGEND)
     }
 
     #[valid(No Mass Wall, without Solar or Long Wave Radiation)]
     fn wall2() -> Box<dyn Validate> {
         // No Mass, NO solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "nomass_no_ir_no_solar",
             0.0,
             0.0,
@@ -903,7 +959,7 @@ fn nomass(validations: &mut Validator) {
     #[valid(No Mass Wall, with Solar Radiation but no Long Wave Radiation)]
     fn wall3() -> Box<dyn Validate> {
         // No Mass, WITH  solar and NO Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "nomass_no_ir_yes_solar",
             0.0,
             0.7,
@@ -915,7 +971,7 @@ fn nomass(validations: &mut Validator) {
     #[valid(No Mass Wall, with Long Wave Radiation but no Solar Radiation)]
     fn wall4() -> Box<dyn Validate> {
         // No Mass, No  solar and WITH Long Wave
-        let (expected, found) = march_one_wall(
+        let (expected, found) = march_test_model(
             "nomass_yes_ir_no_solar",
             0.9,
             0.0,
@@ -1067,6 +1123,8 @@ fn validate() {
     massive(&mut validations);
     mixed(&mut validations);
     nomass(&mut validations);
+    tilted(&mut validations);
+    horizontal(&mut validations);
     // trombe_wall(&mut validations);
     validations.validate().unwrap();
 }

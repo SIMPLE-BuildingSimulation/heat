@@ -62,9 +62,10 @@ fn calc_convection(
     let mut found_hs_in = Vec::with_capacity(n);
     let mut found_hs_out = Vec::with_capacity(n);
     for i in 0..n {
+
         let env_in = ConvectionParams {
             air_temperature: zone_air_temp[i],
-            air_speed: 0.,
+            air_speed: surface_wind_speed[i],//0.,
             ir_irrad: 0.0, // not used for convection purposes
             surface_temperature: inside_surface_temp[i],
             roughness_index: 1,
