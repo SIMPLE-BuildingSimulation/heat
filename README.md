@@ -18,11 +18,12 @@ Check the automatic Validation report [HERE](https://simple-buildingsimulation.g
 * Walls are modelled through Finite Difference method, and the solution is found through a [Runge-Kutta method](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods)
 * Materials are described as they are, the module will choose which ones should be considered no-mass.
 * Fenestration and Walls are all treated equally. (Photons don't care whether they are reaching a window or a wall or a door; they just bounce and heat stuff up)
-* The temperature of heat zones are updated through [an analytical equation](https://simple-buildingsimulation.github.io/heat/heat/model/struct.ThermalModel.html#method.calculate_zones_abc)
+* The temperature of heat zones are updated through [an analytical equation](https://simple-buildingsimulation.github.io/heat/rustdoc/doc/heat/model/struct.ThermalModel.html#method.calculate_zones_abc)
 
-Some To Do's (we would love your help)
+## Get involved!
 
-* We have some issue in materials with Mass and No-Mass materials (check [HERE](https://simple-buildingsimulation.github.io/heat/validation/walls.html))
+* **Want to add new features?** Check the docs [HERE](https://simple-buildingsimulation.github.io/heat/rustdoc/doc/heat/index.html) and feel free to create new issues.
+* More testing and validation would be great. Check the validation report [HERE](https://simple-buildingsimulation.github.io/heat/)
 
 
 
