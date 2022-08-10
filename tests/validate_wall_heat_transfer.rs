@@ -89,7 +89,7 @@ const META_OPTIONS: MetaOptions = MetaOptions {
     latitude: 0.,
     longitude: 0.,
     standard_meridian: 0.,
-    altitude: 0.0,
+    elevation: 0.0,
 };
 
 fn march_with_window() -> (Vec<Float>, Vec<Float>) {

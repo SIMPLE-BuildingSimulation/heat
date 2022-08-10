@@ -286,7 +286,7 @@ impl SimulationModel for ThermalModel {
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
             for (i, zone) in self.zones.iter().enumerate() {
-                debug_assert!(!future_temperatures[i].is_nan());
+                assert!(!future_temperatures[i].is_nan(), "Future temperatures is NaN");
                 zone.reference_space
                     .set_dry_bulb_temperature(state, future_temperatures[i]);
             }
@@ -583,7 +583,7 @@ mod testing {
         latitude: 0.,
         longitude: 0.,
         standard_meridian: 0.,
-        altitude: 0.0,
+        elevation: 0.0,
     };
 
     #[test]
