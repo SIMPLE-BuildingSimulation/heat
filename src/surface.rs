@@ -1030,9 +1030,13 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
+        
+        
+
         for (ini, fin) in &self.nomass_chunks {
             let mut old_err = 99999.;
             let mut count = 0;
+            
             loop {
                 // Update convection coefficients
                 let (front_hs, back_hs) = calc_convection_coefs(&mut front_env, &mut back_env);
@@ -1048,15 +1052,14 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     self.back_emmisivity,
                     back_hs,
                 );
-
                 // add solar gains
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let v = q.get(i, 0).unwrap();
                     local_q.add_to_element(local_i, 0, v).unwrap();
                 }
-                local_q *= -1.; // transfrom equation from kT + q = 0 --> kT = -q
-
-                let temps = k.mut_n_diag_gaussian(local_q, 3).unwrap(); // and just like that, q is the new temperatures
+                local_q *= -1.;
+                                
+                let temps = k.mut_n_diag_gaussian(local_q.clone(), 3).unwrap(); // and just like that, q is the new temperatures
 
                 let mut err = 0.0;
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
@@ -1072,33 +1075,44 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     break;
                 }
 
-                if count > 5000 {
-                    dbg!(count);
-                }
-
-                count += 1;
-                assert!(
-                    count < 99000,
-                    "Excessive number of iterations... front_hc = {} | back_hs = {}",
-                    front_hs,
-                    back_hs
-                );
-                for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
-                    let local_temp = temps.get(local_i, 0).unwrap();
-                    temperatures.add_to_element(i, 0, local_temp).unwrap();
-                    temperatures.scale_element(i, 0, 0.5).unwrap();
-                }
-
-                let max_allowed_error = if count < 100 { 0.01 } else { 0.5 };
-
-                if err / ((fin - ini) as Float) < max_allowed_error {
-                    #[cfg(debug_assertions)]
-                    if count > 100 {
-                        dbg!("Breaking after {} iterations... because GOOD!", count);
+                if count >= 99000 {
+                    if count%2 == 0{
+                        temperatures.copy_from(&temps);
+                        // temps.clone_into(&mut temperatures);
+                    }else{
+                        temperatures += &temps;
+                        temperatures /= 2.;
+                        break;
                     }
-                    break;
+                    dbg!(count);
+                }else{
+
+                    assert!(
+                        count < 99000,
+                        "Excessive number of iterations... front_hc = {} | back_hs = {}",
+                        front_hs,
+                        back_hs
+                    );
+                    for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
+                        let local_temp = temps.get(local_i, 0).unwrap();
+                        temperatures.add_to_element(i, 0, local_temp).unwrap();
+                        temperatures.scale_element(i, 0, 0.5).unwrap();
+                    }
+    
+                    let max_allowed_error = if count < 100 { 0.01 } else { 0.5 };
+    
+                    if err / ((fin - ini) as Float) < max_allowed_error {
+                        #[cfg(debug_assertions)]
+                        if count > 100 {
+                            dbg!("Breaking after {} iterations... because GOOD!", count);
+                        }
+                        break;
+                    }
+                    old_err = err;
+                    count += 1;
                 }
-                old_err = err;
+
+
             }
         }
 

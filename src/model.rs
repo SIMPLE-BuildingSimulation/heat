@@ -224,19 +224,16 @@ impl SimulationModel for ThermalModel {
             let t_current = self.get_current_zones_temperatures(state);
 
             /* UPDATE SURFACE'S TEMPERATURES */
-            for i in 0..self.surfaces.len() {
-                // get surface
-                let s = &self.surfaces[i];
-
+            for (solar_surf, model_surf) in self.surfaces.iter().zip(model.surfaces.iter()) {
                 // find t_in and t_out of surface.
-                let t_front = match &s.front_boundary {
+                let t_front = match &solar_surf.front_boundary {
                     Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()],
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
                 };
-                let t_back = match &s.back_boundary {
+                let t_back = match &solar_surf.back_boundary {
                     Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()], //self.zones[z_index].temperature(model, state),
                         Boundary::Ground => unimplemented!(),
@@ -246,25 +243,23 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    s.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
-                model.surfaces[i].set_front_convective_heat_flow(state, q_front);
-                model.surfaces[i].set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
+                model_surf.set_front_convective_heat_flow(state, q_front);
+                model_surf.set_back_convective_heat_flow(state, q_back);
             } // end of iterating surface
 
             // What  if they are open???
-            for i in 0..self.fenestrations.len() {
-                // get surface
-                let s = &self.fenestrations[i];
-
+            // for i in 0..self.fenestrations.len() {
+            for (solar_surf, model_surf) in self.fenestrations.iter().zip(model.fenestrations.iter()) {
                 // find t_in and t_out of surface.
-                let t_front = match &s.front_boundary {
+                let t_front = match &solar_surf.front_boundary {
                     Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()],
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
                 };
-                let t_back = match &s.back_boundary {
+                let t_back = match &solar_surf.back_boundary {
                     Some(b) => match b {
                         Boundary::Space(space) => t_current[*space.index().unwrap()],
                         Boundary::Ground => unimplemented!(),
@@ -274,9 +269,9 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    s.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
-                model.fenestrations[i].set_front_convective_heat_flow(state, q_front);
-                model.fenestrations[i].set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
+                model_surf.set_front_convective_heat_flow(state, q_front);
+                model_surf.set_back_convective_heat_flow(state, q_back);
             } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
@@ -286,7 +281,10 @@ impl SimulationModel for ThermalModel {
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
             for (i, zone) in self.zones.iter().enumerate() {
-                assert!(!future_temperatures[i].is_nan(), "Future temperatures is NaN");
+                assert!(
+                    !future_temperatures[i].is_nan(),
+                    "Future temperatures is NaN"
+                );
                 zone.reference_space
                     .set_dry_bulb_temperature(state, future_temperatures[i]);
             }
