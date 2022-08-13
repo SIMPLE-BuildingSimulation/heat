@@ -17,9 +17,9 @@ matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
 polynomial = {git = "https://github.com/SIMPLE-BuildingSimulation/polynomial.git"}
 
 [dev-dependencies]
+validate = {git="https://github.com/SIMPLE-BuildingSimulation/validate.git"}
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }
 simple_test_models = {git="https://github.com/SIMPLE-BuildingSimulation/simple_test_models.git"}
-validate = {git="https://github.com/SIMPLE-BuildingSimulation/validate.git"}
 
 # Check https://stackoverflow.com/questions/53127722/how-can-i-activate-features-in-all-my-crates
 

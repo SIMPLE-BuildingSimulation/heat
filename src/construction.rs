@@ -21,7 +21,7 @@ SOFTWARE.
 pub(crate) const MAX_RS: Float = 0.05;
 use crate::cavity::Cavity;
 use crate::convection::ConvectionParams;
-use crate::{Float, SIGMA};
+use crate::Float;
 use matrix::Matrix;
 use simple_model::{Construction, Substance};
 use std::rc::Rc;
@@ -582,7 +582,7 @@ impl Discretization {
     /// on the border condition. If the border leads to a zone, a value of $`  T_{env} h_s + E_{ir}\epsilon_s - \epsilon_s \sigma {T_s}^4`$
     /// should be added to $`\vec{q}`$.  Note that $`T_{env}`$ is the temparture of the air in the environment,
     /// $`h_s`$ is the convection coefficient, $`E_{ir}`$ is the incident infrared radiation and $`\epsilon_s`$ is the
-    /// emmisivity of the surface. On the contrary, if the border condition is a cavity, then a value of $`T_{pane} U_{cavity}`$
+    /// emissivity of the surface. On the contrary, if the border condition is a cavity, then a value of $`T_{pane} U_{cavity}`$
     /// should be added. $`T_{pane}`$ is the temperature of the surface before or after.
     ///         
     #[allow(clippy::too_many_arguments)]
@@ -592,11 +592,11 @@ impl Discretization {
         fin: usize,
         temperatures: &Matrix,
         front_env: &ConvectionParams,
-        front_emmisivity: Float,
         front_hs: Float,
+        front_rad_hs: Float,
         back_env: &ConvectionParams,
-        back_emmisivity: Float,
         back_hs: Float,
+        back_rad_hs: Float,
     ) -> (Matrix, Matrix) {
         let (nrows, ncols) = temperatures.size();
         assert_eq!(
@@ -649,14 +649,12 @@ impl Discretization {
 
         // Add front border conditions
         let (hs_front, front_q) = if ini == 0 {
-            let ts = temperatures.get(0, 0).unwrap();
-            let ts = 273.15 + ts;
+            let ts = temperatures.get(0, 0).unwrap();            
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
 
             let front_q = front_env.air_temperature * front_hs  // convection
-                + front_env.ir_irrad * front_emmisivity // incident radiation
-                - SIGMA * front_emmisivity * ts.powi(4); // outgoing radiation
+                + front_rad_hs * (front_env.rad_temperature - ts);
 
             (front_hs, front_q)
         } else {
@@ -673,13 +671,11 @@ impl Discretization {
 
         // Add back border conditions
         let (hs_back, back_q) = if fin == nrows {
-            let ts = temperatures.get(fin - 1, 0).unwrap();
-            let ts = 273.15 + ts;
+            let ts = temperatures.get(fin - 1, 0).unwrap();            
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
             let back_q = back_env.air_temperature * back_hs  // convection
-                + back_env.ir_irrad * back_emmisivity // incident radiation
-                - SIGMA * back_emmisivity * ts.powi(4); // outgoing radiation
+                + back_rad_hs * (back_env.rad_temperature - ts);
 
             (back_hs, back_q)
         } else {
@@ -707,14 +703,14 @@ mod testing {
 
     impl std::default::Default for ConvectionParams {
         fn default() -> Self {
-            const DEFAULT_ENV_EMMISIVITY: Float = 1.;
+            const DEFAULT_ENV_emissivity: Float = 1.;
             const DEFAULT_AIR_TEMP: Float = 22.;
             ConvectionParams {
                 air_temperature: DEFAULT_AIR_TEMP,
                 surface_temperature: DEFAULT_AIR_TEMP,
                 air_speed: 0.,
-                ir_irrad: crate::SIGMA
-                    * DEFAULT_ENV_EMMISIVITY
+                rad_temperature: crate::SIGMA
+                    * DEFAULT_ENV_emissivity
                     * (DEFAULT_AIR_TEMP + 273.15).powi(4),
                 roughness_index: 1,
                 cos_surface_tilt: 0.0,
@@ -1012,10 +1008,10 @@ mod testing {
         Discretization,
         Matrix,
         ConvectionParams,
-        Float,
+        // Float,
         Float,
         ConvectionParams,
-        Float,
+        // Float,
         Float,
     ) {
         let n = 5;
@@ -1038,18 +1034,18 @@ mod testing {
         let front_env = ConvectionParams {
             air_temperature: 0.,
             air_speed: 0.,
-            ir_irrad: SIGMA * (273.15 as Float).powi(4),
+            rad_temperature: 0.0, 
             ..ConvectionParams::default()
         };
-        let front_emmisivity = 0.9;
+        let front_emissivity = 0.9;
 
         let back_env = ConvectionParams {
             air_temperature: 7.,
             air_speed: 0.,
-            ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
+            rad_temperature: 5., 
             ..ConvectionParams::default()
         };
-        let back_emmisivity = 0.9;
+        let back_emissivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
         let front_hs = front_env.get_tarp_natural_convection_coefficient();
@@ -1059,10 +1055,8 @@ mod testing {
             d,
             temperatures,
             front_env,
-            front_emmisivity,
             front_hs,
             back_env,
-            back_emmisivity,
             back_hs,
         );
     }
@@ -1079,23 +1073,23 @@ mod testing {
             d,
             temperatures,
             front_env,
-            front_emmisivity,
             front_hs,
-            back_env,
-            back_emmisivity,
+            back_env,            
             back_hs,
         ) = get_solid_test_system(thickness, thermal_cond);
 
+        let front_rad_hs = 1.0;
+        let back_rad_hs = 1.0;
         let (k, q) = d.get_k_q(
             0,
             n + 1,
             &temperatures,
             &front_env,
-            front_emmisivity,
             front_hs,
+            front_rad_hs,
             &back_env,
-            back_emmisivity,
             back_hs,
+            back_rad_hs,
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1156,23 +1150,24 @@ mod testing {
             d,
             temperatures,
             front_env,
-            front_emmisivity,
             front_hs,
             back_env,
-            back_emmisivity,
             back_hs,
         ) = get_solid_test_system(thickness, thermal_cond);
+
+        let front_rad_hs = 1.0;
+        let back_rad_hs = 1.0;
 
         let (k, q) = d.get_k_q(
             0,
             3,
             &temperatures,
             &front_env,
-            front_emmisivity,
             front_hs,
+            front_rad_hs,
             &back_env,
-            back_emmisivity,
             back_hs,
+            back_rad_hs,
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1233,23 +1228,23 @@ mod testing {
             d,
             temperatures,
             front_env,
-            front_emmisivity,
             front_hs,
             back_env,
-            back_emmisivity,
             back_hs,
         ) = get_solid_test_system(thickness, thermal_cond);
 
+        let front_rad_hs = 1.0;
+        let back_rad_hs = 1.0;
         let (k, q) = d.get_k_q(
             2,
             5,
             &temperatures,
             &front_env,
-            front_emmisivity,
             front_hs,
+            front_rad_hs,
             &back_env,
-            back_emmisivity,
             back_hs,
+            back_rad_hs
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1320,32 +1315,34 @@ mod testing {
         let front_env = ConvectionParams {
             air_temperature: 1.,
             air_speed: 0.,
-            ir_irrad: SIGMA * (273.15 as Float).powi(4),
+            rad_temperature: 0.,
             ..ConvectionParams::default()
         };
-        let front_emmisivity = 0.9;
+        let front_emissivity = 0.9;
 
         let back_env = ConvectionParams {
             air_temperature: 6.,
             air_speed: 0.,
-            ir_irrad: SIGMA * (5. + 273.15 as Float).powi(4),
+            rad_temperature: 5.,//SIGMA * (5. + 273.15 as Float).powi(4),
             ..ConvectionParams::default()
         };
-        let back_emmisivity = 0.9;
+        let back_emissivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
         let front_hs = 1.739658084820765;
         let back_hs = 1.739658084820765;
+        let front_rad_hs = 1.0;
+        let back_rad_hs = 1.0;
         let (k, q) = d.get_k_q(
             1,
             n,
             &temperatures,
             &front_env,
-            front_emmisivity,
             front_hs,
+            front_rad_hs,
             &back_env,
-            back_emmisivity,
             back_hs,
+            back_rad_hs
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1392,168 +1389,7 @@ mod testing {
         }
     }
 
-    // #[test]
-    // fn test_u() {
-    //     // https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/DoubleClear_UValueEnvironment.unit.cpp
-
-    //     let gap_thickness = 0.0127;
-    //     let solid_thickness = 0.003048; // [m]
-    //     let solid_conductance = 1.0;
-
-    //     let gap = Cavity {
-    //         thickness: gap_thickness,
-    //         height: 1.,
-    //         gas: Gas::air(),
-    //         eout: 0.84,
-    //         ein: 0.84,
-    //         angle: 0. * crate::PI / 2.,
-    //     };
-
-    //     let mut segments = Vec::with_capacity(4);
-    //     // layer 1.
-    //     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
-
-    //     // Layer 2: Gap
-    //     segments.push((0.0, UValue::Cavity(Box::new(gap))));
-
-    //     // layer 3.
-    //     segments.push((0., UValue::Solid(solid_conductance / solid_thickness)));
-
-    //     // Last node
-    //     segments.push((0.0, UValue::Back));
-    //     let d = Discretization {
-    //         segments,
-    //         tstep_subdivision: 1,
-    //     };
-
-    //     // Borders
-    //     let air_temperature = 255.15 - 273.15; // Kelvins into C
-    //     let air_speed = 5.5; // meters per second
-    //     let t_sky: Float = 255.15; // Kelvins into C
-    //     let solar_radiation = 789.0;
-    //     let front_env = Environment {
-    //         air_speed,
-    //         air_temperature,
-    //         solar_radiation,
-    //         ir_irrad: SIGMA * (t_sky.powi(4)),
-    //         ..Environment::default()
-    //     };
-
-    //     let back_env = Environment {
-    //         air_speed: 0.0,
-    //         air_temperature: 294.15 - 273.15, // K into C
-    //         solar_radiation: 0.,
-    //         ir_irrad: SIGMA * (294.15 as Float).powi(4),
-    //         ..Environment::default()
-    //     };
-
-    //     let kelvin = Matrix::new(273.14, 4, 1);
-
-    //     // First, u-value
-    //     let exp_temps = vec![258.791640, 259.116115, 279.323983, 279.648458];
-    //     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
-    //     temperatures -= &kelvin;
-
-    //     let front_hs = 36.34359273; // these were found by analyzing WINDOW's response
-    //     let back_hs = 5.;
-
-    //     let (k, mut q) = d.get_k_q(
-    //         0,
-    //         4,
-    //         &temperatures,
-    //         &front_env,
-    //         0.9,
-    //         front_hs,
-    //         &back_env,
-    //         0.9,
-    //         back_hs,
-    //     );
-    //     q *= -1.;
-    //     // let mut temps = Matrix::new(0.0, 4, 1);
-
-    //     println!("K = {}", k);
-    //     let keep_k = k.clone();
-    //     println!("q = {}", q);
-    //     let keep_q = q.clone();
-    //     let t = k.mut_n_diag_gaussian(q, 3).unwrap();
-
-    //     println!("T = {}", &t + &kelvin);
-
-    //     for (i, exp) in exp_temps.iter().enumerate() {
-    //         let found = t.get(i, 0).unwrap() + 273.15;
-    //         assert!(
-    //             (exp - found).abs() < 0.17,
-    //             "Expecting {}, found {}... delta is {}",
-    //             exp,
-    //             found,
-    //             (exp - found).abs()
-    //         );
-    //     }
-    //     let mut check = &keep_k * &t; // this should be equals to keep_q
-    //     check -= &keep_q;
-    //     println!("check = {}", check);
-
-    //     // Then, with sun
-    //     let exp_temps = vec![261.920088, 262.408524, 284.752662, 285.038190];
-    //     let mut temperatures = Matrix::from_data(4, 1, exp_temps.clone());
-    //     temperatures -= &kelvin; // into C
-
-    //     let front_hs = 32.6; // these were found by analyzing WINDOW's response
-    //     let back_hs = 6.8;
-    //     let (k, mut q) = d.get_k_q(
-    //         0,
-    //         4,
-    //         &temperatures,
-    //         &front_env,
-    //         0.9,
-    //         front_hs,
-    //         &back_env,
-    //         0.9,
-    //         back_hs,
-    //     );
-
-    //     // add sun?
-    //     let old = q.get(0, 0).unwrap();
-    //     q.set(0, 0, old + 0.096489921212 / 2. * solar_radiation)
-    //         .unwrap();
-    //     let old = q.get(1, 0).unwrap();
-    //     q.set(1, 0, old + 0.096489921212 / 2. * solar_radiation)
-    //         .unwrap();
-
-    //     let old = q.get(2, 0).unwrap();
-    //     q.set(2, 0, old + 0.072256758809 / 2. * solar_radiation)
-    //         .unwrap();
-    //     let old = q.get(3, 0).unwrap();
-    //     q.set(3, 0, old + 0.072256758809 / 2. * solar_radiation)
-    //         .unwrap();
-
-    //     q *= -1.;
-
-    //     let keep_k = k.clone();
-    //     let keep_q = q.clone();
-
-    //     println!("K = {}", k);
-    //     println!("q = {}", q);
-
-    //     let t = k.mut_n_diag_gaussian(q, 3).unwrap();
-
-    //     println!("T = {}", &t - &kelvin);
-
-    //     for (i, exp) in exp_temps.iter().enumerate() {
-    //         let found = t.get(i, 0).unwrap() + 273.15;
-    //         assert!(
-    //             (exp - found).abs() < 0.15,
-    //             "Expecting {}, found {}... delta is {}",
-    //             exp,
-    //             found,
-    //             (exp - found).abs()
-    //         );
-    //     }
-    //     let mut check = &keep_k * &t; // this should be equals to keep_q
-    //     check -= &keep_q;
-    //     println!("check = {}", check);
-    // }
-
+    
     #[test]
     fn test_get_chunks() {
         // Single node, massive

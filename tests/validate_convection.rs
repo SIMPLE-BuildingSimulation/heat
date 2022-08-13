@@ -61,7 +61,7 @@ fn calc_convection(
         let env_in = ConvectionParams {
             air_temperature: zone_air_temp[i],
             air_speed: surface_wind_speed[i], //0.,
-            ir_irrad: 0.0,                    // not used for convection purposes
+            rad_temperature: 0.0,                    // not used for convection purposes
             surface_temperature: inside_surface_temp[i],
             roughness_index: 1,
             cos_surface_tilt: cos_tilt,
@@ -69,7 +69,7 @@ fn calc_convection(
         let env_out = ConvectionParams {
             air_temperature: outdoor_temp[i],
             air_speed: surface_wind_speed[i],
-            ir_irrad: 0.0, // not used for convection purposes
+            rad_temperature: 0.0, // not used for convection purposes
             surface_temperature: outside_surface_temp[i],
             roughness_index: 1,
             cos_surface_tilt: -cos_tilt,
@@ -198,4 +198,3 @@ fn validate() {
 
     validations.validate().unwrap();
 }
-//

@@ -32,14 +32,14 @@ pub struct ConvectionParams {
     pub air_speed: Float,
 
     /// The incident Infrared Irradiance, in $`W/m^2`$
-    pub ir_irrad: Float,
+    pub rad_temperature: Float,
 
     // /// The incident Solar Irradiance, in $`W/m^2`$
     // pub solar_radiation: Float,
 
-    // /// The environmental emmisivity, used for calculating incident IR
+    // /// The environmental emissivity, used for calculating incident IR
     // /// irradiance, if needed
-    // pub env_emmisivity: Float,
+    // pub env_emissivity: Float,
     /// The surface temperature in $`C`$
     pub surface_temperature: Float,
 

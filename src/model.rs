@@ -593,7 +593,7 @@ mod testing {
                 surface_height: 2.,
                 surface_width: 2.,
                 construction: vec![TestMat::Polyurethane(0.02)],
-                emmisivity: 0.0,
+                emissivity: 0.0,
                 ..Default::default()
             },
         );

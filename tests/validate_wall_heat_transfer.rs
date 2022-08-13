@@ -108,7 +108,7 @@ fn march_with_window() -> (Vec<Float>, Vec<Float>) {
             window_height,
             window_width,
             construction: vec![TestMat::Polyurethane(0.02)],
-            emmisivity: 0.0,
+            emissivity: 0.0,
             ..Default::default()
         },
     );
@@ -200,7 +200,7 @@ fn very_simple_march() -> (Vec<Float>, Vec<Float>) {
             surface_height,
             surface_width,
             construction: vec![TestMat::Polyurethane(0.02)],
-            emmisivity: 0.0,
+            emissivity: 0.0,
             ..Default::default()
         },
     );
@@ -289,7 +289,7 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
             surface_width,
             lighting_power,
             construction: vec![TestMat::Polyurethane(0.02)],
-            emmisivity: 0.0,
+            emissivity: 0.0,
             ..Default::default()
         },
     );
@@ -392,7 +392,7 @@ fn march_with_window_and_heater() -> (Vec<Float>, Vec<Float>) {
             surface_width,
             heating_power,
             construction: vec![TestMat::Polyurethane(0.02)],
-            emmisivity: 0.0,
+            emissivity: 0.0,
             ..Default::default()
         },
     );
@@ -498,7 +498,7 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
             surface_width,
             heating_power,
             infiltration_rate,
-            emmisivity: 0.0,
+            emissivity: 0.0,
             construction: vec![TestMat::Polyurethane(0.02)],
             ..Default::default()
         },
@@ -604,7 +604,7 @@ fn march_model(
     dir: &'static str,
     simple_model: SimpleModel,
     mut state_header: SimulationStateHeader,
-    emmisivity: Float,
+    emissivity: Float,
     surface_area: Float,
 ) -> (Vec<Float>, Vec<Float>) {
     // Finished model the SimpleModel
@@ -667,14 +667,14 @@ fn march_model(
         surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
         // Set Long Wave radiation
-        if emmisivity > 1e-3 {
+        if emissivity > 1e-3 {
             let ts = surface.last_node_temperature(&state).unwrap();
-            let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+            let v = indoor_thermal_heat_gain[i] / surface_area / emissivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
             surface.set_back_ir_irradiance(&mut state, v);
 
             let ts = surface.first_node_temperature(&state).unwrap();
-            let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
+            let v = outdoor_thermal_heat_gain[i] / surface_area / emissivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
             surface.set_front_ir_irradiance(&mut state, v);
         }
@@ -692,7 +692,7 @@ fn march_model(
 
 fn march_test_model(
     dir: &'static str,
-    emmisivity: Float,
+    emissivity: Float,
     solar_abs: Float,
     construction: Vec<TestMat>,
 ) -> (Vec<Float>, Vec<Float>) {
@@ -708,25 +708,25 @@ fn march_test_model(
             surface_height,
             surface_width,
             construction,
-            emmisivity,
+            emissivity,
             solar_absorbtance: solar_abs,
             ..Default::default()
         },
     );
 
-    march_model(dir, simple_model, state_header, emmisivity, surface_area)
+    march_model(dir, simple_model, state_header, emissivity, surface_area)
 }
 
 fn march_simple_model(
     dir: &'static str,
     filename: &'static str,
-    emmisivity: Float,
+    emissivity: Float,
     surface_area: Float,
 ) -> (Vec<Float>, Vec<Float>) {
     let filename = format!("./tests/{dir}/{filename}.spl");
     let (simple_model, state_header) = SimpleModel::from_file(filename).unwrap();
 
-    march_model(dir, simple_model, state_header, emmisivity, surface_area)
+    march_model(dir, simple_model, state_header, emissivity, surface_area)
 }
 
 fn theoretical(validations: &mut Validator) {
@@ -914,9 +914,9 @@ fn mixed(validations: &mut Validator) {
     }
 
     validations.push(wall1());
-    // validations.push(wall2());
-    // validations.push(wall3());
-    // validations.push(wall4());
+    validations.push(wall2());
+    validations.push(wall3());
+    validations.push(wall4());
 }
 
 fn nomass(validations: &mut Validator) {
@@ -975,7 +975,7 @@ fn nomass(validations: &mut Validator) {
 
 // fn march_trombe_wall(
 //     dir: &'static str,
-//     emmisivity: Float,
+//     emissivity: Float,
 //     solar_abs: Float,
 //     construction: Vec<TestMat>,
 // ) -> (Vec<Float>, Vec<Float>) {
@@ -988,7 +988,7 @@ fn nomass(validations: &mut Validator) {
 //             zone_volume,
 //             surface_area,
 //             construction,
-//             emmisivity,
+//             emissivity,
 //             solar_absorbtance: solar_abs,
 //             ..Default::default()
 //         },
@@ -1043,14 +1043,14 @@ fn nomass(validations: &mut Validator) {
 //         surface.set_back_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
 //         // Set Long Wave radiation
-//         if emmisivity > 1e-3 {
+//         if emissivity > 1e-3 {
 //             let ts = surface.last_node_temperature(&state).unwrap();
-//             let v = outdoor_thermal_heat_gain[i] / surface_area / emmisivity
+//             let v = outdoor_thermal_heat_gain[i] / surface_area / emissivity
 //                 + heat::SIGMA * (ts + 273.15).powi(4);
 //             surface.set_back_ir_irradiance(&mut state, v);
 
 //             let ts = surface.first_node_temperature(&state).unwrap();
-//             let v = indoor_thermal_heat_gain[i] / surface_area / emmisivity
+//             let v = indoor_thermal_heat_gain[i] / surface_area / emissivity
 //                 + heat::SIGMA * (ts + 273.15).powi(4);
 //             surface.set_front_ir_irradiance(&mut state, v);
 //         }
@@ -1114,6 +1114,7 @@ fn validate() {
     nomass(&mut validations);
     tilted(&mut validations);
     horizontal(&mut validations);
+
     // trombe_wall(&mut validations);
     validations.validate().unwrap();
 }
