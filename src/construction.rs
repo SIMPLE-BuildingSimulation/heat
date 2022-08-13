@@ -703,15 +703,13 @@ mod testing {
 
     impl std::default::Default for ConvectionParams {
         fn default() -> Self {
-            const DEFAULT_ENV_emissivity: Float = 1.;
+            // const DEFAULT_ENV_EMISSIVITY: Float = 1.;
             const DEFAULT_AIR_TEMP: Float = 22.;
             ConvectionParams {
                 air_temperature: DEFAULT_AIR_TEMP,
                 surface_temperature: DEFAULT_AIR_TEMP,
                 air_speed: 0.,
-                rad_temperature: crate::SIGMA
-                    * DEFAULT_ENV_emissivity
-                    * (DEFAULT_AIR_TEMP + 273.15).powi(4),
+                rad_temperature: DEFAULT_AIR_TEMP,
                 roughness_index: 1,
                 cos_surface_tilt: 0.0,
             }
@@ -1037,15 +1035,13 @@ mod testing {
             rad_temperature: 0.0, 
             ..ConvectionParams::default()
         };
-        let front_emissivity = 0.9;
-
+        
         let back_env = ConvectionParams {
             air_temperature: 7.,
             air_speed: 0.,
             rad_temperature: 5., 
             ..ConvectionParams::default()
         };
-        let back_emissivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
         let front_hs = front_env.get_tarp_natural_convection_coefficient();
@@ -1318,15 +1314,13 @@ mod testing {
             rad_temperature: 0.,
             ..ConvectionParams::default()
         };
-        let front_emissivity = 0.9;
 
         let back_env = ConvectionParams {
             air_temperature: 6.,
             air_speed: 0.,
-            rad_temperature: 5.,//SIGMA * (5. + 273.15 as Float).powi(4),
+            rad_temperature: 5.,
             ..ConvectionParams::default()
         };
-        let back_emissivity = 0.9;
 
         let temperatures = Matrix::from_data(n + 1, 1, vec![1., 2., 3., 4., 5., 6.]);
         let front_hs = 1.739658084820765;
