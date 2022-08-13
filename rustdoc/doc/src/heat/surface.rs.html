@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/surface.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>surface.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/surface.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>surface.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -37,7 +36,9 @@
         </a><h2 class="location"></h2>
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
+                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
+                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -1650,6 +1651,37 @@
 <span id="1611">1611</span>
 <span id="1612">1612</span>
 <span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
+<span id="1630">1630</span>
+<span id="1631">1631</span>
+<span id="1632">1632</span>
+<span id="1633">1633</span>
+<span id="1634">1634</span>
+<span id="1635">1635</span>
+<span id="1636">1636</span>
+<span id="1637">1637</span>
+<span id="1638">1638</span>
+<span id="1639">1639</span>
+<span id="1640">1640</span>
+<span id="1641">1641</span>
+<span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2341,10 +2373,10 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="ident">back_boundary</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Boundary</span><span class="op">&gt;</span>,
 
     <span class="doccomment">/// The thermal absorbtance on the front side (from 0 to 1)</span>
-    <span class="kw">pub</span> <span class="ident">front_emmisivity</span>: <span class="ident">Float</span>,
+    <span class="kw">pub</span> <span class="ident">front_emissivity</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The thermal absorbtance on the back side (from 0 to 1)</span>
-    <span class="kw">pub</span> <span class="ident">back_emmisivity</span>: <span class="ident">Float</span>,
+    <span class="kw">pub</span> <span class="ident">back_emissivity</span>: <span class="ident">Float</span>,
 
     <span class="doccomment">/// The solar absorbtance on the front side (from 0 to 1)</span>
     <span class="kw">pub</span> <span class="ident">front_solar_absorbtance</span>: <span class="ident">Float</span>,
@@ -2455,7 +2487,7 @@ SOFTWARE.
         };
 
         <span class="kw">const</span> <span class="ident">DEFAULT_EM</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.84</span>;
-        <span class="kw">let</span> <span class="ident">front_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span> {
+        <span class="kw">let</span> <span class="ident">front_emissivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>[<span class="number">0</span>].<span class="ident">substance</span> {
             <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">front_thermal_absorbtance</span>() {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
@@ -2469,7 +2501,7 @@ SOFTWARE.
             },
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Front Emissivity not available for this particular kind of Substance&quot;</span>),
         };
-        <span class="kw">let</span> <span class="ident">back_emmisivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span> {
+        <span class="kw">let</span> <span class="ident">back_emissivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">substance</span> {
             <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">back_thermal_absorbtance</span>() {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
@@ -2572,8 +2604,8 @@ SOFTWARE.
             <span class="ident">discretization</span>,
             <span class="ident">front_boundary</span>: <span class="prelude-val">None</span>,
             <span class="ident">back_boundary</span>: <span class="prelude-val">None</span>,
-            <span class="ident">front_emmisivity</span>,
-            <span class="ident">back_emmisivity</span>,
+            <span class="ident">front_emissivity</span>,
+            <span class="ident">back_emissivity</span>,
             <span class="ident">wind_speed_modifier</span>,
             <span class="ident">front_solar_absorbtance</span>,
             <span class="ident">back_solar_absorbtance</span>,
@@ -2596,6 +2628,92 @@ SOFTWARE.
         <span class="self">self</span>.<span class="ident">back_boundary</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>)
     }
 
+    <span class="kw">fn</span> <span class="ident">calc_border_conditions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, 
+        <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
+        <span class="ident">t_front</span>: <span class="ident">Float</span>,
+        <span class="ident">t_back</span>: <span class="ident">Float</span>,
+        <span class="ident">wind_direction</span>: <span class="ident">Float</span>,
+        <span class="ident">wind_speed</span>: <span class="ident">Float</span>,
+    )-&gt; (<span class="ident">ConvectionParams</span>, <span class="ident">ConvectionParams</span>, <span class="ident">Float</span>, <span class="ident">Float</span>) {
+        
+        <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
+        <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">let</span> <span class="ident">ir_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_infrared_irradiance</span>(<span class="ident">state</span>);
+
+        <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>, <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
+
+                <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
+                <span class="kw">let</span> (<span class="ident">front_env</span>, <span class="ident">front_hs</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
+                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; {
+                            <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
+                                <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
+                                <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
+                                <span class="ident">rad_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>), <span class="comment">//(ir_front/crate::SIGMA).powf(0.25) - 273.15,</span>
+                                <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
+                                <span class="ident">roughness_index</span>: <span class="number">1</span>,
+                                <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
+                            };
+                                                        
+                            (<span class="ident">front_env</span>,<span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>())
+                        },
+                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
+                    }
+                } <span class="kw">else</span> {                    
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
+                        <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
+                        <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
+                        <span class="ident">rad_temperature</span>: (<span class="ident">ir_front</span><span class="op">/</span><span class="ident"><span class="kw">crate</span>::SIGMA</span>).<span class="ident">powf</span>(<span class="number">0.25</span>) <span class="op">-</span> <span class="number">273.15</span>,
+                        <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
+                        <span class="ident">roughness_index</span>: <span class="number">1</span>,
+                        <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
+                    };
+                    <span class="ident">front_env</span>.<span class="ident">cos_surface_tilt</span> <span class="op">=</span> <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>;
+                    (<span class="ident">front_env</span>,<span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>))
+                };
+
+                <span class="kw">let</span> (<span class="ident">back_env</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
+                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
+                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; {
+                            <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
+                                <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
+                                <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
+                                <span class="ident">rad_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),<span class="comment">//(ir_back/crate::SIGMA).powf(0.25) - 273.15,</span>
+                                <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
+                                <span class="ident">roughness_index</span>: <span class="number">1</span>,
+                                <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
+                            };
+                            (<span class="ident">back_env</span>, <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>())
+                        },
+                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
+                    }
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
+                        <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
+                        <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
+                        <span class="ident">rad_temperature</span>: (<span class="ident">ir_back</span><span class="op">/</span><span class="ident"><span class="kw">crate</span>::SIGMA</span>).<span class="ident">powf</span>(<span class="number">0.25</span>) <span class="op">-</span> <span class="number">273.15</span>,
+                        <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
+                        <span class="ident">roughness_index</span>: <span class="number">1</span>,
+                        <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
+                    };
+                    (<span class="ident">back_env</span>,<span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>))
+                };
+
+                <span class="macro">assert!</span>(
+                    <span class="op">!</span><span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">back_hs</span>.<span class="ident">is_nan</span>(),
+                    <span class="string">&quot;Found NaN convection coefficients: Front={front_hs} | back={back_hs}&quot;</span>
+                );
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+                <span class="kw">return</span> (
+                    <span class="ident">front_env</span>, <span class="ident">back_env</span>,
+                    <span class="self">self</span>.<span class="ident">front_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">front_hs</span>),
+                    <span class="self">self</span>.<span class="ident">back_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">back_hs</span>),
+                );
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span>
+                (<span class="ident">front_env</span>, <span class="ident">back_env</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
+
+    }
+
     <span class="doccomment">/// Marches one timestep. Returns front and back heat flow    </span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">march</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2614,64 +2732,7 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
         <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
 
-        <span class="comment">// Calculate and set Front and Back IR Irradiance</span>
-        <span class="kw">let</span> <span class="ident">ir_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_infrared_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">ir_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_infrared_irradiance</span>(<span class="ident">state</span>);
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
-            <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
-            <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
-            <span class="ident">ir_irrad</span>: <span class="ident">ir_front</span>,
-            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
-            <span class="ident">roughness_index</span>: <span class="number">1</span>,
-            <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
-        };
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
-            <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
-            <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
-            <span class="ident">ir_irrad</span>: <span class="ident">ir_back</span>,
-            <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
-            <span class="ident">roughness_index</span>: <span class="number">1</span>,
-            <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
-        };
-
-        <span class="kw">let</span> <span class="ident">calc_convection_coefs</span> <span class="op">=</span>
-            <span class="op">|</span><span class="ident">front_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span>, <span class="ident">back_env</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ConvectionParams</span><span class="op">|</span> -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
-                <span class="kw">let</span> <span class="ident">windward</span> <span class="op">=</span> <span class="ident">is_windward</span>(<span class="ident">wind_direction</span>, <span class="self">self</span>.<span class="ident">cos_tilt</span>, <span class="self">self</span>.<span class="ident">normal</span>);
-
-                <span class="comment">// TODO: There is something to do here if we are talking about windows</span>
-                <span class="kw">let</span> <span class="ident">front_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">front_boundary</span> {
-                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">front_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                    }
-                } <span class="kw">else</span> {
-                    <span class="ident">front_env</span>.<span class="ident">cos_surface_tilt</span> <span class="op">=</span> <span class="op">-</span><span class="self">self</span>.<span class="ident">cos_tilt</span>;
-                    <span class="ident">front_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                };
-
-                <span class="kw">let</span> <span class="ident">back_hs</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">back_boundary</span> {
-                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span>(<span class="kw">_</span>) =&gt; <span class="ident">back_env</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>(),
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unreachable!</span>(),
-                    }
-                } <span class="kw">else</span> {
-                    <span class="ident">back_env</span>.<span class="ident">get_tarp_convection_coefficient</span>(<span class="self">self</span>.<span class="ident">area</span>, <span class="self">self</span>.<span class="ident">perimeter</span>, <span class="ident">windward</span>)
-                };
-
-                <span class="macro">assert!</span>(
-                    <span class="op">!</span><span class="ident">front_hs</span>.<span class="ident">is_nan</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">back_hs</span>.<span class="ident">is_nan</span>(),
-                    <span class="string">&quot;Found NaN convection coefficients: Front={front_hs} | back={back_hs}&quot;</span>
-                );
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-                <span class="kw">return</span> (
-                    <span class="self">self</span>.<span class="ident">front_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">front_hs</span>),
-                    <span class="self">self</span>.<span class="ident">back_hs</span>.<span class="ident">unwrap_or</span>(<span class="ident">back_hs</span>),
-                );
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span>
-                (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>)
-            };
-
+        
         <span class="comment">/////////////////////</span>
         <span class="comment">// 1st: Calculate the solar absorption in each node</span>
         <span class="comment">/////////////////////</span>
@@ -2682,33 +2743,43 @@ SOFTWARE.
         <span class="comment">// 2nd: Calculate the temperature in all no-mass nodes.</span>
         <span class="comment">// Also, the heat flow into</span>
         <span class="comment">/////////////////////</span>
+        
+        
+
+        <span class="kw">let</span> (<span class="ident">front_env</span>, <span class="ident">back_env</span>, <span class="ident">_front_hs</span>, <span class="ident">_back_hs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_border_conditions</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>);
+        <span class="kw">let</span> <span class="ident">front_rad_hs</span> <span class="op">=</span> <span class="number">4.</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">front_emissivity</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span><span class="kw-2">*</span>( <span class="number">273.15</span> <span class="op">+</span> (<span class="ident">front_env</span>.<span class="ident">rad_temperature</span> <span class="op">+</span> <span class="ident">front_env</span>.<span class="ident">surface_temperature</span> )<span class="op">/</span><span class="number">2.</span> ).<span class="ident">powi</span>(<span class="number">3</span>);
+        <span class="kw">let</span> <span class="ident">back_rad_hs</span> <span class="op">=</span>  <span class="number">4.</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">back_emissivity</span>  <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span><span class="kw-2">*</span>( <span class="number">273.15</span> <span class="op">+</span> (<span class="ident">back_env</span>.<span class="ident">rad_temperature</span>  <span class="op">+</span> <span class="ident">back_env</span>.<span class="ident">surface_temperature</span>  )<span class="op">/</span><span class="number">2.</span> ).<span class="ident">powi</span>(<span class="number">3</span>);
+
         <span class="kw">for</span> (<span class="ident">ini</span>, <span class="ident">fin</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nomass_chunks</span> {
+            
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_err</span> <span class="op">=</span> <span class="number">99999.</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
+            
+
             <span class="kw">loop</span> {
+                                                
                 <span class="comment">// Update convection coefficients</span>
-                <span class="kw">let</span> (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">calc_convection_coefs</span>(<span class="kw-2">&amp;mut</span> <span class="ident">front_env</span>, <span class="kw-2">&amp;mut</span> <span class="ident">back_env</span>);
+                <span class="kw">let</span> (<span class="ident">front_env</span>, <span class="ident">back_env</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_border_conditions</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>);
 
                 <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(
                     <span class="kw-2">*</span><span class="ident">ini</span>,
                     <span class="kw-2">*</span><span class="ident">fin</span>,
                     <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
                     <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
-                    <span class="self">self</span>.<span class="ident">front_emmisivity</span>,
                     <span class="ident">front_hs</span>,
+                    <span class="ident">front_rad_hs</span>,
                     <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
-                    <span class="self">self</span>.<span class="ident">back_emmisivity</span>,
                     <span class="ident">back_hs</span>,
+                    <span class="ident">back_rad_hs</span>,
                 );
-
                 <span class="comment">// add solar gains</span>
                 <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="kw-2">*</span><span class="ident">ini</span>..<span class="kw-2">*</span><span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">q</span>.<span class="ident">get</span>(<span class="ident">i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="ident">local_q</span>.<span class="ident">add_to_element</span>(<span class="ident">local_i</span>, <span class="number">0</span>, <span class="ident">v</span>).<span class="ident">unwrap</span>();
                 }
-                <span class="ident">local_q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>; <span class="comment">// transfrom equation from kT + q = 0 --&gt; kT = -q</span>
-
-                <span class="kw">let</span> <span class="ident">temps</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">local_q</span>, <span class="number">3</span>).<span class="ident">unwrap</span>(); <span class="comment">// and just like that, q is the new temperatures</span>
+                <span class="ident">local_q</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.</span>;
+                                
+                <span class="kw">let</span> <span class="ident">temps</span> <span class="op">=</span> <span class="ident">k</span>.<span class="ident">mut_n_diag_gaussian</span>(<span class="ident">local_q</span>.<span class="ident">clone</span>(), <span class="number">3</span>).<span class="ident">unwrap</span>(); <span class="comment">// and just like that, q is the new temperatures</span>
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">err</span> <span class="op">=</span> <span class="number">0.0</span>;
                 <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="kw-2">*</span><span class="ident">ini</span>..<span class="kw-2">*</span><span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
@@ -2724,13 +2795,10 @@ SOFTWARE.
                     <span class="kw">break</span>;
                 }
 
-                <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">5000</span> {
-                    <span class="macro">dbg!</span>(<span class="ident">count</span>);
-                }
+                
 
-                <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="macro">assert!</span>(
-                    <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">99000</span>,
+                    <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">199000</span>,
                     <span class="string">&quot;Excessive number of iterations... front_hc = {} | back_hs = {}&quot;</span>,
                     <span class="ident">front_hs</span>,
                     <span class="ident">back_hs</span>
@@ -2751,8 +2819,17 @@ SOFTWARE.
                     <span class="kw">break</span>;
                 }
                 <span class="ident">old_err</span> <span class="op">=</span> <span class="ident">err</span>;
+                <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            
+
+
             }
         }
+
+        <span class="kw">let</span> (<span class="ident">front_env</span>, <span class="ident">back_env</span>, <span class="ident">_front_hs</span>, <span class="ident">_back_hs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_border_conditions</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>);
+        <span class="kw">let</span> <span class="ident">front_rad_hs</span> <span class="op">=</span> <span class="number">4.</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">front_emissivity</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span><span class="kw-2">*</span>( <span class="number">273.15</span> <span class="op">+</span> (<span class="ident">front_env</span>.<span class="ident">rad_temperature</span> <span class="op">+</span> <span class="ident">front_env</span>.<span class="ident">surface_temperature</span> )<span class="op">/</span><span class="number">2.</span> ).<span class="ident">powi</span>(<span class="number">3</span>);
+        <span class="kw">let</span> <span class="ident">back_rad_hs</span> <span class="op">=</span>  <span class="number">4.</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">back_emissivity</span>  <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span><span class="kw-2">*</span>( <span class="number">273.15</span> <span class="op">+</span> (<span class="ident">back_env</span>.<span class="ident">rad_temperature</span>  <span class="op">+</span> <span class="ident">back_env</span>.<span class="ident">surface_temperature</span>  )<span class="op">/</span><span class="number">2.</span> ).<span class="ident">powi</span>(<span class="number">3</span>);
+    
 
         <span class="comment">/////////////////////</span>
         <span class="comment">// 3rd: Calculate K and C matrices for the massive walls</span>
@@ -2767,18 +2844,18 @@ SOFTWARE.
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">mass</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">mass</span>)
                 .<span class="ident">collect</span>();
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Matrix::diag</span>(<span class="ident">c</span>);
-            <span class="kw">let</span> (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">calc_convection_coefs</span>(<span class="kw-2">&amp;mut</span> <span class="ident">front_env</span>, <span class="kw-2">&amp;mut</span> <span class="ident">back_env</span>);
+            <span class="kw">let</span> (<span class="ident">front_env</span>, <span class="ident">back_env</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_border_conditions</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>);
 
             <span class="kw">let</span> (<span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">local_q</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">discretization</span>.<span class="ident">get_k_q</span>(
                 <span class="kw-2">*</span><span class="ident">ini</span>,
                 <span class="kw-2">*</span><span class="ident">fin</span>,
                 <span class="kw-2">&amp;</span><span class="ident">temperatures</span>,
                 <span class="kw-2">&amp;</span><span class="ident">front_env</span>,
-                <span class="self">self</span>.<span class="ident">front_emmisivity</span>,
                 <span class="ident">front_hs</span>,
+                <span class="ident">front_rad_hs</span>,
                 <span class="kw-2">&amp;</span><span class="ident">back_env</span>,
-                <span class="self">self</span>.<span class="ident">back_emmisivity</span>,
                 <span class="ident">back_hs</span>,
+                <span class="ident">back_rad_hs</span>,
             );
 
             <span class="comment">// ... here we add solar gains</span>
@@ -2813,7 +2890,7 @@ SOFTWARE.
         <span class="comment">// Calc heat flow</span>
         <span class="kw">let</span> <span class="ident">ts_front</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">ts_back</span> <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">get</span>(<span class="ident">rows</span> <span class="op">-</span> <span class="number">1</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="ident">calc_convection_coefs</span>(<span class="kw-2">&amp;mut</span> <span class="ident">front_env</span>, <span class="kw-2">&amp;mut</span> <span class="ident">back_env</span>);
+        <span class="kw">let</span> (<span class="ident">_front_env</span>, <span class="ident">_back_env</span>, <span class="ident">front_hs</span>, <span class="ident">back_hs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_border_conditions</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>);
         <span class="self">self</span>.<span class="ident">parent</span>
             .<span class="ident">set_front_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">front_hs</span>);
         <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">set_back_convection_coefficient</span>(<span class="ident">state</span>, <span class="ident">back_hs</span>);
@@ -2955,7 +3032,7 @@ SOFTWARE.
             <span class="comment">// the same amount of heat needs to leave in each direction</span>
             <span class="comment">// println!(&quot;q_in = {}, q_out = {} | diff = {}&quot;, q_in, q_out, (q_in - q_out).abs());</span>
             <span class="macro">assert!</span>(
-                (<span class="ident">q_in</span> <span class="op">-</span> <span class="ident">q_out</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1E-5</span>,
+                (<span class="ident">q_in</span> <span class="op">-</span> <span class="ident">q_out</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.5</span>,<span class="comment">//1E-5,</span>
                 <span class="string">&quot;diff is {} (count is {counter})&quot;</span>,
                 (<span class="ident">q_in</span> <span class="op">-</span> <span class="ident">q_out</span>).<span class="ident">abs</span>()
             );
@@ -3020,15 +3097,7 @@ SOFTWARE.
         <span class="comment">// Expecting</span>
         <span class="macro">assert!</span>(<span class="ident">final_qfront</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
         <span class="macro">assert!</span>(<span class="ident">final_qback</span> <span class="op">&lt;</span> <span class="number">0.0</span>);
-        <span class="comment">// assert!((final_qfront + final_qback).abs() &lt; 0.00033, &quot;final_qfront = {} | final_qback = {} | final_qfront + final_qback = {}&quot;, final_qfront, final_qback,final_qfront + final_qback);</span>
-
-        <span class="comment">// let r = d.r_value();</span>
-
-        <span class="comment">// let rs_front = 0.1; //surface.front_convection_coefficient(&amp;state).unwrap();</span>
-        <span class="comment">// let rs_back = 0.1; //surface.back_convection_coefficient(&amp;state).unwrap();</span>
-        <span class="comment">// let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);</span>
-        <span class="comment">// assert!((exp_q - final_qfront).abs() &lt; 0.00033, &quot;In: exp: {} | final: {}&quot;, exp_q, final_qfront);</span>
-        <span class="comment">// assert!((exp_q + final_qback).abs() &lt; 0.00033, &quot;Out: exp: {} | final: {}&quot;, exp_q, final_qback);</span>
+        
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -3143,6 +3212,7 @@ SOFTWARE.
 
         <span class="comment">/* SURFACE */</span>
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">Surface::new</span>(<span class="string">&quot;WALL&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">p</span>, <span class="ident">Rc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>));
+        
         <span class="kw">let</span> <span class="ident">surface</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_surface</span>(<span class="ident">s</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_header</span> <span class="op">=</span> <span class="ident">SimulationStateHeader::new</span>();
 
@@ -3156,7 +3226,7 @@ SOFTWARE.
 
         <span class="kw">let</span> <span class="ident">normal</span> <span class="op">=</span> <span class="ident">geometry3d::Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
         <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="number">8.</span> <span class="op">*</span> <span class="ident">l</span>;
-        <span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
             <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>,
             <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
             <span class="number">0</span>,
@@ -3169,6 +3239,8 @@ SOFTWARE.
             <span class="ident">d</span>,
         )
         .<span class="ident">unwrap</span>();
+        <span class="ident">ts</span>.<span class="ident">front_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
+        <span class="ident">ts</span>.<span class="ident">back_hs</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">10.</span>);
         <span class="comment">// assert!(!d.is_massive);</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
@@ -3201,16 +3273,7 @@ SOFTWARE.
             (<span class="ident">full_qfront</span> <span class="op">+</span> <span class="ident">full_qback</span>).<span class="ident">abs</span>()
         );
 
-        <span class="comment">// let rs_front = 0.1; //surface.front_convection_coefficient(&amp;state).unwrap();</span>
-        <span class="comment">// let rs_back = 0.1;// surface.back_convection_coefficient(&amp;state).unwrap();</span>
-        <span class="comment">// // dbg!(rs_front);</span>
-        <span class="comment">// // dbg!(rs_back);</span>
-        <span class="comment">// let r = d.r_value();</span>
-        <span class="comment">// let poly_r = 0.006/0.0252;</span>
-        <span class="comment">// assert!((r-poly_r).abs() &lt; 1e-15);</span>
-        <span class="comment">// let exp_q = (30.0 - 10.0) / (r + rs_front + rs_back);</span>
-        <span class="comment">// assert!((exp_q - q_front).abs() &lt; 1E-4, &quot;exp_qin = {} ... found {}&quot;, exp_q, q_front);</span>
-        <span class="comment">// assert!((exp_q + q_back).abs() &lt; 1E-4, &quot;exp_qout = {} ... found {}&quot;, exp_q, q_back);</span>
+        
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -3264,5 +3327,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
 </body></html>

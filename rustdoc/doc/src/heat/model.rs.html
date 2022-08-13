@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -37,7 +36,9 @@
         </a><h2 class="location"></h2>
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
+                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
+                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -660,8 +661,6 @@
 <span id="621">621</span>
 <span id="622">622</span>
 <span id="623">623</span>
-<span id="624">624</span>
-<span id="625">625</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -888,19 +887,16 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">t_current</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_current_zones_temperatures</span>(<span class="ident">state</span>);
 
             <span class="comment">/* UPDATE SURFACE&#39;S TEMPERATURES */</span>
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">surfaces</span>.<span class="ident">len</span>() {
-                <span class="comment">// get surface</span>
-                <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">surfaces</span>[<span class="ident">i</span>];
-
+            <span class="kw">for</span> (<span class="ident">solar_surf</span>, <span class="ident">model_surf</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>()) {
                 <span class="comment">// find t_in and t_out of surface.</span>
-                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">front_boundary</span> {
+                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">front_boundary</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) =&gt; <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
                         <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
                     },
                     <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
                 };
-                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">back_boundary</span> {
+                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">back_boundary</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) =&gt; <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()], <span class="comment">//self.zones[z_index].temperature(model, state),</span>
                         <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
@@ -910,25 +906,23 @@ SOFTWARE.
 
                 <span class="comment">// Update temperatures</span>
                 <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span>
-                    <span class="ident">s</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
-                <span class="ident">model</span>.<span class="ident">surfaces</span>[<span class="ident">i</span>].<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
-                <span class="ident">model</span>.<span class="ident">surfaces</span>[<span class="ident">i</span>].<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
+                    <span class="ident">solar_surf</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
+                <span class="ident">model_surf</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
+                <span class="ident">model_surf</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
             } <span class="comment">// end of iterating surface</span>
 
             <span class="comment">// What  if they are open???</span>
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">fenestrations</span>.<span class="ident">len</span>() {
-                <span class="comment">// get surface</span>
-                <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fenestrations</span>[<span class="ident">i</span>];
-
+            <span class="comment">// for i in 0..self.fenestrations.len() {</span>
+            <span class="kw">for</span> (<span class="ident">solar_surf</span>, <span class="ident">model_surf</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>()) {
                 <span class="comment">// find t_in and t_out of surface.</span>
-                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">front_boundary</span> {
+                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">front_boundary</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) =&gt; <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
                         <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
                     },
                     <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
                 };
-                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">back_boundary</span> {
+                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">back_boundary</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
                         <span class="ident">Boundary::Space</span>(<span class="ident">space</span>) =&gt; <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()],
                         <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
@@ -938,9 +932,9 @@ SOFTWARE.
 
                 <span class="comment">// Update temperatures</span>
                 <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span>
-                    <span class="ident">s</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
-                <span class="ident">model</span>.<span class="ident">fenestrations</span>[<span class="ident">i</span>].<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
-                <span class="ident">model</span>.<span class="ident">fenestrations</span>[<span class="ident">i</span>].<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
+                    <span class="ident">solar_surf</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
+                <span class="ident">model_surf</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
+                <span class="ident">model_surf</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
             } <span class="comment">// end of iterating surface</span>
 
             <span class="comment">/* UPDATE ZONES&#39; TEMPERATURE */</span>
@@ -950,7 +944,10 @@ SOFTWARE.
             <span class="kw">let</span> <span class="ident">future_temperatures</span> <span class="op">=</span>
                 <span class="self">self</span>.<span class="ident">estimate_zones_future_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">t_current</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="self">self</span>.<span class="ident">dt</span>);
             <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">future_temperatures</span>[<span class="ident">i</span>].<span class="ident">is_nan</span>(), <span class="string">&quot;Future temperatures is NaN&quot;</span>);
+                <span class="macro">assert!</span>(
+                    <span class="op">!</span><span class="ident">future_temperatures</span>[<span class="ident">i</span>].<span class="ident">is_nan</span>(),
+                    <span class="string">&quot;Future temperatures is NaN&quot;</span>
+                );
                 <span class="ident">zone</span>.<span class="ident">reference_space</span>
                     .<span class="ident">set_dry_bulb_temperature</span>(<span class="ident">state</span>, <span class="ident">future_temperatures</span>[<span class="ident">i</span>]);
             }
@@ -1259,7 +1256,7 @@ SOFTWARE.
                 <span class="ident">surface_height</span>: <span class="number">2.</span>,
                 <span class="ident">surface_width</span>: <span class="number">2.</span>,
                 <span class="ident">construction</span>: <span class="macro">vec!</span>[<span class="ident">TestMat::Polyurethane</span>(<span class="number">0.02</span>)],
-                <span class="ident">emmisivity</span>: <span class="number">0.0</span>,
+                <span class="ident">emissivity</span>: <span class="number">0.0</span>,
                 ..<span class="ident">Default::default</span>()
             },
         );
@@ -1288,5 +1285,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
 </body></html>
