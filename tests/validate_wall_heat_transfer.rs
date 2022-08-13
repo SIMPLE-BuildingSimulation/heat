@@ -611,8 +611,10 @@ fn march_model(
 
     let n: usize = 20;
     // let main_dt = 60. * 60. / n as Float;
-    let thermal_model =
+    let mut thermal_model =
         ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
+    // in model like these—i.e., a single surface—EnergyPlus assumes Zero IR radation
+    thermal_model.surfaces[0].back_emissivity = 0.0;
 
     let mut state = state_header.take_values().unwrap();
 
@@ -667,19 +669,20 @@ fn march_model(
         surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
 
         // Set Long Wave radiation
-        if emissivity > 1e-3 {
-            let ts = surface.last_node_temperature(&state).unwrap();
-            let v = indoor_thermal_heat_gain[i] / surface_area / emissivity
-                + heat::SIGMA * (ts + 273.15).powi(4);
-            surface.set_back_ir_irradiance(&mut state, v);
+        if emissivity > 1e-3 {            
+            // let ts = surface.last_node_temperature(&state).unwrap();
+            // let v = indoor_thermal_heat_gain[i] / surface_area / emissivity
+            // + heat::SIGMA * (ts + 273.15).powi(4);
+            // surface.set_back_ir_irradiance(&mut state, v); 
 
             let ts = surface.first_node_temperature(&state).unwrap();
             let v = outdoor_thermal_heat_gain[i] / surface_area / emissivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
             surface.set_front_ir_irradiance(&mut state, v);
         }
-
+        
         // March
+        
         thermal_model
             .march(date, &weather, &simple_model, &mut state)
             .unwrap();

@@ -965,7 +965,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                             let front_env = ConvectionParams {
                                 air_temperature: t_front,
                                 air_speed: wind_speed * self.wind_speed_modifier,
-                                rad_temperature: self.parent.front_temperature(state), //(ir_front/crate::SIGMA).powf(0.25) - 273.15,
+                                rad_temperature: t_front, //self.parent.front_temperature(state), //(ir_front/crate::SIGMA).powf(0.25) - 273.15,
                                 surface_temperature: self.parent.front_temperature(state),
                                 roughness_index: 1,
                                 cos_surface_tilt: self.cos_tilt,
@@ -994,7 +994,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                             let back_env = ConvectionParams {
                                 air_temperature: t_back,
                                 air_speed: wind_speed * self.wind_speed_modifier,
-                                rad_temperature: self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
+                                rad_temperature: t_back, //self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
                                 surface_temperature: self.parent.back_temperature(state),
                                 roughness_index: 1,
                                 cos_surface_tilt: self.cos_tilt,
