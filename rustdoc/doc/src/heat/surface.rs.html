@@ -2649,7 +2649,7 @@ SOFTWARE.
                             <span class="kw">let</span> <span class="ident">front_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
                                 <span class="ident">air_temperature</span>: <span class="ident">t_front</span>,
                                 <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
-                                <span class="ident">rad_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>), <span class="comment">//(ir_front/crate::SIGMA).powf(0.25) - 273.15,</span>
+                                <span class="ident">rad_temperature</span>: <span class="ident">t_front</span>, <span class="comment">//self.parent.front_temperature(state), //(ir_front/crate::SIGMA).powf(0.25) - 273.15,</span>
                                 <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>),
                                 <span class="ident">roughness_index</span>: <span class="number">1</span>,
                                 <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
@@ -2678,7 +2678,7 @@ SOFTWARE.
                             <span class="kw">let</span> <span class="ident">back_env</span> <span class="op">=</span> <span class="ident">ConvectionParams</span> {
                                 <span class="ident">air_temperature</span>: <span class="ident">t_back</span>,
                                 <span class="ident">air_speed</span>: <span class="ident">wind_speed</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">wind_speed_modifier</span>,
-                                <span class="ident">rad_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),<span class="comment">//(ir_back/crate::SIGMA).powf(0.25) - 273.15,</span>
+                                <span class="ident">rad_temperature</span>: <span class="ident">t_back</span>, <span class="comment">//self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,</span>
                                 <span class="ident">surface_temperature</span>: <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>),
                                 <span class="ident">roughness_index</span>: <span class="number">1</span>,
                                 <span class="ident">cos_surface_tilt</span>: <span class="self">self</span>.<span class="ident">cos_tilt</span>,
