@@ -1110,6 +1110,18 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     }
                     break;
                 }
+                if err.is_nan(){
+                    assert!(
+                        false,
+                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}",
+                        front_env,
+                        back_env,
+                        front_hs,
+                        back_hs,
+                        err / ((fin - ini) as Float),
+                        temps
+                    );   
+                }
 
                 
 
