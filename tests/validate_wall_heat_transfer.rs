@@ -629,7 +629,7 @@ fn march_model(
                                              // let inside_surface_temp = &cols[3];                 // 4	WALL EXTERIOR:Surface Inside Face Temperature [C](TimeStep)
                                              // let outside_surface_temp = &cols[4];                // 5	WALL EXTERIOR:Surface Outside Face Temperature [C](TimeStep)
                                              // let exp_hs_in = &cols[5];                           // 6	WALL EXTERIOR:Surface Inside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)
-    let indoor_thermal_heat_gain = &cols[6]; // 7	WALL EXTERIOR:Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate [W](TimeStep)
+    // let indoor_thermal_heat_gain = &cols[6]; // 7	WALL EXTERIOR:Surface Inside Face Net Surface Thermal Radiation Heat Gain Rate [W](TimeStep)
     let outdoor_temp = &cols[7]; // 8	WALL EXTERIOR:Surface Outside Face Outdoor Air Drybulb Temperature [C](TimeStep)
                                  // let surface_wind_speed = &cols[8];          // 9	WALL EXTERIOR:Surface Outside Face Outdoor Air Wind Speed [m/s](TimeStep)
                                  // let exp_hs_out = &cols[9];                          // 10	WALL EXTERIOR:Surface Outside Face Convection Heat Transfer Coefficient [W/m2-K](TimeStep)

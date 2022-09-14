@@ -1115,9 +1115,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
                 assert!(
                     count < 199000,
-                    "Excessive number of iterations... front_hc = {} | back_hs = {}",
+                    "Excessive number of iterations... front_hc = {} | back_hs = {}. Error = {}",
                     front_hs,
-                    back_hs
+                    back_hs,
+                    err / ((fin - ini) as Float),
                 );
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
