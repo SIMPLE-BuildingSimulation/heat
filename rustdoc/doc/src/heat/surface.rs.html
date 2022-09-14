@@ -1683,6 +1683,8 @@
 <span id="1643">1643</span>
 <span id="1644">1644</span>
 <span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2800,7 +2802,9 @@ SOFTWARE.
 
                 <span class="macro">assert!</span>(
                     <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">199000</span>,
-                    <span class="string">&quot;Excessive number of iterations... front_hc = {} | back_hs = {}. Error = {}&quot;</span>,
+                    <span class="string">&quot;Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}&quot;</span>,
+                    <span class="ident">front_env</span>,
+                    <span class="ident">back_env</span>,
                     <span class="ident">front_hs</span>,
                     <span class="ident">back_hs</span>,
                     <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>),
