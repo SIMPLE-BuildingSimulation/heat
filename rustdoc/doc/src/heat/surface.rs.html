@@ -1704,6 +1704,12 @@
 <span id="1664">1664</span>
 <span id="1665">1665</span>
 <span id="1666">1666</span>
+<span id="1667">1667</span>
+<span id="1668">1668</span>
+<span id="1669">1669</span>
+<span id="1670">1670</span>
+<span id="1671">1671</span>
+<span id="1672">1672</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2751,8 +2757,14 @@ SOFTWARE.
         <span class="kw">let</span> (<span class="ident">rows</span>, ..) <span class="op">=</span> <span class="ident">temperatures</span>.<span class="ident">size</span>();
 
         <span class="comment">// Calculate and set Front and Back Solar Irradiance</span>
-        <span class="kw">let</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">solar_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">front_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">if</span> <span class="ident">solar_front</span>.<span class="ident">is_nan</span>(){
+            <span class="ident">solar_front</span> <span class="op">=</span> <span class="number">0.0</span>;
+        }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">solar_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parent</span>.<span class="ident">back_solar_irradiance</span>(<span class="ident">state</span>);
+        <span class="kw">if</span> <span class="ident">solar_back</span>.<span class="ident">is_nan</span>(){
+            <span class="ident">solar_back</span> <span class="op">=</span> <span class="number">0.0</span>;
+        }
 
         
         <span class="comment">/////////////////////</span>
