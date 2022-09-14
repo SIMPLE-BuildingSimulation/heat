@@ -1113,7 +1113,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 if err.is_nan(){
                     assert!(
                         false,
-                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}",
+                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}\nq={}\nsolar_front={}, solar_back={}\nfront_alphas={}\nback_alphas={}\n",
                         front_env,
                         back_env,
                         front_hs,
@@ -1122,6 +1122,11 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                         temps,
                         k,
                         local_q,
+                        q,
+                        solar_front,
+                        solar_back,
+                        self.front_alphas,
+                        self.back_alphas,
                     );   
                 }
 
