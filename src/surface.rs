@@ -1095,7 +1095,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 }
                 local_q *= -1.;
                                 
-                let temps = k.mut_n_diag_gaussian(local_q.clone(), 3).unwrap(); // and just like that, q is the new temperatures
+                let temps = k.clone().mut_n_diag_gaussian(local_q.clone(), 3).unwrap(); // and just like that, q is the new temperatures
 
                 let mut err = 0.0;
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
@@ -1113,13 +1113,15 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 if err.is_nan(){
                     assert!(
                         false,
-                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}",
+                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}",
                         front_env,
                         back_env,
                         front_hs,
                         back_hs,
                         err / ((fin - ini) as Float),
-                        temps
+                        temps,
+                        k,
+                        local_q,
                     );   
                 }
 
