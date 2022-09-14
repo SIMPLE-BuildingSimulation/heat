@@ -1140,15 +1140,15 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 if count > 10000 {
                     eprintln!("Err is {}", err / ((fin - ini) as Float))
                 }
-                assert!(
-                    count < 199000,
-                    "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
-                    front_env,
-                    back_env,
-                    front_hs,
-                    back_hs,
-                    err / ((fin - ini) as Float),
-                );
+                // assert!(
+                //     count < 199000,
+                //     "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
+                //     front_env,
+                //     back_env,
+                //     front_hs,
+                //     back_hs,
+                //     err / ((fin - ini) as Float),
+                // );
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
