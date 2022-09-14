@@ -1682,6 +1682,7 @@
 <span id="1642">1642</span>
 <span id="1643">1643</span>
 <span id="1644">1644</span>
+<span id="1645">1645</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2799,9 +2800,10 @@ SOFTWARE.
 
                 <span class="macro">assert!</span>(
                     <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">199000</span>,
-                    <span class="string">&quot;Excessive number of iterations... front_hc = {} | back_hs = {}&quot;</span>,
+                    <span class="string">&quot;Excessive number of iterations... front_hc = {} | back_hs = {}. Error = {}&quot;</span>,
                     <span class="ident">front_hs</span>,
-                    <span class="ident">back_hs</span>
+                    <span class="ident">back_hs</span>,
+                    <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>),
                 );
                 <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="kw-2">*</span><span class="ident">ini</span>..<span class="kw-2">*</span><span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">local_temp</span> <span class="op">=</span> <span class="ident">temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
