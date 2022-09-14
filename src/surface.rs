@@ -1137,7 +1137,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 }
 
                 
-
+                if count > 10000 {
+                    eprintln!("Err is {}", err / ((fin - ini) as Float))
+                }
                 assert!(
                     count < 199000,
                     "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
