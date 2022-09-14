@@ -1710,6 +1710,8 @@
 <span id="1670">1670</span>
 <span id="1671">1671</span>
 <span id="1672">1672</span>
+<span id="1673">1673</span>
+<span id="1674">1674</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2849,16 +2851,18 @@ SOFTWARE.
                 }
 
                 
-
-                <span class="macro">assert!</span>(
-                    <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">199000</span>,
-                    <span class="string">&quot;Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}&quot;</span>,
-                    <span class="ident">front_env</span>,
-                    <span class="ident">back_env</span>,
-                    <span class="ident">front_hs</span>,
-                    <span class="ident">back_hs</span>,
-                    <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>),
-                );
+                <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">10000</span> {
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Err is {}&quot;</span>, <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>))
+                }
+                <span class="comment">// assert!(</span>
+                <span class="comment">//     count &lt; 199000,</span>
+                <span class="comment">//     &quot;Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}&quot;,</span>
+                <span class="comment">//     front_env,</span>
+                <span class="comment">//     back_env,</span>
+                <span class="comment">//     front_hs,</span>
+                <span class="comment">//     back_hs,</span>
+                <span class="comment">//     err / ((fin - ini) as Float),</span>
+                <span class="comment">// );</span>
                 <span class="kw">for</span> (<span class="ident">local_i</span>, <span class="ident">i</span>) <span class="kw">in</span> (<span class="kw-2">*</span><span class="ident">ini</span>..<span class="kw-2">*</span><span class="ident">fin</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">local_temp</span> <span class="op">=</span> <span class="ident">temps</span>.<span class="ident">get</span>(<span class="ident">local_i</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
                     <span class="ident">temperatures</span>.<span class="ident">add_to_element</span>(<span class="ident">i</span>, <span class="number">0</span>, <span class="ident">local_temp</span>).<span class="ident">unwrap</span>();
