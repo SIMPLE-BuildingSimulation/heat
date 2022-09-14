@@ -1045,8 +1045,14 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let (rows, ..) = temperatures.size();
 
         // Calculate and set Front and Back Solar Irradiance
-        let solar_front = self.parent.front_solar_irradiance(state);
-        let solar_back = self.parent.back_solar_irradiance(state);
+        let mut solar_front = self.parent.front_solar_irradiance(state);
+        if solar_front.is_nan(){
+            solar_front = 0.0;
+        }
+        let mut solar_back = self.parent.back_solar_irradiance(state);
+        if solar_back.is_nan(){
+            solar_back = 0.0;
+        }
 
         
         /////////////////////
