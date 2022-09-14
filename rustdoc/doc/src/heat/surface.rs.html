@@ -1685,6 +1685,18 @@
 <span id="1645">1645</span>
 <span id="1646">1646</span>
 <span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -2796,6 +2808,18 @@ SOFTWARE.
                         <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because BAD!&quot;</span>, <span class="ident">count</span>);
                     }
                     <span class="kw">break</span>;
+                }
+                <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">is_nan</span>(){
+                    <span class="macro">assert!</span>(
+                        <span class="bool-val">false</span>,
+                        <span class="string">&quot;&gt;&gt;&gt;&gt; Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}&quot;</span>,
+                        <span class="ident">front_env</span>,
+                        <span class="ident">back_env</span>,
+                        <span class="ident">front_hs</span>,
+                        <span class="ident">back_hs</span>,
+                        <span class="ident">err</span> <span class="op">/</span> ((<span class="ident">fin</span> <span class="op">-</span> <span class="ident">ini</span>) <span class="kw">as</span> <span class="ident">Float</span>),
+                        <span class="ident">temps</span>
+                    );   
                 }
 
                 
