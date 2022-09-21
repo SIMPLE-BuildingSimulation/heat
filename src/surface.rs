@@ -1116,46 +1116,47 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     }
                     break;
                 }
-                if err.is_nan(){
-                    assert!(
-                        false,
-                        ">>>> Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}\nq={}\nsolar_front={}, solar_back={}\nfront_alphas={}\nback_alphas={}\n",
-                        front_env,
-                        back_env,
-                        front_hs,
-                        back_hs,
-                        err / ((fin - ini) as Float),
-                        temps,
-                        k,
-                        local_q,
-                        q,
-                        solar_front,
-                        solar_back,
-                        self.front_alphas,
-                        self.back_alphas,
-                    );   
-                }
+                
+                assert!(
+                    !err.is_nan(),
+                    "Error is NaN... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}\nq={}\nsolar_front={}, solar_back={}\nfront_alphas={}\nback_alphas={}\n",
+                    front_env,
+                    back_env,
+                    front_hs,
+                    back_hs,
+                    err / ((fin - ini) as Float),
+                    temps,
+                    k,
+                    local_q,
+                    q,
+                    solar_front,
+                    solar_back,
+                    self.front_alphas,
+                    self.back_alphas,
+                );   
+            
 
                 
-                if count > 10000 {
-                    eprintln!("Err is {}", err / ((fin - ini) as Float))
-                }
-                // assert!(
-                //     count < 199000,
-                //     "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
-                //     front_env,
-                //     back_env,
-                //     front_hs,
-                //     back_hs,
-                //     err / ((fin - ini) as Float),
-                // );
+                // if count > 10000 {
+                //     eprintln!("Err is {}", err / ((fin - ini) as Float))
+                // }
+                assert!(
+                    count < 99199000,
+                    "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
+                    front_env,
+                    back_env,
+                    front_hs,
+                    back_hs,
+                    err / ((fin - ini) as Float),
+                );
                 for (local_i, i) in (*ini..*fin).into_iter().enumerate() {
                     let local_temp = temps.get(local_i, 0).unwrap();
+                    // temperatures.set(i, 0, local_temp).unwrap();
                     temperatures.add_to_element(i, 0, local_temp).unwrap();
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
 
-                let max_allowed_error = if count < 100 { 0.01 } else if count < 1000 { 0.5 } else { 1. };
+                let max_allowed_error = if count < 100 { 0.01 } else /*if count < 1000*/ { 0.5 };// else { 1. };
 
                 if err / ((fin - ini) as Float) < max_allowed_error {
                     #[cfg(debug_assertions)]

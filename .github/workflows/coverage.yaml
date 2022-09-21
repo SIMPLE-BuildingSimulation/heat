@@ -4,7 +4,7 @@ on:
   pull_request:
 name: coverage
 jobs:
-  test:
+  coverage:
     runs-on: ubuntu-latest
     container:
       image: xd009642/tarpaulin

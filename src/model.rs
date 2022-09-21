@@ -198,10 +198,10 @@ impl SimulationModel for ThermalModel {
     /// Advances one main_timestep through time. That is,
     /// it performs `self.dt_subdivisions` steps, advancing
     /// `self.dt` seconds in each of them.
-    fn march(
+    fn march<W: Weather>(
         &self,
         mut date: Date,
-        weather: &dyn Weather,
+        weather: &W,
         model: &SimpleModel,
         state: &mut SimulationState,
     ) -> Result<(), String> {
