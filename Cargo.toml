@@ -32,4 +32,11 @@ rustdoc-args = [
 [features]
 default = []
 parallel=[]
-float = ["simple_model/float",  "matrix/float",  "weather/float", "calendar/float", "geometry3d/float", "polynomial/float"]
+float = [
+    "simple_model/float",  
+    "matrix/float",  
+    "weather/float", 
+    "calendar/float", 
+    "geometry3d/float", 
+    "polynomial/float"
+]
