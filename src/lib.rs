@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 
 //! A Finite Difference-based Thermal simulation module.
 //!
