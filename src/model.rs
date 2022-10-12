@@ -17,7 +17,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-use crate::construction::Discretization;
+use crate::discretization::Discretization;
 use crate::Float;
 use calendar::Date;
 
@@ -32,6 +32,8 @@ use crate::heating_cooling::calc_cooling_heating_power;
 use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 
+/// A structure containing all the thermal representation of the whole 
+/// [`SimpleModel`]
 pub struct ThermalModel {
     /// All the Thermal Zones in the model
     pub zones: Vec<ThermalZone>,
@@ -42,6 +44,8 @@ pub struct ThermalModel {
     /// All the Fenestrations in the model
     pub fenestrations: Vec<ThermalFenestration>,
 
+    // / contains all the HVACs
+    // pub hvacs: Vec<Float>,
     /// The number of steps that this model needs
     /// to take in order to advance one step of the main
     /// simulation.
@@ -69,7 +73,7 @@ impl SimulationModel for ThermalModel {
     /// * n: the number of timesteps per hour taken by the main simulation.
     fn new(
         _meta_options: &MetaOptions,
-        _options: (),
+        _options: Self::OptionType,
         model: &SimpleModel,
         state: &mut SimulationStateHeader,
         n: usize,
@@ -96,7 +100,7 @@ impl SimulationModel for ThermalModel {
         // number of subditivions required
         let mut thermal_surfaces = Vec::with_capacity(model.surfaces.len());
         for (i, surf) in model.surfaces.iter().enumerate() {
-            let constr = &surf.construction;
+            let construction = model.get_construction(&surf.construction)?;
 
             let normal = surf.vertices.normal();
             let cos_tilt = normal * Vector3D::new(0., 0., 1.);
@@ -108,13 +112,15 @@ impl SimulationModel for ThermalModel {
             let perimeter = surf.vertices.outer().perimeter().unwrap();
             let centroid = surf.vertices.outer().centroid().unwrap();
 
-            let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
+            let d =
+                Discretization::new(&construction, model, main_dt, max_dx, min_dt, height, angle)?;
 
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf = ThermalSurface::new(
                 state,
+                model,
                 &model.site_details,
                 i,
                 surf,
@@ -122,7 +128,7 @@ impl SimulationModel for ThermalModel {
                 perimeter,
                 centroid.z,
                 normal,
-                constr,
+                &construction,
                 d,
             )?;
             // Match surface and zones
@@ -138,7 +144,7 @@ impl SimulationModel for ThermalModel {
 
         let mut thermal_fens = Vec::with_capacity(model.fenestrations.len());
         for (i, surf) in model.fenestrations.iter().enumerate() {
-            let constr = &surf.construction;
+            let construction = model.get_construction(&surf.construction)?;
 
             let normal = surf.vertices.normal();
             let cos_tilt = normal * Vector3D::new(0., 0., 1.);
@@ -151,13 +157,15 @@ impl SimulationModel for ThermalModel {
             dbg!("height is 1");
             let height = 1.;
 
-            let d = Discretization::new(constr, main_dt, max_dx, min_dt, height, angle)?;
+            let d =
+                Discretization::new(&construction, model, main_dt, max_dx, min_dt, height, angle)?;
 
             if d.tstep_subdivision > n_subdivisions {
                 n_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf = ThermalFenestration::new(
                 state,
+                model,
                 &model.site_details,
                 i,
                 surf,
@@ -165,7 +173,7 @@ impl SimulationModel for ThermalModel {
                 perimeter,
                 centroid.z,
                 normal,
-                constr,
+                &construction,
                 d,
             )?;
             // Match surface and zones
@@ -228,14 +236,20 @@ impl SimulationModel for ThermalModel {
                 // find t_in and t_out of surface.
                 let t_front = match &solar_surf.front_boundary {
                     Some(b) => match b {
-                        Boundary::Space(space) => t_current[*space.index().unwrap()],
+                        Boundary::Space { space } => {
+                            let space = model.get_space(space)?;
+                            t_current[*space.index().unwrap()]
+                        }
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
                 };
                 let t_back = match &solar_surf.back_boundary {
                     Some(b) => match b {
-                        Boundary::Space(space) => t_current[*space.index().unwrap()], //self.zones[z_index].temperature(model, state),
+                        Boundary::Space { space } => {
+                            let space = model.get_space(space)?;
+                            t_current[*space.index().unwrap()]
+                        }
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
@@ -250,18 +264,26 @@ impl SimulationModel for ThermalModel {
 
             // What  if they are open???
             // for i in 0..self.fenestrations.len() {
-            for (solar_surf, model_surf) in self.fenestrations.iter().zip(model.fenestrations.iter()) {
+            for (solar_surf, model_surf) in
+                self.fenestrations.iter().zip(model.fenestrations.iter())
+            {
                 // find t_in and t_out of surface.
                 let t_front = match &solar_surf.front_boundary {
                     Some(b) => match b {
-                        Boundary::Space(space) => t_current[*space.index().unwrap()],
+                        Boundary::Space { space } => {
+                            let space = model.get_space(space)?;
+                            t_current[*space.index().unwrap()]
+                        }
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
                 };
                 let t_back = match &solar_surf.back_boundary {
                     Some(b) => match b {
-                        Boundary::Space(space) => t_current[*space.index().unwrap()],
+                        Boundary::Space { space } => {
+                            let space = model.get_space(space)?;
+                            t_current[*space.index().unwrap()]
+                        }
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
@@ -276,7 +298,7 @@ impl SimulationModel for ThermalModel {
 
             /* UPDATE ZONES' TEMPERATURE */
             // This is done analytically.
-            let (a, b, c) = self.calculate_zones_abc(model, state);
+            let (a, b, c) = self.calculate_zones_abc(model, state)?;
 
             let future_temperatures =
                 self.estimate_zones_future_temperatures(&t_current, &a, &b, &c, self.dt);
@@ -313,30 +335,6 @@ impl ThermalModel {
 
         Ok(&self.zones[index])
     }
-
-    // /// Retrieves a ThermalSurface
-    // pub fn get_thermal_surface(&self, index: usize) -> Result<&ThermalSurface, String> {
-    //     if index >= self.surfaces.len() {
-    //         return ThermalModel::internal_error(format!(
-    //             "Ouf of bounds: Thermal Surface number {} does not exist",
-    //             index
-    //         ));
-    //     }
-
-    //     Ok(&self.surfaces[index])
-    // }
-
-    // /// Retrieves a THermalFenestration
-    // pub fn get_thermal_fenestration(&self, index: usize) -> Result<&ThermalSurface, String> {
-    //     if index >= self.fenestrations.len() {
-    //         return ThermalModel::internal_error(format!(
-    //             "Ouf of bounds: Thermal Surface number {} does not exist",
-    //             index
-    //         ));
-    //     }
-
-    //     Ok(&self.fenestrations[index])
-    // }
 
     /// This estimation assumes nothing changes during this time.
     /// This is self evidently wrong, as we know that, for example, the surface temperatures
@@ -377,11 +375,12 @@ impl ThermalModel {
     /// ```math
     /// \frac{\displaystyle\int_{0}^t{T(t)dt}}{t} = \frac{A}{B}+\frac{C_{zone}\left(T_{current}-\frac{A}{B}\right)}{Bt}\left(1-e^{-\frac{Bt}{C_{zone}}} \right)
     /// ```
+    #[allow(clippy::type_complexity)]
     fn calculate_zones_abc(
         &self,
         model: &SimpleModel,
         state: &SimulationState,
-    ) -> (Vec<Float>, Vec<Float>, Vec<Float>) {
+    ) -> Result<(Vec<Float>, Vec<Float>, Vec<Float>), String> {
         let nzones = self.zones.len();
         // Initialize vectors containing a and b
         let mut a = vec![0.0; nzones];
@@ -391,7 +390,9 @@ impl ThermalModel {
         /* Qi */
         // Heating/Cooling
         for hvac in model.hvacs.iter() {
-            for (target_space_index, heating_cooling) in calc_cooling_heating_power(hvac, state) {
+            for (target_space_index, heating_cooling) in
+                calc_cooling_heating_power(hvac, model, state)?
+            {
                 a[target_space_index] += heating_cooling;
             }
             // heating through air supply?
@@ -399,6 +400,7 @@ impl ThermalModel {
         // Heating/Cooling
         for luminaire in model.luminaires.iter() {
             if let Ok(target_space) = luminaire.target_space() {
+                let target_space = model.get_space(target_space)?;
                 let target_space_index = *target_space.index().unwrap();
                 let consumption = luminaire
                     .power_consumption(state)
@@ -407,7 +409,7 @@ impl ThermalModel {
             }
         }
 
-        let air = crate::gas::Gas::air();
+        let air = crate::gas::AIR;
         // Other
         for (i, zone) in self.zones.iter().enumerate() {
             let space = &model.spaces[i];
@@ -447,10 +449,11 @@ impl ThermalModel {
         /* SURFACES */
         fn iterate_surfaces<T: SurfaceTrait>(
             surfaces: &[ThermalSurfaceData<T>],
+            model: &SimpleModel,
             state: &SimulationState,
             a: &mut [Float],
             b: &mut [Float],
-        ) {
+        ) -> Result<(), String> {
             for surface in surfaces {
                 let parent = &surface.parent;
                 let h_front = parent.front_convection_coefficient(state).unwrap();
@@ -458,7 +461,8 @@ impl ThermalModel {
 
                 let ai = surface.area;
                 // if front leads to a Zone
-                if let Some(Boundary::Space(space)) = &surface.front_boundary {
+                if let Some(Boundary::Space { space }) = &surface.front_boundary {
+                    let space = model.get_space(space)?;
                     let z_index = space.index().unwrap();
 
                     let temp = surface.parent.front_temperature(state);
@@ -468,7 +472,8 @@ impl ThermalModel {
                 }
 
                 // if back leads to a Zone
-                if let Some(Boundary::Space(space)) = &surface.back_boundary {
+                if let Some(Boundary::Space { space }) = &surface.back_boundary {
+                    let space = model.get_space(space)?;
                     let z_index = space.index().unwrap();
 
                     let temp = surface.parent.back_temperature(state);
@@ -476,16 +481,17 @@ impl ThermalModel {
                     b[*z_index] += h_back * ai;
                 }
             }
+            Ok(())
         }
 
-        iterate_surfaces(&self.surfaces, state, &mut a, &mut b);
-        iterate_surfaces(&self.fenestrations, state, &mut a, &mut b);
+        iterate_surfaces(&self.surfaces, model, state, &mut a, &mut b)?;
+        iterate_surfaces(&self.fenestrations, model, state, &mut a, &mut b)?;
 
         /* AIR MIXTURE WITH OTHER ZONES */
         // unimplemented();
 
         // RETURN
-        (a, b, c)
+        Ok((a, b, c))
     }
 
     /// Retrieves a vector of the current temperatures of all the Zones as
@@ -606,7 +612,9 @@ mod testing {
         // model.map_simulation_state(&mut state).unwrap();
 
         // Test
-        let (a, b, c) = thermal_model.calculate_zones_abc(&simple_model, &state);
+        let (a, b, c) = thermal_model
+            .calculate_zones_abc(&simple_model, &state)
+            .unwrap();
         assert_eq!(a.len(), 1);
         assert_eq!(c.len(), 1);
         assert_eq!(b.len(), 1);

@@ -63,7 +63,7 @@ impl SingleZoneTestModel {
     fn get_closed_solution(&self) -> Box<impl Fn(Float) -> Float> {
         // heat balance in the form
         // of C*dT/dt = A - B*T
-        let air = heat::gas::Gas::air();
+        let air = heat::gas::AIR;
         let rho = air.density(22. + 273.15); //kg/m3
         let cp = air.heat_capacity(22. + 273.15); //J/kg.K
         let u = 1. / self.facade_r;

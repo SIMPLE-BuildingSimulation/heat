@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use simple_model::{Construction, Substance};
+use simple_model::{Construction, SimpleModel, Substance};
 
 use crate::Float;
 
@@ -64,19 +64,26 @@ impl Glazing {
         }
     }
 
-    fn get_glazing_from_iter<T>(mut i: T, cap: usize) -> Result<Vec<Glazing>, String>
+    fn get_glazing_from_iter<T>(
+        mut i: T,
+        model: &SimpleModel,
+        cap: usize,
+    ) -> Result<Vec<Glazing>, String>
     where
-        T: std::iter::Iterator<Item = std::rc::Rc<simple_model::Material>>,
+        T: std::iter::Iterator<Item = String>,
     {
         let mut ret = Vec::with_capacity(cap);
         loop {
             // Get layer
-            let l = i.next().unwrap();
-            match &l.substance {
+            let mat_name = i.next().unwrap();
+            let sub = model.get_material_substance(&mat_name)?;
+            match sub {
                 Substance::Gas(_) => {
+                    // if it is a gas, something went wong.
                     panic!("NOT expecting a gas")
                 }
                 Substance::Normal(s) => {
+                    // if it is a normal, the push it
                     let tau = s.solar_transmittance().unwrap_or(&0.0);
                     let alpha_front = s.front_solar_absorbtance().unwrap_or(&0.84);
                     let alpha_back = s.back_solar_absorbtance().unwrap_or(&0.84);
@@ -84,16 +91,15 @@ impl Glazing {
                     let rho_back = 1. - tau - alpha_back;
                     ret.push(Glazing::new(*tau, rho_front, rho_back));
 
+                    // if not translucent, then we are done.
                     if *tau < 1e-9 {
                         break;
                     }
                 }
             }
-
-            // Get cavity... if any
-            if let Some(mat) = i.next() {
-                // If there is one, check that it is a Cavity
-                let sub = &mat.substance;
+            // We only get here if we pushed somthing and need to continue... so, this should be a cavity... if any
+            if let Some(mat_name) = i.next() {
+                let sub = model.get_material_substance(&mat_name)?;
                 if let Substance::Normal(_) = sub {
                     panic!("Expecting a Gas")
                 }
@@ -105,7 +111,11 @@ impl Glazing {
         Ok(ret)
     }
 
-    pub fn get_front_glazing_system(construction: &Construction) -> Result<Vec<Glazing>, String> {
+    /// Gets the front translucent layers in a construction
+    pub fn get_front_glazing_system(
+        construction: &Construction,
+        model: &SimpleModel,
+    ) -> Result<Vec<Glazing>, String> {
         if construction.materials.is_empty() {
             return Err(format!(
                 "Trying to get front_glazing_system of an empty construction, called '{}'",
@@ -114,12 +124,16 @@ impl Glazing {
         }
 
         let i = construction.materials.iter().cloned();
-        Self::get_glazing_from_iter(i, construction.materials.len())
+        Self::get_glazing_from_iter(i, model, construction.materials.len())
     }
 
-    pub fn get_back_glazing_system(construction: &Construction) -> Result<Vec<Glazing>, String> {
+    /// Gets the front back translucent in a construction
+    pub fn get_back_glazing_system(
+        construction: &Construction,
+        model: &SimpleModel,
+    ) -> Result<Vec<Glazing>, String> {
         let i = construction.materials.iter().cloned().rev();
-        Self::get_glazing_from_iter(i, construction.materials.len())
+        Self::get_glazing_from_iter(i, model, construction.materials.len())
     }
 
     /// Gets the transmittance
@@ -274,41 +288,54 @@ impl Glazing {
 
 #[cfg(test)]
 mod testing {
+    
     use super::*;
     use simple_model::Material;
-    use std::rc::Rc;
-
+    
     #[test]
     fn test_get_glazing_two_layers() {
+        let mut model = SimpleModel::default();
+
         // Layer 0
-        let mut s0 = simple_model::substance::Normal::new("sub0".to_string());
+        let mut s0 = simple_model::substance::Normal::new("sub0");
         s0.set_solar_transmittance(0.2)
             .set_front_solar_absorbtance(0.3)
             .set_back_solar_absorbtance(0.4);
         let s0 = s0.wrap();
-        let m0 = Material::new("m0".to_string(), s0.clone(), 0.001);
+        let s0 = model.add_substance(s0);
+
+        let m0 = Material::new("m0".to_string(), s0.name().clone(), 0.001);
+        let m0 = model.add_material(m0);
 
         // Cavity
-        let mut c0 = simple_model::substance::gas::Gas::new("c0".to_string());
-        c0.set_gas(simple_model::substance::gas::StandardGas::Air);
+        let mut c0 = simple_model::substance::gas::Gas::new("c0");
+        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);
         let c0 = c0.wrap();
-        let c0 = Material::new("cavity".to_string(), c0, 0.01);
+        let c0 = model.add_substance(c0);
+
+        let c0 = Material::new("cavity".to_string(), c0.name().clone(), 0.01);
+        let c0 = model.add_material(c0);
 
         // Layer 1
-        let mut s1 = simple_model::substance::Normal::new("sub1".to_string());
+        let mut s1 = simple_model::substance::Normal::new("sub1");
         s1.set_solar_transmittance(0.1)
             .set_front_solar_absorbtance(0.2)
             .set_back_solar_absorbtance(0.3);
         let s1 = s1.wrap();
-        let m1 = Material::new("m1".to_string(), s1.clone(), 0.001);
+        let s1 = model.add_substance(s1);
 
-        let mut construction = Construction::new("constr".to_string());
-        construction.materials.push(Rc::new(m0));
-        construction.materials.push(Rc::new(c0));
-        construction.materials.push(Rc::new(m1));
+        let m1 = Material::new("m1".to_string(), s1.name().clone(), 0.001);
+        let m1 = model.add_material(m1);
+
+        let mut construction = Construction::new("constr");
+        construction.materials.push(m0.name().clone());
+        construction.materials.push(c0.name().clone());
+        construction.materials.push(m1.name().clone());
+
+        let construction = model.add_construction(construction);
 
         // Test
-        let glazings = Glazing::get_front_glazing_system(&construction).unwrap();
+        let glazings = Glazing::get_front_glazing_system(&construction, &model).unwrap();
         assert_eq!(glazings.len(), 2);
         let props: Vec<(Float, Float, Float)> = glazings
             .iter()
@@ -322,7 +349,7 @@ mod testing {
             ]
         );
 
-        let glazings = Glazing::get_back_glazing_system(&construction).unwrap();
+        let glazings = Glazing::get_back_glazing_system(&construction, &model).unwrap();
         assert_eq!(glazings.len(), 2);
         let props: Vec<(Float, Float, Float)> = glazings
             .iter()
@@ -339,35 +366,59 @@ mod testing {
 
     #[test]
     fn test_get_glazing_two_layers_2() {
+        let mut model = SimpleModel::default();
+
         // Layer 0
         let mut s0 = simple_model::substance::Normal::new("sub0".to_string());
         s0.set_solar_transmittance(0.0)
             .set_front_solar_absorbtance(0.1)
             .set_back_solar_absorbtance(0.2);
         let s0 = s0.wrap();
-        let m0 = Material::new("m0".to_string(), s0.clone(), 0.001);
+        let s0 = model.add_substance(s0);
+
+        let m0 = Material::new(
+            "m0".to_string(), 
+            s0.name().clone(),
+            0.001
+        );
+        let m0 = model.add_material(m0);
 
         // Cavity
-        let mut c0 = simple_model::substance::gas::Gas::new("c0".to_string());
-        c0.set_gas(simple_model::substance::gas::StandardGas::Air);
+        let mut c0 = simple_model::substance::gas::Gas::new("c0");
+        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);        
         let c0 = c0.wrap();
-        let c0 = Material::new("cavity".to_string(), c0, 0.01);
+        let c0 = model.add_substance(c0);
+
+        let c0 = Material::new(
+            "cavity".to_string(), 
+            c0.name().clone(), 
+            0.01
+        );
+        let c0 = model.add_material(c0);
 
         // Layer 1
-        let mut s1 = simple_model::substance::Normal::new("sub1".to_string());
+        let mut s1 = simple_model::substance::Normal::new("sub1");
         s1.set_solar_transmittance(0.1)
             .set_front_solar_absorbtance(0.2)
             .set_back_solar_absorbtance(0.3);
         let s1 = s1.wrap();
-        let m1 = Material::new("m1".to_string(), s1.clone(), 0.001);
+        let s1 = model.add_substance(s1);
 
-        let mut construction = Construction::new("constr".to_string());
-        construction.materials.push(Rc::new(m0));
-        construction.materials.push(Rc::new(c0));
-        construction.materials.push(Rc::new(m1));
+        let m1 = Material::new(
+            "m1".to_string(), 
+            s1.name().clone(), 
+            0.001
+        );
+        let m1 = model.add_material(m1);
+
+        let mut construction = Construction::new("constr");
+        construction.materials.push(m0.name().clone());
+        construction.materials.push(c0.name().clone());
+        construction.materials.push(m1.name().clone());
+        let construction  = model.add_construction(construction);
 
         // Test
-        let glazings = Glazing::get_front_glazing_system(&construction).unwrap();
+        let glazings = Glazing::get_front_glazing_system(&construction, &model).unwrap();
         assert_eq!(glazings.len(), 1);
         let props: Vec<(Float, Float, Float)> = glazings
             .iter()
@@ -380,7 +431,7 @@ mod testing {
             validate::assert_close!(*exp, *found);
         }
 
-        let glazings = Glazing::get_back_glazing_system(&construction).unwrap();
+        let glazings = Glazing::get_back_glazing_system(&construction, &model).unwrap();
         assert_eq!(glazings.len(), 2);
         let props: Vec<(Float, Float, Float)> = glazings
             .iter()
