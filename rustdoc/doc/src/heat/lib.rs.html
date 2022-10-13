@@ -32,13 +32,7 @@
   });
 </script>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -97,6 +91,28 @@
 <span id="57">57</span>
 <span id="58">58</span>
 <span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -117,7 +133,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
-<span class="comment">// #![warn(missing_docs)]</span>
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 
 <span class="doccomment">//! A Finite Difference-based Thermal simulation module.</span>
 <span class="doccomment">//!</span>
@@ -143,19 +159,40 @@ SOFTWARE.
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f64::consts::PI</span>;
 
+
 <span class="doccomment">/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W m^{-2} K^4`$),</span>
 <span class="doccomment">/// necessary for Radiation calculations</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIGMA</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">5.670374419e-8</span>;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cavity</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">construction</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">convection</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gas</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glazing</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">heating_cooling</span>;
+
+<span class="doccomment">/// The main thermal model, which manages the whole time-marching</span>
+<span class="doccomment">/// solution</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">model</span>;
+
+<span class="doccomment">/// For dealing with Cavities, i.e., layers made out of a gas </span>
+<span class="doccomment">/// enclosed within two materials of different emissivities.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cavity</span>;
+
+<span class="doccomment">/// For creating thermal networks for heat-transfering surfaces.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">discretization</span>;
+
+<span class="doccomment">/// For calculating convection coefficients under different </span>
+<span class="doccomment">/// surface conditions.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">convection</span>;
+
+<span class="doccomment">/// Definitions for the thermal properties of gases.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gas</span>;
+
+<span class="doccomment">/// Glazing layer abstracted to only their optical properties.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glazing</span>;
+
+<span class="doccomment">/// For HVAC-related calculations.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">heating_cooling</span>;
+
+<span class="doccomment">/// For calculating heat transfer through all kinds of surfaces.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">surface</span>;
+
+<span class="doccomment">/// For calculating the temperatures within Spaces.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">zone</span>;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

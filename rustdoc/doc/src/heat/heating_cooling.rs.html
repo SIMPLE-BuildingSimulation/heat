@@ -32,13 +32,7 @@
   });
 </script>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -94,6 +88,8 @@
 <span id="54">54</span>
 <span id="55">55</span>
 <span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -116,40 +112,41 @@ SOFTWARE.
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
 <span class="kw">use</span> <span class="ident">simple_model::hvac::HVAC</span>;
-<span class="kw">use</span> <span class="ident">simple_model::SimulationState</span>;
+<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimpleModel</span>, <span class="ident">SimulationState</span>};
 
 <span class="doccomment">/// Retrieves a `Vec&lt;(usize, Float)&gt;` containing the amount of heat (the `Float` in W) going into</span>
 <span class="doccomment">/// each space (of index `usize`)</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">system</span>: <span class="kw-2">&amp;</span><span class="ident">HVAC</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Float</span>)<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calc_cooling_heating_power</span>(<span class="ident">system</span>: <span class="kw-2">&amp;</span><span class="ident">HVAC</span>, <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Float</span>)<span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">system</span> {
         <span class="ident">HVAC::IdealHeaterCooler</span>(<span class="ident">system</span>) =&gt; {
             <span class="comment">// let a = &amp;**system;</span>
             <span class="comment">// let system = cast_hvac::&lt;IdealHeaterCooler&gt;(a).unwrap();</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
             <span class="kw">for</span> <span class="ident">space</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">system</span>.<span class="ident">target_spaces</span> {
+                <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">consumption_power</span> <span class="op">=</span> <span class="ident">system</span>
                     .<span class="ident">heating_cooling_consumption</span>(<span class="ident">state</span>)
                     .<span class="ident">expect</span>(<span class="string">&quot;HVAC has not heating/cooling state&quot;</span>);
                 <span class="ident">ret</span>.<span class="ident">push</span>((<span class="kw-2">*</span><span class="ident">index</span>, <span class="ident">consumption_power</span>))
             }
-            <span class="ident">ret</span>
+            <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
         }
         <span class="ident">HVAC::ElectricHeater</span>(<span class="ident">system</span>) =&gt; {
             <span class="comment">// let a = &amp;**system;</span>
             <span class="comment">// let system = cast_hvac::&lt;ElectricHeater&gt;(a).unwrap();</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">space</span>) <span class="op">=</span> <span class="ident">system</span>.<span class="ident">target_space</span>() {
+                <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
                 <span class="kw">let</span> <span class="ident">consumption_power</span> <span class="op">=</span> <span class="ident">system</span>
                     .<span class="ident">heating_cooling_consumption</span>(<span class="ident">state</span>)
                     .<span class="ident">expect</span>(<span class="string">&quot;HVAC has not heating/cooling state&quot;</span>);
                 <span class="ident">ret</span>.<span class="ident">push</span>((<span class="kw-2">*</span><span class="ident">index</span>, <span class="ident">consumption_power</span>))
             }
-            <span class="ident">ret</span>
+            <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

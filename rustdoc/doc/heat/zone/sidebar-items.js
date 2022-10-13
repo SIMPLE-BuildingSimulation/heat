@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ThermalZone",""]]};
+window.SIDEBAR_ITEMS = {"struct":[["ThermalZone","A thermal representation of a [`Space`]"]]};

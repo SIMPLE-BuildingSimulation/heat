@@ -32,13 +32,7 @@
   });
 </script>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../heat/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../heat/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -681,6 +675,40 @@ SOFTWARE.
     <span class="ident">mass</span>: <span class="ident">Float</span>,
 }
 
+
+<span class="doccomment">/// Returns a gas with the properties of Air</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">AIR</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
+    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.873e-3</span>, <span class="number">7.760e-5</span>],
+    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.723e-6</span>, <span class="number">4.94e-8</span>],
+    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">1002.7370</span>, <span class="number">1.2324e-2</span>],
+    <span class="ident">mass</span>: <span class="number">28.97</span>,
+};
+
+<span class="doccomment">/// Returns a gas with the properties of argon</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARGON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
+    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.285e-3</span>, <span class="number">5.149e-5</span>],
+    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.379e-6</span>, <span class="number">6.451e-8</span>],
+    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">521.9285</span>],
+    <span class="ident">mass</span>: <span class="number">39.948</span>,
+};
+
+
+<span class="doccomment">/// A gas with the properties of krypton</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KRYPTON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
+    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">9.443e-4</span>, <span class="number">2.826e-5</span>],
+    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">2.213e-6</span>, <span class="number">7.777e-8</span>],
+    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">248.0907</span>],
+    <span class="ident">mass</span>: <span class="number">83.8</span>,
+};
+
+<span class="doccomment">/// A gas with the properties of xenon</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">XENON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
+    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">4.538e-4</span>, <span class="number">1.723e-5</span>],
+    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">1.069e-6</span>, <span class="number">7.414e-8</span>],
+    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">158.3397</span>],
+    <span class="ident">mass</span>: <span class="number">131.30</span>,
+};
+
 <span class="kw">impl</span> <span class="ident">Gas</span> {
     <span class="doccomment">/// Calculates the Raleigh number of a [`Gas`] cavity based on its</span>
     <span class="doccomment">/// `thickness` and its temperatures `t_front` and `t_back` (note that, for</span>
@@ -786,46 +814,12 @@ SOFTWARE.
         <span class="number">101325.</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">mass</span> <span class="op">/</span> (<span class="ident">R</span> <span class="op">*</span> <span class="ident">temp</span>)
     }
 
-    <span class="doccomment">/// Returns a gas with the properties of Air</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">air</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.873e-3</span>, <span class="number">7.760e-5</span>],
-            <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.723e-6</span>, <span class="number">4.94e-8</span>],
-            <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">1002.7370</span>, <span class="number">1.2324e-2</span>],
-            <span class="ident">mass</span>: <span class="number">28.97</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns a gas with the properties of argon</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">argon</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.285e-3</span>, <span class="number">5.149e-5</span>],
-            <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.379e-6</span>, <span class="number">6.451e-8</span>],
-            <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">521.9285</span>],
-            <span class="ident">mass</span>: <span class="number">39.948</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns a gas with the properties of krypton</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">krypton</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">9.443e-4</span>, <span class="number">2.826e-5</span>],
-            <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">2.213e-6</span>, <span class="number">7.777e-8</span>],
-            <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">248.0907</span>],
-            <span class="ident">mass</span>: <span class="number">83.8</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns a gas with the properties of xenon</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">xenon</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">4.538e-4</span>, <span class="number">1.723e-5</span>],
-            <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">1.069e-6</span>, <span class="number">7.414e-8</span>],
-            <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">158.3397</span>],
-            <span class="ident">mass</span>: <span class="number">131.30</span>,
-        }
-    }
+    
 }
+
+
+
+
 
 <span class="doccomment">/// Transforms C into K</span>
 <span class="kw">fn</span> <span class="ident">in_kelvin</span>(<span class="ident">t</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
@@ -983,45 +977,45 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">test_thermal_conductivity</span>() {
         <span class="ident">check_value</span>(
             <span class="number">0.0241</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">0.0248</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">0.0163</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">0.0169</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">0.0087</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">0.0089</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">0.0052</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">0.0053</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
     }
@@ -1030,103 +1024,103 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">test_dynamic_viscosity</span>() {
         <span class="ident">check_value</span>(
             <span class="number">1.722e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">1.771e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">2.1e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">2.165e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">2.346e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">2.423e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">2.132e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">2.206e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_heat_capacity</span>() {
-        <span class="ident">check_value</span>(<span class="number">1006.1034</span>, <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>)).<span class="ident">unwrap</span>();
+        <span class="ident">check_value</span>(<span class="number">1006.1034</span>, <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>)).<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">1006.2265</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">521.9285</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">521.9285</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">248.0907</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">248.0907</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
 
         <span class="ident">check_value</span>(
             <span class="number">158.3397</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check_value</span>(
             <span class="number">158.3397</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
         )
         .<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_mass</span>() {
-        <span class="ident">check_value</span>(<span class="number">28.97</span>, <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>().<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">39.948</span>, <span class="ident"><span class="kw">crate</span>::gas::Gas::argon</span>().<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">83.80</span>, <span class="ident"><span class="kw">crate</span>::gas::Gas::krypton</span>().<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">131.3</span>, <span class="ident"><span class="kw">crate</span>::gas::Gas::xenon</span>().<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">check_value</span>(<span class="number">28.97</span>, <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">check_value</span>(<span class="number">39.948</span>, <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">check_value</span>(<span class="number">83.80</span>, <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">check_value</span>(<span class="number">131.3</span>, <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_density</span>() {
-        <span class="kw">let</span> <span class="ident">gas</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::Gas::air</span>();
+        <span class="kw">let</span> <span class="ident">gas</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::AIR</span>;
         <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">gas</span>.<span class="ident">density</span>(<span class="number">293.15</span>);
         <span class="macro">assert!</span>((<span class="number">1.2041</span> <span class="op">-</span> <span class="ident">rho</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span>);
     }
@@ -1239,5 +1233,4 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
