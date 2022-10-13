@@ -23,7 +23,7 @@ use crate::cavity::Cavity;
 use crate::convection::ConvectionParams;
 use crate::Float;
 use matrix::Matrix;
-use simple_model::{Construction, Substance};
+use simple_model::{Construction, SimpleModel, Substance};
 use std::rc::Rc;
 
 /// Represents a thermal connection in the thermal network.
@@ -64,9 +64,7 @@ impl std::default::Default for UValue {
 /// Represents the discretization of a [`Construction`] for heat transfer
 /// calculation purposes.
 ///
-/// # Note
-///
-/// This object contains all the [`Cavity`] objects in it, which
+/// > **Note:** This object contains all the [`Cavity`] objects in it, which
 /// contain information not only about their thickness but also their orientation.
 /// This means that one `Discretization` should exist per `Surface`, not just by `Construction`.
 pub struct Discretization {
@@ -95,6 +93,7 @@ impl Discretization {
     /// `Discretization` by calling `build()`.
     pub fn new(
         construction: &Rc<Construction>,
+        model: &SimpleModel,
         model_dt: Float,
         max_dx: Float,
         min_dt: Float,
@@ -102,8 +101,15 @@ impl Discretization {
         angle: Float,
     ) -> Result<Self, String> {
         let (tstep_subdivision, n_elements) =
-            Self::discretize_construction(construction, model_dt, max_dx, min_dt)?;
-        Self::build(construction, tstep_subdivision, n_elements, height, angle)
+            Self::discretize_construction(construction,model, model_dt, max_dx, min_dt)?;
+        Self::build(
+            construction,
+            model,
+            tstep_subdivision,
+            n_elements,
+            height,
+            angle,
+        )
     }
 
     /// Auxiliary function for `get_chunks()` function
@@ -155,6 +161,7 @@ impl Discretization {
     /// Creates the `segments` of the `Discretization`.
     fn build(
         construction: &Rc<Construction>,
+        model: &SimpleModel,
         tstep_subdivision: usize,
         n_elements: Vec<usize>,
         height: Float,
@@ -173,19 +180,20 @@ impl Discretization {
         let mut n_segment = 0;
         for (n_layer, n) in n_elements.iter().enumerate() {
             let mut n = *n;
-            let material = &construction.materials[n_layer];
+
+            let mat_name = &construction.materials[n_layer];
+            let material = model.get_material(mat_name)?;
+            let substance = model.get_substance(&material.substance)?;
 
             // get the mass of each segment.
             let mass = if n == 0 {
                 0.0
             } else {
-                match &material.substance {
+                match &substance {
                     Substance::Normal(s) => {
                         let dx = material.thickness / n as Float;
-                        let rho = s.density().expect(
-                            "Trying to calculate C_Matrix with a substance without 'density'",
-                        );
-                        let cp = s.specific_heat_capacity().expect("Trying to calculate C_Matrix with a substance without 'specific heat capacity'");
+                        let rho = s.density()?;
+                        let cp = s.specific_heat_capacity()?;
                         rho * cp * dx
                     }
                     Substance::Gas(_s) => 0.0, // should be zero... so should have been captured earlier
@@ -197,7 +205,7 @@ impl Discretization {
             }
             // Now iterate all segments...
             for _ in 0..n {
-                match &material.substance {
+                match &substance {
                     Substance::Normal(s) => {
                         // Add mass to this and next nodes (if it is NoMass, it is Zero)
                         segments[n_segment].0 += mass / 2.;
@@ -205,29 +213,28 @@ impl Discretization {
 
                         // Add resistance
                         let dx = material.thickness / n as Float;
-                        let k = s.thermal_conductivity().unwrap_or_else(|_| panic!("Substance '{}' in material '{}' in Construction '{}' has no thermal conductivity, but we need it", s.name(), material.name(), construction.name()));
+                        let k = s.thermal_conductivity()?;
                         // Push U-value
                         segments[n_segment].1 = UValue::Solid(k / dx);
                     }
                     Substance::Gas(s) => {
-                        // Search by name
                         let gas = match s.gas() {
-                            Ok(simple_model::substance::gas::StandardGas::Air) => {
-                                crate::gas::Gas::air()
+                            Ok(simple_model::substance::gas::GasSpecification::Air) => {
+                                crate::gas::AIR
                             }
-                            Ok(simple_model::substance::gas::StandardGas::Argon) => {
-                                crate::gas::Gas::argon()
+                            Ok(simple_model::substance::gas::GasSpecification::Argon) => {
+                                crate::gas::ARGON
                             }
-                            Ok(simple_model::substance::gas::StandardGas::Xenon) => {
-                                crate::gas::Gas::xenon()
+                            Ok(simple_model::substance::gas::GasSpecification::Xenon) => {
+                                crate::gas::XENON
                             }
-                            Ok(simple_model::substance::gas::StandardGas::Krypton) => {
-                                crate::gas::Gas::krypton()
+                            Ok(simple_model::substance::gas::GasSpecification::Krypton) => {
+                                crate::gas::KRYPTON
                             }
                             _ => {
                                 return Err(format!(
                                     "Substance '{}' does not have a standard gas.",
-                                    &material.substance.name()
+                                    substance.name()
                                 ))
                             }
                         };
@@ -238,8 +245,11 @@ impl Discretization {
                                 construction.name
                             ));
                         }
-                        let prev_mat = construction.materials.get(n_layer - 1).unwrap(); // we already checked this
-                        let next_mat = match construction.materials.get(n_layer + 1) {
+                        let prev_mat_name = construction.materials.get(n_layer - 1).unwrap(); // we already checked this
+                        // let prev_mat = model.get_material(prev_mat_name)?;
+
+
+                        let next_mat_name = match construction.materials.get(n_layer + 1) {
                             Some(v) => v,
                             None => {
                                 return Err(format!(
@@ -248,27 +258,18 @@ impl Discretization {
                                 ))
                             }
                         };
+                        // let next_mat = model.get_material(next_mat_name)?;
+                        let next_substance = model.get_material_substance(next_mat_name)?;
+                        let prev_substance = model.get_material_substance(prev_mat_name)?;
 
                         const DEFAULT_EM: Float = 0.84;
-                        let ein = match &next_mat.substance{
-                            Substance::Normal(s)=>match s.front_thermal_absorbtance(){
-                                Ok(v)=>*v,
-                                Err(_)=>{
-                                    eprintln!("Substance '{}' has no front thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
-                                    DEFAULT_EM
-                                }
-                            },
+                        let ein = match &next_substance{
+                            Substance::Normal(s)=>s.front_thermal_absorbtance_or(DEFAULT_EM),
                             Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
                         };
 
-                        let eout = match &prev_mat.substance{
-                            Substance::Normal(s)=>match s.back_thermal_absorbtance(){
-                                Ok(v)=>*v,
-                                Err(_)=>{
-                                    eprintln!("Substance '{}' has no back thermal absorbtance... assuming {}", &construction.materials[0].substance.name(), DEFAULT_EM);
-                                    DEFAULT_EM
-                                }
-                            },
+                        let eout = match &prev_substance {
+                            Substance::Normal(s)=>s.back_thermal_absorbtance_or(DEFAULT_EM),
                             Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
                         };
 
@@ -408,6 +409,7 @@ impl Discretization {
     /// is a heuristic and I want to be safe... ish
     fn discretize_construction(
         construction: &Rc<Construction>,
+        model: &SimpleModel,
         model_dt: Float,
         max_dx: Float,
         min_dt: Float,
@@ -415,6 +417,7 @@ impl Discretization {
         // I could only think of how to make this recursively... so I did this.
         fn aux(
             construction: &Rc<Construction>,
+            model: &SimpleModel,
             main_dt: Float,
             n: usize,
             max_dx: Float,
@@ -427,8 +430,10 @@ impl Discretization {
             let mut n_elements: Vec<usize> = Vec::with_capacity(n_layers);
 
             for n_layer in 0..n_layers {
-                let material = &construction.materials[n_layer];
-                let substance = &material.substance;
+                let mat_name = &construction.materials[n_layer];
+                let material = model.get_material(mat_name)?;
+                let sub_name = &material.substance;
+                let substance = model.get_substance(sub_name)?;
 
                 // Calculate the minimum_dx
                 let thickness = material.thickness;
@@ -467,7 +472,7 @@ impl Discretization {
                     let next_dt = main_dt / ((n + 1) as Float);
                     if next_dt > min_dt {
                         // If there is room for that, do it.
-                        return aux(construction, main_dt, n + 1, max_dx, min_dt);
+                        return aux(construction, model, main_dt, n + 1, max_dx, min_dt);
                     } else {
                         // otherwise, mark this layer as no-mass
                         n_elements.push(0);
@@ -484,7 +489,7 @@ impl Discretization {
                         let next_dt = main_dt / ((n + 1) as Float);
                         if next_dt > min_dt {
                             // If there is room for that, do it.
-                            return aux(construction, main_dt, n + 1, max_dx, min_dt);
+                            return aux(construction, model, main_dt, n + 1, max_dx, min_dt);
                         } else {
                             // otherwise, mark this layer as no-mass
                             n_elements.push(0);
@@ -502,8 +507,10 @@ impl Discretization {
             #[cfg(debug_assertions)]
             {
                 for (n_layer, _) in n_elements.iter().enumerate() {
-                    let material = &construction.materials[n_layer];
-                    let substance = &material.substance;
+                    let mat_name = &construction.materials[n_layer];
+                    let material = model.get_material(mat_name)?;
+                    let sub_name = &material.substance;
+                    let substance = model.get_substance(sub_name)?;
 
                     // Calculate the optimum_dx
                     let thickness = material.thickness;
@@ -533,7 +540,7 @@ impl Discretization {
             // return
             Ok((n, n_elements))
         }
-        aux(construction, model_dt, 1, max_dx, min_dt)
+        aux(construction, model, model_dt, 1, max_dx, min_dt)
     }
 
     /// Produces $`\overline{K}`$ and $`\vec{q}`$ (as in the equation $`\overline{C} \dot{\vec{T}} =  \overline{K} \vec{T} + \vec{q}`$),
@@ -649,7 +656,7 @@ impl Discretization {
 
         // Add front border conditions
         let (hs_front, front_q) = if ini == 0 {
-            let ts = temperatures.get(0, 0).unwrap();            
+            let ts = temperatures.get(0, 0).unwrap();
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
 
@@ -671,7 +678,7 @@ impl Discretization {
 
         // Add back border conditions
         let (hs_back, back_q) = if fin == nrows {
-            let ts = temperatures.get(fin - 1, 0).unwrap();            
+            let ts = temperatures.get(fin - 1, 0).unwrap();
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
             let back_q = back_env.air_temperature * back_hs  // convection
@@ -700,6 +707,7 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
+    
 
     impl std::default::Default for ConvectionParams {
         fn default() -> Self {
@@ -716,35 +724,50 @@ mod testing {
         }
     }
 
+    /// Creates a Construction with a single layer of Material, of a certain Substance.
+    /// Returns a model containing them and also an Rc to the construction
     fn get_normal(
         thermal_cond: Float,
         density: Float,
         cp: Float,
         thickness: Float,
-    ) -> Rc<Construction> {
-        let mut s = simple_model::substance::Normal::new("the substance".into());
+    ) -> (SimpleModel, Rc<Construction>) {
+
+        let mut model = SimpleModel::default();
+
+        let mut s = simple_model::substance::Normal::new("the substance");
         s.set_thermal_conductivity(thermal_cond)
             .set_density(density)
             .set_specific_heat_capacity(cp);
         let s = s.wrap();
+        let s = model.add_substance(s);
 
-        let material = simple_model::Material::new("the mat".into(), s, thickness);
-        let material = Rc::new(material);
-        let mut construction = simple_model::Construction::new("the construction".into());
-        construction.materials.push(material);
-        Rc::new(construction)
+        let material = simple_model::Material::new(
+            "the mat".to_string(), // mat name
+            s.name().clone(),  // substance name
+            thickness // thickness
+        );
+        let material = model.add_material(material);
+
+        let mut construction = Construction::new("the construction");
+        construction.materials.push(
+            material.name().clone()
+        );
+        let construction = model.add_construction(construction);
+        (model, construction)
     }
 
+
     #[test]
-    fn test_build_normal_mass() {
+    fn build_normal_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
         let thickness = 12.5 / 1000.;
         let tstep_sub = 10;
 
-        let construction = get_normal(thermal_cond, density, cp, thickness);
-        let d = Discretization::build(&construction, tstep_sub, vec![1], 1., 0.).unwrap();
+        let (model, construction) = get_normal(thermal_cond, density, cp, thickness);
+        let d = Discretization::build(&construction, &model, tstep_sub, vec![1], 1., 0.).unwrap();
         // normal --> linear
 
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -779,9 +802,9 @@ mod testing {
         let thickness = 12.5 / 1000.;
         let tstep_sub = 10;
 
-        let construction = get_normal(thermal_cond, density, cp, thickness);
+        let (model,construction) = get_normal(thermal_cond, density, cp, thickness);
 
-        let d = Discretization::build(&construction, tstep_sub, vec![0], 1., 0.).unwrap();
+        let d = Discretization::build(&construction, &model, tstep_sub, vec![0], 1., 0.).unwrap();
 
         // normal --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -812,41 +835,66 @@ mod testing {
     }
 
     #[test]
-    fn test_build_normal_gas_normal_mass() {
+    fn build_normal_gas_normal_mass() {
+
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
         let thickness = 12.5 / 1000.;
+        let mut model = SimpleModel::default();
 
         let tstep_sub = 10;
-        let mut construction = simple_model::Construction::new("the construction".into());
-        // add normal
-        let mut normal = simple_model::substance::Normal::new("the substance".into());
-        normal
-            .set_thermal_conductivity(thermal_cond)
-            .set_density(density)
-            .set_front_thermal_absorbtance(0.9)
-            .set_back_thermal_absorbtance(0.8)
-            .set_specific_heat_capacity(cp);
-        let normal = normal.wrap();
-        let normal = simple_model::Material::new("the mat".into(), normal, thickness);
-        let normal = Rc::new(normal);
-        construction.materials.push(normal.clone());
-
-        // add gas
-        let mut gas = simple_model::substance::Gas::new("the gas".into());
-        gas.set_gas(simple_model::substance::gas::StandardGas::Air);
-
+        
+        // Create normal substance
+        ///////////////////////////
+        let mut substance = simple_model::substance::Normal::new("the substance");
+        substance
+        .set_thermal_conductivity(thermal_cond)
+        .set_density(density)
+        .set_front_thermal_absorbtance(0.9)
+        .set_back_thermal_absorbtance(0.8)
+        .set_specific_heat_capacity(cp);            
+        let substance = substance.wrap();
+        let substance = model.add_substance(substance); // push to model
+        
+        // Create normal Material
+        ///////////////////////////
+        let normal = simple_model::Material::new(
+            "the mat".to_string(),
+            substance.name().clone(), 
+            thickness
+        );
+        let normal = model.add_material(normal); 
+        
+        
+        // Create Gas substance
+        ///////////////////////////
+        let mut gas = simple_model::substance::Gas::new("the gas");
+        gas.set_gas(simple_model::substance::gas::GasSpecification::Air);        
         let gas = gas.wrap();
-        let gas = simple_model::Material::new("the_gas".into(), gas, thickness);
-        let gas = Rc::new(gas);
-        construction.materials.push(gas);
+        let gas = model.add_substance(gas);
+        
+        // Create Gas Material
+        ///////////////////////////
+        let gas = simple_model::Material::new(
+            "the_gas".to_string(),  // name of gas
+            gas.name().clone(), // name of substance
+            thickness
+        );
+        let gas = model.add_material(gas);
+        
+        
+        // Assemble construction
+        ///////////////////////////
+        let mut construction = simple_model::Construction::new("the construction");
+        construction.materials.push(normal.name().clone());
+        construction.materials.push(gas.name().clone());
+        construction.materials.push(normal.name().clone());
+        let construction = model.add_construction(construction);
 
-        // add normal
-        construction.materials.push(normal);
-
-        let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, tstep_sub, vec![1, 1, 1], 1., 0.).unwrap();
+        // Test
+        ///////////////////////////
+        let d = Discretization::build(&construction, &model, tstep_sub, vec![1, 1, 1], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -904,39 +952,67 @@ mod testing {
     }
 
     #[test]
-    fn test_build_normal_gas_normal_no_mass() {
+    fn build_normal_gas_normal_no_mass() {
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
         let thickness = 12.5 / 1000.;
 
+        let mut model = SimpleModel::default();
+
         let tstep_sub = 10;
-        let mut construction = simple_model::Construction::new("the construction".into());
-        // add normal
-        let mut normal = simple_model::substance::Normal::new("the substance".into());
+        
+
+        // Create normal Substance
+        ///////////////////////////
+        let mut normal = simple_model::substance::Normal::new("the substance");
         normal
             .set_thermal_conductivity(thermal_cond)
             .set_density(density)
             .set_specific_heat_capacity(cp);
         let normal = normal.wrap();
-        let normal = simple_model::Material::new("the mat".into(), normal, thickness);
-        let normal = Rc::new(normal);
-        construction.materials.push(normal.clone());
+        let normal = model.add_substance(normal); // push to model
 
-        // add gas
-        let mut gas = simple_model::substance::Gas::new("the gas".into());
-        gas.set_gas(simple_model::substance::gas::StandardGas::Air);
+        // Create normal Material
+        ///////////////////////////
+        let normal = simple_model::Material::new(
+            "the mat".to_string(),  // name of material
+            normal.name().clone(), // name of substance
+            thickness
+        );
+        let normal = model.add_material(normal); // push to model
 
+        
+
+        // Create gas substance
+        ///////////////////////////
+        let mut gas = simple_model::substance::Gas::new("the gas");
+        gas.set_gas(simple_model::substance::gas::GasSpecification::Air);
         let gas = gas.wrap();
-        let gas = simple_model::Material::new("the_gas".into(), gas, thickness);
-        let gas = Rc::new(gas);
-        construction.materials.push(gas);
+        let gas = model.add_substance(gas); // push to model
 
-        // add normal
-        construction.materials.push(normal);
+        // Create gas Material
+        ///////////////////////////
+        let gas = simple_model::Material::new(
+            "the_gas".to_string(),
+            gas.name().clone(), 
+            thickness
+        );
+        let gas = model.add_material(gas); // push to model
+        
 
-        let construction = Rc::new(construction);
-        let d = Discretization::build(&construction, tstep_sub, vec![0, 0, 0], 1., 0.).unwrap();
+        // Assemble Construction
+        ///////////////////////////
+        let mut construction = simple_model::Construction::new("the construction");
+        construction.materials.push(normal.name().clone());
+        construction.materials.push(gas.name().clone());        
+        construction.materials.push(normal.name().clone());
+        let construction = model.add_construction(construction); // push to model
+
+
+        // Test
+        ///////////////////////////
+        let d = Discretization::build(&construction,&model, tstep_sub, vec![0, 0, 0], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -1032,14 +1108,14 @@ mod testing {
         let front_env = ConvectionParams {
             air_temperature: 0.,
             air_speed: 0.,
-            rad_temperature: 0.0, 
+            rad_temperature: 0.0,
             ..ConvectionParams::default()
         };
-        
+
         let back_env = ConvectionParams {
             air_temperature: 7.,
             air_speed: 0.,
-            rad_temperature: 5., 
+            rad_temperature: 5.,
             ..ConvectionParams::default()
         };
 
@@ -1047,14 +1123,7 @@ mod testing {
         let front_hs = front_env.get_tarp_natural_convection_coefficient();
         let back_hs = back_env.get_tarp_convection_coefficient(1., 4., false);
 
-        return (
-            d,
-            temperatures,
-            front_env,
-            front_hs,
-            back_env,
-            back_hs,
-        );
+        return (d, temperatures, front_env, front_hs, back_env, back_hs);
     }
 
     #[test]
@@ -1065,14 +1134,8 @@ mod testing {
 
         let dx = thickness / n as Float;
         let u = thermal_cond / dx;
-        let (
-            d,
-            temperatures,
-            front_env,
-            front_hs,
-            back_env,            
-            back_hs,
-        ) = get_solid_test_system(thickness, thermal_cond);
+        let (d, temperatures, front_env, front_hs, back_env, back_hs) =
+            get_solid_test_system(thickness, thermal_cond);
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
@@ -1142,14 +1205,8 @@ mod testing {
 
         let dx = thickness / n as Float;
         let u = thermal_cond / dx;
-        let (
-            d,
-            temperatures,
-            front_env,
-            front_hs,
-            back_env,
-            back_hs,
-        ) = get_solid_test_system(thickness, thermal_cond);
+        let (d, temperatures, front_env, front_hs, back_env, back_hs) =
+            get_solid_test_system(thickness, thermal_cond);
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
@@ -1220,14 +1277,8 @@ mod testing {
 
         let dx = thickness / n as Float;
         let u = thermal_cond / dx;
-        let (
-            d,
-            temperatures,
-            front_env,
-            front_hs,
-            back_env,
-            back_hs,
-        ) = get_solid_test_system(thickness, thermal_cond);
+        let (d, temperatures, front_env, front_hs, back_env, back_hs) =
+            get_solid_test_system(thickness, thermal_cond);
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
@@ -1240,7 +1291,7 @@ mod testing {
             front_rad_hs,
             &back_env,
             back_hs,
-            back_rad_hs
+            back_rad_hs,
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1336,7 +1387,7 @@ mod testing {
             front_rad_hs,
             &back_env,
             back_hs,
-            back_rad_hs
+            back_rad_hs,
         );
         println!("k = {}", k);
         println!("heat_flows = {}", q);
@@ -1383,7 +1434,6 @@ mod testing {
         }
     }
 
-    
     #[test]
     fn test_get_chunks() {
         // Single node, massive
