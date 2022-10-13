@@ -20,37 +20,39 @@ SOFTWARE.
 
 use crate::Float;
 use simple_model::hvac::HVAC;
-use simple_model::SimulationState;
+use simple_model::{SimpleModel, SimulationState};
 
 /// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into
 /// each space (of index `usize`)
-pub fn calc_cooling_heating_power(system: &HVAC, state: &SimulationState) -> Vec<(usize, Float)> {
+pub fn calc_cooling_heating_power(system: &HVAC, model: &SimpleModel, state: &SimulationState) -> Result<Vec<(usize, Float)>, String> {
     match system {
         HVAC::IdealHeaterCooler(system) => {
             // let a = &**system;
             // let system = cast_hvac::<IdealHeaterCooler>(a).unwrap();
             let mut ret = Vec::new();
             for space in &system.target_spaces {
+                let space = model.get_space(space)?;
                 let index = space.index().unwrap();
                 let consumption_power = system
                     .heating_cooling_consumption(state)
                     .expect("HVAC has not heating/cooling state");
                 ret.push((*index, consumption_power))
             }
-            ret
+            Ok(ret)
         }
         HVAC::ElectricHeater(system) => {
             // let a = &**system;
             // let system = cast_hvac::<ElectricHeater>(a).unwrap();
             let mut ret = Vec::new();
             if let Ok(space) = system.target_space() {
+                let space = model.get_space(space)?;
                 let index = space.index().unwrap();
                 let consumption_power = system
                     .heating_cooling_consumption(state)
                     .expect("HVAC has not heating/cooling state");
                 ret.push((*index, consumption_power))
             }
-            ret
+            Ok(ret)
         }
     }
 }

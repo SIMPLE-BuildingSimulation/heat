@@ -18,14 +18,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use crate::construction::Discretization;
+use crate::discretization::Discretization;
 use crate::convection::ConvectionParams;
 use crate::glazing::Glazing;
 use crate::Float;
 use geometry3d::Vector3D;
 use matrix::Matrix;
 use simple_model::{
-    Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface, TerrainClass,
+    Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface, TerrainClass, SimpleModel,
 };
 use simple_model::{SimulationState, SimulationStateElement, SiteDetails};
 use std::rc::Rc;
@@ -230,51 +230,68 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     *t += &k4;
 }
 
+
+/// A trait for defining shared behaviour between [`Surface`] and 
+/// [`Fenestration`] objects
 pub trait SurfaceTrait {
+    
+    /// Adds the front-convection state element
     fn add_front_convection_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
+
+    /// Adds the back-convection state element
     fn add_back_convection_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
 
+    /// Adds the front convective heat flow state element
     fn add_front_convective_heatflow_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
+    /// Adds the back convective heat flow state element
     fn add_back_convective_heatflow_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
 
+    /// Adds the front solar irradiance state element
     fn add_front_solar_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
+
+    /// Adds the back solar irradiance state element
     fn add_back_solar_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
 
+    /// Adds the front infra red solar irradiance state element
     fn add_front_ir_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
+
+    /// Adds the front infra red solar irradiance state element
     fn add_back_ir_irradiance_state(
         &self,
         state: &mut SimulationStateHeader,
         ref_surface_index: usize,
     );
 
+    /// Adds the temperature state elements for all the nodes in 
+    /// the [`Surface`] or [`Fenestration`]
     fn add_node_temperature_states(
         &self,
         state: &mut SimulationStateHeader,
@@ -282,20 +299,25 @@ pub trait SurfaceTrait {
         n_nodes: usize,
     );
 
+    /// Gets the index (in the simulation state) of the temperature first (i.e., front) node
     fn first_node_temperature_index(&self) -> usize;
 
+    /// Gets the index (in the simulation state) of the temperature last (i.e., back) node
     fn last_node_temperature_index(&self) -> usize;
 
+    /// Gets the  temperature first (i.e., front) node
     fn front_temperature(&self, state: &SimulationState) -> Float {
         let i = self.first_node_temperature_index();
         state[i]
     }
 
+    /// Gets the  temperature last (i.e., back) node
     fn back_temperature(&self, state: &SimulationState) -> Float {
         let i = self.last_node_temperature_index();
         state[i]
     }
 
+    /// Retrieves a matrix with the temperatures in all the nodes
     fn get_node_temperatures(&self, state: &SimulationState) -> Matrix {
         let ini = self.first_node_temperature_index();
         let fin = self.last_node_temperature_index() + 1;
@@ -308,6 +330,7 @@ pub trait SurfaceTrait {
         ret
     }
 
+    /// Sets the temperatures in all the nodes, based on a matrix
     fn set_node_temperatures(&self, state: &mut SimulationState, matrix: &Matrix) {
         let ini = self.first_node_temperature_index();
         let fin = self.last_node_temperature_index() + 1;
@@ -318,17 +341,29 @@ pub trait SurfaceTrait {
         }
     }
 
+
+    /// Gets the front convection coefficient     
     fn front_convection_coefficient(&self, state: &SimulationState) -> Option<Float>;
+
+    /// Gets the back convection coefficient 
     fn back_convection_coefficient(&self, state: &SimulationState) -> Option<Float>;
 
+    /// Sets the front convection coefficient 
     fn set_front_convection_coefficient(&self, state: &mut SimulationState, v: Float);
 
+    /// Sets the back convection coefficient 
     fn set_back_convection_coefficient(&self, state: &mut SimulationState, v: Float);
 
+    /// Gets the front solar irradiance
     fn front_solar_irradiance(&self, state: &SimulationState) -> Float;
+
+    /// Gets the back solar irradiance
     fn back_solar_irradiance(&self, state: &SimulationState) -> Float;
 
+    /// Gets the front IR irradiance
     fn front_infrared_irradiance(&self, state: &SimulationState) -> Float;
+
+    /// Gets the back IR irradiance
     fn back_infrared_irradiance(&self, state: &SimulationState) -> Float;
 }
 
@@ -675,6 +710,7 @@ impl SurfaceTrait for Fenestration {
 /// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
 /// are treated in the same way.
 pub struct ThermalSurfaceData<T: SurfaceTrait> {
+    /// A reference to the element in the [`SimpleModel`] which this struct represents
     pub parent: Rc<T>,
 
     /// The [`Discretization`] that represents this `ThermalSurfaceData`
@@ -694,11 +730,11 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The thermal absorbtance on the back side (from 0 to 1)
     pub back_emissivity: Float,
 
-    /// The solar absorbtance on the front side (from 0 to 1)
-    pub front_solar_absorbtance: Float,
+    // /// The solar absorbtance on the front side (from 0 to 1)
+    // pub front_solar_absorbtance: Float,
 
-    /// The solar absorbtance on the back side (from 0 to 1)
-    pub back_solar_absorbtance: Float,
+    // /// The solar absorbtance on the back side (from 0 to 1)
+    // pub back_solar_absorbtance: Float,
 
     /// The area of the Surface
     pub area: Float,
@@ -731,18 +767,25 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The absorbtances of each node in the system, proportional
     /// to the back incident radiation (i.e., they do not add up to 1.0)
     pub back_alphas: Matrix,
-
+    
+    /// [**Only available during testing**] this allows setting a fixed convection 
+    /// coefficient
     #[cfg(debug_assertions)]
     pub front_hs: Option<Float>,
 
+    /// [**Only available during testing**] this allows setting a fixed convection 
+    /// coefficient
     #[cfg(debug_assertions)]
     pub back_hs: Option<Float>,
 }
 
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
+    
+    /// Creates a new [`ThermalSurfaceData`]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         state: &mut SimulationStateHeader,
+        model: &SimpleModel,
         site_details: &Option<SiteDetails>,
         ref_surface_index: usize,
         parent: &Rc<T>,
@@ -766,77 +809,39 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         parent.add_front_ir_irradiance_state(state, ref_surface_index);
         parent.add_back_ir_irradiance_state(state, ref_surface_index);
 
-        // let d = Discretization::new(construction, gases, model_dt, max_dx, min_dt, 1., 0.);
-
-        // // Add node data.
+        
+        // Add node data.
         let n_nodes = discretization.segments.len();
         parent.add_node_temperature_states(state, ref_surface_index, n_nodes);
 
-        const DEFAULT_SOLAR: Float = 0.7;
-        let front_solar_absorbtance = match &construction.materials[0].substance {
-            Substance::Normal(s) => match s.front_solar_absorbtance() {
-                Ok(v) => *v,
-                Err(_) => {
-                    eprintln!(
-                        "Substance '{}' has no front solar absorbtance... assuming {}",
-                        &construction.materials[0].substance.name(),
-                        DEFAULT_SOLAR
-                    );
-                    DEFAULT_SOLAR
-                }
-            },
-            _ => panic!("Front Emissivity not available for this particular kind of Substance"),
-        };
-        let back_solar_absorbtance = match &construction.materials.last().unwrap().substance {
-            Substance::Normal(s) => match s.back_solar_absorbtance() {
-                Ok(v) => *v,
-                Err(_) => {
-                    eprintln!(
-                        "Substance '{}' has no bask solar absorbtance... assuming {}",
-                        &construction.materials[0].substance.name(),
-                        DEFAULT_SOLAR
-                    );
-                    DEFAULT_SOLAR
-                }
-            },
-            _ => panic!("Front Emissivity not available for this particular kind of Substance"),
-        };
+        let front_substance = model.get_material_substance(&construction.materials[0])?;
 
+
+        // const DEFAULT_SOLAR: Float = 0.7;
+        // let front_solar_absorbtance = match &front_substance {
+        //     Substance::Normal(s) => s.front_solar_absorbtance_or(DEFAULT_SOLAR),
+        //     _ => panic!("Front Emissivity not available for this particular kind of Substance"),
+        // };
+        let back_substance = model.get_material_substance(construction.materials.last().unwrap())?;
+        // let back_solar_absorbtance = match &back_substance {
+        //     Substance::Normal(s) => s.back_solar_absorbtance_or(DEFAULT_SOLAR),
+        //     _ => panic!("Front Emissivity not available for this particular kind of Substance"),
+        // };
         const DEFAULT_EM: Float = 0.84;
-        let front_emissivity = match &construction.materials[0].substance {
-            Substance::Normal(s) => match s.front_thermal_absorbtance() {
-                Ok(v) => *v,
-                Err(_) => {
-                    eprintln!(
-                        "Substance '{}' has no front thermal absorbtance... assuming {}",
-                        &construction.materials[0].substance.name(),
-                        DEFAULT_EM
-                    );
-                    DEFAULT_EM
-                }
-            },
+        let front_emissivity = match &front_substance {
+            Substance::Normal(s) => s.front_thermal_absorbtance_or(DEFAULT_EM),
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
-        let back_emissivity = match &construction.materials.last().unwrap().substance {
-            Substance::Normal(s) => match s.back_thermal_absorbtance() {
-                Ok(v) => *v,
-                Err(_) => {
-                    eprintln!(
-                        "Substance '{}' has no back thermal absorbtance... assuming {}",
-                        &construction.materials[0].substance.name(),
-                        DEFAULT_EM
-                    );
-                    DEFAULT_EM
-                }
-            },
+        let back_emissivity = match &&back_substance {
+            Substance::Normal(s) => s.back_thermal_absorbtance_or(DEFAULT_EM),
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
 
         let (massive_chunks, nomass_chunks) = discretization.get_chunks();
 
         // Calculate solar absoption
-        let front_glazing = Glazing::get_front_glazing_system(construction)?;
-        let back_glazing = Glazing::get_back_glazing_system(construction)?;
+        let front_glazing = Glazing::get_front_glazing_system(construction, model)?;
+        let back_glazing = Glazing::get_back_glazing_system(construction, model)?;
         // These two are the absorbtion of each glazing layer. We need the absorption of each node
         let front_alphas_prev = Glazing::alphas(&front_glazing);
         if front_alphas_prev.len() != 1 && front_alphas_prev.len() != construction.materials.len() {
@@ -854,7 +859,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             } else {
                 discretization.n_elements[layer_index]
             };
-            if let Substance::Normal(sub) = &construction.materials[layer_index].substance {
+            let substance = model.get_material_substance(&construction.materials[layer_index])?;
+            if let Substance::Normal(sub) = &substance {
                 let tau = *sub.solar_transmittance().unwrap_or(&0.0);
                 if tau > 0.0 {
                     // Distribute across all the nodes
@@ -886,8 +892,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             } else {
                 discretization.n_elements[layer_index]
             };
-
-            if let Substance::Normal(sub) = &construction.materials[layer_index].substance {
+            let substance = model.get_material_substance(&construction.materials[layer_index])?;
+            if let Substance::Normal(sub) = substance {
                 let tau = *sub.solar_transmittance().unwrap_or(&0.0);
                 if tau > 0.0 {
                     // Distribute across all the nodes
@@ -923,8 +929,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             front_emissivity,
             back_emissivity,
             wind_speed_modifier,
-            front_solar_absorbtance,
-            back_solar_absorbtance,
+            // front_solar_absorbtance,
+            // back_solar_absorbtance,
             front_alphas,
             back_alphas,
             massive_chunks,
@@ -936,10 +942,12 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         })
     }
 
+    /// Sets the front boundary
     pub fn set_front_boundary(&mut self, b: Boundary) {
         self.front_boundary = Some(b)
     }
 
+    /// Sets the back boundary
     pub fn set_back_boundary(&mut self, b: Boundary) {
         self.back_boundary = Some(b)
     }
@@ -961,7 +969,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 // TODO: There is something to do here if we are talking about windows
                 let (front_env, front_hs) = if let Some(b) = &self.front_boundary {
                     match &b {
-                        Boundary::Space(_) => {
+                        Boundary::Space {..} => {
                             let front_env = ConvectionParams {
                                 air_temperature: t_front,
                                 air_speed: wind_speed * self.wind_speed_modifier,
@@ -990,7 +998,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
                 let (back_env, back_hs) = if let Some(b) = &self.back_boundary {
                     match &b {
-                        Boundary::Space(_) => {
+                        Boundary::Space { .. } => {
                             let back_env = ConvectionParams {
                                 air_temperature: t_back,
                                 air_speed: wind_speed * self.wind_speed_modifier,
@@ -1249,8 +1257,11 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
     }
 }
 
-pub type ThermalSurface = ThermalSurfaceData<simple_model::Surface>;
-pub type ThermalFenestration = ThermalSurfaceData<simple_model::Fenestration>;
+/// A [`ThermalSurfaceData`] whose parent is a [`Surface`]
+pub type ThermalSurface = ThermalSurfaceData<Surface>;
+
+/// A [`ThermalSurfaceData`] whose parent is a [`Fenestration`]
+pub type ThermalFenestration = ThermalSurfaceData<Fenestration>;
 
 /***********/
 /* TESTING */
@@ -1301,14 +1312,14 @@ mod testing {
         substance: Substance,
         thickness: Float,
     ) -> Rc<Material> {
-        let mat = Material::new("123123".to_string(), substance.clone(), thickness);
+        let mat = Material::new("123123".to_string(), substance.name().clone(), thickness);
 
         model.add_material(mat)
     }
 
     #[test]
     fn test_march_massive() {
-        let mut model = SimpleModel::new("Some model".to_string());
+        let mut model = SimpleModel::default();
 
         /* SUBSTANCES */
         let brickwork = add_brickwork(&mut model);
@@ -1318,7 +1329,7 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c = Construction::new("construction".to_string());
-        c.materials.push(Rc::clone(&m1));
+        c.materials.push(m1.name().clone());
         let c = model.add_construction(c);
 
         /* GEOMETRY */
@@ -1332,7 +1343,7 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let s = Surface::new("Surface 1".to_string(), p, Rc::clone(&c));
+        let s = Surface::new("Surface 1".to_string(), p, c.name().clone());
 
         let surface = model.add_surface(s);
 
@@ -1340,13 +1351,14 @@ mod testing {
         let main_dt = 300.0;
         let max_dx = m1.thickness / 2.0;
         let min_dt = 1.0;
-        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
+        let d = Discretization::new(&c, &model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
         let perimeter = 8. * l;
         let mut state_header = SimulationStateHeader::new();
         let mut ts = ThermalSurface::new(
             &mut state_header,
+            &model,
             &None,
             0,
             &surface,
@@ -1449,7 +1461,7 @@ mod testing {
 
     #[test]
     fn test_march_nomass() {
-        let mut model = SimpleModel::new("A model".to_string());
+        let mut model = SimpleModel::default();
 
         /* SUBSTANCE */
         let polyurethane = add_polyurethane(&mut model);
@@ -1458,9 +1470,9 @@ mod testing {
         let m1 = add_material(&mut model, polyurethane, 3. / 1000.);
 
         /* CONSTRUCTION */
-        let mut c = Construction::new("Construction".to_string());
-        c.materials.push(Rc::clone(&m1));
-        c.materials.push(Rc::clone(&m1));
+        let mut c = Construction::new("Construction");
+        c.materials.push(m1.name().clone());
+        c.materials.push(m1.name().clone());
         let c = model.add_construction(c);
 
         /* GEOMETRY */
@@ -1474,7 +1486,7 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let s = Surface::new("WALL".to_string(), p, Rc::clone(&c));
+        let s = Surface::new("WALL".to_string(), p, c.name().clone());
         let surface = model.add_surface(s);
         let mut state_header = SimulationStateHeader::new();
 
@@ -1483,13 +1495,14 @@ mod testing {
         let main_dt = 3.0;
         let max_dx = m1.thickness / 7.0;
         let min_dt = 10.0;
-        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
+        let d = Discretization::new(&c,&model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
         let perimeter = 8. * l;
         let mut ts = ThermalSurface::new(
             &mut state_header,
+            &model,
             &None,
             0,
             &surface,
@@ -1533,7 +1546,7 @@ mod testing {
 
     #[test]
     fn test_march_nomass_2() {
-        let mut model = SimpleModel::new("A model".to_string());
+        let mut model = SimpleModel::default();
 
         /* SUBSTANCE */
         let polyurethane = add_polyurethane(&mut model);
@@ -1543,8 +1556,8 @@ mod testing {
 
         /* CONSTRUCTION */
         let mut c = Construction::new("Construction".to_string());
-        c.materials.push(Rc::clone(&m1));
-        c.materials.push(Rc::clone(&m1));
+        c.materials.push(m1.name().clone());
+        c.materials.push(m1.name().clone());
         let c = model.add_construction(c);
 
         /* GEOMETRY */
@@ -1558,7 +1571,7 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let s = Surface::new("WALL".to_string(), p, Rc::clone(&c));
+        let s = Surface::new("WALL".to_string(), p, c.name().clone());
         
         let surface = model.add_surface(s);
         let mut state_header = SimulationStateHeader::new();
@@ -1568,13 +1581,14 @@ mod testing {
         let main_dt = 3.0;
         let max_dx = m1.thickness / 7.0;
         let min_dt = 10.0;
-        let d = Discretization::new(&c, main_dt, max_dx, min_dt, 1., 0.).unwrap();
+        let d = Discretization::new(&c,&model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
         let perimeter = 8. * l;
         let mut ts = ThermalSurface::new(
             &mut state_header,
+            &model,
             &None,
             0,
             &surface,

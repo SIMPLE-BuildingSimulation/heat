@@ -1,4 +1,5 @@
-Substance::Normal {
+Substance {
+    type: "Normal",
     name: "Concrete",    
     thermal_conductivity: 0.816,
     density: 1700., 
@@ -25,7 +26,10 @@ Construction {
 Surface {
     name: "Wall Exterior",
     construction: "20cm Concrete",
-    back_boundary: Boundary::Space("Interior Space"),
+    back_boundary: {
+        type: "Space",
+        space: "Interior Space"
+    },
     vertices: [
         0., 0., 0.,
         20., 0., 0.,

@@ -41,6 +41,40 @@ pub struct Gas {
     mass: Float,
 }
 
+
+/// Returns a gas with the properties of Air
+pub const AIR : Gas = Gas {
+    thermal_conductivity: poly![2.873e-3, 7.760e-5],
+    dynamic_viscosity: poly![3.723e-6, 4.94e-8],
+    heat_capacity: poly![1002.7370, 1.2324e-2],
+    mass: 28.97,
+};
+
+/// Returns a gas with the properties of argon
+pub const ARGON : Gas = Gas {
+    thermal_conductivity: poly![2.285e-3, 5.149e-5],
+    dynamic_viscosity: poly![3.379e-6, 6.451e-8],
+    heat_capacity: poly![521.9285],
+    mass: 39.948,
+};
+
+
+/// A gas with the properties of krypton
+pub const KRYPTON : Gas = Gas {
+    thermal_conductivity: poly![9.443e-4, 2.826e-5],
+    dynamic_viscosity: poly![2.213e-6, 7.777e-8],
+    heat_capacity: poly![248.0907],
+    mass: 83.8,
+};
+
+/// A gas with the properties of xenon
+pub const XENON : Gas = Gas {
+    thermal_conductivity: poly![4.538e-4, 1.723e-5],
+    dynamic_viscosity: poly![1.069e-6, 7.414e-8],
+    heat_capacity: poly![158.3397],
+    mass: 131.30,
+};
+
 impl Gas {
     /// Calculates the Raleigh number of a [`Gas`] cavity based on its
     /// `thickness` and its temperatures `t_front` and `t_back` (note that, for
@@ -146,46 +180,12 @@ impl Gas {
         101325. * self.mass / (R * temp)
     }
 
-    /// Returns a gas with the properties of Air
-    pub fn air() -> Self {
-        Self {
-            thermal_conductivity: poly![2.873e-3, 7.760e-5],
-            dynamic_viscosity: poly![3.723e-6, 4.94e-8],
-            heat_capacity: poly![1002.7370, 1.2324e-2],
-            mass: 28.97,
-        }
-    }
-
-    /// Returns a gas with the properties of argon
-    pub fn argon() -> Self {
-        Self {
-            thermal_conductivity: poly![2.285e-3, 5.149e-5],
-            dynamic_viscosity: poly![3.379e-6, 6.451e-8],
-            heat_capacity: poly![521.9285],
-            mass: 39.948,
-        }
-    }
-
-    /// Returns a gas with the properties of krypton
-    pub fn krypton() -> Self {
-        Self {
-            thermal_conductivity: poly![9.443e-4, 2.826e-5],
-            dynamic_viscosity: poly![2.213e-6, 7.777e-8],
-            heat_capacity: poly![248.0907],
-            mass: 83.8,
-        }
-    }
-
-    /// Returns a gas with the properties of xenon
-    pub fn xenon() -> Self {
-        Self {
-            thermal_conductivity: poly![4.538e-4, 1.723e-5],
-            dynamic_viscosity: poly![1.069e-6, 7.414e-8],
-            heat_capacity: poly![158.3397],
-            mass: 131.30,
-        }
-    }
+    
 }
+
+
+
+
 
 /// Transforms C into K
 fn in_kelvin(t: Float) -> Float {
@@ -343,45 +343,45 @@ mod testing {
     fn test_thermal_conductivity() {
         check_value(
             0.0241,
-            crate::gas::Gas::air().thermal_conductivity(0. + 273.15),
+            crate::gas::AIR.thermal_conductivity(0. + 273.15),
         )
         .unwrap();
         check_value(
             0.0248,
-            crate::gas::Gas::air().thermal_conductivity(10. + 273.15),
+            crate::gas::AIR.thermal_conductivity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             0.0163,
-            crate::gas::Gas::argon().thermal_conductivity(0. + 273.15),
+            crate::gas::ARGON.thermal_conductivity(0. + 273.15),
         )
         .unwrap();
         check_value(
             0.0169,
-            crate::gas::Gas::argon().thermal_conductivity(10. + 273.15),
+            crate::gas::ARGON.thermal_conductivity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             0.0087,
-            crate::gas::Gas::krypton().thermal_conductivity(0. + 273.15),
+            crate::gas::KRYPTON.thermal_conductivity(0. + 273.15),
         )
         .unwrap();
         check_value(
             0.0089,
-            crate::gas::Gas::krypton().thermal_conductivity(10. + 273.15),
+            crate::gas::KRYPTON.thermal_conductivity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             0.0052,
-            crate::gas::Gas::xenon().thermal_conductivity(0. + 273.15),
+            crate::gas::XENON.thermal_conductivity(0. + 273.15),
         )
         .unwrap();
         check_value(
             0.0053,
-            crate::gas::Gas::xenon().thermal_conductivity(10. + 273.15),
+            crate::gas::XENON.thermal_conductivity(10. + 273.15),
         )
         .unwrap();
     }
@@ -390,103 +390,103 @@ mod testing {
     fn test_dynamic_viscosity() {
         check_value(
             1.722e-5,
-            crate::gas::Gas::air().dynamic_viscosity(0. + 273.15),
+            crate::gas::AIR.dynamic_viscosity(0. + 273.15),
         )
         .unwrap();
         check_value(
             1.771e-5,
-            crate::gas::Gas::air().dynamic_viscosity(10. + 273.15),
+            crate::gas::AIR.dynamic_viscosity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             2.1e-5,
-            crate::gas::Gas::argon().dynamic_viscosity(0. + 273.15),
+            crate::gas::ARGON.dynamic_viscosity(0. + 273.15),
         )
         .unwrap();
         check_value(
             2.165e-5,
-            crate::gas::Gas::argon().dynamic_viscosity(10. + 273.15),
+            crate::gas::ARGON.dynamic_viscosity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             2.346e-5,
-            crate::gas::Gas::krypton().dynamic_viscosity(0. + 273.15),
+            crate::gas::KRYPTON.dynamic_viscosity(0. + 273.15),
         )
         .unwrap();
         check_value(
             2.423e-5,
-            crate::gas::Gas::krypton().dynamic_viscosity(10. + 273.15),
+            crate::gas::KRYPTON.dynamic_viscosity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             2.132e-5,
-            crate::gas::Gas::xenon().dynamic_viscosity(0. + 273.15),
+            crate::gas::XENON.dynamic_viscosity(0. + 273.15),
         )
         .unwrap();
         check_value(
             2.206e-5,
-            crate::gas::Gas::xenon().dynamic_viscosity(10. + 273.15),
+            crate::gas::XENON.dynamic_viscosity(10. + 273.15),
         )
         .unwrap();
     }
 
     #[test]
     fn test_heat_capacity() {
-        check_value(1006.1034, crate::gas::Gas::air().heat_capacity(0. + 273.15)).unwrap();
+        check_value(1006.1034, crate::gas::AIR.heat_capacity(0. + 273.15)).unwrap();
         check_value(
             1006.2265,
-            crate::gas::Gas::air().heat_capacity(10. + 273.15),
+            crate::gas::AIR.heat_capacity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             521.9285,
-            crate::gas::Gas::argon().heat_capacity(0. + 273.15),
+            crate::gas::ARGON.heat_capacity(0. + 273.15),
         )
         .unwrap();
         check_value(
             521.9285,
-            crate::gas::Gas::argon().heat_capacity(10. + 273.15),
+            crate::gas::ARGON.heat_capacity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             248.0907,
-            crate::gas::Gas::krypton().heat_capacity(0. + 273.15),
+            crate::gas::KRYPTON.heat_capacity(0. + 273.15),
         )
         .unwrap();
         check_value(
             248.0907,
-            crate::gas::Gas::krypton().heat_capacity(10. + 273.15),
+            crate::gas::KRYPTON.heat_capacity(10. + 273.15),
         )
         .unwrap();
 
         check_value(
             158.3397,
-            crate::gas::Gas::xenon().heat_capacity(0. + 273.15),
+            crate::gas::XENON.heat_capacity(0. + 273.15),
         )
         .unwrap();
         check_value(
             158.3397,
-            crate::gas::Gas::xenon().heat_capacity(10. + 273.15),
+            crate::gas::XENON.heat_capacity(10. + 273.15),
         )
         .unwrap();
     }
 
     #[test]
     fn test_mass() {
-        check_value(28.97, crate::gas::Gas::air().mass()).unwrap();
-        check_value(39.948, crate::gas::Gas::argon().mass()).unwrap();
-        check_value(83.80, crate::gas::Gas::krypton().mass()).unwrap();
-        check_value(131.3, crate::gas::Gas::xenon().mass()).unwrap();
+        check_value(28.97, crate::gas::AIR.mass()).unwrap();
+        check_value(39.948, crate::gas::ARGON.mass()).unwrap();
+        check_value(83.80, crate::gas::KRYPTON.mass()).unwrap();
+        check_value(131.3, crate::gas::XENON.mass()).unwrap();
     }
 
     #[test]
     fn test_density() {
-        let gas = crate::gas::Gas::air();
+        let gas = crate::gas::AIR;
         let rho = gas.density(293.15);
         assert!((1.2041 - rho).abs() < 1e-3);
     }

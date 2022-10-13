@@ -81,7 +81,7 @@ mod testing {
         let gap = Cavity {
             thickness: gap_thickness,
             height: 1.,
-            gas: Gas::air(),
+            gas: crate::gas::AIR,
             eout: 0.84,
             ein: 0.84,
             angle: crate::PI / 2.,

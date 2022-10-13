@@ -22,6 +22,7 @@ use crate::Float;
 use simple_model::{SimulationStateElement, SimulationStateHeader, Space};
 use std::rc::Rc;
 
+/// A thermal representation of a [`Space`]
 pub struct ThermalZone {
     /// The `Space` that this [`Thermal Zone`] represents
     pub reference_space: Rc<Space>,
@@ -56,7 +57,7 @@ impl ThermalZone {
 
     /// Retrieves the heat capacity of the ThermalZone's air
     pub fn mcp(&self, temp: Float) -> Float {
-        let air = crate::gas::Gas::air();
+        let air = crate::gas::AIR;
         let air_density = air.density(temp + 273.15); //kg/m3
         let air_specific_heat = air.heat_capacity(temp + 273.15); //J/kg.K
 
