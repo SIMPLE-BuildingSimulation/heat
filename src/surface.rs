@@ -1120,7 +1120,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 if err > old_err {
                     #[cfg(debug_assertions)]
                     if count > 100 {
-                        dbg!("Breaking after {} iterations... because BAD!", count);
+                        eprintln!("Breaking after {} iterations... because BAD!", count);
                     }
                     break;
                 }
@@ -1150,7 +1150,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 // }
                 assert!(
                     count < 99199000,
-                    "Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}",
+                    "Excessive number of iterations... \n====\t\tfront_env = {:?}\n\tback_env = {:?}\n\tfront_hc = {}\n\tback_hs = {}.\n\tError = {}\n====\n",
                     front_env,
                     back_env,
                     front_hs,
