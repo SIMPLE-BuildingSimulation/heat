@@ -2843,7 +2843,7 @@ SOFTWARE.
                 <span class="kw">if</span> <span class="ident">err</span> <span class="op">&gt;</span> <span class="ident">old_err</span> {
                     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
                     <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span> <span class="number">100</span> {
-                        <span class="macro">dbg!</span>(<span class="string">&quot;Breaking after {} iterations... because BAD!&quot;</span>, <span class="ident">count</span>);
+                        <span class="macro">eprintln!</span>(<span class="string">&quot;Breaking after {} iterations... because BAD!&quot;</span>, <span class="ident">count</span>);
                     }
                     <span class="kw">break</span>;
                 }
@@ -2873,7 +2873,7 @@ SOFTWARE.
                 <span class="comment">// }</span>
                 <span class="macro">assert!</span>(
                     <span class="ident">count</span> <span class="op">&lt;</span> <span class="number">99199000</span>,
-                    <span class="string">&quot;Excessive number of iterations... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}&quot;</span>,
+                    <span class="string">&quot;Excessive number of iterations... \n====\t\tfront_env = {:?}\n\tback_env = {:?}\n\tfront_hc = {}\n\tback_hs = {}.\n\tError = {}\n====\n&quot;</span>,
                     <span class="ident">front_env</span>,
                     <span class="ident">back_env</span>,
                     <span class="ident">front_hs</span>,
