@@ -41,9 +41,8 @@ pub struct Gas {
     mass: Float,
 }
 
-
 /// Returns a gas with the properties of Air
-pub const AIR : Gas = Gas {
+pub const AIR: Gas = Gas {
     thermal_conductivity: poly![2.873e-3, 7.760e-5],
     dynamic_viscosity: poly![3.723e-6, 4.94e-8],
     heat_capacity: poly![1002.7370, 1.2324e-2],
@@ -51,16 +50,15 @@ pub const AIR : Gas = Gas {
 };
 
 /// Returns a gas with the properties of argon
-pub const ARGON : Gas = Gas {
+pub const ARGON: Gas = Gas {
     thermal_conductivity: poly![2.285e-3, 5.149e-5],
     dynamic_viscosity: poly![3.379e-6, 6.451e-8],
     heat_capacity: poly![521.9285],
     mass: 39.948,
 };
 
-
 /// A gas with the properties of krypton
-pub const KRYPTON : Gas = Gas {
+pub const KRYPTON: Gas = Gas {
     thermal_conductivity: poly![9.443e-4, 2.826e-5],
     dynamic_viscosity: poly![2.213e-6, 7.777e-8],
     heat_capacity: poly![248.0907],
@@ -68,7 +66,7 @@ pub const KRYPTON : Gas = Gas {
 };
 
 /// A gas with the properties of xenon
-pub const XENON : Gas = Gas {
+pub const XENON: Gas = Gas {
     thermal_conductivity: poly![4.538e-4, 1.723e-5],
     dynamic_viscosity: poly![1.069e-6, 7.414e-8],
     heat_capacity: poly![158.3397],
@@ -179,13 +177,7 @@ impl Gas {
         // Eq. 55 of iso15099/2003
         101325. * self.mass / (R * temp)
     }
-
-    
 }
-
-
-
-
 
 /// Transforms C into K
 fn in_kelvin(t: Float) -> Float {
@@ -341,27 +333,11 @@ mod testing {
 
     #[test]
     fn test_thermal_conductivity() {
-        check_value(
-            0.0241,
-            crate::gas::AIR.thermal_conductivity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            0.0248,
-            crate::gas::AIR.thermal_conductivity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(0.0241, crate::gas::AIR.thermal_conductivity(0. + 273.15)).unwrap();
+        check_value(0.0248, crate::gas::AIR.thermal_conductivity(10. + 273.15)).unwrap();
 
-        check_value(
-            0.0163,
-            crate::gas::ARGON.thermal_conductivity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            0.0169,
-            crate::gas::ARGON.thermal_conductivity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(0.0163, crate::gas::ARGON.thermal_conductivity(0. + 273.15)).unwrap();
+        check_value(0.0169, crate::gas::ARGON.thermal_conductivity(10. + 273.15)).unwrap();
 
         check_value(
             0.0087,
@@ -374,106 +350,42 @@ mod testing {
         )
         .unwrap();
 
-        check_value(
-            0.0052,
-            crate::gas::XENON.thermal_conductivity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            0.0053,
-            crate::gas::XENON.thermal_conductivity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(0.0052, crate::gas::XENON.thermal_conductivity(0. + 273.15)).unwrap();
+        check_value(0.0053, crate::gas::XENON.thermal_conductivity(10. + 273.15)).unwrap();
     }
 
     #[test]
     fn test_dynamic_viscosity() {
-        check_value(
-            1.722e-5,
-            crate::gas::AIR.dynamic_viscosity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            1.771e-5,
-            crate::gas::AIR.dynamic_viscosity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(1.722e-5, crate::gas::AIR.dynamic_viscosity(0. + 273.15)).unwrap();
+        check_value(1.771e-5, crate::gas::AIR.dynamic_viscosity(10. + 273.15)).unwrap();
 
-        check_value(
-            2.1e-5,
-            crate::gas::ARGON.dynamic_viscosity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            2.165e-5,
-            crate::gas::ARGON.dynamic_viscosity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(2.1e-5, crate::gas::ARGON.dynamic_viscosity(0. + 273.15)).unwrap();
+        check_value(2.165e-5, crate::gas::ARGON.dynamic_viscosity(10. + 273.15)).unwrap();
 
-        check_value(
-            2.346e-5,
-            crate::gas::KRYPTON.dynamic_viscosity(0. + 273.15),
-        )
-        .unwrap();
+        check_value(2.346e-5, crate::gas::KRYPTON.dynamic_viscosity(0. + 273.15)).unwrap();
         check_value(
             2.423e-5,
             crate::gas::KRYPTON.dynamic_viscosity(10. + 273.15),
         )
         .unwrap();
 
-        check_value(
-            2.132e-5,
-            crate::gas::XENON.dynamic_viscosity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            2.206e-5,
-            crate::gas::XENON.dynamic_viscosity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(2.132e-5, crate::gas::XENON.dynamic_viscosity(0. + 273.15)).unwrap();
+        check_value(2.206e-5, crate::gas::XENON.dynamic_viscosity(10. + 273.15)).unwrap();
     }
 
     #[test]
     fn test_heat_capacity() {
         check_value(1006.1034, crate::gas::AIR.heat_capacity(0. + 273.15)).unwrap();
-        check_value(
-            1006.2265,
-            crate::gas::AIR.heat_capacity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(1006.2265, crate::gas::AIR.heat_capacity(10. + 273.15)).unwrap();
 
-        check_value(
-            521.9285,
-            crate::gas::ARGON.heat_capacity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            521.9285,
-            crate::gas::ARGON.heat_capacity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(521.9285, crate::gas::ARGON.heat_capacity(0. + 273.15)).unwrap();
+        check_value(521.9285, crate::gas::ARGON.heat_capacity(10. + 273.15)).unwrap();
 
-        check_value(
-            248.0907,
-            crate::gas::KRYPTON.heat_capacity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            248.0907,
-            crate::gas::KRYPTON.heat_capacity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(248.0907, crate::gas::KRYPTON.heat_capacity(0. + 273.15)).unwrap();
+        check_value(248.0907, crate::gas::KRYPTON.heat_capacity(10. + 273.15)).unwrap();
 
-        check_value(
-            158.3397,
-            crate::gas::XENON.heat_capacity(0. + 273.15),
-        )
-        .unwrap();
-        check_value(
-            158.3397,
-            crate::gas::XENON.heat_capacity(10. + 273.15),
-        )
-        .unwrap();
+        check_value(158.3397, crate::gas::XENON.heat_capacity(0. + 273.15)).unwrap();
+        check_value(158.3397, crate::gas::XENON.heat_capacity(10. + 273.15)).unwrap();
     }
 
     #[test]

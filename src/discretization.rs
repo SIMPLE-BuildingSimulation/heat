@@ -101,7 +101,7 @@ impl Discretization {
         angle: Float,
     ) -> Result<Self, String> {
         let (tstep_subdivision, n_elements) =
-            Self::discretize_construction(construction,model, model_dt, max_dx, min_dt)?;
+            Self::discretize_construction(construction, model, model_dt, max_dx, min_dt)?;
         Self::build(
             construction,
             model,
@@ -246,8 +246,7 @@ impl Discretization {
                             ));
                         }
                         let prev_mat_name = construction.materials.get(n_layer - 1).unwrap(); // we already checked this
-                        // let prev_mat = model.get_material(prev_mat_name)?;
-
+                                                                                              // let prev_mat = model.get_material(prev_mat_name)?;
 
                         let next_mat_name = match construction.materials.get(n_layer + 1) {
                             Some(v) => v,
@@ -264,12 +263,12 @@ impl Discretization {
 
                         const DEFAULT_EM: Float = 0.84;
                         let ein = match &next_substance{
-                            Substance::Normal(s)=>s.front_thermal_absorbtance_or(DEFAULT_EM),
+                            Substance::Normal(s)=>s.front_thermal_absorbtance_or(crate::model::MODULE_NAME,DEFAULT_EM),
                             Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
                         };
 
                         let eout = match &prev_substance {
-                            Substance::Normal(s)=>s.back_thermal_absorbtance_or(DEFAULT_EM),
+                            Substance::Normal(s)=>s.back_thermal_absorbtance_or(crate::model::MODULE_NAME,DEFAULT_EM),
                             Substance::Gas(_)=>return Err(format!("Construction '{}' has two gases without a solid layer between them", construction.name))
                         };
 
@@ -707,7 +706,6 @@ impl Discretization {
 #[cfg(test)]
 mod testing {
     use super::*;
-    
 
     impl std::default::Default for ConvectionParams {
         fn default() -> Self {
@@ -732,7 +730,6 @@ mod testing {
         cp: Float,
         thickness: Float,
     ) -> (SimpleModel, Rc<Construction>) {
-
         let mut model = SimpleModel::default();
 
         let mut s = simple_model::substance::Normal::new("the substance");
@@ -744,19 +741,16 @@ mod testing {
 
         let material = simple_model::Material::new(
             "the mat".to_string(), // mat name
-            s.name().clone(),  // substance name
-            thickness // thickness
+            s.name().clone(),      // substance name
+            thickness,             // thickness
         );
         let material = model.add_material(material);
 
         let mut construction = Construction::new("the construction");
-        construction.materials.push(
-            material.name().clone()
-        );
+        construction.materials.push(material.name().clone());
         let construction = model.add_construction(construction);
         (model, construction)
     }
-
 
     #[test]
     fn build_normal_mass() {
@@ -802,7 +796,7 @@ mod testing {
         let thickness = 12.5 / 1000.;
         let tstep_sub = 10;
 
-        let (model,construction) = get_normal(thermal_cond, density, cp, thickness);
+        let (model, construction) = get_normal(thermal_cond, density, cp, thickness);
 
         let d = Discretization::build(&construction, &model, tstep_sub, vec![0], 1., 0.).unwrap();
 
@@ -836,7 +830,6 @@ mod testing {
 
     #[test]
     fn build_normal_gas_normal_mass() {
-
         let thermal_cond = 1.;
         let density = 2.1;
         let cp = 1.312;
@@ -844,46 +837,41 @@ mod testing {
         let mut model = SimpleModel::default();
 
         let tstep_sub = 10;
-        
+
         // Create normal substance
         ///////////////////////////
         let mut substance = simple_model::substance::Normal::new("the substance");
         substance
-        .set_thermal_conductivity(thermal_cond)
-        .set_density(density)
-        .set_front_thermal_absorbtance(0.9)
-        .set_back_thermal_absorbtance(0.8)
-        .set_specific_heat_capacity(cp);            
+            .set_thermal_conductivity(thermal_cond)
+            .set_density(density)
+            .set_front_thermal_absorbtance(0.9)
+            .set_back_thermal_absorbtance(0.8)
+            .set_specific_heat_capacity(cp);
         let substance = substance.wrap();
         let substance = model.add_substance(substance); // push to model
-        
+
         // Create normal Material
         ///////////////////////////
-        let normal = simple_model::Material::new(
-            "the mat".to_string(),
-            substance.name().clone(), 
-            thickness
-        );
-        let normal = model.add_material(normal); 
-        
-        
+        let normal =
+            simple_model::Material::new("the mat".to_string(), substance.name().clone(), thickness);
+        let normal = model.add_material(normal);
+
         // Create Gas substance
         ///////////////////////////
         let mut gas = simple_model::substance::Gas::new("the gas");
-        gas.set_gas(simple_model::substance::gas::GasSpecification::Air);        
+        gas.set_gas(simple_model::substance::gas::GasSpecification::Air);
         let gas = gas.wrap();
         let gas = model.add_substance(gas);
-        
+
         // Create Gas Material
         ///////////////////////////
         let gas = simple_model::Material::new(
-            "the_gas".to_string(),  // name of gas
-            gas.name().clone(), // name of substance
-            thickness
+            "the_gas".to_string(), // name of gas
+            gas.name().clone(),    // name of substance
+            thickness,
         );
         let gas = model.add_material(gas);
-        
-        
+
         // Assemble construction
         ///////////////////////////
         let mut construction = simple_model::Construction::new("the construction");
@@ -894,7 +882,8 @@ mod testing {
 
         // Test
         ///////////////////////////
-        let d = Discretization::build(&construction, &model, tstep_sub, vec![1, 1, 1], 1., 0.).unwrap();
+        let d =
+            Discretization::build(&construction, &model, tstep_sub, vec![1, 1, 1], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);
@@ -961,7 +950,6 @@ mod testing {
         let mut model = SimpleModel::default();
 
         let tstep_sub = 10;
-        
 
         // Create normal Substance
         ///////////////////////////
@@ -976,13 +964,11 @@ mod testing {
         // Create normal Material
         ///////////////////////////
         let normal = simple_model::Material::new(
-            "the mat".to_string(),  // name of material
+            "the mat".to_string(), // name of material
             normal.name().clone(), // name of substance
-            thickness
+            thickness,
         );
         let normal = model.add_material(normal); // push to model
-
-        
 
         // Create gas substance
         ///////////////////////////
@@ -993,26 +979,21 @@ mod testing {
 
         // Create gas Material
         ///////////////////////////
-        let gas = simple_model::Material::new(
-            "the_gas".to_string(),
-            gas.name().clone(), 
-            thickness
-        );
+        let gas = simple_model::Material::new("the_gas".to_string(), gas.name().clone(), thickness);
         let gas = model.add_material(gas); // push to model
-        
 
         // Assemble Construction
         ///////////////////////////
         let mut construction = simple_model::Construction::new("the construction");
         construction.materials.push(normal.name().clone());
-        construction.materials.push(gas.name().clone());        
+        construction.materials.push(gas.name().clone());
         construction.materials.push(normal.name().clone());
         let construction = model.add_construction(construction); // push to model
 
-
         // Test
         ///////////////////////////
-        let d = Discretization::build(&construction,&model, tstep_sub, vec![0, 0, 0], 1., 0.).unwrap();
+        let d =
+            Discretization::build(&construction, &model, tstep_sub, vec![0, 0, 0], 1., 0.).unwrap();
 
         // has gas --> linear
         assert_eq!(d.tstep_subdivision, tstep_sub);

@@ -25,14 +25,19 @@ use communication_protocols::{ErrorHandling, MetaOptions, SimulationModel};
 use geometry3d::Vector3D;
 use weather::Weather;
 
-use crate::surface::{SurfaceTrait, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
+use crate::surface::{ThermalFenestration, ThermalSurface, ThermalSurfaceData};
+use crate::surface_trait::SurfaceTrait;
 
-use crate::heating_cooling::calc_cooling_heating_power;
+use crate::heating_cooling::ThermalHVAC;
+use crate::luminaire::ThermalLuminaire;
 
 use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 
-/// A structure containing all the thermal representation of the whole 
+/// The module name. For debugging purposes
+pub(crate) const MODULE_NAME: &str = "Thermal model";
+
+/// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
 pub struct ThermalModel {
     /// All the Thermal Zones in the model
@@ -43,6 +48,12 @@ pub struct ThermalModel {
 
     /// All the Fenestrations in the model
     pub fenestrations: Vec<ThermalFenestration>,
+
+    /// HVAC systems
+    pub hvacs: Vec<ThermalHVAC>,
+
+    /// Luminaires
+    pub luminaires: Vec<ThermalLuminaire>,
 
     // / contains all the HVACs
     // pub hvacs: Vec<Float>,
@@ -57,7 +68,7 @@ pub struct ThermalModel {
 
 impl ErrorHandling for ThermalModel {
     fn module_name() -> &'static str {
-        "Thermal model"
+        MODULE_NAME
     }
 }
 
@@ -79,11 +90,11 @@ impl SimulationModel for ThermalModel {
         n: usize,
     ) -> Result<Self, String> {
         /* CREATE ALL ZONES, ONE PER SPACE */
-        let mut thermal_zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
+        let mut zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
         for (i, space) in model.spaces.iter().enumerate() {
             // Add the zone to the model... this pushes it to the sate
             // as well
-            thermal_zones.push(ThermalZone::from_space(space, state, i));
+            zones.push(ThermalZone::from_space(space, state, i));
         }
 
         /* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
@@ -93,12 +104,12 @@ impl SimulationModel for ThermalModel {
         let max_dx = 0.04; // 4cm
         let min_dt = 60.; // 60 seconds
 
-        let mut n_subdivisions: usize = 1;
+        let mut dt_subdivisions: usize = 1;
         let main_dt = 60. * 60. / n as Float;
 
         // Store the dts and n_nodes somwehere. Take note of the largest
         // number of subditivions required
-        let mut thermal_surfaces = Vec::with_capacity(model.surfaces.len());
+        let mut surfaces = Vec::with_capacity(model.surfaces.len());
         for (i, surf) in model.surfaces.iter().enumerate() {
             let construction = model.get_construction(&surf.construction)?;
 
@@ -115,8 +126,8 @@ impl SimulationModel for ThermalModel {
             let d =
                 Discretization::new(&construction, model, main_dt, max_dx, min_dt, height, angle)?;
 
-            if d.tstep_subdivision > n_subdivisions {
-                n_subdivisions = d.tstep_subdivision;
+            if d.tstep_subdivision > dt_subdivisions {
+                dt_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf = ThermalSurface::new(
                 state,
@@ -133,16 +144,16 @@ impl SimulationModel for ThermalModel {
             )?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
-                tsurf.set_front_boundary(b.clone());
+                tsurf.set_front_boundary(b, model);
             }
             if let Ok(b) = surf.back_boundary() {
-                tsurf.set_back_boundary(b.clone());
+                tsurf.set_back_boundary(b, model);
             }
 
-            thermal_surfaces.push(tsurf);
+            surfaces.push(tsurf);
         }
 
-        let mut thermal_fens = Vec::with_capacity(model.fenestrations.len());
+        let mut fenestrations = Vec::with_capacity(model.fenestrations.len());
         for (i, surf) in model.fenestrations.iter().enumerate() {
             let construction = model.get_construction(&surf.construction)?;
 
@@ -160,8 +171,8 @@ impl SimulationModel for ThermalModel {
             let d =
                 Discretization::new(&construction, model, main_dt, max_dx, min_dt, height, angle)?;
 
-            if d.tstep_subdivision > n_subdivisions {
-                n_subdivisions = d.tstep_subdivision;
+            if d.tstep_subdivision > dt_subdivisions {
+                dt_subdivisions = d.tstep_subdivision;
             }
             let mut tsurf = ThermalFenestration::new(
                 state,
@@ -178,27 +189,41 @@ impl SimulationModel for ThermalModel {
             )?;
             // Match surface and zones
             if let Ok(b) = surf.front_boundary() {
-                tsurf.set_front_boundary(b.clone());
+                tsurf.set_front_boundary(b, model);
             }
             if let Ok(b) = surf.back_boundary() {
-                tsurf.set_back_boundary(b.clone());
+                tsurf.set_back_boundary(b, model);
             }
-            thermal_fens.push(tsurf);
+            fenestrations.push(tsurf);
         }
 
         // This is the model's dt now. When marching
-        let mut dt = 60. * 60. / (n as Float * n_subdivisions as Float);
+        let mut dt = 60. * 60. / (n as Float * dt_subdivisions as Float);
 
         // safety.
         const SAFETY: usize = 2;
         dt /= SAFETY as Float;
-        n_subdivisions *= SAFETY;
+        dt_subdivisions *= SAFETY;
+
+        let mut hvacs: Vec<ThermalHVAC> = Vec::with_capacity(model.hvacs.len());
+        for hvac in model.hvacs.iter() {
+            let h = ThermalHVAC::from(hvac, model)?;
+            hvacs.push(h)
+        }
+
+        let mut luminaires: Vec<ThermalLuminaire> = Vec::with_capacity(model.luminaires.len());
+        for luminaire in model.luminaires.iter() {
+            let l = ThermalLuminaire::from(luminaire, model)?;
+            luminaires.push(l)
+        }
 
         Ok(ThermalModel {
-            zones: thermal_zones,
-            surfaces: thermal_surfaces,
-            fenestrations: thermal_fens,
-            dt_subdivisions: n_subdivisions,
+            zones,
+            surfaces,
+            luminaires,
+            fenestrations,
+            dt_subdivisions,
+            hvacs,
             dt,
         })
     }
@@ -238,8 +263,11 @@ impl SimulationModel for ThermalModel {
                     Some(b) => match b {
                         Boundary::Space { space } => {
                             let space = model.get_space(space)?;
-                            t_current[*space.index().unwrap()]
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect("Space in front of surface has no temperature!")
                         }
+                        Boundary::AmbientTemperature { temperature } => *temperature,
                         Boundary::Ground => unimplemented!(),
                     },
                     None => t_out,
@@ -248,9 +276,12 @@ impl SimulationModel for ThermalModel {
                     Some(b) => match b {
                         Boundary::Space { space } => {
                             let space = model.get_space(space)?;
-                            t_current[*space.index().unwrap()]
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect("Space at the back of surface has no temperature!")
                         }
                         Boundary::Ground => unimplemented!(),
+                        Boundary::AmbientTemperature { temperature } => *temperature,
                     },
                     None => t_out,
                 };
@@ -272,9 +303,12 @@ impl SimulationModel for ThermalModel {
                     Some(b) => match b {
                         Boundary::Space { space } => {
                             let space = model.get_space(space)?;
-                            t_current[*space.index().unwrap()]
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect("Space in front of fenestration has no temperature!")
                         }
                         Boundary::Ground => unimplemented!(),
+                        Boundary::AmbientTemperature { temperature } => *temperature,
                     },
                     None => t_out,
                 };
@@ -282,9 +316,12 @@ impl SimulationModel for ThermalModel {
                     Some(b) => match b {
                         Boundary::Space { space } => {
                             let space = model.get_space(space)?;
-                            t_current[*space.index().unwrap()]
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect("Space at the back of fenestration has no temperature!")
                         }
                         Boundary::Ground => unimplemented!(),
+                        Boundary::AmbientTemperature { temperature } => *temperature,
                     },
                     None => t_out,
                 };
@@ -389,24 +426,20 @@ impl ThermalModel {
 
         /* Qi */
         // Heating/Cooling
-        for hvac in model.hvacs.iter() {
-            for (target_space_index, heating_cooling) in
-                calc_cooling_heating_power(hvac, model, state)?
-            {
+        for hvac in self.hvacs.iter() {
+            for (target_space_index, heating_cooling) in hvac.calc_cooling_heating_power(state)? {
                 a[target_space_index] += heating_cooling;
             }
             // heating through air supply?
         }
-        // Heating/Cooling
-        for luminaire in model.luminaires.iter() {
-            if let Ok(target_space) = luminaire.target_space() {
-                let target_space = model.get_space(target_space)?;
-                let target_space_index = *target_space.index().unwrap();
-                let consumption = luminaire
-                    .power_consumption(state)
-                    .expect("Luminaire has no Power Consumption state");
-                a[target_space_index] += consumption;
-            }
+        // Luminaires
+        for luminaire in self.luminaires.iter() {
+            let index = luminaire.target_space_index;
+            let consumption = luminaire
+                .parent
+                .power_consumption(state)
+                .expect("Luminaire has no Power Consumption state");
+            a[index] += consumption;
         }
 
         let air = crate::gas::AIR;
@@ -449,7 +482,6 @@ impl ThermalModel {
         /* SURFACES */
         fn iterate_surfaces<T: SurfaceTrait>(
             surfaces: &[ThermalSurfaceData<T>],
-            model: &SimpleModel,
             state: &SimulationState,
             a: &mut [Float],
             b: &mut [Float],
@@ -461,31 +493,28 @@ impl ThermalModel {
 
                 let ai = surface.area;
                 // if front leads to a Zone
-                if let Some(Boundary::Space { space }) = &surface.front_boundary {
-                    let space = model.get_space(space)?;
-                    let z_index = space.index().unwrap();
+                if let Some(Boundary::Space { .. }) = &surface.front_boundary {
+                    let z_index = surface.front_space_index.unwrap(); // Should have one of these if boundary is Space
 
                     let temp = surface.parent.front_temperature(state);
-
-                    a[*z_index] += h_front * ai * temp;
-                    b[*z_index] += h_front * ai;
+                    a[z_index] += h_front * ai * temp;
+                    b[z_index] += h_front * ai;
                 }
 
                 // if back leads to a Zone
-                if let Some(Boundary::Space { space }) = &surface.back_boundary {
-                    let space = model.get_space(space)?;
-                    let z_index = space.index().unwrap();
+                if let Some(Boundary::Space { .. }) = &surface.back_boundary {
+                    let z_index = surface.back_space_index.unwrap(); // Should have one of these if boundary is Space
 
                     let temp = surface.parent.back_temperature(state);
-                    a[*z_index] += h_back * ai * temp;
-                    b[*z_index] += h_back * ai;
+                    a[z_index] += h_back * ai * temp;
+                    b[z_index] += h_back * ai;
                 }
             }
             Ok(())
         }
 
-        iterate_surfaces(&self.surfaces, model, state, &mut a, &mut b)?;
-        iterate_surfaces(&self.fenestrations, model, state, &mut a, &mut b)?;
+        iterate_surfaces(&self.surfaces, state, &mut a, &mut b)?;
+        iterate_surfaces(&self.fenestrations, state, &mut a, &mut b)?;
 
         /* AIR MIXTURE WITH OTHER ZONES */
         // unimplemented();

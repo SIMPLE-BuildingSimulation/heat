@@ -288,10 +288,10 @@ impl Glazing {
 
 #[cfg(test)]
 mod testing {
-    
+
     use super::*;
     use simple_model::Material;
-    
+
     #[test]
     fn test_get_glazing_two_layers() {
         let mut model = SimpleModel::default();
@@ -376,24 +376,16 @@ mod testing {
         let s0 = s0.wrap();
         let s0 = model.add_substance(s0);
 
-        let m0 = Material::new(
-            "m0".to_string(), 
-            s0.name().clone(),
-            0.001
-        );
+        let m0 = Material::new("m0".to_string(), s0.name().clone(), 0.001);
         let m0 = model.add_material(m0);
 
         // Cavity
         let mut c0 = simple_model::substance::gas::Gas::new("c0");
-        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);        
+        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);
         let c0 = c0.wrap();
         let c0 = model.add_substance(c0);
 
-        let c0 = Material::new(
-            "cavity".to_string(), 
-            c0.name().clone(), 
-            0.01
-        );
+        let c0 = Material::new("cavity".to_string(), c0.name().clone(), 0.01);
         let c0 = model.add_material(c0);
 
         // Layer 1
@@ -404,18 +396,14 @@ mod testing {
         let s1 = s1.wrap();
         let s1 = model.add_substance(s1);
 
-        let m1 = Material::new(
-            "m1".to_string(), 
-            s1.name().clone(), 
-            0.001
-        );
+        let m1 = Material::new("m1".to_string(), s1.name().clone(), 0.001);
         let m1 = model.add_material(m1);
 
         let mut construction = Construction::new("constr");
         construction.materials.push(m0.name().clone());
         construction.materials.push(c0.name().clone());
         construction.materials.push(m1.name().clone());
-        let construction  = model.add_construction(construction);
+        let construction = model.add_construction(construction);
 
         // Test
         let glazings = Glazing::get_front_glazing_system(&construction, &model).unwrap();
