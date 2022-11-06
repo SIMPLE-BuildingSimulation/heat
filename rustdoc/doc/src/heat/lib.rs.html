@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -113,6 +113,7 @@
 <span id="79">79</span>
 <span id="80">80</span>
 <span id="81">81</span>
+<span id="82">82</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -131,68 +132,69 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
+*/
 
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
+</span><span class="attribute">#![deny(missing_docs)]
 
-<span class="doccomment">//! A Finite Difference-based Thermal simulation module.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It uses finite differences for marching forward in time and also</span>
-<span class="doccomment">//! for calculating the heat transfer through walls.</span>
+</span><span class="doccomment">//! A Finite Difference-based Thermal simulation module.
+//!
+//! It uses finite differences for marching forward in time and also
+//! for calculating the heat transfer through walls.
 
-<span class="doccomment">/// The kind of Floating point number used in the</span>
-<span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
-<span class="doccomment">/// and `f64` is used otherwise.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f32</span>;
+/// The kind of Floating point number used in the
+/// library... the `&quot;float&quot;` feature means it becomes `f32`
+/// and `f64` is used otherwise.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;float&quot;</span>)]
+</span><span class="kw">pub type </span>Float = f32;
 
-<span class="doccomment">/// The kind of Floating point number used in the</span>
-<span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
-<span class="doccomment">/// and `f64` is used otherwise.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Float</span> <span class="op">=</span> <span class="ident">f64</span>;
+<span class="doccomment">/// The kind of Floating point number used in the
+/// library... the `&quot;float&quot;` feature means it becomes `f32`
+/// and `f64` is used otherwise.
+</span><span class="attribute">#[cfg(not(feature = <span class="string">&quot;float&quot;</span>))]
+</span><span class="kw">pub type </span>Float = f64;
 
-<span class="doccomment">/// Well, $`\pi`$</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f32::consts::PI</span>;
-<span class="doccomment">/// Well, $`\pi`$</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PI</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">std::f64::consts::PI</span>;
+<span class="doccomment">/// Well, $`\pi`$
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;float&quot;</span>)]
+</span><span class="kw">pub const </span>PI: Float = std::f32::consts::PI;
+<span class="doccomment">/// Well, $`\pi`$
+</span><span class="attribute">#[cfg(not(feature = <span class="string">&quot;float&quot;</span>))]
+</span><span class="kw">pub const </span>PI: Float = std::f64::consts::PI;
 
+<span class="doccomment">/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W m^{-2} K^4`$),
+/// necessary for Radiation calculations
+</span><span class="kw">pub const </span>SIGMA: Float = <span class="number">5.670374419e-8</span>;
 
-<span class="doccomment">/// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W m^{-2} K^4`$),</span>
-<span class="doccomment">/// necessary for Radiation calculations</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SIGMA</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">5.670374419e-8</span>;
+<span class="doccomment">/// The main thermal model, which manages the whole time-marching
+/// solution
+</span><span class="kw">pub mod </span>model;
 
+<span class="doccomment">/// For dealing with Cavities, i.e., layers made out of a gas
+/// enclosed within two materials of different emissivities.
+</span><span class="kw">pub mod </span>cavity;
 
-<span class="doccomment">/// The main thermal model, which manages the whole time-marching</span>
-<span class="doccomment">/// solution</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">model</span>;
+<span class="doccomment">/// For creating thermal networks for heat-transfering surfaces.
+</span><span class="kw">pub mod </span>discretization;
 
-<span class="doccomment">/// For dealing with Cavities, i.e., layers made out of a gas </span>
-<span class="doccomment">/// enclosed within two materials of different emissivities.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cavity</span>;
+<span class="doccomment">/// For calculating convection coefficients under different
+/// surface conditions.
+</span><span class="kw">pub mod </span>convection;
 
-<span class="doccomment">/// For creating thermal networks for heat-transfering surfaces.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">discretization</span>;
+<span class="doccomment">/// Definitions for the thermal properties of gases.
+</span><span class="kw">pub mod </span>gas;
 
-<span class="doccomment">/// For calculating convection coefficients under different </span>
-<span class="doccomment">/// surface conditions.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">convection</span>;
+<span class="doccomment">/// Glazing layer abstracted to only their optical properties.
+</span><span class="kw">pub mod </span>glazing;
 
-<span class="doccomment">/// Definitions for the thermal properties of gases.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gas</span>;
+<span class="doccomment">/// For HVAC-related calculations.
+</span><span class="kw">pub mod </span>heating_cooling;
 
-<span class="doccomment">/// Glazing layer abstracted to only their optical properties.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">glazing</span>;
+<span class="doccomment">/// For calculating heat transfer through all kinds of surfaces.
+</span><span class="kw">pub mod </span>surface;
+<span class="kw">mod </span>surface_trait;
 
-<span class="doccomment">/// For HVAC-related calculations.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">heating_cooling</span>;
+<span class="doccomment">/// For calculating the temperatures within Spaces.
+</span><span class="kw">pub mod </span>zone;
 
-<span class="doccomment">/// For calculating heat transfer through all kinds of surfaces.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">surface</span>;
-
-<span class="doccomment">/// For calculating the temperatures within Spaces.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">zone</span>;
+<span class="kw">mod </span>luminaire;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

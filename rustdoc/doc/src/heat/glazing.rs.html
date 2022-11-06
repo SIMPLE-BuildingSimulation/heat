@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/glazing.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>glazing.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/glazing.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>glazing.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -556,18 +556,6 @@
 <span id="522">522</span>
 <span id="523">523</span>
 <span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -586,523 +574,511 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
+*/
 
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Construction</span>, <span class="ident">SimpleModel</span>, <span class="ident">Substance</span>};
+</span><span class="kw">use </span>simple_model::{Construction, SimpleModel, Substance};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
+<span class="kw">use </span><span class="kw">crate</span>::Float;
 
-<span class="doccomment">/// An abstraction of a glazing layer for optical purposes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// All properties can be Solar or Visible spectral averages, or they</span>
-<span class="doccomment">/// can be constrained to a specific wavelength. However, this library—because</span>
-<span class="doccomment">/// it is all about heat transfer—only uses them in Solar purposes</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Glazing</span> {
-    <span class="doccomment">/// Transmittance $`\tau`$</span>
-    <span class="ident">tau</span>: <span class="ident">Float</span>,
+<span class="doccomment">/// An abstraction of a glazing layer for optical purposes.
+///
+/// All properties can be Solar or Visible spectral averages, or they
+/// can be constrained to a specific wavelength. However, this library—because
+/// it is all about heat transfer—only uses them in Solar purposes
+</span><span class="attribute">#[derive(Debug, Clone, Copy)]
+</span><span class="kw">pub struct </span>Glazing {
+    <span class="doccomment">/// Transmittance $`\tau`$
+    </span>tau: Float,
 
-    <span class="doccomment">/// Reflectance $`\rho_f`$ on the front side.</span>
-    <span class="ident">rho_front</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// Reflectance $`\rho_f`$ on the front side.
+    </span>rho_front: Float,
 
-    <span class="doccomment">/// Reflectance $`\rho_b`$ on the back side</span>
-    <span class="ident">rho_back</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// Reflectance $`\rho_b`$ on the back side
+    </span>rho_back: Float,
 
-    <span class="doccomment">/// Absorbtance $`\alpha_f`$ on the front side</span>
-    <span class="ident">alpha_front</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// Absorbtance $`\alpha_f`$ on the front side
+    </span>alpha_front: Float,
 
-    <span class="doccomment">/// Absorbtance $`\alpha_b`$ on the back side</span>
-    <span class="ident">alpha_back</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// Absorbtance $`\alpha_b`$ on the back side
+    </span>alpha_back: Float,
 }
 
-<span class="kw">impl</span> <span class="ident">Glazing</span> {
-    <span class="doccomment">/// Creates a new `Glazing`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">tau</span>: <span class="ident">Float</span>, <span class="ident">rho_front</span>: <span class="ident">Float</span>, <span class="ident">rho_back</span>: <span class="ident">Float</span>) -&gt; <span class="self">Self</span> {
-        <span class="macro">assert!</span>(<span class="ident">tau</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>, <span class="string">&quot;Found transmittance less than Zero&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">tau</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.</span>, <span class="string">&quot;Found transmittance more than 1&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">rho_front</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>, <span class="string">&quot;Found front reflectance less than 0.&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">rho_back</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>, <span class="string">&quot;Found back reflectance less than 0&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">rho_front</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.</span>, <span class="string">&quot;Found front reflectance more than 1.&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">rho_back</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.</span>, <span class="string">&quot;Found back reflectance more than 1.&quot;</span>);
+<span class="kw">impl </span>Glazing {
+    <span class="doccomment">/// Creates a new `Glazing`
+    </span><span class="kw">pub fn </span>new(tau: Float, rho_front: Float, rho_back: Float) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert!</span>(tau &gt;= <span class="number">0.0</span>, <span class="string">&quot;Found transmittance less than Zero&quot;</span>);
+        <span class="macro">assert!</span>(tau &lt;= <span class="number">1.</span>, <span class="string">&quot;Found transmittance more than 1&quot;</span>);
+        <span class="macro">assert!</span>(rho_front &gt;= <span class="number">0.0</span>, <span class="string">&quot;Found front reflectance less than 0.&quot;</span>);
+        <span class="macro">assert!</span>(rho_back &gt;= <span class="number">0.0</span>, <span class="string">&quot;Found back reflectance less than 0&quot;</span>);
+        <span class="macro">assert!</span>(rho_front &lt;= <span class="number">1.</span>, <span class="string">&quot;Found front reflectance more than 1.&quot;</span>);
+        <span class="macro">assert!</span>(rho_back &lt;= <span class="number">1.</span>, <span class="string">&quot;Found back reflectance more than 1.&quot;</span>);
 
-        <span class="self">Self</span> {
-            <span class="ident">tau</span>,
-            <span class="ident">rho_back</span>,
-            <span class="ident">rho_front</span>,
-            <span class="ident">alpha_front</span>: <span class="number">1.</span> <span class="op">-</span> <span class="ident">tau</span> <span class="op">-</span> <span class="ident">rho_front</span>,
-            <span class="ident">alpha_back</span>: <span class="number">1.</span> <span class="op">-</span> <span class="ident">tau</span> <span class="op">-</span> <span class="ident">rho_back</span>,
+        <span class="self">Self </span>{
+            tau,
+            rho_back,
+            rho_front,
+            alpha_front: <span class="number">1. </span>- tau - rho_front,
+            alpha_back: <span class="number">1. </span>- tau - rho_back,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_glazing_from_iter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
-        <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">T</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-        <span class="ident">cap</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Glazing</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">std::iter::Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>get_glazing_from_iter&lt;T&gt;(
+        <span class="kw-2">mut </span>i: T,
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+        cap: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Glazing&gt;, String&gt;
+    <span class="kw">where
+        </span>T: std::iter::Iterator&lt;Item = String&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">cap</span>);
-        <span class="kw">loop</span> {
-            <span class="comment">// Get layer</span>
-            <span class="kw">let</span> <span class="ident">mat_name</span> <span class="op">=</span> <span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_material_substance</span>(<span class="kw-2">&amp;</span><span class="ident">mat_name</span>)<span class="question-mark">?</span>;
-            <span class="kw">match</span> <span class="ident">sub</span> {
-                <span class="ident">Substance::Gas</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="comment">// if it is a gas, something went wong.</span>
-                    <span class="macro">panic!</span>(<span class="string">&quot;NOT expecting a gas&quot;</span>)
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = Vec::with_capacity(cap);
+        <span class="kw">loop </span>{
+            <span class="comment">// Get layer
+            </span><span class="kw">let </span>mat_name = i.next().unwrap();
+            <span class="kw">let </span>sub = model.get_material_substance(<span class="kw-2">&amp;</span>mat_name)<span class="question-mark">?</span>;
+            <span class="kw">match </span>sub {
+                Substance::Gas(<span class="kw">_</span>) =&gt; {
+                    <span class="comment">// if it is a gas, something went wong.
+                    </span><span class="macro">panic!</span>(<span class="string">&quot;NOT expecting a gas&quot;</span>)
                 }
-                <span class="ident">Substance::Normal</span>(<span class="ident">s</span>) =&gt; {
-                    <span class="comment">// if it is a normal, the push it</span>
-                    <span class="kw">let</span> <span class="ident">tau</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">solar_transmittance</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0.0</span>);
-                    <span class="kw">let</span> <span class="ident">alpha_front</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">front_solar_absorbtance</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0.84</span>);
-                    <span class="kw">let</span> <span class="ident">alpha_back</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">back_solar_absorbtance</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0.84</span>);
-                    <span class="kw">let</span> <span class="ident">rho_front</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">-</span> <span class="ident">tau</span> <span class="op">-</span> <span class="ident">alpha_front</span>;
-                    <span class="kw">let</span> <span class="ident">rho_back</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">-</span> <span class="ident">tau</span> <span class="op">-</span> <span class="ident">alpha_back</span>;
-                    <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">Glazing::new</span>(<span class="kw-2">*</span><span class="ident">tau</span>, <span class="ident">rho_front</span>, <span class="ident">rho_back</span>));
+                Substance::Normal(s) =&gt; {
+                    <span class="comment">// if it is a normal, the push it
+                    </span><span class="kw">let </span>tau = s.solar_transmittance().unwrap_or(<span class="kw-2">&amp;</span><span class="number">0.0</span>);
+                    <span class="kw">let </span>alpha_front = s.front_solar_absorbtance().unwrap_or(<span class="kw-2">&amp;</span><span class="number">0.84</span>);
+                    <span class="kw">let </span>alpha_back = s.back_solar_absorbtance().unwrap_or(<span class="kw-2">&amp;</span><span class="number">0.84</span>);
+                    <span class="kw">let </span>rho_front = <span class="number">1. </span>- tau - alpha_front;
+                    <span class="kw">let </span>rho_back = <span class="number">1. </span>- tau - alpha_back;
+                    ret.push(Glazing::new(<span class="kw-2">*</span>tau, rho_front, rho_back));
 
-                    <span class="comment">// if not translucent, then we are done.</span>
-                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">tau</span> <span class="op">&lt;</span> <span class="number">1e-9</span> {
+                    <span class="comment">// if not translucent, then we are done.
+                    </span><span class="kw">if </span><span class="kw-2">*</span>tau &lt; <span class="number">1e-9 </span>{
                         <span class="kw">break</span>;
                     }
                 }
             }
-            <span class="comment">// We only get here if we pushed somthing and need to continue... so, this should be a cavity... if any</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mat_name</span>) <span class="op">=</span> <span class="ident">i</span>.<span class="ident">next</span>() {
-                <span class="kw">let</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_material_substance</span>(<span class="kw-2">&amp;</span><span class="ident">mat_name</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Substance::Normal</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">sub</span> {
+            <span class="comment">// We only get here if we pushed somthing and need to continue... so, this should be a cavity... if any
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(mat_name) = i.next() {
+                <span class="kw">let </span>sub = model.get_material_substance(<span class="kw-2">&amp;</span>mat_name)<span class="question-mark">?</span>;
+                <span class="kw">if let </span>Substance::Normal(<span class="kw">_</span>) = sub {
                     <span class="macro">panic!</span>(<span class="string">&quot;Expecting a Gas&quot;</span>)
                 }
-            } <span class="kw">else</span> {
-                <span class="comment">// Else, we are done</span>
-                <span class="kw">break</span>;
+            } <span class="kw">else </span>{
+                <span class="comment">// Else, we are done
+                </span><span class="kw">break</span>;
             }
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+        <span class="prelude-val">Ok</span>(ret)
     }
 
-    <span class="doccomment">/// Gets the front translucent layers in a construction</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_front_glazing_system</span>(
-        <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Construction</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Glazing</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+    <span class="doccomment">/// Gets the front translucent layers in a construction
+    </span><span class="kw">pub fn </span>get_front_glazing_system(
+        construction: <span class="kw-2">&amp;</span>Construction,
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Glazing&gt;, String&gt; {
+        <span class="kw">if </span>construction.materials.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(
                 <span class="string">&quot;Trying to get front_glazing_system of an empty construction, called &#39;{}&#39;&quot;</span>,
-                <span class="ident">construction</span>.<span class="ident">name</span>()
+                construction.name()
             ));
         }
 
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>();
-        <span class="ident"><span class="self">Self</span>::get_glazing_from_iter</span>(<span class="ident">i</span>, <span class="ident">model</span>, <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>())
+        <span class="kw">let </span>i = construction.materials.iter().cloned();
+        <span class="self">Self</span>::get_glazing_from_iter(i, model, construction.materials.len())
     }
 
-    <span class="doccomment">/// Gets the front back translucent in a construction</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_back_glazing_system</span>(
-        <span class="ident">construction</span>: <span class="kw-2">&amp;</span><span class="ident">Construction</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Glazing</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">rev</span>();
-        <span class="ident"><span class="self">Self</span>::get_glazing_from_iter</span>(<span class="ident">i</span>, <span class="ident">model</span>, <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">len</span>())
+    <span class="doccomment">/// Gets the front back translucent in a construction
+    </span><span class="kw">pub fn </span>get_back_glazing_system(
+        construction: <span class="kw-2">&amp;</span>Construction,
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Glazing&gt;, String&gt; {
+        <span class="kw">let </span>i = construction.materials.iter().cloned().rev();
+        <span class="self">Self</span>::get_glazing_from_iter(i, model, construction.materials.len())
     }
 
-    <span class="doccomment">/// Gets the transmittance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tau</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">tau</span>
+    <span class="doccomment">/// Gets the transmittance
+    </span><span class="kw">pub fn </span>tau(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.tau
     }
 
-    <span class="doccomment">/// Gets the front reflectance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rho_front</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">rho_front</span>
+    <span class="doccomment">/// Gets the front reflectance
+    </span><span class="kw">pub fn </span>rho_front(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.rho_front
     }
 
-    <span class="doccomment">/// Gets the back reflectance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rho_back</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">rho_back</span>
+    <span class="doccomment">/// Gets the back reflectance
+    </span><span class="kw">pub fn </span>rho_back(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.rho_back
     }
 
-    <span class="doccomment">/// Gets the front absorbtance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alpha_front</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">alpha_front</span>
+    <span class="doccomment">/// Gets the front absorbtance
+    </span><span class="kw">pub fn </span>alpha_front(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.alpha_front
     }
 
-    <span class="doccomment">/// Gets the back absorbtance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alpha_back</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">alpha_back</span>
+    <span class="doccomment">/// Gets the back absorbtance
+    </span><span class="kw">pub fn </span>alpha_back(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.alpha_back
     }
 
-    <span class="doccomment">/// Calculates the overall transmittance of a system of two glazing layers</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Source: ISO-9050/2003, Equation 2</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \tau_{1-2} = \frac{\tau_1 \tau_2}{1 - \rho&#39;_1 \rho_2}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This equation—along with the others in this module—can</span>
-    <span class="doccomment">/// be used recursively, treating two layers combined as a single one</span>
-    <span class="doccomment">/// and then attaching a third one. That is to say:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// \tau_{1-3} = \frac{\tau_{1-2} \times \tau_3}{1 - \rho&#39;_{1-2} \rho_3}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combined_tau</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">tau</span> <span class="op">*</span> <span class="ident">other</span>.<span class="ident">tau</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">rho_back</span> <span class="op">*</span> <span class="ident">other</span>.<span class="ident">rho_front</span>)
+    <span class="doccomment">/// Calculates the overall transmittance of a system of two glazing layers
+    ///
+    /// Source: ISO-9050/2003, Equation 2
+    ///
+    /// ```math
+    /// \tau_{1-2} = \frac{\tau_1 \tau_2}{1 - \rho&#39;_1 \rho_2}
+    /// ```
+    ///
+    /// This equation—along with the others in this module—can
+    /// be used recursively, treating two layers combined as a single one
+    /// and then attaching a third one. That is to say:
+    ///
+    /// ```math
+    ///
+    /// \tau_{1-3} = \frac{\tau_{1-2} \times \tau_3}{1 - \rho&#39;_{1-2} \rho_3}
+    /// ```
+    </span><span class="kw">pub fn </span>combined_tau(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Float {
+        <span class="self">self</span>.tau * other.tau / (<span class="number">1. </span>- <span class="self">self</span>.rho_back * other.rho_front)
     }
 
-    <span class="doccomment">/// Calculates the overall front reflectance of a system of two glazing layers</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Source: ISO-9050/2003, Equation 5</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \rho_{1-2} = \rho_1 + \frac{{\tau_1}^2 \rho_2}{1 - \rho&#39;_1 \rho_2}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combined_rho_front</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">rho_front</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">tau</span>.<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">*</span> <span class="ident">other</span>.<span class="ident">rho_front</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">rho_back</span> <span class="op">*</span> <span class="ident">other</span>.<span class="ident">rho_front</span>)
+    <span class="doccomment">/// Calculates the overall front reflectance of a system of two glazing layers
+    ///
+    /// Source: ISO-9050/2003, Equation 5
+    ///
+    /// ```math
+    /// \rho_{1-2} = \rho_1 + \frac{{\tau_1}^2 \rho_2}{1 - \rho&#39;_1 \rho_2}
+    /// ```
+    </span><span class="kw">pub fn </span>combined_rho_front(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Float {
+        <span class="self">self</span>.rho_front + <span class="self">self</span>.tau.powi(<span class="number">2</span>) * other.rho_front / (<span class="number">1. </span>- <span class="self">self</span>.rho_back * other.rho_front)
     }
 
-    <span class="doccomment">/// Calculates the overall back reflectance of a system of two glazing layers</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This equation is not explicitly written on the standard I think, but we</span>
-    <span class="doccomment">/// can derive it by drawing the system and assinging the corresponding values</span>
-    <span class="doccomment">/// to Equation 5 of the same standard</span>
-    <span class="doccomment">///     </span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \rho&#39;_{1-2} = \rho&#39;_2 + \frac{{\tau_2}^2 \rho&#39;_1}{1 - \rho_2 \rho&#39;_1}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combined_rho_back</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="ident">other</span>.<span class="ident">rho_back</span> <span class="op">+</span> <span class="ident">other</span>.<span class="ident">tau</span>.<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">*</span> <span class="self">self</span>.<span class="ident">rho_back</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">other</span>.<span class="ident">rho_front</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">rho_back</span>)
+    <span class="doccomment">/// Calculates the overall back reflectance of a system of two glazing layers
+    ///
+    /// This equation is not explicitly written on the standard I think, but we
+    /// can derive it by drawing the system and assinging the corresponding values
+    /// to Equation 5 of the same standard
+    ///     
+    /// ```math
+    /// \rho&#39;_{1-2} = \rho&#39;_2 + \frac{{\tau_2}^2 \rho&#39;_1}{1 - \rho_2 \rho&#39;_1}
+    /// ```
+    </span><span class="kw">pub fn </span>combined_rho_back(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; Float {
+        other.rho_back + other.tau.powi(<span class="number">2</span>) * <span class="self">self</span>.rho_back / (<span class="number">1. </span>- other.rho_front * <span class="self">self</span>.rho_back)
     }
 
-    <span class="doccomment">/// Combines two `Glazing` into a new `Glazing`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method returns the equivalent glazing layer</span>
-    <span class="doccomment">/// resulting after combining `self` with another `Glazing`,</span>
-    <span class="doccomment">/// recalculating the reflectances and transmittance</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combine</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">rho_back</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">combined_rho_back</span>(<span class="ident">other</span>);
-        <span class="kw">let</span> <span class="ident">rho_front</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">combined_rho_front</span>(<span class="ident">other</span>);
-        <span class="kw">let</span> <span class="ident">tau</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">combined_tau</span>(<span class="ident">other</span>);
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">tau</span>, <span class="ident">rho_front</span>, <span class="ident">rho_back</span>)
+    <span class="doccomment">/// Combines two `Glazing` into a new `Glazing`
+    ///
+    /// This method returns the equivalent glazing layer
+    /// resulting after combining `self` with another `Glazing`,
+    /// recalculating the reflectances and transmittance
+    </span><span class="kw">pub fn </span>combine(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>rho_back = <span class="self">self</span>.combined_rho_back(other);
+        <span class="kw">let </span>rho_front = <span class="self">self</span>.combined_rho_front(other);
+        <span class="kw">let </span>tau = <span class="self">self</span>.combined_tau(other);
+        <span class="self">Self</span>::new(tau, rho_front, rho_back)
     }
 
-    <span class="doccomment">/// Combines several `Glazing` into a new `Glazing`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combine_layers</span>(<span class="ident">layers</span>: <span class="kw-2">&amp;</span>[<span class="ident">Glazing</span>]) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">layers</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
-            <span class="comment">// if only one, then return.</span>
-            <span class="ident">layers</span>[<span class="number">0</span>]
-        } <span class="kw">else</span> {
-            <span class="comment">// otherwise, divide and conquer.</span>
-            <span class="kw">let</span> <span class="ident">rest</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::combine_layers</span>(<span class="kw-2">&amp;</span><span class="ident">layers</span>[<span class="number">1</span>..]);
-            <span class="ident">layers</span>[<span class="number">0</span>].<span class="ident">combine</span>(<span class="kw-2">&amp;</span><span class="ident">rest</span>)
+    <span class="doccomment">/// Combines several `Glazing` into a new `Glazing`
+    </span><span class="kw">pub fn </span>combine_layers(layers: <span class="kw-2">&amp;</span>[Glazing]) -&gt; <span class="self">Self </span>{
+        <span class="kw">if </span>layers.len() == <span class="number">1 </span>{
+            <span class="comment">// if only one, then return.
+            </span>layers[<span class="number">0</span>]
+        } <span class="kw">else </span>{
+            <span class="comment">// otherwise, divide and conquer.
+            </span><span class="kw">let </span>rest = <span class="self">Self</span>::combine_layers(<span class="kw-2">&amp;</span>layers[<span class="number">1</span>..]);
+            layers[<span class="number">0</span>].combine(<span class="kw-2">&amp;</span>rest)
         }
     }
 
-    <span class="doccomment">/// Calculates the front solar absorbtance of two `Glazing`</span>
-    <span class="doccomment">/// according to Equations 17 and 18 of ISO9050/2003</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The resulting absorbtances are</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \alpha_{e1} = \alpha_1 + \frac{\alpha&#39;_1 \tau_1 \rho_2 }{1 - \rho&#39;_1 \rho_2}</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// and</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \alpha_{e2} = \frac{\alpha_2 \tau_1}{1 - \rho&#39;_1 \rho_2}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combined_alphas</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; (<span class="ident">Float</span>, <span class="ident">Float</span>) {
-        <span class="kw">let</span> <span class="ident">denom</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">rho_back</span> <span class="op">*</span> <span class="ident">other</span>.<span class="ident">rho_front</span>;
-        <span class="kw">let</span> <span class="ident">a1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">alpha_front</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">alpha_back</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">tau</span> <span class="op">*</span> <span class="ident">other</span>.<span class="ident">rho_front</span> <span class="op">/</span> <span class="ident">denom</span>;
-        <span class="kw">let</span> <span class="ident">a2</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">alpha_front</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">tau</span> <span class="op">/</span> <span class="ident">denom</span>;
-        (<span class="ident">a1</span>, <span class="ident">a2</span>)
+    <span class="doccomment">/// Calculates the front solar absorbtance of two `Glazing`
+    /// according to Equations 17 and 18 of ISO9050/2003
+    ///
+    /// The resulting absorbtances are
+    ///
+    /// ```math
+    /// \alpha_{e1} = \alpha_1 + \frac{\alpha&#39;_1 \tau_1 \rho_2 }{1 - \rho&#39;_1 \rho_2}
+    ///
+    /// ```
+    ///
+    /// and
+    ///
+    /// ```math
+    /// \alpha_{e2} = \frac{\alpha_2 \tau_1}{1 - \rho&#39;_1 \rho_2}
+    /// ```
+    </span><span class="kw">pub fn </span>combined_alphas(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; (Float, Float) {
+        <span class="kw">let </span>denom = <span class="number">1. </span>- <span class="self">self</span>.rho_back * other.rho_front;
+        <span class="kw">let </span>a1 = <span class="self">self</span>.alpha_front + <span class="self">self</span>.alpha_back * <span class="self">self</span>.tau * other.rho_front / denom;
+        <span class="kw">let </span>a2 = other.alpha_front * <span class="self">self</span>.tau / denom;
+        (a1, a2)
     }
 
-    <span class="doccomment">/// Calculates the absorbtances of each `Glazing` of the system, proportional</span>
-    <span class="doccomment">/// to the incident radiation (i.e., they do not add up to 1.0)</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function assumes that there is a layer of air (i.e., a cavity)</span>
-    <span class="doccomment">/// between the glazing layers.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alphas</span>(<span class="ident">layers</span>: <span class="kw-2">&amp;</span>[<span class="ident">Glazing</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">layers</span>.<span class="ident">len</span>());
+    <span class="doccomment">/// Calculates the absorbtances of each `Glazing` of the system, proportional
+    /// to the incident radiation (i.e., they do not add up to 1.0)
+    ///
+    /// This function assumes that there is a layer of air (i.e., a cavity)
+    /// between the glazing layers.
+    </span><span class="kw">pub fn </span>alphas(layers: <span class="kw-2">&amp;</span>[Glazing]) -&gt; Vec&lt;Float&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = Vec::with_capacity(layers.len());
 
-        <span class="comment">// Trivial cases</span>
-        <span class="kw">if</span> <span class="ident">layers</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="ident">ret</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">layers</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
-            <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">layers</span>[<span class="number">0</span>].<span class="ident">alpha_front</span>);
-            <span class="kw">return</span> <span class="ident">ret</span>;
+        <span class="comment">// Trivial cases
+        </span><span class="kw">if </span>layers.is_empty() {
+            <span class="kw">return </span>ret;
+        } <span class="kw">else if </span>layers.len() == <span class="number">1 </span>{
+            ret.push(layers[<span class="number">0</span>].alpha_front);
+            <span class="kw">return </span>ret;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc_alpha</span> <span class="op">=</span> <span class="number">0.0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>acc_alpha = <span class="number">0.0</span>;
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">layers</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">g0</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::combine_layers</span>(<span class="kw-2">&amp;</span><span class="ident">layers</span>[<span class="number">0</span>..<span class="ident">i</span>]);
-            <span class="kw">let</span> <span class="ident">g1</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::combine_layers</span>(<span class="kw-2">&amp;</span><span class="ident">layers</span>[<span class="ident">i</span>..]);
-            <span class="kw">let</span> (<span class="ident">a0</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">g0</span>.<span class="ident">combined_alphas</span>(<span class="kw-2">&amp;</span><span class="ident">g1</span>);
-            <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">a0</span> <span class="op">-</span> <span class="ident">acc_alpha</span>);
-            <span class="ident">acc_alpha</span> <span class="op">=</span> <span class="ident">a0</span>;
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..layers.len() {
+            <span class="kw">let </span>g0 = <span class="self">Self</span>::combine_layers(<span class="kw-2">&amp;</span>layers[<span class="number">0</span>..i]);
+            <span class="kw">let </span>g1 = <span class="self">Self</span>::combine_layers(<span class="kw-2">&amp;</span>layers[i..]);
+            <span class="kw">let </span>(a0, <span class="kw">_</span>) = g0.combined_alphas(<span class="kw-2">&amp;</span>g1);
+            ret.push(a0 - acc_alpha);
+            acc_alpha = a0;
         }
 
-        <span class="comment">// fill the last one</span>
-        <span class="kw">let</span> <span class="ident">g0</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::combine_layers</span>(<span class="kw-2">&amp;</span><span class="ident">layers</span>[<span class="number">0</span>..<span class="ident">layers</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>]);
-        <span class="kw">let</span> <span class="ident">g1</span> <span class="op">=</span> <span class="ident">layers</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">a1</span>) <span class="op">=</span> <span class="ident">g0</span>.<span class="ident">combined_alphas</span>(<span class="ident">g1</span>);
-        <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">a1</span>);
-        <span class="ident">ret</span>
+        <span class="comment">// fill the last one
+        </span><span class="kw">let </span>g0 = <span class="self">Self</span>::combine_layers(<span class="kw-2">&amp;</span>layers[<span class="number">0</span>..layers.len() - <span class="number">1</span>]);
+        <span class="kw">let </span>g1 = layers.last().unwrap();
+        <span class="kw">let </span>(<span class="kw">_</span>, a1) = g0.combined_alphas(g1);
+        ret.push(a1);
+        ret
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">testing</span> {
-    
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">simple_model::Material</span>;
-    
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_glazing_two_layers</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">model</span> <span class="op">=</span> <span class="ident">SimpleModel::default</span>();
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>testing {
 
-        <span class="comment">// Layer 0</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">simple_model::substance::Normal::new</span>(<span class="string">&quot;sub0&quot;</span>);
-        <span class="ident">s0</span>.<span class="ident">set_solar_transmittance</span>(<span class="number">0.2</span>)
-            .<span class="ident">set_front_solar_absorbtance</span>(<span class="number">0.3</span>)
-            .<span class="ident">set_back_solar_absorbtance</span>(<span class="number">0.4</span>);
-        <span class="kw">let</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">s0</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">s0</span>);
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>simple_model::Material;
 
-        <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;m0&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">s0</span>.<span class="ident">name</span>().<span class="ident">clone</span>(), <span class="number">0.001</span>);
-        <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">m0</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_glazing_two_layers() {
+        <span class="kw">let </span><span class="kw-2">mut </span>model = SimpleModel::default();
 
-        <span class="comment">// Cavity</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">simple_model::substance::gas::Gas::new</span>(<span class="string">&quot;c0&quot;</span>);
-        <span class="ident">c0</span>.<span class="ident">set_gas</span>(<span class="ident">simple_model::substance::gas::GasSpecification::Air</span>);
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">c0</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">c0</span>);
+        <span class="comment">// Layer 0
+        </span><span class="kw">let </span><span class="kw-2">mut </span>s0 = simple_model::substance::Normal::new(<span class="string">&quot;sub0&quot;</span>);
+        s0.set_solar_transmittance(<span class="number">0.2</span>)
+            .set_front_solar_absorbtance(<span class="number">0.3</span>)
+            .set_back_solar_absorbtance(<span class="number">0.4</span>);
+        <span class="kw">let </span>s0 = s0.wrap();
+        <span class="kw">let </span>s0 = model.add_substance(s0);
 
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;cavity&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">c0</span>.<span class="ident">name</span>().<span class="ident">clone</span>(), <span class="number">0.01</span>);
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">c0</span>);
+        <span class="kw">let </span>m0 = Material::new(<span class="string">&quot;m0&quot;</span>.to_string(), s0.name().clone(), <span class="number">0.001</span>);
+        <span class="kw">let </span>m0 = model.add_material(m0);
 
-        <span class="comment">// Layer 1</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">simple_model::substance::Normal::new</span>(<span class="string">&quot;sub1&quot;</span>);
-        <span class="ident">s1</span>.<span class="ident">set_solar_transmittance</span>(<span class="number">0.1</span>)
-            .<span class="ident">set_front_solar_absorbtance</span>(<span class="number">0.2</span>)
-            .<span class="ident">set_back_solar_absorbtance</span>(<span class="number">0.3</span>);
-        <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">s1</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">s1</span>);
+        <span class="comment">// Cavity
+        </span><span class="kw">let </span><span class="kw-2">mut </span>c0 = simple_model::substance::gas::Gas::new(<span class="string">&quot;c0&quot;</span>);
+        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);
+        <span class="kw">let </span>c0 = c0.wrap();
+        <span class="kw">let </span>c0 = model.add_substance(c0);
 
-        <span class="kw">let</span> <span class="ident">m1</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;m1&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">s1</span>.<span class="ident">name</span>().<span class="ident">clone</span>(), <span class="number">0.001</span>);
-        <span class="kw">let</span> <span class="ident">m1</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">m1</span>);
+        <span class="kw">let </span>c0 = Material::new(<span class="string">&quot;cavity&quot;</span>.to_string(), c0.name().clone(), <span class="number">0.01</span>);
+        <span class="kw">let </span>c0 = model.add_material(c0);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;constr&quot;</span>);
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">m0</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">c0</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">m1</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
+        <span class="comment">// Layer 1
+        </span><span class="kw">let </span><span class="kw-2">mut </span>s1 = simple_model::substance::Normal::new(<span class="string">&quot;sub1&quot;</span>);
+        s1.set_solar_transmittance(<span class="number">0.1</span>)
+            .set_front_solar_absorbtance(<span class="number">0.2</span>)
+            .set_back_solar_absorbtance(<span class="number">0.3</span>);
+        <span class="kw">let </span>s1 = s1.wrap();
+        <span class="kw">let </span>s1 = model.add_substance(s1);
 
-        <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
+        <span class="kw">let </span>m1 = Material::new(<span class="string">&quot;m1&quot;</span>.to_string(), s1.name().clone(), <span class="number">0.001</span>);
+        <span class="kw">let </span>m1 = model.add_material(m1);
 
-        <span class="comment">// Test</span>
-        <span class="kw">let</span> <span class="ident">glazings</span> <span class="op">=</span> <span class="ident">Glazing::get_front_glazing_system</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="kw-2">&amp;</span><span class="ident">model</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">glazings</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">props</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">glazings</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> (<span class="ident">g</span>.<span class="ident">tau</span>, <span class="ident">g</span>.<span class="ident">rho_front</span>, <span class="ident">g</span>.<span class="ident">rho_back</span>))
-            .<span class="ident">collect</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>construction = Construction::new(<span class="string">&quot;constr&quot;</span>);
+        construction.materials.push(m0.name().clone());
+        construction.materials.push(c0.name().clone());
+        construction.materials.push(m1.name().clone());
+
+        <span class="kw">let </span>construction = model.add_construction(construction);
+
+        <span class="comment">// Test
+        </span><span class="kw">let </span>glazings = Glazing::get_front_glazing_system(<span class="kw-2">&amp;</span>construction, <span class="kw-2">&amp;</span>model).unwrap();
+        <span class="macro">assert_eq!</span>(glazings.len(), <span class="number">2</span>);
+        <span class="kw">let </span>props: Vec&lt;(Float, Float, Float)&gt; = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">props</span>,
+            props,
             <span class="macro">vec!</span>[
-                (<span class="number">0.2</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.2</span> <span class="op">-</span> <span class="number">0.3</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.2</span> <span class="op">-</span> <span class="number">0.4</span>),
-                (<span class="number">0.1</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.2</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.3</span>),
+                (<span class="number">0.2</span>, <span class="number">1.0 </span>- <span class="number">0.2 </span>- <span class="number">0.3</span>, <span class="number">1.0 </span>- <span class="number">0.2 </span>- <span class="number">0.4</span>),
+                (<span class="number">0.1</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.2</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.3</span>),
             ]
         );
 
-        <span class="kw">let</span> <span class="ident">glazings</span> <span class="op">=</span> <span class="ident">Glazing::get_back_glazing_system</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="kw-2">&amp;</span><span class="ident">model</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">glazings</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">props</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">glazings</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> (<span class="ident">g</span>.<span class="ident">tau</span>, <span class="ident">g</span>.<span class="ident">rho_front</span>, <span class="ident">g</span>.<span class="ident">rho_back</span>))
-            .<span class="ident">collect</span>();
+        <span class="kw">let </span>glazings = Glazing::get_back_glazing_system(<span class="kw-2">&amp;</span>construction, <span class="kw-2">&amp;</span>model).unwrap();
+        <span class="macro">assert_eq!</span>(glazings.len(), <span class="number">2</span>);
+        <span class="kw">let </span>props: Vec&lt;(Float, Float, Float)&gt; = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">props</span>,
+            props,
             <span class="macro">vec!</span>[
-                (<span class="number">0.1</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.2</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.3</span>),
-                (<span class="number">0.2</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.2</span> <span class="op">-</span> <span class="number">0.3</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.2</span> <span class="op">-</span> <span class="number">0.4</span>),
+                (<span class="number">0.1</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.2</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.3</span>),
+                (<span class="number">0.2</span>, <span class="number">1.0 </span>- <span class="number">0.2 </span>- <span class="number">0.3</span>, <span class="number">1.0 </span>- <span class="number">0.2 </span>- <span class="number">0.4</span>),
             ]
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_glazing_two_layers_2</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">model</span> <span class="op">=</span> <span class="ident">SimpleModel::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_glazing_two_layers_2() {
+        <span class="kw">let </span><span class="kw-2">mut </span>model = SimpleModel::default();
 
-        <span class="comment">// Layer 0</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">simple_model::substance::Normal::new</span>(<span class="string">&quot;sub0&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">s0</span>.<span class="ident">set_solar_transmittance</span>(<span class="number">0.0</span>)
-            .<span class="ident">set_front_solar_absorbtance</span>(<span class="number">0.1</span>)
-            .<span class="ident">set_back_solar_absorbtance</span>(<span class="number">0.2</span>);
-        <span class="kw">let</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">s0</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">s0</span>);
+        <span class="comment">// Layer 0
+        </span><span class="kw">let </span><span class="kw-2">mut </span>s0 = simple_model::substance::Normal::new(<span class="string">&quot;sub0&quot;</span>.to_string());
+        s0.set_solar_transmittance(<span class="number">0.0</span>)
+            .set_front_solar_absorbtance(<span class="number">0.1</span>)
+            .set_back_solar_absorbtance(<span class="number">0.2</span>);
+        <span class="kw">let </span>s0 = s0.wrap();
+        <span class="kw">let </span>s0 = model.add_substance(s0);
 
-        <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">Material::new</span>(
-            <span class="string">&quot;m0&quot;</span>.<span class="ident">to_string</span>(), 
-            <span class="ident">s0</span>.<span class="ident">name</span>().<span class="ident">clone</span>(),
-            <span class="number">0.001</span>
-        );
-        <span class="kw">let</span> <span class="ident">m0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">m0</span>);
+        <span class="kw">let </span>m0 = Material::new(<span class="string">&quot;m0&quot;</span>.to_string(), s0.name().clone(), <span class="number">0.001</span>);
+        <span class="kw">let </span>m0 = model.add_material(m0);
 
-        <span class="comment">// Cavity</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">simple_model::substance::gas::Gas::new</span>(<span class="string">&quot;c0&quot;</span>);
-        <span class="ident">c0</span>.<span class="ident">set_gas</span>(<span class="ident">simple_model::substance::gas::GasSpecification::Air</span>);        
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">c0</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">c0</span>);
+        <span class="comment">// Cavity
+        </span><span class="kw">let </span><span class="kw-2">mut </span>c0 = simple_model::substance::gas::Gas::new(<span class="string">&quot;c0&quot;</span>);
+        c0.set_gas(simple_model::substance::gas::GasSpecification::Air);
+        <span class="kw">let </span>c0 = c0.wrap();
+        <span class="kw">let </span>c0 = model.add_substance(c0);
 
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">Material::new</span>(
-            <span class="string">&quot;cavity&quot;</span>.<span class="ident">to_string</span>(), 
-            <span class="ident">c0</span>.<span class="ident">name</span>().<span class="ident">clone</span>(), 
-            <span class="number">0.01</span>
-        );
-        <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">c0</span>);
+        <span class="kw">let </span>c0 = Material::new(<span class="string">&quot;cavity&quot;</span>.to_string(), c0.name().clone(), <span class="number">0.01</span>);
+        <span class="kw">let </span>c0 = model.add_material(c0);
 
-        <span class="comment">// Layer 1</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">simple_model::substance::Normal::new</span>(<span class="string">&quot;sub1&quot;</span>);
-        <span class="ident">s1</span>.<span class="ident">set_solar_transmittance</span>(<span class="number">0.1</span>)
-            .<span class="ident">set_front_solar_absorbtance</span>(<span class="number">0.2</span>)
-            .<span class="ident">set_back_solar_absorbtance</span>(<span class="number">0.3</span>);
-        <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">s1</span>.<span class="ident">wrap</span>();
-        <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">s1</span>);
+        <span class="comment">// Layer 1
+        </span><span class="kw">let </span><span class="kw-2">mut </span>s1 = simple_model::substance::Normal::new(<span class="string">&quot;sub1&quot;</span>);
+        s1.set_solar_transmittance(<span class="number">0.1</span>)
+            .set_front_solar_absorbtance(<span class="number">0.2</span>)
+            .set_back_solar_absorbtance(<span class="number">0.3</span>);
+        <span class="kw">let </span>s1 = s1.wrap();
+        <span class="kw">let </span>s1 = model.add_substance(s1);
 
-        <span class="kw">let</span> <span class="ident">m1</span> <span class="op">=</span> <span class="ident">Material::new</span>(
-            <span class="string">&quot;m1&quot;</span>.<span class="ident">to_string</span>(), 
-            <span class="ident">s1</span>.<span class="ident">name</span>().<span class="ident">clone</span>(), 
-            <span class="number">0.001</span>
-        );
-        <span class="kw">let</span> <span class="ident">m1</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">m1</span>);
+        <span class="kw">let </span>m1 = Material::new(<span class="string">&quot;m1&quot;</span>.to_string(), s1.name().clone(), <span class="number">0.001</span>);
+        <span class="kw">let </span>m1 = model.add_material(m1);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;constr&quot;</span>);
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">m0</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">c0</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
-        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">m1</span>.<span class="ident">name</span>().<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">construction</span>  <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>construction = Construction::new(<span class="string">&quot;constr&quot;</span>);
+        construction.materials.push(m0.name().clone());
+        construction.materials.push(c0.name().clone());
+        construction.materials.push(m1.name().clone());
+        <span class="kw">let </span>construction = model.add_construction(construction);
 
-        <span class="comment">// Test</span>
-        <span class="kw">let</span> <span class="ident">glazings</span> <span class="op">=</span> <span class="ident">Glazing::get_front_glazing_system</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="kw-2">&amp;</span><span class="ident">model</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">glazings</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">props</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">glazings</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> (<span class="ident">g</span>.<span class="ident">tau</span>, <span class="ident">g</span>.<span class="ident">rho_front</span>, <span class="ident">g</span>.<span class="ident">rho_back</span>))
-            .<span class="ident">collect</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">props</span>, <span class="macro">vec!</span>[(<span class="number">0.0</span>, <span class="number">0.9</span>, <span class="number">0.8</span>)]);
-        <span class="kw">let</span> <span class="ident">alphas</span> <span class="op">=</span> <span class="ident">Glazing::alphas</span>(<span class="kw-2">&amp;</span><span class="ident">glazings</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.1</span>];
-        <span class="kw">for</span> (<span class="ident">found</span>, <span class="ident">exp</span>) <span class="kw">in</span> <span class="ident">alphas</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">exp</span>.<span class="ident">iter</span>()) {
-            <span class="macro">validate::assert_close!</span>(<span class="kw-2">*</span><span class="ident">exp</span>, <span class="kw-2">*</span><span class="ident">found</span>);
+        <span class="comment">// Test
+        </span><span class="kw">let </span>glazings = Glazing::get_front_glazing_system(<span class="kw-2">&amp;</span>construction, <span class="kw-2">&amp;</span>model).unwrap();
+        <span class="macro">assert_eq!</span>(glazings.len(), <span class="number">1</span>);
+        <span class="kw">let </span>props: Vec&lt;(Float, Float, Float)&gt; = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
+        <span class="macro">assert_eq!</span>(props, <span class="macro">vec!</span>[(<span class="number">0.0</span>, <span class="number">0.9</span>, <span class="number">0.8</span>)]);
+        <span class="kw">let </span>alphas = Glazing::alphas(<span class="kw-2">&amp;</span>glazings);
+        <span class="kw">let </span>exp = <span class="macro">vec!</span>[<span class="number">0.1</span>];
+        <span class="kw">for </span>(found, exp) <span class="kw">in </span>alphas.iter().zip(exp.iter()) {
+            <span class="macro">validate::assert_close!</span>(<span class="kw-2">*</span>exp, <span class="kw-2">*</span>found);
         }
 
-        <span class="kw">let</span> <span class="ident">glazings</span> <span class="op">=</span> <span class="ident">Glazing::get_back_glazing_system</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="kw-2">&amp;</span><span class="ident">model</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">glazings</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">props</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Float</span>, <span class="ident">Float</span>, <span class="ident">Float</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">glazings</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> (<span class="ident">g</span>.<span class="ident">tau</span>, <span class="ident">g</span>.<span class="ident">rho_front</span>, <span class="ident">g</span>.<span class="ident">rho_back</span>))
-            .<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="macro">vec!</span>[(<span class="number">0.1</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.2</span>, <span class="number">1.0</span> <span class="op">-</span> <span class="number">0.1</span> <span class="op">-</span> <span class="number">0.3</span>), (<span class="number">0.0</span>, <span class="number">0.9</span>, <span class="number">0.8</span>)];
-        <span class="macro">assert_eq!</span>(<span class="ident">props</span>, <span class="ident">exp</span>);
+        <span class="kw">let </span>glazings = Glazing::get_back_glazing_system(<span class="kw-2">&amp;</span>construction, <span class="kw-2">&amp;</span>model).unwrap();
+        <span class="macro">assert_eq!</span>(glazings.len(), <span class="number">2</span>);
+        <span class="kw">let </span>props: Vec&lt;(Float, Float, Float)&gt; = glazings
+            .iter()
+            .map(|g| (g.tau, g.rho_front, g.rho_back))
+            .collect();
+        <span class="kw">let </span>exp = <span class="macro">vec!</span>[(<span class="number">0.1</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.2</span>, <span class="number">1.0 </span>- <span class="number">0.1 </span>- <span class="number">0.3</span>), (<span class="number">0.0</span>, <span class="number">0.9</span>, <span class="number">0.8</span>)];
+        <span class="macro">assert_eq!</span>(props, exp);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_9050</span>() {
-        <span class="kw">let</span> <span class="ident">tau1</span> <span class="op">=</span> <span class="number">0.1</span>;
-        <span class="kw">let</span> <span class="ident">rho_b1</span> <span class="op">=</span> <span class="number">0.3</span>;
-        <span class="kw">let</span> <span class="ident">rho_f1</span> <span class="op">=</span> <span class="number">0.13</span>;
-        <span class="kw">let</span> <span class="ident">g1</span> <span class="op">=</span> <span class="ident">Glazing::new</span>(<span class="ident">tau1</span>, <span class="ident">rho_f1</span>, <span class="ident">rho_b1</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_9050() {
+        <span class="kw">let </span>tau1 = <span class="number">0.1</span>;
+        <span class="kw">let </span>rho_b1 = <span class="number">0.3</span>;
+        <span class="kw">let </span>rho_f1 = <span class="number">0.13</span>;
+        <span class="kw">let </span>g1 = Glazing::new(tau1, rho_f1, rho_b1);
 
-        <span class="kw">let</span> <span class="ident">tau2</span> <span class="op">=</span> <span class="number">0.21</span>;
-        <span class="kw">let</span> <span class="ident">rho_b2</span> <span class="op">=</span> <span class="number">0.34</span>;
-        <span class="kw">let</span> <span class="ident">rho_f2</span> <span class="op">=</span> <span class="number">0.1123</span>;
-        <span class="kw">let</span> <span class="ident">g2</span> <span class="op">=</span> <span class="ident">Glazing::new</span>(<span class="ident">tau2</span>, <span class="ident">rho_f2</span>, <span class="ident">rho_b2</span>);
+        <span class="kw">let </span>tau2 = <span class="number">0.21</span>;
+        <span class="kw">let </span>rho_b2 = <span class="number">0.34</span>;
+        <span class="kw">let </span>rho_f2 = <span class="number">0.1123</span>;
+        <span class="kw">let </span>g2 = Glazing::new(tau2, rho_f2, rho_b2);
 
-        <span class="comment">// Eq. 2 of ISO9050/2003</span>
-        <span class="kw">let</span> <span class="ident">tau12</span> <span class="op">=</span> <span class="ident">g1</span>.<span class="ident">combined_tau</span>(<span class="kw-2">&amp;</span><span class="ident">g2</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span>);
-        <span class="macro">assert!</span>((<span class="ident">tau12</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
+        <span class="comment">// Eq. 2 of ISO9050/2003
+        </span><span class="kw">let </span>tau12 = g1.combined_tau(<span class="kw-2">&amp;</span>g2);
+        <span class="kw">let </span>exp = tau1 * tau2 / (<span class="number">1. </span>- rho_b1 * rho_f2);
+        <span class="macro">assert!</span>((tau12 - exp).abs() &lt; <span class="number">1e-15</span>);
 
-        <span class="comment">// Eq. 5 of ISO9050/2003</span>
-        <span class="kw">let</span> <span class="ident">rho_f12</span> <span class="op">=</span> <span class="ident">g1</span>.<span class="ident">combined_rho_front</span>(<span class="kw-2">&amp;</span><span class="ident">g2</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">rho_f1</span> <span class="op">+</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">rho_f2</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span>);
-        <span class="macro">assert!</span>((<span class="ident">rho_f12</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
+        <span class="comment">// Eq. 5 of ISO9050/2003
+        </span><span class="kw">let </span>rho_f12 = g1.combined_rho_front(<span class="kw-2">&amp;</span>g2);
+        <span class="kw">let </span>exp = rho_f1 + tau1 * tau1 * rho_f2 / (<span class="number">1. </span>- rho_b1 * rho_f2);
+        <span class="macro">assert!</span>((rho_f12 - exp).abs() &lt; <span class="number">1e-15</span>);
 
-        <span class="kw">let</span> <span class="ident">tau3</span> <span class="op">=</span> <span class="number">0.21</span>;
-        <span class="kw">let</span> <span class="ident">rho_b3</span> <span class="op">=</span> <span class="number">0.34</span>;
-        <span class="kw">let</span> <span class="ident">rho_f3</span> <span class="op">=</span> <span class="number">0.1123</span>;
-        <span class="kw">let</span> <span class="ident">g3</span> <span class="op">=</span> <span class="ident">Glazing::new</span>(<span class="ident">tau3</span>, <span class="ident">rho_f3</span>, <span class="ident">rho_b3</span>);
+        <span class="kw">let </span>tau3 = <span class="number">0.21</span>;
+        <span class="kw">let </span>rho_b3 = <span class="number">0.34</span>;
+        <span class="kw">let </span>rho_f3 = <span class="number">0.1123</span>;
+        <span class="kw">let </span>g3 = Glazing::new(tau3, rho_f3, rho_b3);
 
-        <span class="kw">let</span> <span class="ident">g12</span> <span class="op">=</span> <span class="ident">g1</span>.<span class="ident">combine</span>(<span class="kw-2">&amp;</span><span class="ident">g2</span>);
-        <span class="kw">let</span> <span class="ident">g13</span> <span class="op">=</span> <span class="ident">g12</span>.<span class="ident">combine</span>(<span class="kw-2">&amp;</span><span class="ident">g3</span>);
+        <span class="kw">let </span>g12 = g1.combine(<span class="kw-2">&amp;</span>g2);
+        <span class="kw">let </span>g13 = g12.combine(<span class="kw-2">&amp;</span>g3);
 
-        <span class="comment">// Eq. 3 of ISO9050/2003</span>
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">tau3</span>
-            <span class="op">/</span> ((<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span>) <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">-</span> <span class="ident">tau2</span>.<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">*</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f3</span>);
-        <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">g13</span>.<span class="ident">tau</span>()).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
+        <span class="comment">// Eq. 3 of ISO9050/2003
+        </span><span class="kw">let </span>exp = tau1 * tau2 * tau3
+            / ((<span class="number">1. </span>- rho_b1 * rho_f2) * (<span class="number">1. </span>- rho_b2 * rho_f3) - tau2.powi(<span class="number">2</span>) * rho_b1 * rho_f3);
+        <span class="macro">assert!</span>((exp - g13.tau()).abs() &lt; <span class="number">1e-15</span>);
 
-        <span class="comment">// Eq. 6 of ISO9050/2003</span>
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="ident">rho_f1</span>
-            <span class="op">+</span> (<span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">rho_f2</span> <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">+</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">rho_f3</span>)
-                <span class="op">/</span> ((<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span>) <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">-</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f3</span>);
-        <span class="macro">assert!</span>((<span class="ident">exp</span> <span class="op">-</span> <span class="ident">g13</span>.<span class="ident">rho_front</span>()).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
+        <span class="comment">// Eq. 6 of ISO9050/2003
+        </span><span class="kw">let </span>exp = rho_f1
+            + (tau1 * tau1 * rho_f2 * (<span class="number">1. </span>- rho_b2 * rho_f3) + tau1 * tau1 * tau2 * tau2 * rho_f3)
+                / ((<span class="number">1. </span>- rho_b1 * rho_f2) * (<span class="number">1. </span>- rho_b2 * rho_f3) - tau2 * tau2 * rho_b1 * rho_f3);
+        <span class="macro">assert!</span>((exp - g13.rho_front()).abs() &lt; <span class="number">1e-15</span>);
 
-        <span class="comment">// test integration</span>
-        <span class="kw">let</span> <span class="ident">other_g13</span> <span class="op">=</span> <span class="ident">Glazing::combine_layers</span>(<span class="kw-2">&amp;</span>[<span class="ident">g1</span>, <span class="ident">g2</span>, <span class="ident">g3</span>]);
-        <span class="macro">assert!</span>((<span class="ident">g13</span>.<span class="ident">tau</span> <span class="op">-</span> <span class="ident">other_g13</span>.<span class="ident">tau</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
-        <span class="macro">assert!</span>((<span class="ident">g13</span>.<span class="ident">rho_front</span> <span class="op">-</span> <span class="ident">other_g13</span>.<span class="ident">rho_front</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
-        <span class="macro">assert!</span>((<span class="ident">g13</span>.<span class="ident">rho_back</span> <span class="op">-</span> <span class="ident">other_g13</span>.<span class="ident">rho_back</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
-        <span class="macro">assert!</span>((<span class="ident">g13</span>.<span class="ident">alpha_back</span> <span class="op">-</span> <span class="ident">other_g13</span>.<span class="ident">alpha_back</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
-        <span class="macro">assert!</span>((<span class="ident">g13</span>.<span class="ident">alpha_front</span> <span class="op">-</span> <span class="ident">other_g13</span>.<span class="ident">alpha_front</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>);
+        <span class="comment">// test integration
+        </span><span class="kw">let </span>other_g13 = Glazing::combine_layers(<span class="kw-2">&amp;</span>[g1, g2, g3]);
+        <span class="macro">assert!</span>((g13.tau - other_g13.tau).abs() &lt; <span class="number">1e-15</span>);
+        <span class="macro">assert!</span>((g13.rho_front - other_g13.rho_front).abs() &lt; <span class="number">1e-15</span>);
+        <span class="macro">assert!</span>((g13.rho_back - other_g13.rho_back).abs() &lt; <span class="number">1e-15</span>);
+        <span class="macro">assert!</span>((g13.alpha_back - other_g13.alpha_back).abs() &lt; <span class="number">1e-15</span>);
+        <span class="macro">assert!</span>((g13.alpha_front - other_g13.alpha_front).abs() &lt; <span class="number">1e-15</span>);
 
-        <span class="comment">// Test alphas</span>
-        <span class="kw">let</span> <span class="ident">alphas</span> <span class="op">=</span> <span class="ident">Glazing::alphas</span>(<span class="kw-2">&amp;</span>[<span class="ident">g1</span>, <span class="ident">g2</span>, <span class="ident">g3</span>]);
-        <span class="kw">let</span> <span class="ident">found</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">alphas</span>.<span class="ident">iter</span>().<span class="ident">sum</span>();
+        <span class="comment">// Test alphas
+        </span><span class="kw">let </span>alphas = Glazing::alphas(<span class="kw-2">&amp;</span>[g1, g2, g3]);
+        <span class="kw">let </span>found: Float = alphas.iter().sum();
         <span class="macro">assert!</span>(
-            (<span class="ident">found</span> <span class="op">-</span> <span class="ident">g13</span>.<span class="ident">alpha_front</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>,
+            (found - g13.alpha_front).abs() &lt; <span class="number">1e-15</span>,
             <span class="string">&quot;expecting {}, found {}&quot;</span>,
-            <span class="ident">g13</span>.<span class="ident">alpha_front</span>,
-            <span class="ident">found</span>
+            g13.alpha_front,
+            found
         );
 
-        <span class="kw">let</span> <span class="ident">a_f1</span> <span class="op">=</span> <span class="ident">g1</span>.<span class="ident">alpha_front</span>;
-        <span class="kw">let</span> <span class="ident">a_b1</span> <span class="op">=</span> <span class="ident">g1</span>.<span class="ident">alpha_back</span>;
-        <span class="kw">let</span> <span class="ident">a_f2</span> <span class="op">=</span> <span class="ident">g2</span>.<span class="ident">alpha_front</span>;
-        <span class="kw">let</span> <span class="ident">a_b2</span> <span class="op">=</span> <span class="ident">g2</span>.<span class="ident">alpha_back</span>;
-        <span class="kw">let</span> <span class="ident">a_f3</span> <span class="op">=</span> <span class="ident">g3</span>.<span class="ident">alpha_front</span>;
+        <span class="kw">let </span>a_f1 = g1.alpha_front;
+        <span class="kw">let </span>a_b1 = g1.alpha_back;
+        <span class="kw">let </span>a_f2 = g2.alpha_front;
+        <span class="kw">let </span>a_b2 = g2.alpha_back;
+        <span class="kw">let </span>a_f3 = g3.alpha_front;
 
-        <span class="comment">// Equations 23-25 of ISO9050/2003</span>
-        <span class="kw">let</span> <span class="ident">denom</span> <span class="op">=</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span>) <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">-</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">rho_b1</span> <span class="op">*</span> <span class="ident">rho_f3</span>;
-        <span class="kw">let</span> <span class="ident">exp_a1</span> <span class="op">=</span> <span class="ident">a_f1</span>
-            <span class="op">+</span> (<span class="ident">tau1</span> <span class="op">*</span> <span class="ident">a_b1</span> <span class="op">*</span> <span class="ident">rho_f2</span> <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">+</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">a_b1</span> <span class="op">*</span> <span class="ident">rho_f3</span>)
-                <span class="op">/</span> <span class="ident">denom</span>;
-        <span class="kw">let</span> <span class="ident">exp_a2</span> <span class="op">=</span> (<span class="ident">tau1</span> <span class="op">*</span> <span class="ident">a_f2</span> <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">rho_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">+</span> <span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">a_b2</span> <span class="op">*</span> <span class="ident">rho_f3</span>) <span class="op">/</span> <span class="ident">denom</span>;
-        <span class="kw">let</span> <span class="ident">exp_a3</span> <span class="op">=</span> (<span class="ident">tau1</span> <span class="op">*</span> <span class="ident">tau2</span> <span class="op">*</span> <span class="ident">a_f3</span>) <span class="op">/</span> <span class="ident">denom</span>;
+        <span class="comment">// Equations 23-25 of ISO9050/2003
+        </span><span class="kw">let </span>denom = (<span class="number">1. </span>- rho_b1 * rho_f2) * (<span class="number">1. </span>- rho_b2 * rho_f3) - tau2 * tau2 * rho_b1 * rho_f3;
+        <span class="kw">let </span>exp_a1 = a_f1
+            + (tau1 * a_b1 * rho_f2 * (<span class="number">1. </span>- rho_b2 * rho_f3) + tau1 * tau2 * tau2 * a_b1 * rho_f3)
+                / denom;
+        <span class="kw">let </span>exp_a2 = (tau1 * a_f2 * (<span class="number">1. </span>- rho_b2 * rho_f3) + tau1 * tau2 * a_b2 * rho_f3) / denom;
+        <span class="kw">let </span>exp_a3 = (tau1 * tau2 * a_f3) / denom;
 
         <span class="macro">assert!</span>(
-            (<span class="ident">alphas</span>[<span class="number">0</span>] <span class="op">-</span> <span class="ident">exp_a1</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>,
+            (alphas[<span class="number">0</span>] - exp_a1).abs() &lt; <span class="number">1e-15</span>,
             <span class="string">&quot;Expecting {} ... found {}&quot;</span>,
-            <span class="ident">exp_a1</span>,
-            <span class="ident">alphas</span>[<span class="number">0</span>]
+            exp_a1,
+            alphas[<span class="number">0</span>]
         );
         <span class="macro">assert!</span>(
-            (<span class="ident">alphas</span>[<span class="number">1</span>] <span class="op">-</span> <span class="ident">exp_a2</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>,
+            (alphas[<span class="number">1</span>] - exp_a2).abs() &lt; <span class="number">1e-15</span>,
             <span class="string">&quot;Expecting {} ... found {}&quot;</span>,
-            <span class="ident">exp_a2</span>,
-            <span class="ident">alphas</span>[<span class="number">1</span>]
+            exp_a2,
+            alphas[<span class="number">1</span>]
         );
         <span class="macro">assert!</span>(
-            (<span class="ident">alphas</span>[<span class="number">2</span>] <span class="op">-</span> <span class="ident">exp_a3</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-15</span>,
+            (alphas[<span class="number">2</span>] - exp_a3).abs() &lt; <span class="number">1e-15</span>,
             <span class="string">&quot;Expecting {} ... found {}&quot;</span>,
-            <span class="ident">exp_a3</span>,
-            <span class="ident">alphas</span>[<span class="number">2</span>]
+            exp_a3,
+            alphas[<span class="number">2</span>]
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

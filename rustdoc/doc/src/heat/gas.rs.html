@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/gas.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gas.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/gas.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gas.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -544,94 +544,6 @@
 <span id="510">510</span>
 <span id="511">511</span>
 <span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -650,587 +562,499 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
+*/
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
-<span class="kw">use</span> <span class="ident">polynomial</span>::{<span class="ident">poly</span>, <span class="ident">Polynomial</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::Float;
+<span class="kw">use </span>polynomial::{poly, Polynomial};
 
-<span class="doccomment">/// A structure containing the data that will describe the thermal</span>
-<span class="doccomment">/// behaviour of a gas.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Gas</span> {
-    <span class="doccomment">/// The thermal conductivity ($`{W}/{m.K}`$) as a function of the</span>
-    <span class="doccomment">/// temperature (in $`K`$)</span>
-    <span class="ident">thermal_conductivity</span>: <span class="ident">Polynomial</span>,
+<span class="doccomment">/// A structure containing the data that will describe the thermal
+/// behaviour of a gas.
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Gas {
+    <span class="doccomment">/// The thermal conductivity ($`{W}/{m.K}`$) as a function of the
+    /// temperature (in $`K`$)
+    </span>thermal_conductivity: Polynomial,
 
-    <span class="doccomment">/// The dynamic viscosity ( $`{N.s}/{m^2}`$) as a function of the</span>
-    <span class="doccomment">/// temperature (in $`K`$)</span>
-    <span class="ident">dynamic_viscosity</span>: <span class="ident">Polynomial</span>,
+    <span class="doccomment">/// The dynamic viscosity ( $`{N.s}/{m^2}`$) as a function of the
+    /// temperature (in $`K`$)
+    </span>dynamic_viscosity: Polynomial,
 
-    <span class="doccomment">/// The specific heat capacity ($`{J}/{kg.K}`$) as a function of the</span>
-    <span class="doccomment">/// temperature (in $`K`$)</span>
-    <span class="ident">heat_capacity</span>: <span class="ident">Polynomial</span>,
+    <span class="doccomment">/// The specific heat capacity ($`{J}/{kg.K}`$) as a function of the
+    /// temperature (in $`K`$)
+    </span>heat_capacity: Polynomial,
 
-    <span class="doccomment">/// THe Molecular Mass ($`{kg}/{Mol}`$)</span>
-    <span class="ident">mass</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// THe Molecular Mass ($`{kg}/{Mol}`$)
+    </span>mass: Float,
 }
 
-
-<span class="doccomment">/// Returns a gas with the properties of Air</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">AIR</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
-    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.873e-3</span>, <span class="number">7.760e-5</span>],
-    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.723e-6</span>, <span class="number">4.94e-8</span>],
-    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">1002.7370</span>, <span class="number">1.2324e-2</span>],
-    <span class="ident">mass</span>: <span class="number">28.97</span>,
+<span class="doccomment">/// Returns a gas with the properties of Air
+</span><span class="kw">pub const </span>AIR: Gas = Gas {
+    thermal_conductivity: <span class="macro">poly!</span>[<span class="number">2.873e-3</span>, <span class="number">7.760e-5</span>],
+    dynamic_viscosity: <span class="macro">poly!</span>[<span class="number">3.723e-6</span>, <span class="number">4.94e-8</span>],
+    heat_capacity: <span class="macro">poly!</span>[<span class="number">1002.7370</span>, <span class="number">1.2324e-2</span>],
+    mass: <span class="number">28.97</span>,
 };
 
-<span class="doccomment">/// Returns a gas with the properties of argon</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARGON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
-    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">2.285e-3</span>, <span class="number">5.149e-5</span>],
-    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">3.379e-6</span>, <span class="number">6.451e-8</span>],
-    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">521.9285</span>],
-    <span class="ident">mass</span>: <span class="number">39.948</span>,
+<span class="doccomment">/// Returns a gas with the properties of argon
+</span><span class="kw">pub const </span>ARGON: Gas = Gas {
+    thermal_conductivity: <span class="macro">poly!</span>[<span class="number">2.285e-3</span>, <span class="number">5.149e-5</span>],
+    dynamic_viscosity: <span class="macro">poly!</span>[<span class="number">3.379e-6</span>, <span class="number">6.451e-8</span>],
+    heat_capacity: <span class="macro">poly!</span>[<span class="number">521.9285</span>],
+    mass: <span class="number">39.948</span>,
 };
 
-
-<span class="doccomment">/// A gas with the properties of krypton</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KRYPTON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
-    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">9.443e-4</span>, <span class="number">2.826e-5</span>],
-    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">2.213e-6</span>, <span class="number">7.777e-8</span>],
-    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">248.0907</span>],
-    <span class="ident">mass</span>: <span class="number">83.8</span>,
+<span class="doccomment">/// A gas with the properties of krypton
+</span><span class="kw">pub const </span>KRYPTON: Gas = Gas {
+    thermal_conductivity: <span class="macro">poly!</span>[<span class="number">9.443e-4</span>, <span class="number">2.826e-5</span>],
+    dynamic_viscosity: <span class="macro">poly!</span>[<span class="number">2.213e-6</span>, <span class="number">7.777e-8</span>],
+    heat_capacity: <span class="macro">poly!</span>[<span class="number">248.0907</span>],
+    mass: <span class="number">83.8</span>,
 };
 
-<span class="doccomment">/// A gas with the properties of xenon</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">XENON</span> : <span class="ident">Gas</span> <span class="op">=</span> <span class="ident">Gas</span> {
-    <span class="ident">thermal_conductivity</span>: <span class="macro">poly!</span>[<span class="number">4.538e-4</span>, <span class="number">1.723e-5</span>],
-    <span class="ident">dynamic_viscosity</span>: <span class="macro">poly!</span>[<span class="number">1.069e-6</span>, <span class="number">7.414e-8</span>],
-    <span class="ident">heat_capacity</span>: <span class="macro">poly!</span>[<span class="number">158.3397</span>],
-    <span class="ident">mass</span>: <span class="number">131.30</span>,
+<span class="doccomment">/// A gas with the properties of xenon
+</span><span class="kw">pub const </span>XENON: Gas = Gas {
+    thermal_conductivity: <span class="macro">poly!</span>[<span class="number">4.538e-4</span>, <span class="number">1.723e-5</span>],
+    dynamic_viscosity: <span class="macro">poly!</span>[<span class="number">1.069e-6</span>, <span class="number">7.414e-8</span>],
+    heat_capacity: <span class="macro">poly!</span>[<span class="number">158.3397</span>],
+    mass: <span class="number">131.30</span>,
 };
 
-<span class="kw">impl</span> <span class="ident">Gas</span> {
-    <span class="doccomment">/// Calculates the Raleigh number of a [`Gas`] cavity based on its</span>
-    <span class="doccomment">/// `thickness` and its temperatures `t_front` and `t_back` (note that, for</span>
-    <span class="doccomment">/// this particular function, these values are interchangeable)</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Source: Equation 40 of ISO15099/2003</span>
-    <span class="kw">fn</span> <span class="ident">raleigh</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span>, <span class="ident">thickness</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="kw">const</span> <span class="ident">G</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">9.81</span>;
+<span class="kw">impl </span>Gas {
+    <span class="doccomment">/// Calculates the Raleigh number of a [`Gas`] cavity based on its
+    /// `thickness` and its temperatures `t_front` and `t_back` (note that, for
+    /// this particular function, these values are interchangeable)
+    ///
+    /// Source: Equation 40 of ISO15099/2003
+    </span><span class="kw">fn </span>raleigh(<span class="kw-2">&amp;</span><span class="self">self</span>, t_front: Float, t_back: Float, thickness: Float) -&gt; Float {
+        <span class="kw">const </span>G: Float = <span class="number">9.81</span>;
 
-        <span class="kw">if</span> (<span class="ident">t_front</span> <span class="op">-</span> <span class="ident">t_back</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-10</span> {
-            <span class="kw">return</span> <span class="number">0.0000001</span>;
+        <span class="kw">if </span>(t_front - t_back).abs() &lt; <span class="number">1e-10 </span>{
+            <span class="kw">return </span><span class="number">0.0000001</span>;
         }
 
-        <span class="comment">// Gas mean temperature</span>
-        <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> (<span class="ident">in_kelvin</span>(<span class="ident">t_front</span>) <span class="op">+</span> <span class="ident">in_kelvin</span>(<span class="ident">t_back</span>)) <span class="op">/</span> <span class="number">2.</span>;
-        <span class="comment">// Eq. 41 of iso15099/2003</span>
-        <span class="kw">let</span> <span class="ident">beta</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">/</span> <span class="ident">temp</span>;
+        <span class="comment">// Gas mean temperature
+        </span><span class="kw">let </span>temp = (in_kelvin(t_front) + in_kelvin(t_back)) / <span class="number">2.</span>;
+        <span class="comment">// Eq. 41 of iso15099/2003
+        </span><span class="kw">let </span>beta = <span class="number">1. </span>/ temp;
 
-        <span class="comment">// From Annex B</span>
-        <span class="kw">let</span> <span class="ident">c_p</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">heat_capacity</span>(<span class="ident">temp</span>);
-        <span class="kw">let</span> <span class="ident">mu</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dynamic_viscosity</span>(<span class="ident">temp</span>);
-        <span class="kw">let</span> <span class="ident">lambda</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thermal_conductivity</span>(<span class="ident">temp</span>);
-        <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">density</span>(<span class="ident">temp</span>);
+        <span class="comment">// From Annex B
+        </span><span class="kw">let </span>c_p = <span class="self">self</span>.heat_capacity(temp);
+        <span class="kw">let </span>mu = <span class="self">self</span>.dynamic_viscosity(temp);
+        <span class="kw">let </span>lambda = <span class="self">self</span>.thermal_conductivity(temp);
+        <span class="kw">let </span>rho = <span class="self">self</span>.density(temp);
 
-        <span class="comment">// Eq. 40 of iso15099/2003</span>
-        <span class="ident">rho</span>.<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">*</span> <span class="ident">thickness</span>.<span class="ident">powi</span>(<span class="number">3</span>) <span class="op">*</span> <span class="ident">G</span> <span class="op">*</span> <span class="ident">beta</span> <span class="op">*</span> <span class="ident">c_p</span> <span class="op">*</span> (<span class="ident">t_front</span> <span class="op">-</span> <span class="ident">t_back</span>).<span class="ident">abs</span>() <span class="op">/</span> (<span class="ident">mu</span> <span class="op">*</span> <span class="ident">lambda</span>)
+        <span class="comment">// Eq. 40 of iso15099/2003
+        </span>rho.powi(<span class="number">2</span>) * thickness.powi(<span class="number">3</span>) * G * beta * c_p * (t_front - t_back).abs() / (mu * lambda)
     }
 
-    <span class="doccomment">/// Calculates the convective heat transfer coefficient within a gas-filled</span>
-    <span class="doccomment">/// cavity based on its tilt  $`\gamma`$ (in radians), its outside temperature `t_out` and its</span>
-    <span class="doccomment">/// interior temperature `t_in`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Adapted from Section 5.3.3.1 of ISO15099/2003:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * $`\gamma = 0^o`$: is horizontal glazing</span>
-    <span class="doccomment">/// * $`\gamma = 90^o`$: is vertical glazing</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Note:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The standard ISO15099/2003 states the following:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// &quot;This categorization, as a function of $`\gamma`$, is based on the assumption **that</span>
-    <span class="doccomment">/// the cavity is heated from the internal side** (i.e., $`T_{ft,i} &gt; T_{b,i-1}`$). If the</span>
-    <span class="doccomment">/// reverse is true it is necessary to seek the appropriate correlation on the basis of</span>
-    <span class="doccomment">/// the complement of the tilt angle, $`180^o - \gamma`$, instead of $`\gamma`$</span>
-    <span class="doccomment">/// when the calculation is carried out&quot;.        </span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This conversion is handleded automatically by this function based</span>
-    <span class="doccomment">/// on the inputs given to `t_front` and `t_back`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cavity_convection</span>(
+    <span class="doccomment">/// Calculates the convective heat transfer coefficient within a gas-filled
+    /// cavity based on its tilt  $`\gamma`$ (in radians), its outside temperature `t_out` and its
+    /// interior temperature `t_in`.
+    ///
+    ///
+    /// Adapted from Section 5.3.3.1 of ISO15099/2003:
+    ///
+    /// * $`\gamma = 0^o`$: is horizontal glazing
+    /// * $`\gamma = 90^o`$: is vertical glazing
+    ///
+    /// # Note:
+    ///
+    /// The standard ISO15099/2003 states the following:
+    ///
+    /// &quot;This categorization, as a function of $`\gamma`$, is based on the assumption **that
+    /// the cavity is heated from the internal side** (i.e., $`T_{ft,i} &gt; T_{b,i-1}`$). If the
+    /// reverse is true it is necessary to seek the appropriate correlation on the basis of
+    /// the complement of the tilt angle, $`180^o - \gamma`$, instead of $`\gamma`$
+    /// when the calculation is carried out&quot;.        
+    ///
+    /// This conversion is handleded automatically by this function based
+    /// on the inputs given to `t_front` and `t_back`
+    </span><span class="kw">pub fn </span>cavity_convection(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">height</span>: <span class="ident">Float</span>,
-        <span class="ident">thickness</span>: <span class="ident">Float</span>,
-        <span class="kw-2">mut</span> <span class="ident">gamma</span>: <span class="ident">Float</span>,
-        <span class="ident">t_front</span>: <span class="ident">Float</span>,
-        <span class="ident">t_back</span>: <span class="ident">Float</span>,
-    ) -&gt; <span class="ident">Float</span> {
-        <span class="macro">debug_assert!</span>(<span class="ident">gamma</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>);
-        <span class="macro">debug_assert!</span>(<span class="ident">gamma</span> <span class="op">&lt;</span><span class="op">=</span> (<span class="number">180.</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>());
+        height: Float,
+        thickness: Float,
+        <span class="kw-2">mut </span>gamma: Float,
+        t_front: Float,
+        t_back: Float,
+    ) -&gt; Float {
+        <span class="macro">debug_assert!</span>(gamma &gt;= <span class="number">0.0</span>);
+        <span class="macro">debug_assert!</span>(gamma &lt;= (<span class="number">180. </span><span class="kw">as </span>Float).to_radians());
 
-        <span class="kw">if</span> <span class="ident">t_front</span> <span class="op">&gt;</span> <span class="ident">t_back</span> {
-            <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">180.</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>() <span class="op">-</span> <span class="ident">gamma</span>;
+        <span class="kw">if </span>t_front &gt; t_back {
+            gamma = (<span class="number">180. </span><span class="kw">as </span>Float).to_radians() - gamma;
         }
 
-        <span class="comment">// Eq. 42</span>
-        <span class="kw">let</span> <span class="ident">a_gi</span> <span class="op">=</span> <span class="ident">height</span> <span class="op">/</span> <span class="ident">thickness</span>;
+        <span class="comment">// Eq. 42
+        </span><span class="kw">let </span>a_gi = height / thickness;
 
-        <span class="kw">let</span> <span class="ident">ra</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">raleigh</span>(<span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">thickness</span>);
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
+        <span class="kw">let </span>ra = <span class="self">self</span>.raleigh(t_front, t_back, thickness);
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
 
-        <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> (<span class="ident">in_kelvin</span>(<span class="ident">t_front</span>) <span class="op">+</span> <span class="ident">in_kelvin</span>(<span class="ident">t_back</span>)) <span class="op">/</span> <span class="number">2.</span>;
-        <span class="kw">let</span> <span class="ident">lambda</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thermal_conductivity</span>(<span class="ident">temp</span>);
+        <span class="kw">let </span>temp = (in_kelvin(t_front) + in_kelvin(t_back)) / <span class="number">2.</span>;
+        <span class="kw">let </span>lambda = <span class="self">self</span>.thermal_conductivity(temp);
 
-        <span class="comment">// Equation 39 of ISO15099/2003</span>
-        <span class="ident">nu</span> <span class="op">*</span> <span class="ident">lambda</span> <span class="op">/</span> <span class="ident">thickness</span>
+        <span class="comment">// Equation 39 of ISO15099/2003
+        </span>nu * lambda / thickness
     }
 
-    <span class="doccomment">/// Derives the Thermal Conductivity at a certain Temperature (in $`K`$)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">thermal_conductivity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">thermal_conductivity</span>.<span class="ident">eval</span>(<span class="ident">temp</span>)
+    <span class="doccomment">/// Derives the Thermal Conductivity at a certain Temperature (in $`K`$)
+    </span><span class="kw">pub fn </span>thermal_conductivity(<span class="kw-2">&amp;</span><span class="self">self</span>, temp: Float) -&gt; Float {
+        <span class="self">self</span>.thermal_conductivity.eval(temp)
     }
 
-    <span class="doccomment">/// Derives the Dynamic Viscosity at a certain Temperature (in $`K`$)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dynamic_viscosity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">dynamic_viscosity</span>.<span class="ident">eval</span>(<span class="ident">temp</span>)
+    <span class="doccomment">/// Derives the Dynamic Viscosity at a certain Temperature (in $`K`$)
+    </span><span class="kw">pub fn </span>dynamic_viscosity(<span class="kw-2">&amp;</span><span class="self">self</span>, temp: Float) -&gt; Float {
+        <span class="self">self</span>.dynamic_viscosity.eval(temp)
     }
 
-    <span class="doccomment">/// Derives the Soecific Heat Capacity at a certain Temperature (in $`K`$)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">heat_capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">heat_capacity</span>.<span class="ident">eval</span>(<span class="ident">temp</span>)
+    <span class="doccomment">/// Derives the Soecific Heat Capacity at a certain Temperature (in $`K`$)
+    </span><span class="kw">pub fn </span>heat_capacity(<span class="kw-2">&amp;</span><span class="self">self</span>, temp: Float) -&gt; Float {
+        <span class="self">self</span>.heat_capacity.eval(temp)
     }
 
-    <span class="doccomment">/// Retreives the Molecular Mass</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mass</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="self">self</span>.<span class="ident">mass</span>
+    <span class="doccomment">/// Retreives the Molecular Mass
+    </span><span class="kw">pub fn </span>mass(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="self">self</span>.mass
     }
 
-    <span class="doccomment">/// Derives the density based on the temperature (in $`K`$)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">density</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="kw">const</span> <span class="ident">R</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">8314.46261815324</span>;
-        <span class="comment">// Eq. 55 of iso15099/2003</span>
-        <span class="number">101325.</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">mass</span> <span class="op">/</span> (<span class="ident">R</span> <span class="op">*</span> <span class="ident">temp</span>)
-    }
-
-    
-}
-
-
-
-
-
-<span class="doccomment">/// Transforms C into K</span>
-<span class="kw">fn</span> <span class="ident">in_kelvin</span>(<span class="ident">t</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="ident">t</span> <span class="op">+</span> <span class="number">273.15</span>
-}
-
-<span class="doccomment">/// Calculates the Nusselt of a cavity number based on the Raleigh</span>
-<span class="doccomment">/// number `ra`, the tilt of the cavity `gamma` and the aspect ratio `a_gi` (i.e., $`a_{gi}`$).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```math</span>
-<span class="doccomment">/// a_{gi} = \frac{H}{d}</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Where, according to the standard, &quot;$`H`$ is the distance between the top and bottom of the fill</span>
-<span class="doccomment">/// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the</span>
-<span class="doccomment">/// thickness of the cavity.</span>
-<span class="kw">fn</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">gamma</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">const</span> <span class="ident">THIRTY_RAD</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">30.</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">180.</span>;
-    <span class="kw">const</span> <span class="ident">EPSILON_RAD</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.5</span> <span class="op">*</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">180.</span>;
-
-    <span class="kw">let</span> <span class="ident">gamma</span> <span class="op">=</span> <span class="ident">gamma</span> <span class="op">%</span> <span class="ident"><span class="kw">crate</span>::PI</span>;
-
-    <span class="kw">if</span> (<span class="number">0.0</span>..<span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">-</span> <span class="ident">EPSILON_RAD</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">gamma</span>) {
-        <span class="comment">// Between 0 and 60 degrees</span>
-        <span class="ident">nu_0_60</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">gamma</span> <span class="op">&lt;</span> <span class="number">2.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">+</span> <span class="ident">EPSILON_RAD</span> {
-        <span class="comment">// 60 degrees</span>
-        <span class="ident">nu_60</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">gamma</span> <span class="op">&lt;</span> <span class="number">3.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">-</span> <span class="ident">EPSILON_RAD</span> {
-        <span class="comment">// between 60 and 90 degrees</span>
-        <span class="ident">nu_60_90</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">gamma</span> <span class="op">&lt;</span> <span class="number">3.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> <span class="op">+</span> <span class="ident">EPSILON_RAD</span> {
-        <span class="comment">// 90 degrees</span>
-        <span class="ident">nu_90</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">gamma</span> <span class="op">&lt;</span> <span class="number">6.</span> <span class="op">*</span> <span class="ident">THIRTY_RAD</span> {
-        <span class="comment">// between 90 and 180 degrees</span>
-        <span class="ident">nu_90_180</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>, <span class="ident">gamma</span>)
-    } <span class="kw">else</span> {
-        <span class="macro">unreachable!</span>(<span class="string">&quot;gamma is {}&quot;</span>, <span class="ident">gamma</span>)
+    <span class="doccomment">/// Derives the density based on the temperature (in $`K`$)
+    </span><span class="kw">pub fn </span>density(<span class="kw-2">&amp;</span><span class="self">self</span>, temp: Float) -&gt; Float {
+        <span class="kw">const </span>R: Float = <span class="number">8314.46261815324</span>;
+        <span class="comment">// Eq. 55 of iso15099/2003
+        </span><span class="number">101325. </span>* <span class="self">self</span>.mass / (R * temp)
     }
 }
 
-<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between</span>
-<span class="doccomment">/// $`0^o`$ and $`60^o`$</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// From Equation 43 and 44 of ISO15099/2003 (based on ref. 7 of that standard)</span>
-<span class="kw">fn</span> <span class="ident">nu_0_60</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">gamma</span>: <span class="ident">Float</span>, <span class="ident">_a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&gt;</span> <span class="number">1e5</span> <span class="op">|</span><span class="op">|</span> <span class="ident">_a_gi</span> <span class="op">&lt;</span> <span class="number">20.</span> {
-        <span class="comment">// This clause is written in section 5.3.3.2... does</span>
-        <span class="comment">// not say what to do when this happens</span>
-        <span class="macro">dbg!</span>(<span class="ident">ra</span>, <span class="ident">_a_gi</span>, <span class="string">&quot;Not expecting these values&quot;</span>);
+<span class="doccomment">/// Transforms C into K
+</span><span class="kw">fn </span>in_kelvin(t: Float) -&gt; Float {
+    t + <span class="number">273.15
+</span>}
+
+<span class="doccomment">/// Calculates the Nusselt of a cavity number based on the Raleigh
+/// number `ra`, the tilt of the cavity `gamma` and the aspect ratio `a_gi` (i.e., $`a_{gi}`$).
+///
+/// ```math
+/// a_{gi} = \frac{H}{d}
+/// ```
+///
+/// Where, according to the standard, &quot;$`H`$ is the distance between the top and bottom of the fill
+/// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the
+/// thickness of the cavity.
+</span><span class="kw">fn </span>nusselt(ra: Float, gamma: Float, a_gi: Float) -&gt; Float {
+    <span class="kw">const </span>THIRTY_RAD: Float = <span class="number">30. </span>* <span class="kw">crate</span>::PI / <span class="number">180.</span>;
+    <span class="kw">const </span>EPSILON_RAD: Float = <span class="number">0.5 </span>* <span class="kw">crate</span>::PI / <span class="number">180.</span>;
+
+    <span class="kw">let </span>gamma = gamma % <span class="kw">crate</span>::PI;
+
+    <span class="kw">if </span>(<span class="number">0.0</span>..<span class="number">2. </span>* THIRTY_RAD - EPSILON_RAD).contains(<span class="kw-2">&amp;</span>gamma) {
+        <span class="comment">// Between 0 and 60 degrees
+        </span>nu_0_60(ra, gamma, a_gi)
+    } <span class="kw">else if </span>gamma &lt; <span class="number">2. </span>* THIRTY_RAD + EPSILON_RAD {
+        <span class="comment">// 60 degrees
+        </span>nu_60(ra, a_gi)
+    } <span class="kw">else if </span>gamma &lt; <span class="number">3. </span>* THIRTY_RAD - EPSILON_RAD {
+        <span class="comment">// between 60 and 90 degrees
+        </span>nu_60_90(ra, gamma, a_gi)
+    } <span class="kw">else if </span>gamma &lt; <span class="number">3. </span>* THIRTY_RAD + EPSILON_RAD {
+        <span class="comment">// 90 degrees
+        </span>nu_90(ra, a_gi)
+    } <span class="kw">else if </span>gamma &lt; <span class="number">6. </span>* THIRTY_RAD {
+        <span class="comment">// between 90 and 180 degrees
+        </span>nu_90_180(ra, a_gi, gamma)
+    } <span class="kw">else </span>{
+        <span class="macro">unreachable!</span>(<span class="string">&quot;gamma is {}&quot;</span>, gamma)
     }
-    <span class="comment">// Eq. 44 of ISO15099/2003</span>
-    <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="op">|</span><span class="ident">x</span>: <span class="ident">Float</span><span class="op">|</span> -&gt; <span class="ident">Float</span> { (<span class="ident">x</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">abs</span>()) <span class="op">/</span> <span class="number">2.</span> };
-    <span class="kw">let</span> <span class="ident">cos_gamma</span> <span class="op">=</span> <span class="ident">gamma</span>.<span class="ident">cos</span>();
-
-    <span class="comment">// prepare return</span>
-    <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">aux</span>(<span class="number">1.</span> <span class="op">-</span> <span class="number">1708.</span> <span class="op">/</span> (<span class="ident">ra</span> <span class="op">*</span> <span class="ident">cos_gamma</span>));
-    <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="number">1.</span> <span class="op">-</span> <span class="number">1708.</span> <span class="op">*</span> ((<span class="number">1.8</span> <span class="op">*</span> <span class="ident">gamma</span>).<span class="ident">sin</span>()).<span class="ident">powf</span>(<span class="number">1.6</span>) <span class="op">/</span> (<span class="ident">ra</span> <span class="op">*</span> <span class="ident">cos_gamma</span>);
-    <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> (<span class="ident">ra</span> <span class="op">*</span> <span class="ident">cos_gamma</span> <span class="op">/</span> <span class="number">5830.</span>).<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">-</span> <span class="number">1.</span>;
-
-    <span class="comment">// eq. 43</span>
-    <span class="number">1.</span> <span class="op">+</span> <span class="number">1.44</span> <span class="op">*</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span> <span class="op">+</span> <span class="ident">aux</span>(<span class="ident">c</span>)
 }
 
-<span class="doccomment">/// Calculates the Nusselt number for cavities tilted $`60^o`$</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// From Equations 45-48 of ISO15099/2003  (based on ref. 8 of that standard)</span>
-<span class="kw">fn</span> <span class="ident">nu_60</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="comment">// Eq. 48</span>
-    <span class="kw">let</span> <span class="ident">g</span> <span class="op">=</span> <span class="number">0.5</span> <span class="op">/</span> (<span class="number">1.</span> <span class="op">+</span> (<span class="ident">ra</span> <span class="op">/</span> <span class="number">3160.</span>).<span class="ident">powf</span>(<span class="number">20.6</span>)).<span class="ident">powf</span>(<span class="number">0.1</span>);
-    <span class="comment">// Eq. 46</span>
-    <span class="kw">let</span> <span class="ident">nu1</span> <span class="op">=</span> (<span class="number">1.</span> <span class="op">+</span> (<span class="number">0.0936</span> <span class="op">*</span> <span class="ident">ra</span>.<span class="ident">powf</span>(<span class="number">0.314</span>) <span class="op">/</span> (<span class="number">1.</span> <span class="op">+</span> <span class="ident">g</span>)).<span class="ident">powi</span>(<span class="number">7</span>)).<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">7.</span>);
-    <span class="comment">// Eq. 47</span>
-    <span class="kw">let</span> <span class="ident">nu2</span> <span class="op">=</span> (<span class="number">0.104</span> <span class="op">+</span> <span class="number">0.175</span> <span class="op">/</span> <span class="ident">a_gi</span>) <span class="op">*</span> <span class="ident">ra</span>.<span class="ident">powf</span>(<span class="number">0.283</span>);
+<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between
+/// $`0^o`$ and $`60^o`$
+///
+/// From Equation 43 and 44 of ISO15099/2003 (based on ref. 7 of that standard)
+</span><span class="kw">fn </span>nu_0_60(ra: Float, gamma: Float, _a_gi: Float) -&gt; Float {
+    <span class="kw">if </span>ra &gt; <span class="number">1e5 </span>|| _a_gi &lt; <span class="number">20. </span>{
+        <span class="comment">// This clause is written in section 5.3.3.2... does
+        // not say what to do when this happens
+        </span><span class="macro">dbg!</span>(ra, _a_gi, <span class="string">&quot;Not expecting these values&quot;</span>);
+    }
+    <span class="comment">// Eq. 44 of ISO15099/2003
+    </span><span class="kw">let </span>aux = |x: Float| -&gt; Float { (x + x.abs()) / <span class="number">2. </span>};
+    <span class="kw">let </span>cos_gamma = gamma.cos();
 
-    <span class="comment">// Eq. 45</span>
-    <span class="kw">if</span> <span class="ident">nu1</span> <span class="op">&gt;</span> <span class="ident">nu2</span> {
-        <span class="ident">nu1</span>
-    } <span class="kw">else</span> {
-        <span class="ident">nu2</span>
+    <span class="comment">// prepare return
+    </span><span class="kw">let </span>a = aux(<span class="number">1. </span>- <span class="number">1708. </span>/ (ra * cos_gamma));
+    <span class="kw">let </span>b = <span class="number">1. </span>- <span class="number">1708. </span>* ((<span class="number">1.8 </span>* gamma).sin()).powf(<span class="number">1.6</span>) / (ra * cos_gamma);
+    <span class="kw">let </span>c = (ra * cos_gamma / <span class="number">5830.</span>).powf(<span class="number">1. </span>/ <span class="number">3.</span>) - <span class="number">1.</span>;
+
+    <span class="comment">// eq. 43
+    </span><span class="number">1. </span>+ <span class="number">1.44 </span>* a * b + aux(c)
+}
+
+<span class="doccomment">/// Calculates the Nusselt number for cavities tilted $`60^o`$
+///
+/// From Equations 45-48 of ISO15099/2003  (based on ref. 8 of that standard)
+</span><span class="kw">fn </span>nu_60(ra: Float, a_gi: Float) -&gt; Float {
+    <span class="comment">// Eq. 48
+    </span><span class="kw">let </span>g = <span class="number">0.5 </span>/ (<span class="number">1. </span>+ (ra / <span class="number">3160.</span>).powf(<span class="number">20.6</span>)).powf(<span class="number">0.1</span>);
+    <span class="comment">// Eq. 46
+    </span><span class="kw">let </span>nu1 = (<span class="number">1. </span>+ (<span class="number">0.0936 </span>* ra.powf(<span class="number">0.314</span>) / (<span class="number">1. </span>+ g)).powi(<span class="number">7</span>)).powf(<span class="number">1. </span>/ <span class="number">7.</span>);
+    <span class="comment">// Eq. 47
+    </span><span class="kw">let </span>nu2 = (<span class="number">0.104 </span>+ <span class="number">0.175 </span>/ a_gi) * ra.powf(<span class="number">0.283</span>);
+
+    <span class="comment">// Eq. 45
+    </span><span class="kw">if </span>nu1 &gt; nu2 {
+        nu1
+    } <span class="kw">else </span>{
+        nu2
     }
 }
 
-<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between $`60^o`$</span>
-<span class="doccomment">/// and $`90^o`$</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// From section 5.3.3.4 of ISO15099/2003  (based on ref. 8 of that standard)</span>
-<span class="kw">fn</span> <span class="ident">nu_60_90</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">gamma</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1e2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">ra</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">2e7</span> <span class="op">|</span><span class="op">|</span> <span class="ident">a_gi</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">5.</span> <span class="op">|</span><span class="op">|</span> <span class="ident">a_gi</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">100.</span> {
-        <span class="comment">// This clause is written in section 5.3.3.5... does</span>
-        <span class="comment">// not say what to do when this happens</span>
-        <span class="macro">dbg!</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>, <span class="string">&quot;Not expecting these values&quot;</span>);
+<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between $`60^o`$
+/// and $`90^o`$
+///
+/// From section 5.3.3.4 of ISO15099/2003  (based on ref. 8 of that standard)
+</span><span class="kw">fn </span>nu_60_90(ra: Float, gamma: Float, a_gi: Float) -&gt; Float {
+    <span class="kw">if </span>ra &lt;= <span class="number">1e2 </span>|| ra &gt;= <span class="number">2e7 </span>|| a_gi &lt;= <span class="number">5. </span>|| a_gi &gt;= <span class="number">100. </span>{
+        <span class="comment">// This clause is written in section 5.3.3.5... does
+        // not say what to do when this happens
+        </span><span class="macro">dbg!</span>(ra, a_gi, <span class="string">&quot;Not expecting these values&quot;</span>);
     }
-    <span class="kw">let</span> <span class="ident">nu60</span> <span class="op">=</span> <span class="ident">nu_60</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>); <span class="comment">// PI/3 radians</span>
-    <span class="kw">let</span> <span class="ident">nu90</span> <span class="op">=</span> <span class="ident">nu_90</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>); <span class="comment">// PI/2 radians</span>
-                                <span class="comment">// interpolate</span>
-    <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> (<span class="ident">gamma</span> <span class="op">-</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">/</span> (<span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">2.</span> <span class="op">-</span> <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">3.</span>);
-    <span class="ident">nu60</span> <span class="op">+</span> (<span class="ident">nu90</span> <span class="op">-</span> <span class="ident">nu60</span>) <span class="op">*</span> <span class="ident">x</span>
+    <span class="kw">let </span>nu60 = nu_60(ra, a_gi); <span class="comment">// PI/3 radians
+    </span><span class="kw">let </span>nu90 = nu_90(ra, a_gi); <span class="comment">// PI/2 radians
+                                // interpolate
+    </span><span class="kw">let </span>x = (gamma - <span class="kw">crate</span>::PI / <span class="number">3.</span>) / (<span class="kw">crate</span>::PI / <span class="number">2. </span>- <span class="kw">crate</span>::PI / <span class="number">3.</span>);
+    nu60 + (nu90 - nu60) * x
 }
 
-<span class="doccomment">/// Calculates the Nusselt number for cavities tilted $`90^o`$</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// From Equations 49-53 of ISO15099/2003  (based on ref. 8 of that standard)</span>
-<span class="kw">fn</span> <span class="ident">nu_90</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">let</span> <span class="ident">nu1</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1e4</span> {
-        <span class="comment">// Eq. 52</span>
-        <span class="number">1.</span> <span class="op">+</span> <span class="number">1.7596678</span> <span class="op">*</span> <span class="number">1e-10</span> <span class="op">*</span> <span class="ident">ra</span>.<span class="ident">powf</span>(<span class="number">2.2984755</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&lt;</span> <span class="number">5e4</span> {
-        <span class="comment">// Eq. 51</span>
-        <span class="number">0.028154</span> <span class="op">*</span> <span class="ident">ra</span>.<span class="ident">powf</span>(<span class="number">0.4134</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ra</span> <span class="op">&gt;</span> <span class="number">5e4</span> {
-        <span class="comment">// Eq. 50</span>
-        <span class="number">0.0673838</span> <span class="op">*</span> <span class="ident">ra</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>)
-    } <span class="kw">else</span> {
+<span class="doccomment">/// Calculates the Nusselt number for cavities tilted $`90^o`$
+///
+/// From Equations 49-53 of ISO15099/2003  (based on ref. 8 of that standard)
+</span><span class="kw">fn </span>nu_90(ra: Float, a_gi: Float) -&gt; Float {
+    <span class="kw">let </span>nu1 = <span class="kw">if </span>ra &lt;= <span class="number">1e4 </span>{
+        <span class="comment">// Eq. 52
+        </span><span class="number">1. </span>+ <span class="number">1.7596678 </span>* <span class="number">1e-10 </span>* ra.powf(<span class="number">2.2984755</span>)
+    } <span class="kw">else if </span>ra &lt; <span class="number">5e4 </span>{
+        <span class="comment">// Eq. 51
+        </span><span class="number">0.028154 </span>* ra.powf(<span class="number">0.4134</span>)
+    } <span class="kw">else if </span>ra &gt; <span class="number">5e4 </span>{
+        <span class="comment">// Eq. 50
+        </span><span class="number">0.0673838 </span>* ra.powf(<span class="number">1. </span>/ <span class="number">3.</span>)
+    } <span class="kw">else </span>{
         <span class="macro">unreachable!</span>()
     };
-    <span class="comment">// Eq. 53</span>
-    <span class="kw">let</span> <span class="ident">nu2</span> <span class="op">=</span> <span class="number">0.242</span> <span class="op">*</span> (<span class="ident">ra</span> <span class="op">/</span> <span class="ident">a_gi</span>).<span class="ident">powf</span>(<span class="number">0.272</span>);
+    <span class="comment">// Eq. 53
+    </span><span class="kw">let </span>nu2 = <span class="number">0.242 </span>* (ra / a_gi).powf(<span class="number">0.272</span>);
 
-    <span class="comment">// Eq. 49</span>
-    <span class="kw">if</span> <span class="ident">nu1</span> <span class="op">&gt;</span> <span class="ident">nu2</span> {
-        <span class="ident">nu1</span>
-    } <span class="kw">else</span> {
-        <span class="ident">nu2</span>
+    <span class="comment">// Eq. 49
+    </span><span class="kw">if </span>nu1 &gt; nu2 {
+        nu1
+    } <span class="kw">else </span>{
+        nu2
     }
 }
 
-<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between $`90^o`$ and $`180^o`$</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// From Equation 54 of ISO15099/2003  (based on ref. 10 of that standard)</span>
-<span class="kw">fn</span> <span class="ident">nu_90_180</span>(<span class="ident">ra</span>: <span class="ident">Float</span>, <span class="ident">a_gi</span>: <span class="ident">Float</span>, <span class="ident">gamma</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-    <span class="kw">let</span> <span class="ident">nu_v</span> <span class="op">=</span> <span class="ident">nu_90</span>(<span class="ident">ra</span>, <span class="ident">a_gi</span>);
-    <span class="number">1.</span> <span class="op">+</span> (<span class="ident">nu_v</span> <span class="op">-</span> <span class="number">1.</span>) <span class="op">*</span> <span class="ident">gamma</span>.<span class="ident">sin</span>()
+<span class="doccomment">/// Calculates the Nusselt number for cavities tilted between $`90^o`$ and $`180^o`$
+///
+/// From Equation 54 of ISO15099/2003  (based on ref. 10 of that standard)
+</span><span class="kw">fn </span>nu_90_180(ra: Float, a_gi: Float, gamma: Float) -&gt; Float {
+    <span class="kw">let </span>nu_v = nu_90(ra, a_gi);
+    <span class="number">1. </span>+ (nu_v - <span class="number">1.</span>) * gamma.sin()
 }
 
-<span class="comment">/***********/</span>
-<span class="comment">/* TESTING */</span>
-<span class="comment">/***********/</span>
+<span class="comment">/***********/
+/* TESTING */
+/***********/
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">testing</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+</span><span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>testing {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">check_value</span>(<span class="ident">a</span>: <span class="ident">Float</span>, <span class="ident">b</span>: <span class="ident">Float</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> (<span class="ident">a</span> <span class="op">-</span> <span class="ident">b</span>).<span class="ident">abs</span>() <span class="op">/</span> <span class="ident">a</span>.<span class="ident">abs</span>();
-        <span class="kw">if</span> <span class="ident">err</span> <span class="op">&gt;</span> <span class="number">1e-2</span> {
-            <span class="comment">//1% error max</span>
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;a = {} | b = {} | err = {}&quot;</span>, <span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">err</span>));
+    <span class="kw">fn </span>check_value(a: Float, b: Float) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+        <span class="kw">let </span>err = (a - b).abs() / a.abs();
+        <span class="kw">if </span>err &gt; <span class="number">1e-2 </span>{
+            <span class="comment">//1% error max
+            </span><span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;a = {} | b = {} | err = {}&quot;</span>, a, b, err));
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_thermal_conductivity</span>() {
-        <span class="ident">check_value</span>(
-            <span class="number">0.0241</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">0.0248</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_thermal_conductivity() {
+        check_value(<span class="number">0.0241</span>, <span class="kw">crate</span>::gas::AIR.thermal_conductivity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">0.0248</span>, <span class="kw">crate</span>::gas::AIR.thermal_conductivity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">0.0163</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">0.0169</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">0.0163</span>, <span class="kw">crate</span>::gas::ARGON.thermal_conductivity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">0.0169</span>, <span class="kw">crate</span>::gas::ARGON.thermal_conductivity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
+        check_value(
             <span class="number">0.0087</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="kw">crate</span>::gas::KRYPTON.thermal_conductivity(<span class="number">0. </span>+ <span class="number">273.15</span>),
         )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
+        .unwrap();
+        check_value(
             <span class="number">0.0089</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="kw">crate</span>::gas::KRYPTON.thermal_conductivity(<span class="number">10. </span>+ <span class="number">273.15</span>),
         )
-        .<span class="ident">unwrap</span>();
+        .unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">0.0052</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">0.0053</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">thermal_conductivity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">0.0052</span>, <span class="kw">crate</span>::gas::XENON.thermal_conductivity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">0.0053</span>, <span class="kw">crate</span>::gas::XENON.thermal_conductivity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_dynamic_viscosity</span>() {
-        <span class="ident">check_value</span>(
-            <span class="number">1.722e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">1.771e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_dynamic_viscosity() {
+        check_value(<span class="number">1.722e-5</span>, <span class="kw">crate</span>::gas::AIR.dynamic_viscosity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">1.771e-5</span>, <span class="kw">crate</span>::gas::AIR.dynamic_viscosity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">2.1e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">2.165e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">2.1e-5</span>, <span class="kw">crate</span>::gas::ARGON.dynamic_viscosity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">2.165e-5</span>, <span class="kw">crate</span>::gas::ARGON.dynamic_viscosity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">2.346e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
+        check_value(<span class="number">2.346e-5</span>, <span class="kw">crate</span>::gas::KRYPTON.dynamic_viscosity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(
             <span class="number">2.423e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
+            <span class="kw">crate</span>::gas::KRYPTON.dynamic_viscosity(<span class="number">10. </span>+ <span class="number">273.15</span>),
         )
-        .<span class="ident">unwrap</span>();
+        .unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">2.132e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">2.206e-5</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">dynamic_viscosity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">2.132e-5</span>, <span class="kw">crate</span>::gas::XENON.dynamic_viscosity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">2.206e-5</span>, <span class="kw">crate</span>::gas::XENON.dynamic_viscosity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_heat_capacity</span>() {
-        <span class="ident">check_value</span>(<span class="number">1006.1034</span>, <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">1006.2265</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_heat_capacity() {
+        check_value(<span class="number">1006.1034</span>, <span class="kw">crate</span>::gas::AIR.heat_capacity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">1006.2265</span>, <span class="kw">crate</span>::gas::AIR.heat_capacity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">521.9285</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">521.9285</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">521.9285</span>, <span class="kw">crate</span>::gas::ARGON.heat_capacity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">521.9285</span>, <span class="kw">crate</span>::gas::ARGON.heat_capacity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">248.0907</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">248.0907</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">248.0907</span>, <span class="kw">crate</span>::gas::KRYPTON.heat_capacity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">248.0907</span>, <span class="kw">crate</span>::gas::KRYPTON.heat_capacity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
 
-        <span class="ident">check_value</span>(
-            <span class="number">158.3397</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">heat_capacity</span>(<span class="number">0.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(
-            <span class="number">158.3397</span>,
-            <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">heat_capacity</span>(<span class="number">10.</span> <span class="op">+</span> <span class="number">273.15</span>),
-        )
-        .<span class="ident">unwrap</span>();
+        check_value(<span class="number">158.3397</span>, <span class="kw">crate</span>::gas::XENON.heat_capacity(<span class="number">0. </span>+ <span class="number">273.15</span>)).unwrap();
+        check_value(<span class="number">158.3397</span>, <span class="kw">crate</span>::gas::XENON.heat_capacity(<span class="number">10. </span>+ <span class="number">273.15</span>)).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_mass</span>() {
-        <span class="ident">check_value</span>(<span class="number">28.97</span>, <span class="ident"><span class="kw">crate</span>::gas::AIR</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">39.948</span>, <span class="ident"><span class="kw">crate</span>::gas::ARGON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">83.80</span>, <span class="ident"><span class="kw">crate</span>::gas::KRYPTON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">check_value</span>(<span class="number">131.3</span>, <span class="ident"><span class="kw">crate</span>::gas::XENON</span>.<span class="ident">mass</span>()).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_mass() {
+        check_value(<span class="number">28.97</span>, <span class="kw">crate</span>::gas::AIR.mass()).unwrap();
+        check_value(<span class="number">39.948</span>, <span class="kw">crate</span>::gas::ARGON.mass()).unwrap();
+        check_value(<span class="number">83.80</span>, <span class="kw">crate</span>::gas::KRYPTON.mass()).unwrap();
+        check_value(<span class="number">131.3</span>, <span class="kw">crate</span>::gas::XENON.mass()).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_density</span>() {
-        <span class="kw">let</span> <span class="ident">gas</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::AIR</span>;
-        <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">gas</span>.<span class="ident">density</span>(<span class="number">293.15</span>);
-        <span class="macro">assert!</span>((<span class="number">1.2041</span> <span class="op">-</span> <span class="ident">rho</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_density() {
+        <span class="kw">let </span>gas = <span class="kw">crate</span>::gas::AIR;
+        <span class="kw">let </span>rho = gas.density(<span class="number">293.15</span>);
+        <span class="macro">assert!</span>((<span class="number">1.2041 </span>- rho).abs() &lt; <span class="number">1e-3</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_nusselt</span>() {
-        <span class="comment">// https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/NusseltNumber.unit.cpp</span>
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_nusselt() {
+        <span class="comment">// https://github.com/LBNL-ETA/Windows-CalcEngine/blob/main/src/Tarcog/tst/units/NusseltNumber.unit.cpp
 
-        <span class="comment">// Test 1</span>
-        <span class="kw">let</span> <span class="ident">ra</span> <span class="op">=</span> <span class="number">3638.21667064528</span>;
-        <span class="kw">let</span> <span class="ident">a_gi</span> <span class="op">=</span> <span class="number">83.3333333333333</span>;
+        // Test 1
+        </span><span class="kw">let </span>ra = <span class="number">3638.21667064528</span>;
+        <span class="kw">let </span>a_gi = <span class="number">83.3333333333333</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">30.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.40474349200254</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        <span class="kw">let </span><span class="kw-2">mut </span>gamma = (<span class="number">30.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.40474349200254</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">60.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.08005742342789</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">60.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.08005742342789</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">73.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.05703042079892</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">73.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.05703042079892</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">90.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.02691818659179</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">90.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.02691818659179</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">134.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.01936332296842</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">134.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.01936332296842</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="comment">// Test 2</span>
-        <span class="kw">let</span> <span class="ident">ra</span> <span class="op">=</span> <span class="number">140.779077041012</span>;
-        <span class="kw">let</span> <span class="ident">a_gi</span> <span class="op">=</span> <span class="number">200.</span>;
+        <span class="comment">// Test 2
+        </span><span class="kw">let </span>ra = <span class="number">140.779077041012</span>;
+        <span class="kw">let </span>a_gi = <span class="number">200.</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">30.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        <span class="kw">let </span><span class="kw-2">mut </span>gamma = (<span class="number">30.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">60.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.00002777439094</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">60.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.00002777439094</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">73.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.00002235511865</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">73.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.00002235511865</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">90.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.00001526837795</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">90.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.00001526837795</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">134.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">1.00001098315195</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">134.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">1.00001098315195</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="comment">// Test 3</span>
-        <span class="kw">let</span> <span class="ident">ra</span> <span class="op">=</span> <span class="number">4633340.8866717</span>;
-        <span class="kw">let</span> <span class="ident">a_gi</span> <span class="op">=</span> <span class="number">10.</span>;
+        <span class="comment">// Test 3
+        </span><span class="kw">let </span>ra = <span class="number">4633340.8866717</span>;
+        <span class="kw">let </span>a_gi = <span class="number">10.</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">30.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">10.2680981545288</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        <span class="kw">let </span><span class="kw-2">mut </span>gamma = (<span class="number">30.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">10.2680981545288</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">60.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">11.5975502261096</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">60.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">11.5975502261096</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">73.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">11.4398529673101</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">73.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">11.4398529673101</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">90.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">11.2336334750340</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">90.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">11.2336334750340</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
 
-        <span class="ident">gamma</span> <span class="op">=</span> (<span class="number">134.0</span> <span class="kw">as</span> <span class="ident">Float</span>).<span class="ident">to_radians</span>();
-        <span class="kw">let</span> <span class="ident">nu</span> <span class="op">=</span> <span class="ident">nusselt</span>(<span class="ident">ra</span>, <span class="ident">gamma</span>, <span class="ident">a_gi</span>);
-        <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="number">8.361460</span>;
-        <span class="macro">assert!</span>((<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">nu</span>, <span class="ident">exp</span>, (<span class="ident">nu</span> <span class="op">-</span> <span class="ident">exp</span>).<span class="ident">abs</span>());
+        gamma = (<span class="number">134.0 </span><span class="kw">as </span>Float).to_radians();
+        <span class="kw">let </span>nu = nusselt(ra, gamma, a_gi);
+        <span class="kw">let </span>exp = <span class="number">8.361460</span>;
+        <span class="macro">assert!</span>((nu - exp).abs() &lt; <span class="number">1e-5</span>, <span class="string">&quot;Expecting {exp}... found {nu}&quot;</span>);
+        <span class="macro">dbg!</span>(nu, exp, (nu - exp).abs());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

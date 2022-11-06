@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ThermalModel","A structure containing all the thermal representation of the whole  [`SimpleModel`]"]]};
+window.SIDEBAR_ITEMS = {"constant":[["MODULE_NAME","The module name. For debugging purposes"]],"struct":[["ThermalModel","A structure containing all the thermal representation of the whole [`SimpleModel`]"]]};

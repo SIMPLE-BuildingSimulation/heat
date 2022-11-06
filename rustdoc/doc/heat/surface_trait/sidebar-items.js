@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["SurfaceTrait","A trait for defining shared behaviour between [`Surface`] and [`Fenestration`] objects"]]};

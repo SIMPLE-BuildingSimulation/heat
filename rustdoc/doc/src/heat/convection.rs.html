@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/convection.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>convection.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/convection.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>convection.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -232,169 +232,169 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
+*/
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
-<span class="kw">const</span> <span class="ident">MIN_H</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="number">0.1</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::Float;
+<span class="kw">const </span>MIN_H: Float = <span class="number">0.1</span>;
 
-<span class="doccomment">/// Represents a border condition of between a Surface</span>
-<span class="doccomment">/// and a Zone or the exterior</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConvectionParams</span> {
-    <span class="doccomment">/// The dry bulb temperature of the air, in $`C`$</span>
-    <span class="kw">pub</span> <span class="ident">air_temperature</span>: <span class="ident">Float</span>,
+<span class="doccomment">/// Represents a border condition of between a Surface
+/// and a Zone or the exterior
+</span><span class="attribute">#[derive(Debug, Clone, Copy)]
+</span><span class="kw">pub struct </span>ConvectionParams {
+    <span class="doccomment">/// The dry bulb temperature of the air, in $`C`$
+    </span><span class="kw">pub </span>air_temperature: Float,
 
-    <span class="doccomment">/// The wind speed, in m/2</span>
-    <span class="kw">pub</span> <span class="ident">air_speed</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The wind speed, in m/2
+    </span><span class="kw">pub </span>air_speed: Float,
 
-    <span class="doccomment">/// The incident Infrared Irradiance, in $`W/m^2`$</span>
-    <span class="kw">pub</span> <span class="ident">rad_temperature</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The incident Infrared Irradiance, in $`W/m^2`$
+    </span><span class="kw">pub </span>rad_temperature: Float,
 
-    <span class="comment">// /// The incident Solar Irradiance, in $`W/m^2`$</span>
-    <span class="comment">// pub solar_radiation: Float,</span>
+    <span class="comment">// /// The incident Solar Irradiance, in $`W/m^2`$
+    // pub solar_radiation: Float,
 
-    <span class="comment">// /// The environmental emissivity, used for calculating incident IR</span>
-    <span class="comment">// /// irradiance, if needed</span>
-    <span class="comment">// pub env_emissivity: Float,</span>
-    <span class="doccomment">/// The surface temperature in $`C`$</span>
-    <span class="kw">pub</span> <span class="ident">surface_temperature</span>: <span class="ident">Float</span>,
+    // /// The environmental emissivity, used for calculating incident IR
+    // /// irradiance, if needed
+    // pub env_emissivity: Float,
+    </span><span class="doccomment">/// The surface temperature in $`C`$
+    </span><span class="kw">pub </span>surface_temperature: Float,
 
-    <span class="doccomment">/// The roughness index, between 1 (Very Rough) and 6 (Very smooth)</span>
-    <span class="kw">pub</span> <span class="ident">roughness_index</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// The roughness index, between 1 (Very Rough) and 6 (Very smooth)
+    </span><span class="kw">pub </span>roughness_index: usize,
 
-    <span class="doccomment">/// The cosine of the surface tilt. Zero is 90 degrees; &gt;0 means</span>
-    <span class="doccomment">/// facing up; &lt;0 means facing down</span>
-    <span class="kw">pub</span> <span class="ident">cos_surface_tilt</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The cosine of the surface tilt. Zero is 90 degrees; &gt;0 means
+    /// facing up; &lt;0 means facing down
+    </span><span class="kw">pub </span>cos_surface_tilt: Float,
 }
 
-<span class="kw">impl</span> <span class="ident">ConvectionParams</span> {
-    <span class="doccomment">/// Calculates the indoor (i.e., natural) convection coefficient according to the TARP</span>
-    <span class="doccomment">/// model, based on the description given in EnergyPlus&#39; Engineering     </span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # The math</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// &gt; *This whole section comes from EnergyPlus&#39; Engineering Reference*</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The Engineering Reference presents three cases, depending on the difference in temperature</span>
-    <span class="doccomment">/// $`\Delta T = T_{air} - T_{surface}`$ and the angle of the surface (facing up or down). Then,</span>
-    <span class="doccomment">/// it defines three cases: when either of them is zero, when both have the same sign, or when both</span>
-    <span class="doccomment">/// have different signs. This function summarizes this through a variable called `aux`, which is the</span>
-    <span class="doccomment">/// product between $`\Delta T`$ and $`cos(\theta)`$ ($`\theta`$ being the angle of the surface). So,</span>
-    <span class="doccomment">/// the three cases before can be sumarized as `aux == 0`; `aux &gt; 0` and `aux &lt; 0`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## `aux == 0`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// h = 1.31|\Delta T|^{1/3}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## `aux &lt; 0.0`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// h = \frac{9.482 |\Delta T|^{1/3}}{7.238 - |cos(\theta)|}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## `aux &gt; 0.0`    </span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// h = \frac{1.81 |\Delta T|^{1/3}}{1.382 + |cos(\theta)|}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tarp_natural_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Float</span> {
-        <span class="kw">let</span> <span class="ident">delta_t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">air_temperature</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">surface_temperature</span>;
-        <span class="kw">let</span> <span class="ident">abs_delta_t</span> <span class="op">=</span> <span class="ident">delta_t</span>.<span class="ident">abs</span>();
+<span class="kw">impl </span>ConvectionParams {
+    <span class="doccomment">/// Calculates the indoor (i.e., natural) convection coefficient according to the TARP
+    /// model, based on the description given in EnergyPlus&#39; Engineering     
+    ///
+    ///
+    /// # The math
+    ///
+    /// &gt; *This whole section comes from EnergyPlus&#39; Engineering Reference*
+    ///
+    /// The Engineering Reference presents three cases, depending on the difference in temperature
+    /// $`\Delta T = T_{air} - T_{surface}`$ and the angle of the surface (facing up or down). Then,
+    /// it defines three cases: when either of them is zero, when both have the same sign, or when both
+    /// have different signs. This function summarizes this through a variable called `aux`, which is the
+    /// product between $`\Delta T`$ and $`cos(\theta)`$ ($`\theta`$ being the angle of the surface). So,
+    /// the three cases before can be sumarized as `aux == 0`; `aux &gt; 0` and `aux &lt; 0`.
+    ///
+    /// ## `aux == 0`
+    ///
+    /// ```math
+    /// h = 1.31|\Delta T|^{1/3}
+    /// ```
+    ///
+    /// ## `aux &lt; 0.0`
+    ///
+    /// ```math
+    /// h = \frac{9.482 |\Delta T|^{1/3}}{7.238 - |cos(\theta)|}
+    /// ```
+    ///
+    /// ## `aux &gt; 0.0`    
+    ///
+    /// ```math
+    /// h = \frac{1.81 |\Delta T|^{1/3}}{1.382 + |cos(\theta)|}
+    /// ```
+    </span><span class="kw">pub fn </span>get_tarp_natural_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Float {
+        <span class="kw">let </span>delta_t = <span class="self">self</span>.air_temperature - <span class="self">self</span>.surface_temperature;
+        <span class="kw">let </span>abs_delta_t = delta_t.abs();
 
-        <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta_t</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">1e-3</span> {
-            <span class="number">1.31</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> (<span class="ident">delta_t</span> <span class="op">&lt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&lt;</span> <span class="number">0.</span>)
-            <span class="op">|</span><span class="op">|</span> (<span class="ident">delta_t</span> <span class="op">&gt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&gt;</span> <span class="number">0.</span>)
+        <span class="kw">let </span>h = <span class="kw">if </span>delta_t.abs() &lt; <span class="number">1e-3 </span>|| <span class="self">self</span>.cos_surface_tilt.abs() &lt; <span class="number">1e-3 </span>{
+            <span class="number">1.31 </span>* abs_delta_t.powf(<span class="number">1. </span>/ <span class="number">3.</span>)
+        } <span class="kw">else if </span>(delta_t &lt; <span class="number">0. </span>&amp;&amp; <span class="self">self</span>.cos_surface_tilt &lt; <span class="number">0.</span>)
+            || (delta_t &gt; <span class="number">0. </span>&amp;&amp; <span class="self">self</span>.cos_surface_tilt &gt; <span class="number">0.</span>)
         {
-            <span class="number">9.482</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">/</span> (<span class="number">7.238</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>())
-        } <span class="kw">else</span> <span class="kw">if</span> (<span class="ident">delta_t</span> <span class="op">&gt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&lt;</span> <span class="number">0.</span>)
-            <span class="op">|</span><span class="op">|</span> (<span class="ident">delta_t</span> <span class="op">&lt;</span> <span class="number">0.</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span> <span class="op">&gt;</span> <span class="number">0.</span>)
+            <span class="number">9.482 </span>* abs_delta_t.powf(<span class="number">1. </span>/ <span class="number">3.</span>) / (<span class="number">7.238 </span>- <span class="self">self</span>.cos_surface_tilt.abs())
+        } <span class="kw">else if </span>(delta_t &gt; <span class="number">0. </span>&amp;&amp; <span class="self">self</span>.cos_surface_tilt &lt; <span class="number">0.</span>)
+            || (delta_t &lt; <span class="number">0. </span>&amp;&amp; <span class="self">self</span>.cos_surface_tilt &gt; <span class="number">0.</span>)
         {
-            <span class="number">1.81</span> <span class="op">*</span> <span class="ident">abs_delta_t</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>) <span class="op">/</span> (<span class="number">1.382</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">cos_surface_tilt</span>.<span class="ident">abs</span>())
-        } <span class="kw">else</span> {
+            <span class="number">1.81 </span>* abs_delta_t.powf(<span class="number">1. </span>/ <span class="number">3.</span>) / (<span class="number">1.382 </span>+ <span class="self">self</span>.cos_surface_tilt.abs())
+        } <span class="kw">else </span>{
             <span class="macro">unreachable!</span>()
         };
 
-        <span class="kw">if</span> <span class="ident">h</span> <span class="op">&lt;</span> <span class="ident">MIN_H</span> {
-            <span class="ident">MIN_H</span>
-        } <span class="kw">else</span> {
-            <span class="ident">h</span>
+        <span class="kw">if </span>h &lt; MIN_H {
+            MIN_H
+        } <span class="kw">else </span>{
+            h
         }
     }
 
-    <span class="doccomment">/// Calculates the exterior convection coefficient according to the TARP</span>
-    <span class="doccomment">/// model, based on the description given in EnergyPlus&#39; Engineering     </span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # The math</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// &gt; *This whole section comes from EnergyPlus&#39; Engineering Reference*</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The total convection</span>
-    <span class="doccomment">/// coefficient $`h_c`$ is based on two components: the natural convection $`h_n`$</span>
-    <span class="doccomment">/// and the forced convection $`h_f`$.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// h_c = h_f + h_n</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The forced component is calculated as follows:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// h_f = 2.537 W_f R_f \left( \frac{P \times V_z}{A}\right)^{0.5}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where $`A`$ is the area of the surface; $`V_z`$, the local wind speed; $`P`$,</span>
-    <span class="doccomment">/// the perimeter of the surface; and  $`W_f`$ is $`1.0`$ for surfaces facing the</span>
-    <span class="doccomment">/// wind and $`0.5`$ for others    </span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The value of $`R_f`$, on its part, is based on the roughness of the material.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// | Roughness index | $`R_f`$ | Example Material |</span>
-    <span class="doccomment">/// |-----------------|---------|------------------|</span>
-    <span class="doccomment">/// | 1. Very Rough   | 2.17    | Stucco           |</span>
-    <span class="doccomment">/// | 2. Rough        | 1.67    | Brick            |</span>
-    <span class="doccomment">/// | 3. Medium Rough | 1.52    | Concrete         |</span>
-    <span class="doccomment">/// | 4. Medoum Smooth| 1.13    | Clear pine       |</span>
-    <span class="doccomment">/// | 5. Smooth       | 1.11    | Smooth plaster   |</span>
-    <span class="doccomment">/// | 6. Very Smooth  | 1.0     | Glass            |</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The natural convection is the same one used for indoor convection</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tarp_convection_coefficient</span>(
+    <span class="doccomment">/// Calculates the exterior convection coefficient according to the TARP
+    /// model, based on the description given in EnergyPlus&#39; Engineering     
+    ///
+    ///
+    /// # The math
+    ///
+    /// &gt; *This whole section comes from EnergyPlus&#39; Engineering Reference*
+    ///
+    /// The total convection
+    /// coefficient $`h_c`$ is based on two components: the natural convection $`h_n`$
+    /// and the forced convection $`h_f`$.
+    ///
+    /// ```math
+    /// h_c = h_f + h_n
+    /// ```
+    ///
+    /// The forced component is calculated as follows:
+    ///
+    /// ```math
+    /// h_f = 2.537 W_f R_f \left( \frac{P \times V_z}{A}\right)^{0.5}
+    /// ```
+    ///
+    /// Where $`A`$ is the area of the surface; $`V_z`$, the local wind speed; $`P`$,
+    /// the perimeter of the surface; and  $`W_f`$ is $`1.0`$ for surfaces facing the
+    /// wind and $`0.5`$ for others    
+    ///
+    /// The value of $`R_f`$, on its part, is based on the roughness of the material.
+    ///
+    ///
+    /// | Roughness index | $`R_f`$ | Example Material |
+    /// |-----------------|---------|------------------|
+    /// | 1. Very Rough   | 2.17    | Stucco           |
+    /// | 2. Rough        | 1.67    | Brick            |
+    /// | 3. Medium Rough | 1.52    | Concrete         |
+    /// | 4. Medoum Smooth| 1.13    | Clear pine       |
+    /// | 5. Smooth       | 1.11    | Smooth plaster   |
+    /// | 6. Very Smooth  | 1.0     | Glass            |
+    ///
+    /// The natural convection is the same one used for indoor convection
+    </span><span class="kw">pub fn </span>get_tarp_convection_coefficient(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">area</span>: <span class="ident">Float</span>,
-        <span class="ident">perimeter</span>: <span class="ident">Float</span>,
-        <span class="ident">windward</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">Float</span> {
-        <span class="kw">const</span> <span class="ident">COEFFICIENTS</span>: [<span class="ident">Float</span>; <span class="number">6</span>] <span class="op">=</span> [<span class="number">2.17</span>, <span class="number">1.67</span>, <span class="number">1.52</span>, <span class="number">1.13</span>, <span class="number">1.11</span>, <span class="number">1.</span>];
+        area: Float,
+        perimeter: Float,
+        windward: bool,
+    ) -&gt; Float {
+        <span class="kw">const </span>COEFFICIENTS: [Float; <span class="number">6</span>] = [<span class="number">2.17</span>, <span class="number">1.67</span>, <span class="number">1.52</span>, <span class="number">1.13</span>, <span class="number">1.11</span>, <span class="number">1.</span>];
 
-        <span class="kw">let</span> <span class="ident">rf</span> <span class="op">=</span> <span class="ident">COEFFICIENTS</span>[<span class="self">self</span>.<span class="ident">roughness_index</span>];
+        <span class="kw">let </span>rf = COEFFICIENTS[<span class="self">self</span>.roughness_index];
 
-        <span class="kw">let</span> <span class="ident">wf</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">windward</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.5</span> };
+        <span class="kw">let </span>wf = <span class="kw">if </span>windward { <span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">0.5 </span>};
 
-        <span class="kw">let</span> <span class="ident">forced</span> <span class="op">=</span> <span class="number">2.537</span> <span class="op">*</span> <span class="ident">wf</span> <span class="op">*</span> <span class="ident">rf</span> <span class="op">*</span> (<span class="ident">perimeter</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">air_speed</span> <span class="op">/</span> <span class="ident">area</span>).<span class="ident">sqrt</span>();
+        <span class="kw">let </span>forced = <span class="number">2.537 </span>* wf * rf * (perimeter * <span class="self">self</span>.air_speed / area).sqrt();
 
-        <span class="kw">let</span> <span class="ident">natural</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_tarp_natural_convection_coefficient</span>();
+        <span class="kw">let </span>natural = <span class="self">self</span>.get_tarp_natural_convection_coefficient();
 
-        <span class="ident">forced</span> <span class="op">+</span> <span class="ident">natural</span> <span class="comment">// this will never be less than MIN_HS because natural is already limited</span>
-    }
+        forced + natural <span class="comment">// this will never be less than MIN_HS because natural is already limited
+    </span>}
 }
 
-<span class="comment">// #[cfg(test)]</span>
-<span class="comment">// mod testing {</span>
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_indoor_coefficient(){</span>
-<span class="comment">//         assert!(false)</span>
-<span class="comment">//     }</span>
+<span class="comment">// #[cfg(test)]
+// mod testing {
+//     #[test]
+//     fn test_indoor_coefficient(){
+//         assert!(false)
+//     }
 
-<span class="comment">//     #[test]</span>
-<span class="comment">//     fn test_outdoor_coefficient(){</span>
-<span class="comment">//         assert!(false)</span>
-<span class="comment">//     }</span>
-<span class="comment">// }</span>
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+//     #[test]
+//     fn test_outdoor_coefficient(){
+//         assert!(false)
+//     }
+// }
+</span></code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/zone.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>zone.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/zone.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>zone.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -116,53 +116,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
+*/
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">SimulationStateElement</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Space</span>};
-<span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::Float;
+<span class="kw">use </span>simple_model::{SimulationStateElement, SimulationStateHeader, Space};
+<span class="kw">use </span>std::rc::Rc;
 
-<span class="doccomment">/// A thermal representation of a [`Space`]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThermalZone</span> {
-    <span class="doccomment">/// The `Space` that this [`Thermal Zone`] represents</span>
-    <span class="kw">pub</span> <span class="ident">reference_space</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Space</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A thermal representation of a [`Space`]
+</span><span class="kw">pub struct </span>ThermalZone {
+    <span class="doccomment">/// The `Space` that this [`Thermal Zone`] represents
+    </span><span class="kw">pub </span>reference_space: Rc&lt;Space&gt;,
 
-    <span class="doccomment">/// volume of the zone</span>
-    <span class="ident">volume</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// volume of the zone
+    </span>volume: Float,
 }
 
-<span class="kw">impl</span> <span class="ident">ThermalZone</span> {
-    <span class="doccomment">/// This function creates a new ThermalZone from a Space.</span>
-    <span class="doccomment">/// It will copy the index of the space, so it should be used</span>
-    <span class="doccomment">/// by iterating the spaces in a model (so there is no mismatch).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_space</span>(
-        <span class="ident">space</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Space</span><span class="op">&gt;</span>,
-        <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
-        <span class="ident">space_index</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">volume</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">volume</span>().<span class="ident">unwrap</span>();
-        <span class="comment">// Add Space Temperature state</span>
-        <span class="kw">let</span> <span class="ident">state_index</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">push</span>(
-            <span class="comment">// start, by default, at 22.0 C</span>
-            <span class="ident">SimulationStateElement::SpaceDryBulbTemperature</span>(<span class="ident">space_index</span>),
+<span class="kw">impl </span>ThermalZone {
+    <span class="doccomment">/// This function creates a new ThermalZone from a Space.
+    /// It will copy the index of the space, so it should be used
+    /// by iterating the spaces in a model (so there is no mismatch).
+    </span><span class="kw">pub fn </span>from_space(
+        space: <span class="kw-2">&amp;</span>Rc&lt;Space&gt;,
+        state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
+        space_index: usize,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>volume = <span class="kw-2">*</span>space.volume().unwrap();
+        <span class="comment">// Add Space Temperature state
+        </span><span class="kw">let </span>state_index = state.push(
+            <span class="comment">// start, by default, at 22.0 C
+            </span>SimulationStateElement::SpaceDryBulbTemperature(space_index),
             <span class="number">22.0</span>,
         );
-        <span class="ident">space</span>.<span class="ident">set_dry_bulb_temperature_index</span>(<span class="ident">state_index</span>);
+        space.set_dry_bulb_temperature_index(state_index);
 
-        <span class="ident">ThermalZone</span> {
-            <span class="ident">reference_space</span>: <span class="ident">Rc::clone</span>(<span class="ident">space</span>),
-            <span class="ident">volume</span>,
+        ThermalZone {
+            reference_space: Rc::clone(space),
+            volume,
         }
     }
 
-    <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">temp</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="kw">let</span> <span class="ident">air</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::AIR</span>;
-        <span class="kw">let</span> <span class="ident">air_density</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">density</span>(<span class="ident">temp</span> <span class="op">+</span> <span class="number">273.15</span>); <span class="comment">//kg/m3</span>
-        <span class="kw">let</span> <span class="ident">air_specific_heat</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">heat_capacity</span>(<span class="ident">temp</span> <span class="op">+</span> <span class="number">273.15</span>); <span class="comment">//J/kg.K</span>
+    <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air
+    </span><span class="kw">pub fn </span>mcp(<span class="kw-2">&amp;</span><span class="self">self</span>, temp: Float) -&gt; Float {
+        <span class="kw">let </span>air = <span class="kw">crate</span>::gas::AIR;
+        <span class="kw">let </span>air_density = air.density(temp + <span class="number">273.15</span>); <span class="comment">//kg/m3
+        </span><span class="kw">let </span>air_specific_heat = air.heat_capacity(temp + <span class="number">273.15</span>); <span class="comment">//J/kg.K
 
-        <span class="self">self</span>.<span class="ident">volume</span> <span class="op">*</span> <span class="ident">air_density</span> <span class="op">*</span> <span class="ident">air_specific_heat</span> <span class="op">/</span> <span class="number">1.</span>
-    }
+        </span><span class="self">self</span>.volume * air_density * air_specific_heat / <span class="number">1.
+    </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

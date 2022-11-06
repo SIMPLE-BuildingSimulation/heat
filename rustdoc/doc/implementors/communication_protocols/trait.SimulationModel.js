@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["heat"] = [{"text":"impl SimulationModel for <a class=\"struct\" href=\"heat/model/struct.ThermalModel.html\" title=\"struct heat::model::ThermalModel\">ThermalModel</a>","synthetic":false,"types":["heat::model::ThermalModel"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"heat":[["impl SimulationModel for <a class=\"struct\" href=\"heat/model/struct.ThermalModel.html\" title=\"struct heat::model::ThermalModel\">ThermalModel</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

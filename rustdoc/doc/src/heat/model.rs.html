@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/model.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>model.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -663,6 +663,35 @@
 <span id="629">629</span>
 <span id="630">630</span>
 <span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -681,618 +710,647 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::discretization::Discretization</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
-<span class="kw">use</span> <span class="ident">calendar::Date</span>;
+*/
+</span><span class="kw">use </span><span class="kw">crate</span>::discretization::Discretization;
+<span class="kw">use </span><span class="kw">crate</span>::Float;
+<span class="kw">use </span>calendar::Date;
 
-<span class="kw">use</span> <span class="ident">communication_protocols</span>::{<span class="ident">ErrorHandling</span>, <span class="ident">MetaOptions</span>, <span class="ident">SimulationModel</span>};
-<span class="kw">use</span> <span class="ident">geometry3d::Vector3D</span>;
-<span class="kw">use</span> <span class="ident">weather::Weather</span>;
+<span class="kw">use </span>communication_protocols::{ErrorHandling, MetaOptions, SimulationModel};
+<span class="kw">use </span>geometry3d::Vector3D;
+<span class="kw">use </span>weather::Weather;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::surface</span>::{<span class="ident">SurfaceTrait</span>, <span class="ident">ThermalFenestration</span>, <span class="ident">ThermalSurface</span>, <span class="ident">ThermalSurfaceData</span>};
+<span class="kw">use </span><span class="kw">crate</span>::surface::{ThermalFenestration, ThermalSurface, ThermalSurfaceData};
+<span class="kw">use </span><span class="kw">crate</span>::surface_trait::SurfaceTrait;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::heating_cooling::calc_cooling_heating_power</span>;
+<span class="kw">use </span><span class="kw">crate</span>::heating_cooling::ThermalHVAC;
+<span class="kw">use </span><span class="kw">crate</span>::luminaire::ThermalLuminaire;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::zone::ThermalZone</span>;
-<span class="kw">use</span> <span class="ident">simple_model</span>::{<span class="ident">Boundary</span>, <span class="ident">SimpleModel</span>, <span class="ident">SimulationState</span>, <span class="ident">SimulationStateHeader</span>};
+<span class="kw">use </span><span class="kw">crate</span>::zone::ThermalZone;
+<span class="kw">use </span>simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 
-<span class="doccomment">/// A structure containing all the thermal representation of the whole </span>
-<span class="doccomment">/// [`SimpleModel`]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThermalModel</span> {
-    <span class="doccomment">/// All the Thermal Zones in the model</span>
-    <span class="kw">pub</span> <span class="ident">zones</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalZone</span><span class="op">&gt;</span>,
+<span class="doccomment">/// The module name. For debugging purposes
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>MODULE_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Thermal model&quot;</span>;
 
-    <span class="doccomment">/// All the surfaces in the model</span>
-    <span class="kw">pub</span> <span class="ident">surfaces</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalSurface</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A structure containing all the thermal representation of the whole
+/// [`SimpleModel`]
+</span><span class="kw">pub struct </span>ThermalModel {
+    <span class="doccomment">/// All the Thermal Zones in the model
+    </span><span class="kw">pub </span>zones: Vec&lt;ThermalZone&gt;,
 
-    <span class="doccomment">/// All the Fenestrations in the model</span>
-    <span class="kw">pub</span> <span class="ident">fenestrations</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalFenestration</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// All the surfaces in the model
+    </span><span class="kw">pub </span>surfaces: Vec&lt;ThermalSurface&gt;,
 
-    <span class="comment">// / contains all the HVACs</span>
-    <span class="comment">// pub hvacs: Vec&lt;Float&gt;,</span>
-    <span class="doccomment">/// The number of steps that this model needs</span>
-    <span class="doccomment">/// to take in order to advance one step of the main</span>
-    <span class="doccomment">/// simulation.</span>
-    <span class="kw">pub</span> <span class="ident">dt_subdivisions</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// All the Fenestrations in the model
+    </span><span class="kw">pub </span>fenestrations: Vec&lt;ThermalFenestration&gt;,
 
-    <span class="doccomment">/// The model&#39;s dt (i.e., main_dt / self.dt_subdivisions)</span>
-    <span class="kw">pub</span> <span class="ident">dt</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// HVAC systems
+    </span><span class="kw">pub </span>hvacs: Vec&lt;ThermalHVAC&gt;,
+
+    <span class="doccomment">/// Luminaires
+    </span><span class="kw">pub </span>luminaires: Vec&lt;ThermalLuminaire&gt;,
+
+    <span class="comment">// / contains all the HVACs
+    // pub hvacs: Vec&lt;Float&gt;,
+    </span><span class="doccomment">/// The number of steps that this model needs
+    /// to take in order to advance one step of the main
+    /// simulation.
+    </span><span class="kw">pub </span>dt_subdivisions: usize,
+
+    <span class="doccomment">/// The model&#39;s dt (i.e., main_dt / self.dt_subdivisions)
+    </span><span class="kw">pub </span>dt: Float,
 }
 
-<span class="kw">impl</span> <span class="ident">ErrorHandling</span> <span class="kw">for</span> <span class="ident">ThermalModel</span> {
-    <span class="kw">fn</span> <span class="ident">module_name</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-        <span class="string">&quot;Thermal model&quot;</span>
+<span class="kw">impl </span>ErrorHandling <span class="kw">for </span>ThermalModel {
+    <span class="kw">fn </span>module_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+        MODULE_NAME
     }
 }
 
-<span class="kw">impl</span> <span class="ident">SimulationModel</span> <span class="kw">for</span> <span class="ident">ThermalModel</span> {
-    <span class="kw">type</span> <span class="ident">Type</span> <span class="op">=</span> <span class="self">Self</span>;
-    <span class="kw">type</span> <span class="ident">OptionType</span> <span class="op">=</span> (); <span class="comment">// No options</span>
+<span class="kw">impl </span>SimulationModel <span class="kw">for </span>ThermalModel {
+    <span class="kw">type </span>Type = <span class="self">Self</span>;
+    <span class="kw">type </span>OptionType = (); <span class="comment">// No options
 
-    <span class="doccomment">/// Creates a new ThermalModel from a SimpleModel.</span>
-    <span class="doccomment">///    </span>
-    <span class="doccomment">/// # Inputs:</span>
-    <span class="doccomment">/// * model: the `SimpleModel` that the model represents</span>
-    <span class="doccomment">/// * state: the `SimulationStateHeader` attached to the SimpleModel</span>
-    <span class="doccomment">/// * n: the number of timesteps per hour taken by the main simulation.</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">_meta_options</span>: <span class="kw-2">&amp;</span><span class="ident">MetaOptions</span>,
-        <span class="ident">_options</span>: <span class="ident"><span class="self">Self</span>::OptionType</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-        <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationStateHeader</span>,
-        <span class="ident">n</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="comment">/* CREATE ALL ZONES, ONE PER SPACE */</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_zones</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ThermalZone</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">spaces</span>.<span class="ident">len</span>());
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">space</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">spaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="comment">// Add the zone to the model... this pushes it to the sate</span>
-            <span class="comment">// as well</span>
-            <span class="ident">thermal_zones</span>.<span class="ident">push</span>(<span class="ident">ThermalZone::from_space</span>(<span class="ident">space</span>, <span class="ident">state</span>, <span class="ident">i</span>));
+    </span><span class="doccomment">/// Creates a new ThermalModel from a SimpleModel.
+    ///    
+    /// # Inputs:
+    /// * model: the `SimpleModel` that the model represents
+    /// * state: the `SimulationStateHeader` attached to the SimpleModel
+    /// * n: the number of timesteps per hour taken by the main simulation.
+    </span><span class="kw">fn </span>new(
+        _meta_options: <span class="kw-2">&amp;</span>MetaOptions,
+        _options: <span class="self">Self</span>::OptionType,
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+        state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
+        n: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
+        <span class="comment">/* CREATE ALL ZONES, ONE PER SPACE */
+        </span><span class="kw">let </span><span class="kw-2">mut </span>zones: Vec&lt;ThermalZone&gt; = Vec::with_capacity(model.spaces.len());
+        <span class="kw">for </span>(i, space) <span class="kw">in </span>model.spaces.iter().enumerate() {
+            <span class="comment">// Add the zone to the model... this pushes it to the sate
+            // as well
+            </span>zones.push(ThermalZone::from_space(space, state, i));
         }
 
-        <span class="comment">/* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */</span>
+        <span class="comment">/* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
 
-        <span class="comment">// choose the smallest timestep in all constructions</span>
+        // choose the smallest timestep in all constructions
 
-        <span class="kw">let</span> <span class="ident">max_dx</span> <span class="op">=</span> <span class="number">0.04</span>; <span class="comment">// 4cm</span>
-        <span class="kw">let</span> <span class="ident">min_dt</span> <span class="op">=</span> <span class="number">60.</span>; <span class="comment">// 60 seconds</span>
+        </span><span class="kw">let </span>max_dx = <span class="number">0.04</span>; <span class="comment">// 4cm
+        </span><span class="kw">let </span>min_dt = <span class="number">60.</span>; <span class="comment">// 60 seconds
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_subdivisions</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">main_dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span>;
+        </span><span class="kw">let </span><span class="kw-2">mut </span>dt_subdivisions: usize = <span class="number">1</span>;
+        <span class="kw">let </span>main_dt = <span class="number">60. </span>* <span class="number">60. </span>/ n <span class="kw">as </span>Float;
 
-        <span class="comment">// Store the dts and n_nodes somwehere. Take note of the largest</span>
-        <span class="comment">// number of subditivions required</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_surfaces</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">len</span>());
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">surf</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_construction</span>(<span class="kw-2">&amp;</span><span class="ident">surf</span>.<span class="ident">construction</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Store the dts and n_nodes somwehere. Take note of the largest
+        // number of subditivions required
+        </span><span class="kw">let </span><span class="kw-2">mut </span>surfaces = Vec::with_capacity(model.surfaces.len());
+        <span class="kw">for </span>(i, surf) <span class="kw">in </span>model.surfaces.iter().enumerate() {
+            <span class="kw">let </span>construction = model.get_construction(<span class="kw-2">&amp;</span>surf.construction)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">normal</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">normal</span>();
-            <span class="kw">let</span> <span class="ident">cos_tilt</span> <span class="op">=</span> <span class="ident">normal</span> <span class="op">*</span> <span class="ident">Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-            <span class="macro">dbg!</span>(<span class="string">&quot;height is 1&quot;</span>);
-            <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="number">1.</span>;
-            <span class="kw">let</span> <span class="ident">angle</span> <span class="op">=</span> <span class="ident">cos_tilt</span>.<span class="ident">acos</span>();
-            <span class="kw">let</span> <span class="ident">area</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">area</span>();
-            <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">perimeter</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">centroid</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">centroid</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let </span>normal = surf.vertices.normal();
+            <span class="kw">let </span>cos_tilt = normal * Vector3D::new(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
+            <span class="attribute">#[cfg(debug_assertions)]
+            </span><span class="macro">dbg!</span>(<span class="string">&quot;height is 1&quot;</span>);
+            <span class="kw">let </span>height = <span class="number">1.</span>;
+            <span class="kw">let </span>angle = cos_tilt.acos();
+            <span class="kw">let </span>area = surf.area();
+            <span class="kw">let </span>perimeter = surf.vertices.outer().perimeter().unwrap();
+            <span class="kw">let </span>centroid = surf.vertices.outer().centroid().unwrap();
 
-            <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span>
-                <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="ident">model</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="ident">height</span>, <span class="ident">angle</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>d =
+                Discretization::new(<span class="kw-2">&amp;</span>construction, model, main_dt, max_dx, min_dt, height, angle)<span class="question-mark">?</span>;
 
-            <span class="kw">if</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="op">&gt;</span> <span class="ident">n_subdivisions</span> {
-                <span class="ident">n_subdivisions</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span>;
+            <span class="kw">if </span>d.tstep_subdivision &gt; dt_subdivisions {
+                dt_subdivisions = d.tstep_subdivision;
             }
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tsurf</span> <span class="op">=</span> <span class="ident">ThermalSurface::new</span>(
-                <span class="ident">state</span>,
-                <span class="ident">model</span>,
-                <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">site_details</span>,
-                <span class="ident">i</span>,
-                <span class="ident">surf</span>,
-                <span class="ident">area</span>,
-                <span class="ident">perimeter</span>,
-                <span class="ident">centroid</span>.<span class="ident">z</span>,
-                <span class="ident">normal</span>,
-                <span class="kw-2">&amp;</span><span class="ident">construction</span>,
-                <span class="ident">d</span>,
+            <span class="kw">let </span><span class="kw-2">mut </span>tsurf = ThermalSurface::new(
+                state,
+                model,
+                <span class="kw-2">&amp;</span>model.site_details,
+                i,
+                surf,
+                area,
+                perimeter,
+                centroid.z,
+                normal,
+                <span class="kw-2">&amp;</span>construction,
+                d,
             )<span class="question-mark">?</span>;
-            <span class="comment">// Match surface and zones</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">front_boundary</span>() {
-                <span class="ident">tsurf</span>.<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
+            <span class="comment">// Match surface and zones
+            </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.front_boundary() {
+                tsurf.set_front_boundary(b, model);
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">back_boundary</span>() {
-                <span class="ident">tsurf</span>.<span class="ident">set_back_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.back_boundary() {
+                tsurf.set_back_boundary(b, model);
             }
 
-            <span class="ident">thermal_surfaces</span>.<span class="ident">push</span>(<span class="ident">tsurf</span>);
+            surfaces.push(tsurf);
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thermal_fens</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">len</span>());
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">surf</span>) <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_construction</span>(<span class="kw-2">&amp;</span><span class="ident">surf</span>.<span class="ident">construction</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>fenestrations = Vec::with_capacity(model.fenestrations.len());
+        <span class="kw">for </span>(i, surf) <span class="kw">in </span>model.fenestrations.iter().enumerate() {
+            <span class="kw">let </span>construction = model.get_construction(<span class="kw-2">&amp;</span>surf.construction)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">normal</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">normal</span>();
-            <span class="kw">let</span> <span class="ident">cos_tilt</span> <span class="op">=</span> <span class="ident">normal</span> <span class="op">*</span> <span class="ident">Vector3D::new</span>(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
-            <span class="kw">let</span> <span class="ident">angle</span> <span class="op">=</span> <span class="ident">cos_tilt</span>.<span class="ident">acos</span>();
-            <span class="kw">let</span> <span class="ident">area</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">area</span>();
-            <span class="kw">let</span> <span class="ident">perimeter</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">perimeter</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">centroid</span> <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">vertices</span>.<span class="ident">outer</span>().<span class="ident">centroid</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let </span>normal = surf.vertices.normal();
+            <span class="kw">let </span>cos_tilt = normal * Vector3D::new(<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>);
+            <span class="kw">let </span>angle = cos_tilt.acos();
+            <span class="kw">let </span>area = surf.area();
+            <span class="kw">let </span>perimeter = surf.vertices.outer().perimeter().unwrap();
+            <span class="kw">let </span>centroid = surf.vertices.outer().centroid().unwrap();
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-            <span class="macro">dbg!</span>(<span class="string">&quot;height is 1&quot;</span>);
-            <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="number">1.</span>;
+            <span class="attribute">#[cfg(debug_assertions)]
+            </span><span class="macro">dbg!</span>(<span class="string">&quot;height is 1&quot;</span>);
+            <span class="kw">let </span>height = <span class="number">1.</span>;
 
-            <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span>
-                <span class="ident">Discretization::new</span>(<span class="kw-2">&amp;</span><span class="ident">construction</span>, <span class="ident">model</span>, <span class="ident">main_dt</span>, <span class="ident">max_dx</span>, <span class="ident">min_dt</span>, <span class="ident">height</span>, <span class="ident">angle</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>d =
+                Discretization::new(<span class="kw-2">&amp;</span>construction, model, main_dt, max_dx, min_dt, height, angle)<span class="question-mark">?</span>;
 
-            <span class="kw">if</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span> <span class="op">&gt;</span> <span class="ident">n_subdivisions</span> {
-                <span class="ident">n_subdivisions</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">tstep_subdivision</span>;
+            <span class="kw">if </span>d.tstep_subdivision &gt; dt_subdivisions {
+                dt_subdivisions = d.tstep_subdivision;
             }
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tsurf</span> <span class="op">=</span> <span class="ident">ThermalFenestration::new</span>(
-                <span class="ident">state</span>,
-                <span class="ident">model</span>,
-                <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">site_details</span>,
-                <span class="ident">i</span>,
-                <span class="ident">surf</span>,
-                <span class="ident">area</span>,
-                <span class="ident">perimeter</span>,
-                <span class="ident">centroid</span>.<span class="ident">z</span>,
-                <span class="ident">normal</span>,
-                <span class="kw-2">&amp;</span><span class="ident">construction</span>,
-                <span class="ident">d</span>,
+            <span class="kw">let </span><span class="kw-2">mut </span>tsurf = ThermalFenestration::new(
+                state,
+                model,
+                <span class="kw-2">&amp;</span>model.site_details,
+                i,
+                surf,
+                area,
+                perimeter,
+                centroid.z,
+                normal,
+                <span class="kw-2">&amp;</span>construction,
+                d,
             )<span class="question-mark">?</span>;
-            <span class="comment">// Match surface and zones</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">front_boundary</span>() {
-                <span class="ident">tsurf</span>.<span class="ident">set_front_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
+            <span class="comment">// Match surface and zones
+            </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.front_boundary() {
+                tsurf.set_front_boundary(b, model);
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">surf</span>.<span class="ident">back_boundary</span>() {
-                <span class="ident">tsurf</span>.<span class="ident">set_back_boundary</span>(<span class="ident">b</span>.<span class="ident">clone</span>());
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.back_boundary() {
+                tsurf.set_back_boundary(b, model);
             }
-            <span class="ident">thermal_fens</span>.<span class="ident">push</span>(<span class="ident">tsurf</span>);
+            fenestrations.push(tsurf);
         }
 
-        <span class="comment">// This is the model&#39;s dt now. When marching</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dt</span> <span class="op">=</span> <span class="number">60.</span> <span class="op">*</span> <span class="number">60.</span> <span class="op">/</span> (<span class="ident">n</span> <span class="kw">as</span> <span class="ident">Float</span> <span class="op">*</span> <span class="ident">n_subdivisions</span> <span class="kw">as</span> <span class="ident">Float</span>);
+        <span class="comment">// This is the model&#39;s dt now. When marching
+        </span><span class="kw">let </span><span class="kw-2">mut </span>dt = <span class="number">60. </span>* <span class="number">60. </span>/ (n <span class="kw">as </span>Float * dt_subdivisions <span class="kw">as </span>Float);
 
-        <span class="comment">// safety.</span>
-        <span class="kw">const</span> <span class="ident">SAFETY</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span>;
-        <span class="ident">dt</span> <span class="op">/</span><span class="op">=</span> <span class="ident">SAFETY</span> <span class="kw">as</span> <span class="ident">Float</span>;
-        <span class="ident">n_subdivisions</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">SAFETY</span>;
+        <span class="comment">// safety.
+        </span><span class="kw">const </span>SAFETY: usize = <span class="number">2</span>;
+        dt /= SAFETY <span class="kw">as </span>Float;
+        dt_subdivisions <span class="kw-2">*</span>= SAFETY;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">ThermalModel</span> {
-            <span class="ident">zones</span>: <span class="ident">thermal_zones</span>,
-            <span class="ident">surfaces</span>: <span class="ident">thermal_surfaces</span>,
-            <span class="ident">fenestrations</span>: <span class="ident">thermal_fens</span>,
-            <span class="ident">dt_subdivisions</span>: <span class="ident">n_subdivisions</span>,
-            <span class="ident">dt</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>hvacs: Vec&lt;ThermalHVAC&gt; = Vec::with_capacity(model.hvacs.len());
+        <span class="kw">for </span>hvac <span class="kw">in </span>model.hvacs.iter() {
+            <span class="kw">let </span>h = ThermalHVAC::from(hvac, model)<span class="question-mark">?</span>;
+            hvacs.push(h)
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>luminaires: Vec&lt;ThermalLuminaire&gt; = Vec::with_capacity(model.luminaires.len());
+        <span class="kw">for </span>luminaire <span class="kw">in </span>model.luminaires.iter() {
+            <span class="kw">let </span>l = ThermalLuminaire::from(luminaire, model)<span class="question-mark">?</span>;
+            luminaires.push(l)
+        }
+
+        <span class="prelude-val">Ok</span>(ThermalModel {
+            zones,
+            surfaces,
+            luminaires,
+            fenestrations,
+            dt_subdivisions,
+            hvacs,
+            dt,
         })
     }
 
-    <span class="doccomment">/// Advances one main_timestep through time. That is,</span>
-    <span class="doccomment">/// it performs `self.dt_subdivisions` steps, advancing</span>
-    <span class="doccomment">/// `self.dt` seconds in each of them.</span>
-    <span class="kw">fn</span> <span class="ident">march</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Weather</span><span class="op">&gt;</span>(
+    <span class="doccomment">/// Advances one main_timestep through time. That is,
+    /// it performs `self.dt_subdivisions` steps, advancing
+    /// `self.dt` seconds in each of them.
+    </span><span class="kw">fn </span>march&lt;W: Weather&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="kw-2">mut</span> <span class="ident">date</span>: <span class="ident">Date</span>,
-        <span class="ident">weather</span>: <span class="kw-2">&amp;</span><span class="ident">W</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-        <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimulationState</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="comment">// Iterate through all the sub-subdivitions</span>
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dt_subdivisions</span> {
-            <span class="comment">// advance in time</span>
-            <span class="ident">date</span>.<span class="ident">add_seconds</span>(<span class="self">self</span>.<span class="ident">dt</span>);
-            <span class="kw">let</span> <span class="ident">current_weather</span> <span class="op">=</span> <span class="ident">weather</span>.<span class="ident">get_weather_data</span>(<span class="ident">date</span>);
-            <span class="kw">let</span> <span class="ident">wind_direction</span> <span class="op">=</span> <span class="ident">current_weather</span>.<span class="ident">wind_direction</span>.<span class="ident">unwrap</span>().<span class="ident">to_radians</span>();
-            <span class="kw">let</span> <span class="ident">wind_speed</span> <span class="op">=</span> <span class="ident">current_weather</span>.<span class="ident">wind_speed</span>.<span class="ident">unwrap</span>();
+        <span class="kw-2">mut </span>date: Date,
+        weather: <span class="kw-2">&amp;</span>W,
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+        state: <span class="kw-2">&amp;mut </span>SimulationState,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+        <span class="comment">// Iterate through all the sub-subdivitions
+        </span><span class="kw">for _ in </span><span class="number">0</span>..<span class="self">self</span>.dt_subdivisions {
+            <span class="comment">// advance in time
+            </span>date.add_seconds(<span class="self">self</span>.dt);
+            <span class="kw">let </span>current_weather = weather.get_weather_data(date);
+            <span class="kw">let </span>wind_direction = current_weather.wind_direction.unwrap().to_radians();
+            <span class="kw">let </span>wind_speed = current_weather.wind_speed.unwrap();
 
-            <span class="kw">let</span> <span class="ident">t_out</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">current_weather</span>.<span class="ident">dry_bulb_temperature</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>,
-                <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(
-                    <span class="string">&quot;Trying to march on Thermal Model, but dry bulb temperature was not provided&quot;</span>
-                        .<span class="ident">to_string</span>(),
+            <span class="kw">let </span>t_out = <span class="kw">match </span>current_weather.dry_bulb_temperature {
+                <span class="prelude-val">Some</span>(v) =&gt; v,
+                <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(
+                    <span class="string">&quot;Trying to march on Thermal Model, but dry bulb temperature was not provided&quot;
+                        </span>.to_string(),
                 ),
             };
 
-            <span class="kw">let</span> <span class="ident">t_current</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_current_zones_temperatures</span>(<span class="ident">state</span>);
+            <span class="kw">let </span>t_current = <span class="self">self</span>.get_current_zones_temperatures(state);
 
-            <span class="comment">/* UPDATE SURFACE&#39;S TEMPERATURES */</span>
-            <span class="kw">for</span> (<span class="ident">solar_surf</span>, <span class="ident">model_surf</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">model</span>.<span class="ident">surfaces</span>.<span class="ident">iter</span>()) {
-                <span class="comment">// find t_in and t_out of surface.</span>
-                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">front_boundary</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span> { <span class="ident">space</span> } =&gt; {
-                            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                            <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()]
+            <span class="comment">/* UPDATE SURFACE&#39;S TEMPERATURES */
+            </span><span class="kw">for </span>(solar_surf, model_surf) <span class="kw">in </span><span class="self">self</span>.surfaces.iter().zip(model.surfaces.iter()) {
+                <span class="comment">// find t_in and t_out of surface.
+                </span><span class="kw">let </span>t_front = <span class="kw">match </span><span class="kw-2">&amp;</span>solar_surf.front_boundary {
+                    <span class="prelude-val">Some</span>(b) =&gt; <span class="kw">match </span>b {
+                        Boundary::Space { space } =&gt; {
+                            <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect(<span class="string">&quot;Space in front of surface has no temperature!&quot;</span>)
                         }
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::AmbientTemperature { temperature } =&gt; <span class="kw-2">*</span>temperature,
+                        Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
                     },
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
+                    <span class="prelude-val">None </span>=&gt; t_out,
                 };
-                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">back_boundary</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span> { <span class="ident">space</span> } =&gt; {
-                            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                            <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()]
+                <span class="kw">let </span>t_back = <span class="kw">match </span><span class="kw-2">&amp;</span>solar_surf.back_boundary {
+                    <span class="prelude-val">Some</span>(b) =&gt; <span class="kw">match </span>b {
+                        Boundary::Space { space } =&gt; {
+                            <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect(<span class="string">&quot;Space at the back of surface has no temperature!&quot;</span>)
                         }
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::AmbientTemperature { temperature } =&gt; <span class="kw-2">*</span>temperature,
                     },
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
+                    <span class="prelude-val">None </span>=&gt; t_out,
                 };
 
-                <span class="comment">// Update temperatures</span>
-                <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span>
-                    <span class="ident">solar_surf</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
-                <span class="ident">model_surf</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
-                <span class="ident">model_surf</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
-            } <span class="comment">// end of iterating surface</span>
+                <span class="comment">// Update temperatures
+                </span><span class="kw">let </span>(q_front, q_back) =
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt);
+                model_surf.set_front_convective_heat_flow(state, q_front);
+                model_surf.set_back_convective_heat_flow(state, q_back);
+            } <span class="comment">// end of iterating surface
 
-            <span class="comment">// What  if they are open???</span>
-            <span class="comment">// for i in 0..self.fenestrations.len() {</span>
-            <span class="kw">for</span> (<span class="ident">solar_surf</span>, <span class="ident">model_surf</span>) <span class="kw">in</span>
-                <span class="self">self</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">model</span>.<span class="ident">fenestrations</span>.<span class="ident">iter</span>())
+            // What  if they are open???
+            // for i in 0..self.fenestrations.len() {
+            </span><span class="kw">for </span>(solar_surf, model_surf) <span class="kw">in
+                </span><span class="self">self</span>.fenestrations.iter().zip(model.fenestrations.iter())
             {
-                <span class="comment">// find t_in and t_out of surface.</span>
-                <span class="kw">let</span> <span class="ident">t_front</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">front_boundary</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span> { <span class="ident">space</span> } =&gt; {
-                            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                            <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()]
+                <span class="comment">// find t_in and t_out of surface.
+                </span><span class="kw">let </span>t_front = <span class="kw">match </span><span class="kw-2">&amp;</span>solar_surf.front_boundary {
+                    <span class="prelude-val">Some</span>(b) =&gt; <span class="kw">match </span>b {
+                        Boundary::Space { space } =&gt; {
+                            <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect(<span class="string">&quot;Space in front of fenestration has no temperature!&quot;</span>)
                         }
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::AmbientTemperature { temperature } =&gt; <span class="kw-2">*</span>temperature,
                     },
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
+                    <span class="prelude-val">None </span>=&gt; t_out,
                 };
-                <span class="kw">let</span> <span class="ident">t_back</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">solar_surf</span>.<span class="ident">back_boundary</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="kw">match</span> <span class="ident">b</span> {
-                        <span class="ident">Boundary::Space</span> { <span class="ident">space</span> } =&gt; {
-                            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                            <span class="ident">t_current</span>[<span class="kw-2">*</span><span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>()]
+                <span class="kw">let </span>t_back = <span class="kw">match </span><span class="kw-2">&amp;</span>solar_surf.back_boundary {
+                    <span class="prelude-val">Some</span>(b) =&gt; <span class="kw">match </span>b {
+                        Boundary::Space { space } =&gt; {
+                            <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
+                            space
+                                .dry_bulb_temperature(state)
+                                .expect(<span class="string">&quot;Space at the back of fenestration has no temperature!&quot;</span>)
                         }
-                        <span class="ident">Boundary::Ground</span> =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
+                        Boundary::AmbientTemperature { temperature } =&gt; <span class="kw-2">*</span>temperature,
                     },
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">t_out</span>,
+                    <span class="prelude-val">None </span>=&gt; t_out,
                 };
 
-                <span class="comment">// Update temperatures</span>
-                <span class="kw">let</span> (<span class="ident">q_front</span>, <span class="ident">q_back</span>) <span class="op">=</span>
-                    <span class="ident">solar_surf</span>.<span class="ident">march</span>(<span class="ident">state</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>, <span class="ident">wind_direction</span>, <span class="ident">wind_speed</span>, <span class="self">self</span>.<span class="ident">dt</span>);
-                <span class="ident">model_surf</span>.<span class="ident">set_front_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_front</span>);
-                <span class="ident">model_surf</span>.<span class="ident">set_back_convective_heat_flow</span>(<span class="ident">state</span>, <span class="ident">q_back</span>);
-            } <span class="comment">// end of iterating surface</span>
+                <span class="comment">// Update temperatures
+                </span><span class="kw">let </span>(q_front, q_back) =
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt);
+                model_surf.set_front_convective_heat_flow(state, q_front);
+                model_surf.set_back_convective_heat_flow(state, q_back);
+            } <span class="comment">// end of iterating surface
 
-            <span class="comment">/* UPDATE ZONES&#39; TEMPERATURE */</span>
-            <span class="comment">// This is done analytically.</span>
-            <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">calculate_zones_abc</span>(<span class="ident">model</span>, <span class="ident">state</span>)<span class="question-mark">?</span>;
+            /* UPDATE ZONES&#39; TEMPERATURE */
+            // This is done analytically.
+            </span><span class="kw">let </span>(a, b, c) = <span class="self">self</span>.calculate_zones_abc(model, state)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">future_temperatures</span> <span class="op">=</span>
-                <span class="self">self</span>.<span class="ident">estimate_zones_future_temperatures</span>(<span class="kw-2">&amp;</span><span class="ident">t_current</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>, <span class="self">self</span>.<span class="ident">dt</span>);
-            <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+            <span class="kw">let </span>future_temperatures =
+                <span class="self">self</span>.estimate_zones_future_temperatures(<span class="kw-2">&amp;</span>t_current, <span class="kw-2">&amp;</span>a, <span class="kw-2">&amp;</span>b, <span class="kw-2">&amp;</span>c, <span class="self">self</span>.dt);
+            <span class="kw">for </span>(i, zone) <span class="kw">in </span><span class="self">self</span>.zones.iter().enumerate() {
                 <span class="macro">assert!</span>(
-                    <span class="op">!</span><span class="ident">future_temperatures</span>[<span class="ident">i</span>].<span class="ident">is_nan</span>(),
-                    <span class="string">&quot;Future temperatures is NaN&quot;</span>
-                );
-                <span class="ident">zone</span>.<span class="ident">reference_space</span>
-                    .<span class="ident">set_dry_bulb_temperature</span>(<span class="ident">state</span>, <span class="ident">future_temperatures</span>[<span class="ident">i</span>]);
+                    !future_temperatures[i].is_nan(),
+                    <span class="string">&quot;Future temperatures is NaN&quot;
+                </span>);
+                zone.reference_space
+                    .set_dry_bulb_temperature(state, future_temperatures[i]);
             }
-        } <span class="comment">// End of &#39;in each sub-timestep-subdivision&#39;</span>
+        } <span class="comment">// End of &#39;in each sub-timestep-subdivision&#39;
 
-        <span class="prelude-val">Ok</span>(())
+        </span><span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ThermalModel</span> {
-    <span class="doccomment">/// Retrieves the dt_subdivisions (i.e. the</span>
-    <span class="doccomment">/// number of substimesteps per timestep of this</span>
-    <span class="doccomment">/// model)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dt_subdivisions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">dt_subdivisions</span>
+<span class="kw">impl </span>ThermalModel {
+    <span class="doccomment">/// Retrieves the dt_subdivisions (i.e. the
+    /// number of substimesteps per timestep of this
+    /// model)
+    </span><span class="kw">pub fn </span>dt_subdivisions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.dt_subdivisions
     }
 
-    <span class="doccomment">/// Retrieves a ThermalZone</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_thermal_zone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ThermalZone</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="ident">ThermalModel::internal_error</span>(<span class="macro">format!</span>(
+    <span class="doccomment">/// Retrieves a ThermalZone
+    </span><span class="kw">pub fn </span>get_thermal_zone(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>ThermalZone, String&gt; {
+        <span class="kw">if </span>index &gt;= <span class="self">self</span>.zones.len() {
+            <span class="kw">return </span>ThermalModel::internal_error(<span class="macro">format!</span>(
                 <span class="string">&quot;Ouf of bounds: Thermal Zone number {} does not exist&quot;</span>,
-                <span class="ident">index</span>
+                index
             ));
         }
 
-        <span class="prelude-val">Ok</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">zones</span>[<span class="ident">index</span>])
+        <span class="prelude-val">Ok</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.zones[index])
     }
 
-    <span class="doccomment">/// This estimation assumes nothing changes during this time.</span>
-    <span class="doccomment">/// This is self evidently wrong, as we know that, for example, the surface temperatures</span>
-    <span class="doccomment">/// will change together with the zone air temperature. However, in short periods of time</span>
-    <span class="doccomment">/// this can actually work.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Everything starts from the following equation, representing a heat balance over</span>
-    <span class="doccomment">/// the air and the contents of the Thermal zone.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// C_{zone}\frac{dT(t)}{dt} = \displaystyle\sum_{i=loads}{Q_i} + \displaystyle\sum_{i=surf.}{h_iA_i(T_i-T)}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_p(T_i-T)}+\dot{m}_{inf}C_p(T_{out}-T)+\dot{m}_{supplied}C_p(T_{sup}-T)</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// Which can be expanded into the following</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// C_{zone}\frac{dT(t)}{dt} = A - B T</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where $`A`$ and $`B`$ are constant terms (at least they can be assumed to be during this brief period of time).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// A = \displaystyle\sum_{i=loads}{Q_i} + \displaystyle\sum_{i=surf.}{h_iA_i T_i}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_pT_i}+\dot{m}_{inf}C_pT_{out}+\dot{m}_{supplied}C_pT_{sup}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// B= \displaystyle\sum_{i=surf.}{h_iA_i}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_p}+\dot{m}_{inf}C_p +\dot{m}_{supplied}C_p</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// And so, (solving the differential equation) the Temperature $`T`$ at a time $`t`$ into the future</span>
-    <span class="doccomment">/// can be estimated based on the current Temperature of the zone ($`T_{current}`$) and the following</span>
-    <span class="doccomment">/// equation:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">///  T(t) = \frac{A}{B} + \left( T_{current} - \frac{A}{B} \right)e^{-\frac{B}{C_{zone}}t}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// And the average temperature during the same periood is:</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// \frac{\displaystyle\int_{0}^t{T(t)dt}}{t} = \frac{A}{B}+\frac{C_{zone}\left(T_{current}-\frac{A}{B}\right)}{Bt}\left(1-e^{-\frac{Bt}{C_{zone}}} \right)</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">calculate_zones_abc</span>(
+    <span class="doccomment">/// This estimation assumes nothing changes during this time.
+    /// This is self evidently wrong, as we know that, for example, the surface temperatures
+    /// will change together with the zone air temperature. However, in short periods of time
+    /// this can actually work.
+    ///
+    /// Everything starts from the following equation, representing a heat balance over
+    /// the air and the contents of the Thermal zone.
+    ///
+    /// ```math
+    /// C_{zone}\frac{dT(t)}{dt} = \displaystyle\sum_{i=loads}{Q_i} + \displaystyle\sum_{i=surf.}{h_iA_i(T_i-T)}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_p(T_i-T)}+\dot{m}_{inf}C_p(T_{out}-T)+\dot{m}_{supplied}C_p(T_{sup}-T)
+    /// ```
+    /// Which can be expanded into the following
+    ///
+    /// ```math
+    /// C_{zone}\frac{dT(t)}{dt} = A - B T
+    /// ```
+    ///
+    /// Where $`A`$ and $`B`$ are constant terms (at least they can be assumed to be during this brief period of time).
+    ///
+    /// ```math
+    /// A = \displaystyle\sum_{i=loads}{Q_i} + \displaystyle\sum_{i=surf.}{h_iA_i T_i}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_pT_i}+\dot{m}_{inf}C_pT_{out}+\dot{m}_{supplied}C_pT_{sup}
+    /// ```
+    ///
+    /// ```math
+    /// B= \displaystyle\sum_{i=surf.}{h_iA_i}+\displaystyle\sum_{i=otherzones}{\dot{m_i}C_p}+\dot{m}_{inf}C_p +\dot{m}_{supplied}C_p
+    /// ```
+    ///
+    /// And so, (solving the differential equation) the Temperature $`T`$ at a time $`t`$ into the future
+    /// can be estimated based on the current Temperature of the zone ($`T_{current}`$) and the following
+    /// equation:
+    ///
+    /// ```math
+    ///  T(t) = \frac{A}{B} + \left( T_{current} - \frac{A}{B} \right)e^{-\frac{B}{C_{zone}}t}
+    /// ```
+    ///
+    /// And the average temperature during the same periood is:
+    /// ```math
+    /// \frac{\displaystyle\int_{0}^t{T(t)dt}}{t} = \frac{A}{B}+\frac{C_{zone}\left(T_{current}-\frac{A}{B}\right)}{Bt}\left(1-e^{-\frac{Bt}{C_{zone}}} \right)
+    /// ```
+    </span><span class="attribute">#[allow(clippy::type_complexity)]
+    </span><span class="kw">fn </span>calculate_zones_abc(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-        <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>), <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
-        <span class="comment">// Initialize vectors containing a and b</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0.0</span>; <span class="ident">nzones</span>];
+        model: <span class="kw-2">&amp;</span>SimpleModel,
+        state: <span class="kw-2">&amp;</span>SimulationState,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;Float&gt;, Vec&lt;Float&gt;, Vec&lt;Float&gt;), String&gt; {
+        <span class="kw">let </span>nzones = <span class="self">self</span>.zones.len();
+        <span class="comment">// Initialize vectors containing a and b
+        </span><span class="kw">let </span><span class="kw-2">mut </span>a = <span class="macro">vec!</span>[<span class="number">0.0</span>; nzones];
+        <span class="kw">let </span><span class="kw-2">mut </span>b = <span class="macro">vec!</span>[<span class="number">0.0</span>; nzones];
+        <span class="kw">let </span><span class="kw-2">mut </span>c = <span class="macro">vec!</span>[<span class="number">0.0</span>; nzones];
 
-        <span class="comment">/* Qi */</span>
-        <span class="comment">// Heating/Cooling</span>
-        <span class="kw">for</span> <span class="ident">hvac</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">hvacs</span>.<span class="ident">iter</span>() {
-            <span class="kw">for</span> (<span class="ident">target_space_index</span>, <span class="ident">heating_cooling</span>) <span class="kw">in</span>
-                <span class="ident">calc_cooling_heating_power</span>(<span class="ident">hvac</span>, <span class="ident">model</span>, <span class="ident">state</span>)<span class="question-mark">?</span>
-            {
-                <span class="ident">a</span>[<span class="ident">target_space_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">heating_cooling</span>;
+        <span class="comment">/* Qi */
+        // Heating/Cooling
+        </span><span class="kw">for </span>hvac <span class="kw">in </span><span class="self">self</span>.hvacs.iter() {
+            <span class="kw">for </span>(target_space_index, heating_cooling) <span class="kw">in </span>hvac.calc_cooling_heating_power(state)<span class="question-mark">? </span>{
+                a[target_space_index] += heating_cooling;
             }
-            <span class="comment">// heating through air supply?</span>
-        }
-        <span class="comment">// Heating/Cooling</span>
-        <span class="kw">for</span> <span class="ident">luminaire</span> <span class="kw">in</span> <span class="ident">model</span>.<span class="ident">luminaires</span>.<span class="ident">iter</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">target_space</span>) <span class="op">=</span> <span class="ident">luminaire</span>.<span class="ident">target_space</span>() {
-                <span class="kw">let</span> <span class="ident">target_space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">target_space</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_space_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">target_space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">consumption</span> <span class="op">=</span> <span class="ident">luminaire</span>
-                    .<span class="ident">power_consumption</span>(<span class="ident">state</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;Luminaire has no Power Consumption state&quot;</span>);
-                <span class="ident">a</span>[<span class="ident">target_space_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">consumption</span>;
-            }
+            <span class="comment">// heating through air supply?
+        </span>}
+        <span class="comment">// Luminaires
+        </span><span class="kw">for </span>luminaire <span class="kw">in </span><span class="self">self</span>.luminaires.iter() {
+            <span class="kw">let </span>index = luminaire.target_space_index;
+            <span class="kw">let </span>consumption = luminaire
+                .parent
+                .power_consumption(state)
+                .expect(<span class="string">&quot;Luminaire has no Power Consumption state&quot;</span>);
+            a[index] += consumption;
         }
 
-        <span class="kw">let</span> <span class="ident">air</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::gas::AIR</span>;
-        <span class="comment">// Other</span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">zone</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">model</span>.<span class="ident">spaces</span>[<span class="ident">i</span>];
-            <span class="comment">/* INFILTRATION AND VENTILATION */</span>
-            <span class="comment">// infiltration from outside</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_inf_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">infiltration_temperature</span>(<span class="ident">state</span>) {
-                <span class="kw">let</span> <span class="ident">v_inf</span> <span class="op">=</span> <span class="ident">space</span>
-                    .<span class="ident">infiltration_volume</span>(<span class="ident">state</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;Space has infiltration temperature but not volume&quot;</span>);
+        <span class="kw">let </span>air = <span class="kw">crate</span>::gas::AIR;
+        <span class="comment">// Other
+        </span><span class="kw">for </span>(i, zone) <span class="kw">in </span><span class="self">self</span>.zones.iter().enumerate() {
+            <span class="kw">let </span>space = <span class="kw-2">&amp;</span>model.spaces[i];
+            <span class="comment">/* INFILTRATION AND VENTILATION */
+            // infiltration from outside
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(t_inf_inwards) = space.infiltration_temperature(state) {
+                <span class="kw">let </span>v_inf = space
+                    .infiltration_volume(state)
+                    .expect(<span class="string">&quot;Space has infiltration temperature but not volume&quot;</span>);
 
-                <span class="kw">let</span> <span class="ident">cp_inf_inwards</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">heat_capacity</span>(<span class="ident">t_inf_inwards</span> <span class="op">+</span> <span class="number">273.15</span>);
-                <span class="kw">let</span> <span class="ident">rho_inf_inwards</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">density</span>(<span class="ident">t_inf_inwards</span> <span class="op">+</span> <span class="number">273.15</span>);
-                <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">rho_inf_inwards</span> <span class="op">*</span> <span class="ident">v_inf</span> <span class="op">*</span> <span class="ident">cp_inf_inwards</span> <span class="op">*</span> <span class="ident">t_inf_inwards</span>;
-                <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">rho_inf_inwards</span> <span class="op">*</span> <span class="ident">v_inf</span> <span class="op">*</span> <span class="ident">cp_inf_inwards</span>;
+                <span class="kw">let </span>cp_inf_inwards = air.heat_capacity(t_inf_inwards + <span class="number">273.15</span>);
+                <span class="kw">let </span>rho_inf_inwards = air.density(t_inf_inwards + <span class="number">273.15</span>);
+                a[i] += rho_inf_inwards * v_inf * cp_inf_inwards * t_inf_inwards;
+                b[i] += rho_inf_inwards * v_inf * cp_inf_inwards;
             }
 
-            <span class="comment">// ventilation</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">t_vent_inwards</span>) <span class="op">=</span> <span class="ident">space</span>.<span class="ident">ventilation_temperature</span>(<span class="ident">state</span>) {
-                <span class="kw">let</span> <span class="ident">v_vent</span> <span class="op">=</span> <span class="ident">space</span>
-                    .<span class="ident">ventilation_volume</span>(<span class="ident">state</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;Space has ventilation temperature but not volume&quot;</span>);
-                <span class="kw">let</span> <span class="ident">cp_vent_inwards</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">heat_capacity</span>(<span class="ident">t_vent_inwards</span> <span class="op">+</span> <span class="number">273.15</span>);
-                <span class="kw">let</span> <span class="ident">rho_vent_inwards</span> <span class="op">=</span> <span class="ident">air</span>.<span class="ident">density</span>(<span class="ident">t_vent_inwards</span> <span class="op">+</span> <span class="number">273.15</span>);
-                <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">rho_vent_inwards</span> <span class="op">*</span> <span class="ident">v_vent</span> <span class="op">*</span> <span class="ident">cp_vent_inwards</span> <span class="op">*</span> <span class="ident">t_vent_inwards</span>;
-                <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">rho_vent_inwards</span> <span class="op">*</span> <span class="ident">v_vent</span> <span class="op">*</span> <span class="ident">cp_vent_inwards</span>;
+            <span class="comment">// ventilation
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(t_vent_inwards) = space.ventilation_temperature(state) {
+                <span class="kw">let </span>v_vent = space
+                    .ventilation_volume(state)
+                    .expect(<span class="string">&quot;Space has ventilation temperature but not volume&quot;</span>);
+                <span class="kw">let </span>cp_vent_inwards = air.heat_capacity(t_vent_inwards + <span class="number">273.15</span>);
+                <span class="kw">let </span>rho_vent_inwards = air.density(t_vent_inwards + <span class="number">273.15</span>);
+                a[i] += rho_vent_inwards * v_vent * cp_vent_inwards * t_vent_inwards;
+                b[i] += rho_vent_inwards * v_vent * cp_vent_inwards;
             }
 
-            <span class="comment">// Mixing with other zones</span>
+            <span class="comment">// Mixing with other zones
 
-            <span class="comment">/* CAPACITANCE */</span>
-            <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">space</span>
-                .<span class="ident">dry_bulb_temperature</span>(<span class="ident">state</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;Zone has no Temperature!&quot;</span>);
-            <span class="ident">c</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">zone</span>.<span class="ident">mcp</span>(<span class="ident">temp</span>);
+            /* CAPACITANCE */
+            </span><span class="kw">let </span>temp = space
+                .dry_bulb_temperature(state)
+                .expect(<span class="string">&quot;Zone has no Temperature!&quot;</span>);
+            c[i] = zone.mcp(temp);
         }
 
-        <span class="comment">/* SURFACES */</span>
-        <span class="kw">fn</span> <span class="ident">iterate_surfaces</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SurfaceTrait</span><span class="op">&gt;</span>(
-            <span class="ident">surfaces</span>: <span class="kw-2">&amp;</span>[<span class="ident">ThermalSurfaceData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>],
-            <span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="ident">SimpleModel</span>,
-            <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>,
-            <span class="ident">a</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">Float</span>],
-            <span class="ident">b</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">Float</span>],
-        ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-            <span class="kw">for</span> <span class="ident">surface</span> <span class="kw">in</span> <span class="ident">surfaces</span> {
-                <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">surface</span>.<span class="ident">parent</span>;
-                <span class="kw">let</span> <span class="ident">h_front</span> <span class="op">=</span> <span class="ident">parent</span>.<span class="ident">front_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">h_back</span> <span class="op">=</span> <span class="ident">parent</span>.<span class="ident">back_convection_coefficient</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
+        <span class="comment">/* SURFACES */
+        </span><span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait&gt;(
+            surfaces: <span class="kw-2">&amp;</span>[ThermalSurfaceData&lt;T&gt;],
+            state: <span class="kw-2">&amp;</span>SimulationState,
+            a: <span class="kw-2">&amp;mut </span>[Float],
+            b: <span class="kw-2">&amp;mut </span>[Float],
+        ) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+            <span class="kw">for </span>surface <span class="kw">in </span>surfaces {
+                <span class="kw">let </span>parent = <span class="kw-2">&amp;</span>surface.parent;
+                <span class="kw">let </span>h_front = parent.front_convection_coefficient(state).unwrap();
+                <span class="kw">let </span>h_back = parent.back_convection_coefficient(state).unwrap();
 
-                <span class="kw">let</span> <span class="ident">ai</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">area</span>;
-                <span class="comment">// if front leads to a Zone</span>
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Boundary::Space</span> { <span class="ident">space</span> }) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">surface</span>.<span class="ident">front_boundary</span> {
-                    <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">z_index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
+                <span class="kw">let </span>ai = surface.area;
+                <span class="comment">// if front leads to a Zone
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Boundary::Space { .. }) = <span class="kw-2">&amp;</span>surface.front_boundary {
+                    <span class="kw">let </span>z_index = surface.front_space_index.unwrap(); <span class="comment">// Should have one of these if boundary is Space
 
-                    <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="ident">state</span>);
-
-                    <span class="ident">a</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">h_front</span> <span class="op">*</span> <span class="ident">ai</span> <span class="op">*</span> <span class="ident">temp</span>;
-                    <span class="ident">b</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">h_front</span> <span class="op">*</span> <span class="ident">ai</span>;
+                    </span><span class="kw">let </span>temp = surface.parent.front_temperature(state);
+                    a[z_index] += h_front * ai * temp;
+                    b[z_index] += h_front * ai;
                 }
 
-                <span class="comment">// if back leads to a Zone</span>
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Boundary::Space</span> { <span class="ident">space</span> }) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">surface</span>.<span class="ident">back_boundary</span> {
-                    <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">get_space</span>(<span class="ident">space</span>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">z_index</span> <span class="op">=</span> <span class="ident">space</span>.<span class="ident">index</span>().<span class="ident">unwrap</span>();
+                <span class="comment">// if back leads to a Zone
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Boundary::Space { .. }) = <span class="kw-2">&amp;</span>surface.back_boundary {
+                    <span class="kw">let </span>z_index = surface.back_space_index.unwrap(); <span class="comment">// Should have one of these if boundary is Space
 
-                    <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="ident">surface</span>.<span class="ident">parent</span>.<span class="ident">back_temperature</span>(<span class="ident">state</span>);
-                    <span class="ident">a</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">h_back</span> <span class="op">*</span> <span class="ident">ai</span> <span class="op">*</span> <span class="ident">temp</span>;
-                    <span class="ident">b</span>[<span class="kw-2">*</span><span class="ident">z_index</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">h_back</span> <span class="op">*</span> <span class="ident">ai</span>;
+                    </span><span class="kw">let </span>temp = surface.parent.back_temperature(state);
+                    a[z_index] += h_back * ai * temp;
+                    b[z_index] += h_back * ai;
                 }
             }
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="ident">iterate_surfaces</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">surfaces</span>, <span class="ident">model</span>, <span class="ident">state</span>, <span class="kw-2">&amp;mut</span> <span class="ident">a</span>, <span class="kw-2">&amp;mut</span> <span class="ident">b</span>)<span class="question-mark">?</span>;
-        <span class="ident">iterate_surfaces</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fenestrations</span>, <span class="ident">model</span>, <span class="ident">state</span>, <span class="kw-2">&amp;mut</span> <span class="ident">a</span>, <span class="kw-2">&amp;mut</span> <span class="ident">b</span>)<span class="question-mark">?</span>;
+        iterate_surfaces(<span class="kw-2">&amp;</span><span class="self">self</span>.surfaces, state, <span class="kw-2">&amp;mut </span>a, <span class="kw-2">&amp;mut </span>b)<span class="question-mark">?</span>;
+        iterate_surfaces(<span class="kw-2">&amp;</span><span class="self">self</span>.fenestrations, state, <span class="kw-2">&amp;mut </span>a, <span class="kw-2">&amp;mut </span>b)<span class="question-mark">?</span>;
 
-        <span class="comment">/* AIR MIXTURE WITH OTHER ZONES */</span>
-        <span class="comment">// unimplemented();</span>
+        <span class="comment">/* AIR MIXTURE WITH OTHER ZONES */
+        // unimplemented();
 
-        <span class="comment">// RETURN</span>
-        <span class="prelude-val">Ok</span>((<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>))
+        // RETURN
+        </span><span class="prelude-val">Ok</span>((a, b, c))
     }
 
-    <span class="doccomment">/// Retrieves a vector of the current temperatures of all the Zones as</span>
-    <span class="doccomment">/// registered in the Simulation State</span>
-    <span class="kw">fn</span> <span class="ident">get_current_zones_temperatures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">SimulationState</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
-        <span class="comment">// Initialize return</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
-        <span class="kw">for</span> <span class="ident">zone</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="ident">t_current</span> <span class="op">=</span> <span class="ident">zone</span>.<span class="ident">reference_space</span>.<span class="ident">dry_bulb_temperature</span>(<span class="ident">state</span>).<span class="ident">unwrap</span>();
-            <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">t_current</span>);
+    <span class="doccomment">/// Retrieves a vector of the current temperatures of all the Zones as
+    /// registered in the Simulation State
+    </span><span class="kw">fn </span>get_current_zones_temperatures(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>SimulationState) -&gt; Vec&lt;Float&gt; {
+        <span class="kw">let </span>nzones = <span class="self">self</span>.zones.len();
+        <span class="comment">// Initialize return
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ret: Vec&lt;Float&gt; = Vec::with_capacity(nzones);
+        <span class="kw">for </span>zone <span class="kw">in </span><span class="self">self</span>.zones.iter() {
+            <span class="kw">let </span>t_current = zone.reference_space.dry_bulb_temperature(state).unwrap();
+            ret.push(t_current);
         }
-        <span class="ident">ret</span>
+        ret
     }
 
-    <span class="doccomment">/// Uses an analytical solution to estimate an average temperature for each Zone</span>
-    <span class="doccomment">/// for the near future. Uses the coefficients $`A`$, $`B`$ and $`C`$</span>
-    <span class="doccomment">/// calculated by `calculate_zones_abc` and the Zones&#39; current temperatures</span>
-    <span class="doccomment">/// `t_current` as calculated by `get_current_temperatures`.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">estimate_zones_mean_future_temperatures</span>(
+    <span class="doccomment">/// Uses an analytical solution to estimate an average temperature for each Zone
+    /// for the near future. Uses the coefficients $`A`$, $`B`$ and $`C`$
+    /// calculated by `calculate_zones_abc` and the Zones&#39; current temperatures
+    /// `t_current` as calculated by `get_current_temperatures`.
+    </span><span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">fn </span>estimate_zones_mean_future_temperatures(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">t_current</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">c</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">future_time</span>: <span class="ident">Float</span>,
-    ) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
-        <span class="comment">// Initialize return</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
+        t_current: <span class="kw-2">&amp;</span>[Float],
+        a: <span class="kw-2">&amp;</span>[Float],
+        b: <span class="kw-2">&amp;</span>[Float],
+        c: <span class="kw-2">&amp;</span>[Float],
+        future_time: Float,
+    ) -&gt; Vec&lt;Float&gt; {
+        <span class="kw">let </span>nzones = <span class="self">self</span>.zones.len();
+        <span class="comment">// Initialize return
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ret: Vec&lt;Float&gt; = Vec::with_capacity(nzones);
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">current_temp</span> <span class="op">=</span> <span class="ident">t_current</span>[<span class="ident">i</span>];
-            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> {
-                <span class="comment">// is this an apropriate threshold?</span>
-                <span class="ident">ret</span>.<span class="ident">push</span>(
-                    <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]
-                        <span class="op">+</span> (<span class="ident">c</span>[<span class="ident">i</span>] <span class="op">*</span> (<span class="ident">current_temp</span> <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">/</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>])
-                            <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>()),
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.zones.len() {
+            <span class="kw">let </span>current_temp = t_current[i];
+            <span class="kw">if </span>b[i].abs() &gt; <span class="number">1e-9 </span>{
+                <span class="comment">// is this an apropriate threshold?
+                </span>ret.push(
+                    a[i] / b[i]
+                        + (c[i] * (current_temp - a[i] / b[i]) / future_time / b[i])
+                            * (<span class="number">1.0 </span>- (-b[i] * future_time / c[i]).exp()),
                 );
-            } <span class="kw">else</span> {
-                <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">current_temp</span>);
+            } <span class="kw">else </span>{
+                ret.push(current_temp);
             }
         }
 
-        <span class="ident">ret</span>
+        ret
     }
 
-    <span class="doccomment">/// Uses an analytical solution to estimate the future Zones temperature</span>
-    <span class="doccomment">/// for the near future. Uses the coefficients $`A`$, $`B`$ and $`C`$</span>
-    <span class="doccomment">/// calculated by `calculate_zones_abc` and the Zones&#39; current temperatures</span>
-    <span class="doccomment">/// `t_current` as calculated by `get_current_temperatures`.</span>
-    <span class="kw">fn</span> <span class="ident">estimate_zones_future_temperatures</span>(
+    <span class="doccomment">/// Uses an analytical solution to estimate the future Zones temperature
+    /// for the near future. Uses the coefficients $`A`$, $`B`$ and $`C`$
+    /// calculated by `calculate_zones_abc` and the Zones&#39; current temperatures
+    /// `t_current` as calculated by `get_current_temperatures`.
+    </span><span class="kw">fn </span>estimate_zones_future_temperatures(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">t_current</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">c</span>: <span class="kw-2">&amp;</span>[<span class="ident">Float</span>],
-        <span class="ident">future_time</span>: <span class="ident">Float</span>,
-    ) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nzones</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zones</span>.<span class="ident">len</span>();
-        <span class="comment">// Initialize return</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">nzones</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">nzones</span> {
-            <span class="kw">if</span> <span class="ident">b</span>[<span class="ident">i</span>].<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-9</span> {
-                <span class="comment">// is this an apropriate threshold?</span>
-                <span class="ident">ret</span>.<span class="ident">push</span>(
-                    <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>] <span class="op">+</span> (<span class="ident">t_current</span>[<span class="ident">i</span>] <span class="op">-</span> <span class="ident">a</span>[<span class="ident">i</span>] <span class="op">/</span> <span class="ident">b</span>[<span class="ident">i</span>]) <span class="op">*</span> (<span class="op">-</span><span class="ident">b</span>[<span class="ident">i</span>] <span class="op">*</span> <span class="ident">future_time</span> <span class="op">/</span> <span class="ident">c</span>[<span class="ident">i</span>]).<span class="ident">exp</span>(),
+        t_current: <span class="kw-2">&amp;</span>[Float],
+        a: <span class="kw-2">&amp;</span>[Float],
+        b: <span class="kw-2">&amp;</span>[Float],
+        c: <span class="kw-2">&amp;</span>[Float],
+        future_time: Float,
+    ) -&gt; Vec&lt;Float&gt; {
+        <span class="kw">let </span>nzones = <span class="self">self</span>.zones.len();
+        <span class="comment">// Initialize return
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ret: Vec&lt;Float&gt; = Vec::with_capacity(nzones);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..nzones {
+            <span class="kw">if </span>b[i].abs() &gt; <span class="number">1e-9 </span>{
+                <span class="comment">// is this an apropriate threshold?
+                </span>ret.push(
+                    a[i] / b[i] + (t_current[i] - a[i] / b[i]) * (-b[i] * future_time / c[i]).exp(),
                 );
-            } <span class="kw">else</span> {
-                <span class="comment">// A space that is disconnected from everything... maintains its temperature</span>
-                <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">t_current</span>[<span class="ident">i</span>]);
+            } <span class="kw">else </span>{
+                <span class="comment">// A space that is disconnected from everything... maintains its temperature
+                </span>ret.push(t_current[i]);
             }
         }
 
-        <span class="ident">ret</span>
+        ret
     }
 }
 
-<span class="comment">/***********/</span>
-<span class="comment">/* TESTING */</span>
-<span class="comment">/***********/</span>
+<span class="comment">/***********/
+/* TESTING */
+/***********/
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">testing</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="comment">// use crate::construction::*;</span>
+</span><span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>testing {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="comment">// use crate::construction::*;
 
-    <span class="kw">use</span> <span class="ident">simple_test_models</span>::<span class="kw-2">*</span>;
+    </span><span class="kw">use </span>simple_test_models::<span class="kw-2">*</span>;
 
-    <span class="kw">const</span> <span class="ident">META_OPTIONS</span>: <span class="ident">MetaOptions</span> <span class="op">=</span> <span class="ident">MetaOptions</span> {
-        <span class="ident">latitude</span>: <span class="number">0.</span>,
-        <span class="ident">longitude</span>: <span class="number">0.</span>,
-        <span class="ident">standard_meridian</span>: <span class="number">0.</span>,
-        <span class="ident">elevation</span>: <span class="number">0.0</span>,
+    <span class="kw">const </span>META_OPTIONS: MetaOptions = MetaOptions {
+        latitude: <span class="number">0.</span>,
+        longitude: <span class="number">0.</span>,
+        standard_meridian: <span class="number">0.</span>,
+        elevation: <span class="number">0.0</span>,
     };
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_calculate_zones_abc</span>() {
-        <span class="kw">let</span> (<span class="ident">simple_model</span>, <span class="kw-2">mut</span> <span class="ident">state_header</span>) <span class="op">=</span> <span class="ident">get_single_zone_test_building</span>(
-            <span class="comment">// &amp;mut state,</span>
-            <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span> {
-                <span class="ident">zone_volume</span>: <span class="number">40.</span>,
-                <span class="ident">surface_height</span>: <span class="number">2.</span>,
-                <span class="ident">surface_width</span>: <span class="number">2.</span>,
-                <span class="ident">construction</span>: <span class="macro">vec!</span>[<span class="ident">TestMat::Polyurethane</span>(<span class="number">0.02</span>)],
-                <span class="ident">emissivity</span>: <span class="number">0.0</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_calculate_zones_abc() {
+        <span class="kw">let </span>(simple_model, <span class="kw-2">mut </span>state_header) = get_single_zone_test_building(
+            <span class="comment">// &amp;mut state,
+            </span><span class="kw-2">&amp;</span>SingleZoneTestBuildingOptions {
+                zone_volume: <span class="number">40.</span>,
+                surface_height: <span class="number">2.</span>,
+                surface_width: <span class="number">2.</span>,
+                construction: <span class="macro">vec!</span>[TestMat::Polyurethane(<span class="number">0.02</span>)],
+                emissivity: <span class="number">0.0</span>,
+                ..Default::default()
             },
         );
 
-        <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">thermal_model</span> <span class="op">=</span>
-            <span class="ident">ThermalModel::new</span>(<span class="kw-2">&amp;</span><span class="ident">META_OPTIONS</span>, (), <span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;mut</span> <span class="ident">state_header</span>, <span class="ident">n</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_header</span>.<span class="ident">take_values</span>().<span class="ident">unwrap</span>();
-        <span class="comment">// MAP THE STATE</span>
-        <span class="comment">// model.map_simulation_state(&amp;mut state).unwrap();</span>
+        <span class="kw">let </span>n: usize = <span class="number">1</span>;
+        <span class="kw">let </span>thermal_model =
+            ThermalModel::new(<span class="kw-2">&amp;</span>META_OPTIONS, (), <span class="kw-2">&amp;</span>simple_model, <span class="kw-2">&amp;mut </span>state_header, n).unwrap();
+        <span class="kw">let </span>state = state_header.take_values().unwrap();
+        <span class="comment">// MAP THE STATE
+        // model.map_simulation_state(&amp;mut state).unwrap();
 
-        <span class="comment">// Test</span>
-        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>) <span class="op">=</span> <span class="ident">thermal_model</span>
-            .<span class="ident">calculate_zones_abc</span>(<span class="kw-2">&amp;</span><span class="ident">simple_model</span>, <span class="kw-2">&amp;</span><span class="ident">state</span>)
-            .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">c</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">b</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">c</span>[<span class="number">0</span>], <span class="ident">thermal_model</span>.<span class="ident">get_thermal_zone</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">mcp</span>(<span class="number">22.</span>));
-        <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="ident">simple_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>]
-            .<span class="ident">front_convection_coefficient</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)
-            .<span class="ident">unwrap</span>();
+        // Test
+        </span><span class="kw">let </span>(a, b, c) = thermal_model
+            .calculate_zones_abc(<span class="kw-2">&amp;</span>simple_model, <span class="kw-2">&amp;</span>state)
+            .unwrap();
+        <span class="macro">assert_eq!</span>(a.len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(c.len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(b.len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(c[<span class="number">0</span>], thermal_model.get_thermal_zone(<span class="number">0</span>).unwrap().mcp(<span class="number">22.</span>));
+        <span class="kw">let </span>hi = simple_model.surfaces[<span class="number">0</span>]
+            .front_convection_coefficient(<span class="kw-2">&amp;</span>state)
+            .unwrap();
 
-        <span class="kw">let</span> <span class="ident">temp</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">parent</span>.<span class="ident">front_temperature</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>);
-        <span class="kw">let</span> <span class="ident">area</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">thermal_model</span>.<span class="ident">surfaces</span>[<span class="number">0</span>].<span class="ident">area</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">a</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span> <span class="op">*</span> <span class="ident">temp</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">b</span>[<span class="number">0</span>], <span class="ident">area</span> <span class="op">*</span> <span class="ident">hi</span>);
+        <span class="kw">let </span>temp = <span class="kw-2">&amp;</span>thermal_model.surfaces[<span class="number">0</span>].parent.front_temperature(<span class="kw-2">&amp;</span>state);
+        <span class="kw">let </span>area = <span class="kw-2">&amp;</span>thermal_model.surfaces[<span class="number">0</span>].area;
+        <span class="macro">assert_eq!</span>(a[<span class="number">0</span>], area * hi * temp);
+        <span class="macro">assert_eq!</span>(b[<span class="number">0</span>], area * hi);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

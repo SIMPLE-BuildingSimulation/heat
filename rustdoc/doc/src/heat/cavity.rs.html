@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cavity.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cavity.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cavity.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cavity.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -145,82 +145,82 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Float</span>;
+*/
+</span><span class="kw">use </span><span class="kw">crate</span>::Float;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::gas::Gas</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::SIGMA</span>;
+<span class="kw">use </span><span class="kw">crate</span>::gas::Gas;
+<span class="kw">use </span><span class="kw">crate</span>::SIGMA;
 
-<span class="doccomment">/// Represents some gas enclosed by two solid</span>
-<span class="doccomment">/// materials</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cavity</span> {
-    <span class="doccomment">/// The distance between the two materials, in $`m`$</span>
-    <span class="kw">pub</span> <span class="ident">thickness</span>: <span class="ident">Float</span>,
+<span class="doccomment">/// Represents some gas enclosed by two solid
+/// materials
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Cavity {
+    <span class="doccomment">/// The distance between the two materials, in $`m`$
+    </span><span class="kw">pub </span>thickness: Float,
 
-    <span class="doccomment">/// Height of the `Cavity`. Defined by ISO15099/2003 as &quot;the distance between the top and bottom of the fill</span>
-    <span class="doccomment">/// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the</span>
-    <span class="doccomment">/// thickness of the cavity.&quot;</span>
-    <span class="kw">pub</span> <span class="ident">height</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// Height of the `Cavity`. Defined by ISO15099/2003 as &quot;the distance between the top and bottom of the fill
+    /// gas cavity which is usually the same as the height of the window view area.&quot;. Also, $`d`$ is the
+    /// thickness of the cavity.&quot;
+    </span><span class="kw">pub </span>height: Float,
 
-    <span class="doccomment">/// The gas contained</span>
-    <span class="kw">pub</span> <span class="ident">gas</span>: <span class="ident">Gas</span>,
+    <span class="doccomment">/// The gas contained
+    </span><span class="kw">pub </span>gas: Gas,
 
-    <span class="doccomment">/// The thermal emissivity of the material at the outer side</span>
-    <span class="doccomment">/// of the cavity</span>
-    <span class="kw">pub</span> <span class="ident">eout</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The thermal emissivity of the material at the outer side
+    /// of the cavity
+    </span><span class="kw">pub </span>eout: Float,
 
-    <span class="doccomment">/// The thermal emissivity of the material at the inner side</span>
-    <span class="doccomment">/// of the cavity</span>
-    <span class="kw">pub</span> <span class="ident">ein</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The thermal emissivity of the material at the inner side
+    /// of the cavity
+    </span><span class="kw">pub </span>ein: Float,
 
-    <span class="doccomment">/// The angle of the cavity in radians. $`0`$ is horizontal; $`\pi/2`$ (i.e., $`90^o`$) is vertical.</span>
-    <span class="kw">pub</span> <span class="ident">angle</span>: <span class="ident">Float</span>,
+    <span class="doccomment">/// The angle of the cavity in radians. $`0`$ is horizontal; $`\pi/2`$ (i.e., $`90^o`$) is vertical.
+    </span><span class="kw">pub </span>angle: Float,
 }
 
-<span class="kw">impl</span> <span class="ident">Cavity</span> {
-    <span class="doccomment">/// Calculates the `U-value`—including convective and radiative heat transfer—of a</span>
-    <span class="doccomment">/// cavity, so that $`U_{cavity}\times \Delta T = q`$</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```math</span>
-    <span class="doccomment">/// U_{cavity} = \frac{4*{T_m}^3 * \Sigma  \epsilon_1 \epsilon_2}{1-(1-\epsilon_1)(1-\epsilon_2)} + h_{conv}</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">u_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t_front</span>: <span class="ident">Float</span>, <span class="ident">t_back</span>: <span class="ident">Float</span>) -&gt; <span class="ident">Float</span> {
-        <span class="kw">let</span> <span class="ident">conv</span> <span class="op">=</span>
-            <span class="self">self</span>.<span class="ident">gas</span>
-                .<span class="ident">cavity_convection</span>(<span class="self">self</span>.<span class="ident">height</span>, <span class="self">self</span>.<span class="ident">thickness</span>, <span class="self">self</span>.<span class="ident">angle</span>, <span class="ident">t_front</span>, <span class="ident">t_back</span>);
-        <span class="kw">let</span> <span class="ident">tm</span> <span class="op">=</span> (<span class="ident">t_back</span> <span class="op">+</span> <span class="ident">t_front</span>) <span class="op">/</span> <span class="number">2.</span> <span class="op">+</span> <span class="number">273.15</span>;
+<span class="kw">impl </span>Cavity {
+    <span class="doccomment">/// Calculates the `U-value`—including convective and radiative heat transfer—of a
+    /// cavity, so that $`U_{cavity}\times \Delta T = q`$
+    ///
+    /// ```math
+    /// U_{cavity} = \frac{4*{T_m}^3 * \Sigma  \epsilon_1 \epsilon_2}{1-(1-\epsilon_1)(1-\epsilon_2)} + h_{conv}
+    /// ```
+    </span><span class="kw">pub fn </span>u_value(<span class="kw-2">&amp;</span><span class="self">self</span>, t_front: Float, t_back: Float) -&gt; Float {
+        <span class="kw">let </span>conv =
+            <span class="self">self</span>.gas
+                .cavity_convection(<span class="self">self</span>.height, <span class="self">self</span>.thickness, <span class="self">self</span>.angle, t_front, t_back);
+        <span class="kw">let </span>tm = (t_back + t_front) / <span class="number">2. </span>+ <span class="number">273.15</span>;
 
-        <span class="kw">let</span> <span class="ident">rad</span> <span class="op">=</span> <span class="number">4.</span> <span class="op">*</span> <span class="ident">tm</span>.<span class="ident">powi</span>(<span class="number">3</span>) <span class="op">*</span> <span class="ident">SIGMA</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">ein</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">eout</span>
-            <span class="op">/</span> (<span class="number">1.</span> <span class="op">-</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">ein</span>) <span class="op">*</span> (<span class="number">1.</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">eout</span>));
+        <span class="kw">let </span>rad = <span class="number">4. </span>* tm.powi(<span class="number">3</span>) * SIGMA * <span class="self">self</span>.ein * <span class="self">self</span>.eout
+            / (<span class="number">1. </span>- (<span class="number">1. </span>- <span class="self">self</span>.ein) * (<span class="number">1. </span>- <span class="self">self</span>.eout));
 
-        <span class="ident">rad</span> <span class="op">+</span> <span class="ident">conv</span>
+        rad + conv
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">testing</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="comment">// use simple_model::Substance;</span>
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>testing {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="comment">// use simple_model::Substance;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_u_value</span>() {
-        <span class="kw">let</span> <span class="ident">gap_thickness</span> <span class="op">=</span> <span class="number">0.0127</span>;
+    </span><span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_u_value() {
+        <span class="kw">let </span>gap_thickness = <span class="number">0.0127</span>;
 
-        <span class="kw">let</span> <span class="ident">gap</span> <span class="op">=</span> <span class="ident">Cavity</span> {
-            <span class="ident">thickness</span>: <span class="ident">gap_thickness</span>,
-            <span class="ident">height</span>: <span class="number">1.</span>,
-            <span class="ident">gas</span>: <span class="ident"><span class="kw">crate</span>::gas::AIR</span>,
-            <span class="ident">eout</span>: <span class="number">0.84</span>,
-            <span class="ident">ein</span>: <span class="number">0.84</span>,
-            <span class="ident">angle</span>: <span class="ident"><span class="kw">crate</span>::PI</span> <span class="op">/</span> <span class="number">2.</span>,
+        <span class="kw">let </span>gap = Cavity {
+            thickness: gap_thickness,
+            height: <span class="number">1.</span>,
+            gas: <span class="kw">crate</span>::gas::AIR,
+            eout: <span class="number">0.84</span>,
+            ein: <span class="number">0.84</span>,
+            angle: <span class="kw">crate</span>::PI / <span class="number">2.</span>,
         };
-        <span class="kw">let</span> <span class="ident">t_out</span> <span class="op">=</span> <span class="number">259.116115</span> <span class="op">-</span> <span class="number">273.15</span>;
-        <span class="kw">let</span> <span class="ident">t_in</span> <span class="op">=</span> <span class="number">279.323983</span> <span class="op">-</span> <span class="number">273.15</span>;
-        <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">gap</span>.<span class="ident">u_value</span>(<span class="ident">t_out</span>, <span class="ident">t_in</span>);
-        <span class="kw">let</span> <span class="ident">exp_u</span> <span class="op">=</span> <span class="number">0.069446</span> <span class="op">/</span> <span class="ident">gap_thickness</span>;
-        <span class="macro">dbg!</span>(<span class="ident">u</span>, <span class="ident">exp_u</span>);
+        <span class="kw">let </span>t_out = <span class="number">259.116115 </span>- <span class="number">273.15</span>;
+        <span class="kw">let </span>t_in = <span class="number">279.323983 </span>- <span class="number">273.15</span>;
+        <span class="kw">let </span>u = gap.u_value(t_out, t_in);
+        <span class="kw">let </span>exp_u = <span class="number">0.069446 </span>/ gap_thickness;
+        <span class="macro">dbg!</span>(u, exp_u);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="heat" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

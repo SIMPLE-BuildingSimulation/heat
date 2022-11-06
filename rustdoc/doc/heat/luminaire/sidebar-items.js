@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ThermalLuminaire","An HVAC element from the point of view of the thermal model."]]};
