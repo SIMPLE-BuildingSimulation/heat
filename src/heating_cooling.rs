@@ -54,25 +54,29 @@ impl ThermalHVAC {
                 let parent = (**e).clone();
                 for (i,s) in model.spaces.iter().enumerate(){                    
                     if s.name() == parent.target_space()? {
-                        return Ok(Self::ElectricHeater{parent: parent, target_space_index: i})
+                        return Ok(Self::ElectricHeater{parent, target_space_index: i})
                     }
                 }                
-                return Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
+                Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
             }
             HVAC::IdealHeaterCooler(e) => {
                 let parent = (**e).clone();
-                let mut targets : Vec<usize> = Vec::with_capacity(parent.target_spaces.len());
+                let mut target_spaces : Vec<usize> = Vec::with_capacity(parent.target_spaces.len());
                 
                 for space_name in parent.target_spaces.iter() {
+                    let mut found_space = false;
                     for (i,s) in model.spaces.iter().enumerate(){                    
                         if s.name() == space_name {
-                            targets.push(i);
+                            target_spaces.push(i);
+                            found_space = true;
                         }
                     }                    
-                    return Err(format!("IdealHeaterCooler is supposed to be in a space called '{}'... but it was not found", space_name))
-                }
+                    if !found_space {
+                        return Err(format!("IdealHeaterCooler is supposed to be in a space called '{}'... but it was not found", space_name))
+                    }
+                }                
+                Ok(Self::IdealHeaterCooler{parent, target_spaces})
                 
-                Ok(Self::IdealHeaterCooler{parent: parent, target_spaces: targets})
             }
         }
     }

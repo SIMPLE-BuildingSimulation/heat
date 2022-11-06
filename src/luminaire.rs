@@ -47,7 +47,7 @@ impl ThermalLuminaire {
                 })
             }
         }                
-        return Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
+        Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
     }
     
 }

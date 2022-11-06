@@ -35,7 +35,7 @@ use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 
 /// The module name. For debugging purposes
-pub(crate) const MODULE_NAME: &'static str = "Thermal model";
+pub(crate) const MODULE_NAME: &str = "Thermal model";
 
 /// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
