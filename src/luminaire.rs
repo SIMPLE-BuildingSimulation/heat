@@ -25,29 +25,27 @@ use std::rc::Rc;
 /// model.
 pub struct ThermalLuminaire {
     /// The parent Luminaire
-    pub(crate)parent: Luminaire, 
+    pub(crate) parent: Luminaire,
 
     /// The space whwre the luminaire is located
-    pub(crate)target_space_index: usize
+    pub(crate) target_space_index: usize,
 }
 
-
-
-
 impl ThermalLuminaire {
-    
     /// Builds a new [`ThermalHVAC`] from an HVAC and its location
     pub fn from(lum: &Rc<Luminaire>, model: &SimpleModel) -> Result<Self, String> {
         let parent = (**lum).clone();
-        for (i,s) in model.spaces.iter().enumerate(){                    
+        for (i, s) in model.spaces.iter().enumerate() {
             if s.name() == parent.target_space()? {
-                return Ok(Self{
-                    parent, 
-                    target_space_index: i
-                })
+                return Ok(Self {
+                    parent,
+                    target_space_index: i,
+                });
             }
-        }                
-        Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
+        }
+        Err(format!(
+            "ElectricHeater is supposed to be in a space called '{}'... but it was not found",
+            parent.target_space()?
+        ))
     }
-    
 }

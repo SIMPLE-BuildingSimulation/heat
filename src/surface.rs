@@ -18,18 +18,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use crate::discretization::Discretization;
 use crate::convection::ConvectionParams;
+use crate::discretization::Discretization;
 use crate::glazing::Glazing;
+use crate::surface_trait::SurfaceTrait;
 use crate::Float;
 use geometry3d::Vector3D;
 use matrix::Matrix;
 use simple_model::{
-    Boundary, Construction, Fenestration, SimulationStateHeader, Substance, Surface, TerrainClass, SimpleModel,
+    Boundary, Construction, Fenestration, SimpleModel, SimulationStateHeader, Substance, Surface,
+    TerrainClass,
 };
 use simple_model::{SimulationState, SiteDetails};
 use std::rc::Rc;
-use crate::surface_trait::SurfaceTrait;
 
 /// Calculates whether a surface is facing the wind direction
 /// **wind_direction in Radians**
@@ -231,7 +232,6 @@ fn rk4(dt: Float, c: &Matrix, mut k: Matrix, mut q: Matrix, t: &mut Matrix) {
     *t += &k4;
 }
 
-
 /// This is a Surface from the point of view of our thermal solver.
 /// Since this module only calculate heat transfer (and not short-wave solar
 /// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
@@ -249,10 +249,9 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The index of the space in front of this, if any
     pub front_space_index: Option<usize>,
 
-    
     /// The front boundary
     pub back_boundary: Option<Boundary>,
-    
+
     /// The index of the space at the back of this, if any
     pub back_space_index: Option<usize>,
 
@@ -262,7 +261,6 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The thermal absorbtance on the back side (from 0 to 1)
     pub back_emissivity: Float,
 
-    
     /// The area of the Surface
     pub area: Float,
 
@@ -294,20 +292,19 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// The absorbtances of each node in the system, proportional
     /// to the back incident radiation (i.e., they do not add up to 1.0)
     pub back_alphas: Matrix,
-    
-    /// [**Only available during testing**] this allows setting a fixed convection 
+
+    /// [**Only available during testing**] this allows setting a fixed convection
     /// coefficient
     #[cfg(debug_assertions)]
     pub front_hs: Option<Float>,
 
-    /// [**Only available during testing**] this allows setting a fixed convection 
+    /// [**Only available during testing**] this allows setting a fixed convection
     /// coefficient
     #[cfg(debug_assertions)]
     pub back_hs: Option<Float>,
 }
 
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
-    
     /// Creates a new [`ThermalSurfaceData`]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -336,23 +333,26 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         parent.add_front_ir_irradiance_state(state, ref_surface_index);
         parent.add_back_ir_irradiance_state(state, ref_surface_index);
 
-        
         // Add node data.
         let n_nodes = discretization.segments.len();
         parent.add_node_temperature_states(state, ref_surface_index, n_nodes);
 
         let front_substance = model.get_material_substance(&construction.materials[0])?;
 
+        let back_substance =
+            model.get_material_substance(construction.materials.last().unwrap())?;
 
-        let back_substance = model.get_material_substance(construction.materials.last().unwrap())?;
-        
         const DEFAULT_EM: Float = 0.84;
         let front_emissivity = match &front_substance {
-            Substance::Normal(s) => s.front_thermal_absorbtance_or(crate::model::MODULE_NAME, DEFAULT_EM),
+            Substance::Normal(s) => {
+                s.front_thermal_absorbtance_or(crate::model::MODULE_NAME, DEFAULT_EM)
+            }
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
         let back_emissivity = match &&back_substance {
-            Substance::Normal(s) => s.back_thermal_absorbtance_or(crate::model::MODULE_NAME, DEFAULT_EM),
+            Substance::Normal(s) => {
+                s.back_thermal_absorbtance_or(crate::model::MODULE_NAME, DEFAULT_EM)
+            }
             _ => panic!("Front Emissivity not available for this particular kind of Substance"),
         };
 
@@ -463,139 +463,153 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
     /// Sets the front boundary
     pub fn set_front_boundary(&mut self, b: &Boundary, model: &SimpleModel) {
-        self.front_boundary = Some(b.clone());        
-        if let Boundary::Space { space } = b{
-            for (i,s) in model.spaces.iter().enumerate(){
+        self.front_boundary = Some(b.clone());
+        if let Boundary::Space { space } = b {
+            for (i, s) in model.spaces.iter().enumerate() {
                 if s.name() == space {
                     self.front_space_index = Some(i);
-                    break
-                }                        
-            }
-        }
-
-    }   
-
-    /// Sets the back boundary
-    pub fn set_back_boundary(&mut self, b: &Boundary, model: &SimpleModel) {
-        self.back_boundary = Some(b.clone());
-        if let Boundary::Space { space } = b{
-            for (i,s) in model.spaces.iter().enumerate(){
-                if s.name() == space {
-                    self.back_space_index = Some(i);
-                    break
-                }                        
+                    break;
+                }
             }
         }
     }
 
-    fn calc_border_conditions(&self, 
+    /// Sets the back boundary
+    pub fn set_back_boundary(&mut self, b: &Boundary, model: &SimpleModel) {
+        self.back_boundary = Some(b.clone());
+        if let Boundary::Space { space } = b {
+            for (i, s) in model.spaces.iter().enumerate() {
+                if s.name() == space {
+                    self.back_space_index = Some(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    fn calc_border_conditions(
+        &self,
         state: &SimulationState,
         t_front: Float,
         t_back: Float,
         wind_direction: Float,
         wind_speed: Float,
-    )-> (ConvectionParams, ConvectionParams, Float, Float) {
-        
+    ) -> (ConvectionParams, ConvectionParams, Float, Float) {
         // Calculate and set Front and Back IR Irradiance
         let ir_front = self.parent.front_infrared_irradiance(state);
         let ir_back = self.parent.back_infrared_irradiance(state);
 
         let windward = is_windward(wind_direction, self.cos_tilt, self.normal);
 
-                // TODO: There is something to do here if we are talking about windows
-                let (front_env, front_hs) = if let Some(b) = &self.front_boundary {
-                    match &b {
-                        Boundary::Space {..} => {
-                            let front_env = ConvectionParams {
-                                air_temperature: t_front,
-                                air_speed: 0.0,
-                                rad_temperature: t_front, 
-                                surface_temperature: self.parent.front_temperature(state),
-                                roughness_index: 1,
-                                cos_surface_tilt: self.cos_tilt,
-                            };
-                                                        
-                            (front_env,front_env.get_tarp_natural_convection_coefficient())
-                        },
-                        Boundary::AmbientTemperature{temperature}=>{
-                            let front_env = ConvectionParams {
-                                air_temperature: *temperature,
-                                air_speed: 0.0,
-                                rad_temperature: t_front, 
-                                surface_temperature: self.parent.front_temperature(state),
-                                roughness_index: 1,
-                                cos_surface_tilt: self.cos_tilt,
-                            };
-                                                        
-                            (front_env,front_env.get_tarp_natural_convection_coefficient())
-                        },
-                        Boundary::Ground => unreachable!(),
-                    }
-                } else {                    
-                    let mut front_env = ConvectionParams {
+        // TODO: There is something to do here if we are talking about windows
+        let (front_env, front_hs) = if let Some(b) = &self.front_boundary {
+            match &b {
+                Boundary::Space { .. } => {
+                    let front_env = ConvectionParams {
                         air_temperature: t_front,
-                        air_speed: wind_speed * self.wind_speed_modifier,
-                        rad_temperature: (ir_front/crate::SIGMA).powf(0.25) - 273.15,
+                        air_speed: 0.0,
+                        rad_temperature: t_front,
                         surface_temperature: self.parent.front_temperature(state),
                         roughness_index: 1,
                         cos_surface_tilt: self.cos_tilt,
                     };
-                    front_env.cos_surface_tilt = -self.cos_tilt;
-                    (front_env,front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward))
-                };
 
-                let (back_env, back_hs) = if let Some(b) = &self.back_boundary {
-                    match &b {
-                        Boundary::Space { .. } => {
-                            let back_env = ConvectionParams {
-                                air_temperature: t_back,
-                                air_speed: 0.0,
-                                rad_temperature: t_back, //self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
-                                surface_temperature: self.parent.back_temperature(state),
-                                roughness_index: 1,
-                                cos_surface_tilt: self.cos_tilt,
-                            };
-                            (back_env, back_env.get_tarp_natural_convection_coefficient())
-                        },
-                        Boundary::AmbientTemperature{temperature}=>{
-                            let front_env = ConvectionParams {
-                                air_temperature: *temperature,
-                                air_speed: 0.0,
-                                rad_temperature: t_front, 
-                                surface_temperature: self.parent.front_temperature(state),
-                                roughness_index: 1,
-                                cos_surface_tilt: self.cos_tilt,
-                            };
-                                                        
-                            (front_env,front_env.get_tarp_natural_convection_coefficient())
-                        },
-                        Boundary::Ground => unreachable!(),
-                    }
-                } else {
+                    (
+                        front_env,
+                        front_env.get_tarp_natural_convection_coefficient(),
+                    )
+                }
+                Boundary::AmbientTemperature { temperature } => {
+                    let front_env = ConvectionParams {
+                        air_temperature: *temperature,
+                        air_speed: 0.0,
+                        rad_temperature: t_front,
+                        surface_temperature: self.parent.front_temperature(state),
+                        roughness_index: 1,
+                        cos_surface_tilt: self.cos_tilt,
+                    };
+
+                    (
+                        front_env,
+                        front_env.get_tarp_natural_convection_coefficient(),
+                    )
+                }
+                Boundary::Ground => unreachable!(),
+            }
+        } else {
+            let mut front_env = ConvectionParams {
+                air_temperature: t_front,
+                air_speed: wind_speed * self.wind_speed_modifier,
+                rad_temperature: (ir_front / crate::SIGMA).powf(0.25) - 273.15,
+                surface_temperature: self.parent.front_temperature(state),
+                roughness_index: 1,
+                cos_surface_tilt: self.cos_tilt,
+            };
+            front_env.cos_surface_tilt = -self.cos_tilt;
+            (
+                front_env,
+                front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
+            )
+        };
+
+        let (back_env, back_hs) = if let Some(b) = &self.back_boundary {
+            match &b {
+                Boundary::Space { .. } => {
                     let back_env = ConvectionParams {
                         air_temperature: t_back,
-                        air_speed: wind_speed * self.wind_speed_modifier,
-                        rad_temperature: (ir_back/crate::SIGMA).powf(0.25) - 273.15,
+                        air_speed: 0.0,
+                        rad_temperature: t_back, //self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
                         surface_temperature: self.parent.back_temperature(state),
                         roughness_index: 1,
                         cos_surface_tilt: self.cos_tilt,
                     };
-                    (back_env,back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward))
-                };
+                    (back_env, back_env.get_tarp_natural_convection_coefficient())
+                }
+                Boundary::AmbientTemperature { temperature } => {
+                    let front_env = ConvectionParams {
+                        air_temperature: *temperature,
+                        air_speed: 0.0,
+                        rad_temperature: t_front,
+                        surface_temperature: self.parent.front_temperature(state),
+                        roughness_index: 1,
+                        cos_surface_tilt: self.cos_tilt,
+                    };
 
-                assert!(
-                    !front_hs.is_nan() && !back_hs.is_nan(),
-                    "Found NaN convection coefficients: Front={front_hs} | back={back_hs}"
-                );
-                #[cfg(debug_assertions)]
-                return (
-                    front_env, back_env,
-                    self.front_hs.unwrap_or(front_hs),
-                    self.back_hs.unwrap_or(back_hs),
-                );
-                #[cfg(not(debug_assertions))]
-                (front_env, back_env, front_hs, back_hs)
+                    (
+                        front_env,
+                        front_env.get_tarp_natural_convection_coefficient(),
+                    )
+                }
+                Boundary::Ground => unreachable!(),
+            }
+        } else {
+            let back_env = ConvectionParams {
+                air_temperature: t_back,
+                air_speed: wind_speed * self.wind_speed_modifier,
+                rad_temperature: (ir_back / crate::SIGMA).powf(0.25) - 273.15,
+                surface_temperature: self.parent.back_temperature(state),
+                roughness_index: 1,
+                cos_surface_tilt: self.cos_tilt,
+            };
+            (
+                back_env,
+                back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
+            )
+        };
 
+        assert!(
+            !front_hs.is_nan() && !back_hs.is_nan(),
+            "Found NaN convection coefficients: Front={front_hs} | back={back_hs}"
+        );
+        #[cfg(debug_assertions)]
+        return (
+            front_env,
+            back_env,
+            self.front_hs.unwrap_or(front_hs),
+            self.back_hs.unwrap_or(back_hs),
+        );
+        #[cfg(not(debug_assertions))]
+        (front_env, back_env, front_hs, back_hs)
     }
 
     /// Marches one timestep. Returns front and back heat flow    
@@ -614,15 +628,14 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Calculate and set Front and Back Solar Irradiance
         let mut solar_front = self.parent.front_solar_irradiance(state);
-        if solar_front.is_nan(){
+        if solar_front.is_nan() {
             solar_front = 0.0;
         }
         let mut solar_back = self.parent.back_solar_irradiance(state);
-        if solar_back.is_nan(){
+        if solar_back.is_nan() {
             solar_back = 0.0;
         }
 
-        
         /////////////////////
         // 1st: Calculate the solar absorption in each node
         /////////////////////
@@ -633,23 +646,26 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // 2nd: Calculate the temperature in all no-mass nodes.
         // Also, the heat flow into
         /////////////////////
-        
-        
 
-        let (front_env, back_env, _front_hs, _back_hs) = self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
-        let front_rad_hs = 4.*self.front_emissivity * crate::SIGMA*( 273.15 + (front_env.rad_temperature + front_env.surface_temperature )/2. ).powi(3);
-        let back_rad_hs =  4.*self.back_emissivity  * crate::SIGMA*( 273.15 + (back_env.rad_temperature  + back_env.surface_temperature  )/2. ).powi(3);
+        let (front_env, back_env, _front_hs, _back_hs) =
+            self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+        let front_rad_hs = 4.
+            * self.front_emissivity
+            * crate::SIGMA
+            * (273.15 + (front_env.rad_temperature + front_env.surface_temperature) / 2.).powi(3);
+        let back_rad_hs = 4.
+            * self.back_emissivity
+            * crate::SIGMA
+            * (273.15 + (back_env.rad_temperature + back_env.surface_temperature) / 2.).powi(3);
 
         for (ini, fin) in &self.nomass_chunks {
-            
             let mut old_err = 99999.;
             let mut count = 0;
-            
 
             loop {
-                                                
                 // Update convection coefficients
-                let (front_env, back_env, front_hs, back_hs) = self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+                let (front_env, back_env, front_hs, back_hs) =
+                    self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
 
                 let (k, mut local_q) = self.discretization.get_k_q(
                     *ini,
@@ -668,7 +684,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     local_q.add_to_element(local_i, 0, v).unwrap();
                 }
                 local_q *= -1.;
-                                
+
                 let temps = k.clone().mut_n_diag_gaussian(local_q.clone(), 3).unwrap(); // and just like that, q is the new temperatures
 
                 let mut err = 0.0;
@@ -684,7 +700,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     }
                     break;
                 }
-                
+
                 assert!(
                     !err.is_nan(),
                     "Error is NaN... \nfront_env = {:?}| back_env = {:?} \nfront_hc = {} | back_hs = {}. \nError = {}\ntemps={}\nk={}\nlocal_q={}\nq={}\nsolar_front={}, solar_back={}\nfront_alphas={}\nback_alphas={}\n",
@@ -701,10 +717,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     solar_back,
                     self.front_alphas,
                     self.back_alphas,
-                );   
-            
+                );
 
-                
                 // if count > 10000 {
                 //     eprintln!("Err is {}", err / ((fin - ini) as Float))
                 // }
@@ -724,7 +738,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                     temperatures.scale_element(i, 0, 0.5).unwrap();
                 }
 
-                let max_allowed_error = if count < 100 { 0.01 } else /*if count < 1000*/ { 0.5 };// else { 1. };
+                let max_allowed_error = if count < 100 { 0.01 } else /*if count < 1000*/ { 0.5 }; // else { 1. };
 
                 if err / ((fin - ini) as Float) < max_allowed_error {
                     #[cfg(debug_assertions)]
@@ -735,16 +749,19 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 }
                 old_err = err;
                 count += 1;
-            
-
-
             }
         }
 
-        let (front_env, back_env, _front_hs, _back_hs) = self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
-        let front_rad_hs = 4.*self.front_emissivity * crate::SIGMA*( 273.15 + (front_env.rad_temperature + front_env.surface_temperature )/2. ).powi(3);
-        let back_rad_hs =  4.*self.back_emissivity  * crate::SIGMA*( 273.15 + (back_env.rad_temperature  + back_env.surface_temperature  )/2. ).powi(3);
-    
+        let (front_env, back_env, _front_hs, _back_hs) =
+            self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+        let front_rad_hs = 4.
+            * self.front_emissivity
+            * crate::SIGMA
+            * (273.15 + (front_env.rad_temperature + front_env.surface_temperature) / 2.).powi(3);
+        let back_rad_hs = 4.
+            * self.back_emissivity
+            * crate::SIGMA
+            * (273.15 + (back_env.rad_temperature + back_env.surface_temperature) / 2.).powi(3);
 
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls
@@ -759,7 +776,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 .map(|(mass, _)| *mass)
                 .collect();
             let c = Matrix::diag(c);
-            let (front_env, back_env, front_hs, back_hs) = self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+            let (front_env, back_env, front_hs, back_hs) =
+                self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
 
             let (k, mut local_q) = self.discretization.get_k_q(
                 *ini,
@@ -805,7 +823,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         // Calc heat flow
         let ts_front = temperatures.get(0, 0).unwrap();
         let ts_back = temperatures.get(rows - 1, 0).unwrap();
-        let (_front_env, _back_env, front_hs, back_hs) = self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+        let (_front_env, _back_env, front_hs, back_hs) =
+            self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
         self.parent
             .set_front_convection_coefficient(state, front_hs);
         self.parent.set_back_convection_coefficient(state, back_hs);
@@ -951,7 +970,7 @@ mod testing {
             // the same amount of heat needs to leave in each direction
             // println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
             assert!(
-                (q_in - q_out).abs() < 0.5,//1E-5,
+                (q_in - q_out).abs() < 0.5, //1E-5,
                 "diff is {} (count is {counter})",
                 (q_in - q_out).abs()
             );
@@ -1016,7 +1035,6 @@ mod testing {
         // Expecting
         assert!(final_qfront > 0.0);
         assert!(final_qback < 0.0);
-        
     }
 
     #[test]
@@ -1055,7 +1073,7 @@ mod testing {
         let main_dt = 3.0;
         let max_dx = m1.thickness / 7.0;
         let min_dt = 10.0;
-        let d = Discretization::new(&c,&model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
+        let d = Discretization::new(&c, &model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
@@ -1132,7 +1150,7 @@ mod testing {
 
         /* SURFACE */
         let s = Surface::new("WALL".to_string(), p, c.name().clone());
-        
+
         let surface = model.add_surface(s);
         let mut state_header = SimulationStateHeader::new();
 
@@ -1141,7 +1159,7 @@ mod testing {
         let main_dt = 3.0;
         let max_dx = m1.thickness / 7.0;
         let min_dt = 10.0;
-        let d = Discretization::new(&c,&model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
+        let d = Discretization::new(&c, &model, main_dt, max_dx, min_dt, 1., 0.).unwrap();
         let dt = main_dt / d.tstep_subdivision as Float;
 
         let normal = geometry3d::Vector3D::new(0., 0., 1.);
@@ -1193,8 +1211,6 @@ mod testing {
             full_qback,
             (full_qfront + full_qback).abs()
         );
-
-        
     }
 
     #[test]

@@ -44,24 +44,22 @@ pub const PI: Float = std::f32::consts::PI;
 #[cfg(not(feature = "float"))]
 pub const PI: Float = std::f64::consts::PI;
 
-
 /// The [Stefan–Boltzmann](https://en.wikipedia.org/wiki/Stefan–Boltzmann_constant) constant (in $`W m^{-2} K^4`$),
 /// necessary for Radiation calculations
 pub const SIGMA: Float = 5.670374419e-8;
-
 
 /// The main thermal model, which manages the whole time-marching
 /// solution
 pub mod model;
 
-/// For dealing with Cavities, i.e., layers made out of a gas 
+/// For dealing with Cavities, i.e., layers made out of a gas
 /// enclosed within two materials of different emissivities.
 pub mod cavity;
 
 /// For creating thermal networks for heat-transfering surfaces.
 pub mod discretization;
 
-/// For calculating convection coefficients under different 
+/// For calculating convection coefficients under different
 /// surface conditions.
 pub mod convection;
 

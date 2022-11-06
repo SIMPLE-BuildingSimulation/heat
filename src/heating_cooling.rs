@@ -26,57 +26,60 @@ use simple_model::{SimpleModel, SimulationState};
 /// model.
 pub enum ThermalHVAC {
     /// An ideal heater cooler
-    IdealHeaterCooler{
+    IdealHeaterCooler {
         /// The parent HVAC
-        parent: IdealHeaterCooler, 
-        
+        parent: IdealHeaterCooler,
+
         /// The space this HVAC is heating/cooling
-        target_spaces: Vec<usize>},
+        target_spaces: Vec<usize>,
+    },
 
     /// Electric heater.
-    ElectricHeater{
+    ElectricHeater {
         /// The parent HVAC
-        parent: ElectricHeater, 
+        parent: ElectricHeater,
 
         /// The space this heater is heating
-        target_space_index: usize
+        target_space_index: usize,
     },
 }
 
-
-
 impl ThermalHVAC {
-    
     /// Builds a new [`ThermalHVAC`] from an HVAC and its location
     pub fn from(hvac: &HVAC, model: &SimpleModel) -> Result<Self, String> {
         match hvac {
             HVAC::ElectricHeater(e) => {
                 let parent = (**e).clone();
-                for (i,s) in model.spaces.iter().enumerate(){                    
+                for (i, s) in model.spaces.iter().enumerate() {
                     if s.name() == parent.target_space()? {
-                        return Ok(Self::ElectricHeater{parent, target_space_index: i})
+                        return Ok(Self::ElectricHeater {
+                            parent,
+                            target_space_index: i,
+                        });
                     }
-                }                
+                }
                 Err(format!("ElectricHeater is supposed to be in a space called '{}'... but it was not found", parent.target_space()?))
             }
             HVAC::IdealHeaterCooler(e) => {
                 let parent = (**e).clone();
-                let mut target_spaces : Vec<usize> = Vec::with_capacity(parent.target_spaces.len());
-                
+                let mut target_spaces: Vec<usize> = Vec::with_capacity(parent.target_spaces.len());
+
                 for space_name in parent.target_spaces.iter() {
                     let mut found_space = false;
-                    for (i,s) in model.spaces.iter().enumerate(){                    
+                    for (i, s) in model.spaces.iter().enumerate() {
                         if s.name() == space_name {
                             target_spaces.push(i);
                             found_space = true;
                         }
-                    }                    
-                    if !found_space {
-                        return Err(format!("IdealHeaterCooler is supposed to be in a space called '{}'... but it was not found", space_name))
                     }
-                }                
-                Ok(Self::IdealHeaterCooler{parent, target_spaces})
-                
+                    if !found_space {
+                        return Err(format!("IdealHeaterCooler is supposed to be in a space called '{}'... but it was not found", space_name));
+                    }
+                }
+                Ok(Self::IdealHeaterCooler {
+                    parent,
+                    target_spaces,
+                })
             }
         }
     }
@@ -84,14 +87,17 @@ impl ThermalHVAC {
     /// Retrieves a `Vec<(usize, Float)>` containing the amount of heat (the `Float` in W) going into
     /// each space (of index `usize`)
     pub fn calc_cooling_heating_power(
-        &self,                
+        &self,
         state: &SimulationState,
     ) -> Result<Vec<(usize, Float)>, String> {
         match self {
-            Self::IdealHeaterCooler{parent, target_spaces} => {
+            Self::IdealHeaterCooler {
+                parent,
+                target_spaces,
+            } => {
                 let mut ret = Vec::with_capacity(target_spaces.len());
 
-                for index in target_spaces.iter(){
+                for index in target_spaces.iter() {
                     // let space = model.get_space(space)?;
                     // let index = space.index().unwrap();
                     let consumption_power = match parent
@@ -103,16 +109,22 @@ impl ThermalHVAC {
                 }
                 Ok(ret)
             }
-            Self::ElectricHeater{parent, target_space_index} => {
+            Self::ElectricHeater {
+                parent,
+                target_space_index,
+            } => {
                 // let a = &**system;
                 // let system = cast_hvac::<ElectricHeater>(a).unwrap();
                 let mut ret = Vec::with_capacity(1);
-                if let Ok(_space) = parent.target_space() {                    
-                    let consumption_power = match parent
-                        .heating_cooling_consumption(state){
-                            Some(v)=>v,
-                            None => return Err(format!("Could not get Heating consumption if ElectricHeater called '{}'", parent.name()))
-                        };                        
+                if let Ok(_space) = parent.target_space() {
+                    let consumption_power =
+                        match parent.heating_cooling_consumption(state) {
+                            Some(v) => v,
+                            None => return Err(format!(
+                                "Could not get Heating consumption if ElectricHeater called '{}'",
+                                parent.name()
+                            )),
+                        };
                     ret.push((*target_space_index, consumption_power))
                 }
                 Ok(ret)

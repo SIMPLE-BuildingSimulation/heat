@@ -1,18 +1,12 @@
+use crate::Float;
 use matrix::Matrix;
 use simple_model::{
-    SimulationState,
-    SimulationStateHeader,
-    SimulationStateElement,
-    Surface,
-    Fenestration,
+    Fenestration, SimulationState, SimulationStateElement, SimulationStateHeader, Surface,
 };
-use crate::Float;
 
-
-/// A trait for defining shared behaviour between [`Surface`] and 
+/// A trait for defining shared behaviour between [`Surface`] and
 /// [`Fenestration`] objects
 pub trait SurfaceTrait {
-    
     /// Adds the front-convection state element
     fn add_front_convection_state(
         &self,
@@ -68,7 +62,7 @@ pub trait SurfaceTrait {
         ref_surface_index: usize,
     );
 
-    /// Adds the temperature state elements for all the nodes in 
+    /// Adds the temperature state elements for all the nodes in
     /// the [`Surface`] or [`Fenestration`]
     fn add_node_temperature_states(
         &self,
@@ -119,17 +113,16 @@ pub trait SurfaceTrait {
         }
     }
 
-
     /// Gets the front convection coefficient     
     fn front_convection_coefficient(&self, state: &SimulationState) -> Option<Float>;
 
-    /// Gets the back convection coefficient 
+    /// Gets the back convection coefficient
     fn back_convection_coefficient(&self, state: &SimulationState) -> Option<Float>;
 
-    /// Sets the front convection coefficient 
+    /// Sets the front convection coefficient
     fn set_front_convection_coefficient(&self, state: &mut SimulationState, v: Float);
 
-    /// Sets the back convection coefficient 
+    /// Sets the back convection coefficient
     fn set_back_convection_coefficient(&self, state: &mut SimulationState, v: Float);
 
     /// Gets the front solar irradiance
