@@ -27,7 +27,7 @@ use simple_model::{SimpleModel, SimulationState};
 pub enum ThermalHVAC {
     /// An ideal heater cooler
     IdealHeaterCooler {
-        /// The parent HVAC
+        /// A clone of the parent HVAC
         parent: IdealHeaterCooler,
 
         /// The space this HVAC is heating/cooling
@@ -36,7 +36,7 @@ pub enum ThermalHVAC {
 
     /// Electric heater.
     ElectricHeater {
-        /// The parent HVAC
+        /// A clone of the parent HVAC
         parent: ElectricHeater,
 
         /// The space this heater is heating

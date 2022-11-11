@@ -33,6 +33,10 @@ use crate::luminaire::ThermalLuminaire;
 
 use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
+use std::borrow::Borrow;
+
+// #[cfg(feature="parallel")]
+// use rayon::prelude::*;
 
 /// The module name. For debugging purposes
 pub(crate) const MODULE_NAME: &str = "Thermal model";
@@ -82,13 +86,15 @@ impl SimulationModel for ThermalModel {
     /// * model: the `SimpleModel` that the model represents
     /// * state: the `SimulationStateHeader` attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
-    fn new(
+    fn new<M: Borrow<SimpleModel>>(
         _meta_options: &MetaOptions,
         _options: Self::OptionType,
-        model: &SimpleModel,
+        model: M,
         state: &mut SimulationStateHeader,
         n: usize,
     ) -> Result<Self, String> {
+        let model = model.borrow();
+        
         /* CREATE ALL ZONES, ONE PER SPACE */
         let mut zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
         for (i, space) in model.spaces.iter().enumerate() {
@@ -231,13 +237,14 @@ impl SimulationModel for ThermalModel {
     /// Advances one main_timestep through time. That is,
     /// it performs `self.dt_subdivisions` steps, advancing
     /// `self.dt` seconds in each of them.
-    fn march<W: Weather>(
+    fn march<W: Weather, M: Borrow<SimpleModel>>(
         &self,
         mut date: Date,
         weather: &W,
-        model: &SimpleModel,
+        model: M,
         state: &mut SimulationState,
     ) -> Result<(), String> {
+        let model = model.borrow();
         // Iterate through all the sub-subdivitions
         for _ in 0..self.dt_subdivisions {
             // advance in time
@@ -254,7 +261,10 @@ impl SimulationModel for ThermalModel {
                 ),
             };
 
+            // Gather spaces temperatures
             let t_current = self.get_current_zones_temperatures(state);
+
+            
 
             /* UPDATE SURFACE'S TEMPERATURES */
             for (solar_surf, model_surf) in self.surfaces.iter().zip(model.surfaces.iter()) {

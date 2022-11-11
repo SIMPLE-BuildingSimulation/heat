@@ -15,6 +15,7 @@ geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git
 communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
 matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
 polynomial = {git = "https://github.com/SIMPLE-BuildingSimulation/polynomial.git"}
+rayon = {version = "1.5.3", optional = true}
 
 [dev-dependencies]
 validate = {git="https://github.com/SIMPLE-BuildingSimulation/validate.git"}
@@ -32,7 +33,7 @@ rustdoc-args = [
 
 [features]
 default = []
-parallel=[]
+parallel=["rayon"]
 float = [
     "simple_model/float",  
     "matrix/float",  
