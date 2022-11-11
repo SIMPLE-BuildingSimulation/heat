@@ -692,6 +692,16 @@
 <span id="658">658</span>
 <span id="659">659</span>
 <span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -727,8 +737,12 @@ SOFTWARE.
 
 <span class="kw">use </span><span class="kw">crate</span>::zone::ThermalZone;
 <span class="kw">use </span>simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
+<span class="kw">use </span>std::borrow::Borrow;
 
-<span class="doccomment">/// The module name. For debugging purposes
+<span class="comment">// #[cfg(feature=&quot;parallel&quot;)]
+// use rayon::prelude::*;
+
+</span><span class="doccomment">/// The module name. For debugging purposes
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>MODULE_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Thermal model&quot;</span>;
 
 <span class="doccomment">/// A structure containing all the thermal representation of the whole
@@ -776,13 +790,15 @@ SOFTWARE.
     /// * model: the `SimpleModel` that the model represents
     /// * state: the `SimulationStateHeader` attached to the SimpleModel
     /// * n: the number of timesteps per hour taken by the main simulation.
-    </span><span class="kw">fn </span>new(
+    </span><span class="kw">fn </span>new&lt;M: Borrow&lt;SimpleModel&gt;&gt;(
         _meta_options: <span class="kw-2">&amp;</span>MetaOptions,
         _options: <span class="self">Self</span>::OptionType,
-        model: <span class="kw-2">&amp;</span>SimpleModel,
+        model: M,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         n: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
+        <span class="kw">let </span>model = model.borrow();
+        
         <span class="comment">/* CREATE ALL ZONES, ONE PER SPACE */
         </span><span class="kw">let </span><span class="kw-2">mut </span>zones: Vec&lt;ThermalZone&gt; = Vec::with_capacity(model.spaces.len());
         <span class="kw">for </span>(i, space) <span class="kw">in </span>model.spaces.iter().enumerate() {
@@ -925,13 +941,14 @@ SOFTWARE.
     <span class="doccomment">/// Advances one main_timestep through time. That is,
     /// it performs `self.dt_subdivisions` steps, advancing
     /// `self.dt` seconds in each of them.
-    </span><span class="kw">fn </span>march&lt;W: Weather&gt;(
+    </span><span class="kw">fn </span>march&lt;W: Weather, M: Borrow&lt;SimpleModel&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="kw-2">mut </span>date: Date,
         weather: <span class="kw-2">&amp;</span>W,
-        model: <span class="kw-2">&amp;</span>SimpleModel,
+        model: M,
         state: <span class="kw-2">&amp;mut </span>SimulationState,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+        <span class="kw">let </span>model = model.borrow();
         <span class="comment">// Iterate through all the sub-subdivitions
         </span><span class="kw">for _ in </span><span class="number">0</span>..<span class="self">self</span>.dt_subdivisions {
             <span class="comment">// advance in time
@@ -948,7 +965,10 @@ SOFTWARE.
                 ),
             };
 
-            <span class="kw">let </span>t_current = <span class="self">self</span>.get_current_zones_temperatures(state);
+            <span class="comment">// Gather spaces temperatures
+            </span><span class="kw">let </span>t_current = <span class="self">self</span>.get_current_zones_temperatures(state);
+
+            
 
             <span class="comment">/* UPDATE SURFACE&#39;S TEMPERATURES */
             </span><span class="kw">for </span>(solar_surf, model_surf) <span class="kw">in </span><span class="self">self</span>.surfaces.iter().zip(model.surfaces.iter()) {

@@ -195,7 +195,7 @@ SOFTWARE.
 </span><span class="kw">pub enum </span>ThermalHVAC {
     <span class="doccomment">/// An ideal heater cooler
     </span>IdealHeaterCooler {
-        <span class="doccomment">/// The parent HVAC
+        <span class="doccomment">/// A clone of the parent HVAC
         </span>parent: IdealHeaterCooler,
 
         <span class="doccomment">/// The space this HVAC is heating/cooling
@@ -204,7 +204,7 @@ SOFTWARE.
 
     <span class="doccomment">/// Electric heater.
     </span>ElectricHeater {
-        <span class="doccomment">/// The parent HVAC
+        <span class="doccomment">/// A clone of the parent HVAC
         </span>parent: ElectricHeater,
 
         <span class="doccomment">/// The space this heater is heating
