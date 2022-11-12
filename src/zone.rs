@@ -39,20 +39,20 @@ impl ThermalZone {
         space: &Rc<Space>,
         state: &mut SimulationStateHeader,
         space_index: usize,
-    ) -> Self {
+    ) -> Result<Self, String> {
         let volume = *space.volume().unwrap();
         // Add Space Temperature state
         let state_index = state.push(
             // start, by default, at 22.0 C
             SimulationStateElement::SpaceDryBulbTemperature(space_index),
             22.0,
-        );
-        space.set_dry_bulb_temperature_index(state_index);
+        )?;
+        space.set_dry_bulb_temperature_index(state_index)?;
 
-        ThermalZone {
+        Ok(ThermalZone {
             reference_space: Rc::clone(space),
             volume,
-        }
+        })
     }
 
     /// Retrieves the heat capacity of the ThermalZone's air
