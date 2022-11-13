@@ -628,11 +628,11 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Calculate and set Front and Back Solar Irradiance
         let mut solar_front = self.parent.front_solar_irradiance(state);
-        if solar_front.is_nan() {
+        if solar_front.is_nan() || solar_front < 0.0{
             solar_front = 0.0;
         }
         let mut solar_back = self.parent.back_solar_irradiance(state);
-        if solar_back.is_nan() {
+        if solar_back.is_nan() || solar_front < 0.0 {
             solar_back = 0.0;
         }
 
@@ -822,7 +822,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Calc heat flow
         let ts_front = temperatures.get(0, 0).unwrap();
-        let ts_back = temperatures.get(rows - 1, 0).unwrap();
+        let ts_back = temperatures.get(rows - 1, 0).unwrap();        
         let (_front_env, _back_env, front_hs, back_hs) =
             self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
         self.parent
@@ -830,7 +830,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         self.parent.set_back_convection_coefficient(state, back_hs)?;
 
         let flow_front = (ts_front - t_front) * front_hs;
-        let flow_back = (ts_back - t_back) * back_hs;
+        let flow_back = (ts_back - t_back) * back_hs;        
 
         Ok((flow_front, flow_back))
     }
