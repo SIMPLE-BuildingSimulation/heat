@@ -139,20 +139,20 @@ SOFTWARE.
         space: <span class="kw-2">&amp;</span>Rc&lt;Space&gt;,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         space_index: usize,
-    ) -&gt; <span class="self">Self </span>{
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
         <span class="kw">let </span>volume = <span class="kw-2">*</span>space.volume().unwrap();
         <span class="comment">// Add Space Temperature state
         </span><span class="kw">let </span>state_index = state.push(
             <span class="comment">// start, by default, at 22.0 C
             </span>SimulationStateElement::SpaceDryBulbTemperature(space_index),
             <span class="number">22.0</span>,
-        );
-        space.set_dry_bulb_temperature_index(state_index);
+        )<span class="question-mark">?</span>;
+        space.set_dry_bulb_temperature_index(state_index)<span class="question-mark">?</span>;
 
-        ThermalZone {
+        <span class="prelude-val">Ok</span>(ThermalZone {
             reference_space: Rc::clone(space),
             volume,
-        }
+        })
     }
 
     <span class="doccomment">/// Retrieves the heat capacity of the ThermalZone&#39;s air

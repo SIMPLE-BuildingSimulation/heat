@@ -509,6 +509,54 @@
 <span id="475">475</span>
 <span id="476">476</span>
 <span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Float;
 <span class="kw">use </span>matrix::Matrix;
 <span class="kw">use </span>simple_model::{
@@ -523,55 +571,55 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the back-convection state element
     </span><span class="kw">fn </span>add_back_convection_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the front convective heat flow state element
     </span><span class="kw">fn </span>add_front_convective_heatflow_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
     <span class="doccomment">/// Adds the back convective heat flow state element
     </span><span class="kw">fn </span>add_back_convective_heatflow_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the front solar irradiance state element
     </span><span class="kw">fn </span>add_front_solar_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the back solar irradiance state element
     </span><span class="kw">fn </span>add_back_solar_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the front infra red solar irradiance state element
     </span><span class="kw">fn </span>add_front_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the front infra red solar irradiance state element
     </span><span class="kw">fn </span>add_back_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Adds the temperature state elements for all the nodes in
     /// the [`Surface`] or [`Fenestration`]
@@ -580,7 +628,7 @@
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
         n_nodes: usize,
-    );
+    )-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Gets the index (in the simulation state) of the temperature first (i.e., front) node
     </span><span class="kw">fn </span>first_node_temperature_index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
@@ -631,10 +679,10 @@
     </span><span class="kw">fn </span>back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>SimulationState) -&gt; <span class="prelude-ty">Option</span>&lt;Float&gt;;
 
     <span class="doccomment">/// Sets the front convection coefficient
-    </span><span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float);
+    </span><span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float)-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Sets the back convection coefficient
-    </span><span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float);
+    </span><span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float)-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;;
 
     <span class="doccomment">/// Gets the front solar irradiance
     </span><span class="kw">fn </span>front_solar_irradiance(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>SimulationState) -&gt; Float;
@@ -664,10 +712,10 @@
         <span class="self">self</span>.back_incident_solar_irradiance(state).unwrap()
     }
 
-    <span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, _state: <span class="kw-2">&amp;mut </span>SimulationState, _v: Float) {
+    <span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, _state: <span class="kw-2">&amp;mut </span>SimulationState, _v: Float)-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="self">self</span>.set_front_convection_coefficient(_state, _v)
     }
-    <span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, _state: <span class="kw-2">&amp;mut </span>SimulationState, _v: Float) {
+    <span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, _state: <span class="kw-2">&amp;mut </span>SimulationState, _v: Float) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="self">self</span>.set_back_convection_coefficient(_state, _v)
     }
 
@@ -691,13 +739,16 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.front_convection_coefficient_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceFrontConvectionCoefficient(ref_surface_index),
                 <span class="number">1.739658084820765</span>,
-            );
-            <span class="self">self</span>.set_front_convection_coefficient_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_convection_coefficient_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceFrontConvectionCoefficient already in surface&quot;</span>.into())
         }
     }
 
@@ -705,13 +756,16 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.back_convection_coefficient_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceBackConvectionCoefficient(ref_surface_index),
                 <span class="number">1.739658084820765</span>,
-            );
-            <span class="self">self</span>.set_back_convection_coefficient_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_convection_coefficient_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceBackConvectionCoefficient already in surface&quot;</span>.into())
         }
     }
 
@@ -719,26 +773,32 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.front_convective_heat_flow_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceFrontConvectiveHeatFlow(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_convective_heat_flow_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_convective_heat_flow_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceFrontConvectiveHeatFlow already in surface&quot;</span>.into())
         }
     }
     <span class="kw">fn </span>add_back_convective_heatflow_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.back_convective_heat_flow_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceBackConvectiveHeatFlow(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_convective_heat_flow_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_convective_heat_flow_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceBackConvectiveHeatFlow already in surface&quot;</span>.into())
         }
     }
 
@@ -746,53 +806,66 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.front_incident_solar_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceFrontSolarIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_incident_solar_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_incident_solar_irradiance_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceFrontSolarIrradiance already in surface&quot;</span>.into())
         }
     }
     <span class="kw">fn </span>add_back_solar_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.back_incident_solar_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceBackSolarIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_incident_solar_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_incident_solar_irradiance_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceBackSolarIrradiance already in surface&quot;</span>.into())
         }
+
     }
 
     <span class="kw">fn </span>add_front_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.front_ir_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceFrontIRIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_ir_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_ir_irradiance_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceFrontIRIrradiance already in Surface&quot;</span>.into())
         }
     }
     <span class="kw">fn </span>add_back_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.back_ir_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::SurfaceBackIRIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_ir_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_ir_irradiance_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;SurfaceBackIRIrradiance already in Surface&quot;</span>.into())
         }
     }
 
@@ -801,7 +874,7 @@
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
         n_nodes: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.first_node_temperature_index().is_none() {
             <span class="comment">// let n_nodes = d.segments.len();
             </span><span class="kw">let </span>first_node = state.len();
@@ -809,11 +882,14 @@
                 state.push(
                     SimulationStateElement::SurfaceNodeTemperature(ref_surface_index, node_index),
                     <span class="number">22.0</span>,
-                );
+                )<span class="question-mark">?</span>;
             }
             <span class="kw">let </span>last_node = state.len();
-            <span class="self">self</span>.set_first_node_temperature_index(first_node);
-            <span class="self">self</span>.set_last_node_temperature_index(last_node - <span class="number">1</span>);
+            <span class="self">self</span>.set_first_node_temperature_index(first_node)<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_last_node_temperature_index(last_node - <span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;Surface already has nodes attached&quot;</span>.into())
         }
     }
 }
@@ -831,10 +907,11 @@
     <span class="kw">fn </span>back_solar_irradiance(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>SimulationState) -&gt; Float {
         <span class="self">self</span>.back_incident_solar_irradiance(state).unwrap()
     }
-    <span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float) {
+    <span class="kw">fn </span>set_front_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="self">self</span>.set_front_convection_coefficient(state, v)
     }
-    <span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float) {
+
+    <span class="kw">fn </span>set_back_convection_coefficient(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>SimulationState, v: Float) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="self">self</span>.set_back_convection_coefficient(state, v)
     }
 
@@ -858,13 +935,16 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.front_convection_coefficient_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationFrontConvectionCoefficient(ref_surface_index),
                 <span class="number">1.739658084820765</span>,
-            );
-            <span class="self">self</span>.set_front_convection_coefficient_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_convection_coefficient_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;FenestrationFrontConvectionCoefficient already in Fenestration&quot;</span>.into())
         }
     }
 
@@ -872,13 +952,16 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.back_convection_coefficient_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationBackConvectionCoefficient(ref_surface_index),
                 <span class="number">1.739658084820765</span>,
-            );
-            <span class="self">self</span>.set_back_convection_coefficient_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_convection_coefficient_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;FenestrationBackConvectionCoefficient already in Fenestration&quot;</span>.into())
         }
     }
 
@@ -886,26 +969,32 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.front_convective_heat_flow_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationFrontConvectiveHeatFlow(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_convective_heat_flow_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_convective_heat_flow_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;FenestrationFrontConvectiveHeatFlow already in Fenestration&quot;</span>.into())
         }
     }
     <span class="kw">fn </span>add_back_convective_heatflow_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.back_convective_heat_flow_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationBackConvectiveHeatFlow(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_convective_heat_flow_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_convective_heat_flow_index(i)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;FenestrationBackConvectiveHeatFlow already in Fenestration&quot;</span>.into())
         }
     }
 
@@ -913,54 +1002,58 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.front_incident_solar_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationFrontSolarIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_incident_solar_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_incident_solar_irradiance_index(i)<span class="question-mark">?</span>;
         }
+        <span class="prelude-val">Ok</span>(())
     }
     <span class="kw">fn </span>add_back_solar_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt;{
         <span class="kw">if </span><span class="self">self</span>.back_incident_solar_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationBackSolarIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_incident_solar_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_incident_solar_irradiance_index(i)<span class="question-mark">?</span>;
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">fn </span>add_front_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.front_ir_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationFrontIRIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_front_ir_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_front_ir_irradiance_index(i)<span class="question-mark">?</span>;
         }
+        <span class="prelude-val">Ok</span>(())
     }
     <span class="kw">fn </span>add_back_ir_irradiance_state(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
-    ) {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.back_ir_irradiance_index().is_none() {
             <span class="kw">let </span>i = state.push(
                 SimulationStateElement::FenestrationBackIRIrradiance(ref_surface_index),
                 <span class="number">0.0</span>,
-            );
-            <span class="self">self</span>.set_back_ir_irradiance_index(i);
+            )<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_back_ir_irradiance_index(i)<span class="question-mark">?</span>;
         }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">fn </span>add_node_temperature_states(
@@ -968,7 +1061,7 @@
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         ref_surface_index: usize,
         n_nodes: usize,
-    ) {
+    ) -&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt; {
         <span class="kw">if </span><span class="self">self</span>.first_node_temperature_index().is_none() {
             <span class="kw">let </span>first_node = state.len();
             <span class="kw">for </span>node_index <span class="kw">in </span><span class="number">0</span>..n_nodes {
@@ -978,11 +1071,14 @@
                         node_index,
                     ),
                     <span class="number">22.0</span>,
-                );
+                )<span class="question-mark">?</span>;
             }
             <span class="kw">let </span>last_node = state.len();
-            <span class="self">self</span>.set_first_node_temperature_index(first_node);
-            <span class="self">self</span>.set_last_node_temperature_index(last_node - <span class="number">1</span>);
+            <span class="self">self</span>.set_first_node_temperature_index(first_node)<span class="question-mark">?</span>;
+            <span class="self">self</span>.set_last_node_temperature_index(last_node - <span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        }<span class="kw">else</span>{
+            <span class="prelude-val">Err</span>(<span class="string">&quot;Fenestration has nodes assigned already&quot;</span>.into())
         }
     }
 }

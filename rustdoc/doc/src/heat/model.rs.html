@@ -804,7 +804,7 @@ SOFTWARE.
         <span class="kw">for </span>(i, space) <span class="kw">in </span>model.spaces.iter().enumerate() {
             <span class="comment">// Add the zone to the model... this pushes it to the sate
             // as well
-            </span>zones.push(ThermalZone::from_space(space, state, i));
+            </span>zones.push(ThermalZone::from_space(space, state, i)<span class="question-mark">?</span>);
         }
 
         <span class="comment">/* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
@@ -1002,9 +1002,9 @@ SOFTWARE.
 
                 <span class="comment">// Update temperatures
                 </span><span class="kw">let </span>(q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt);
-                model_surf.set_front_convective_heat_flow(state, q_front);
-                model_surf.set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt)<span class="question-mark">?</span>;
+                model_surf.set_front_convective_heat_flow(state, q_front)<span class="question-mark">?</span>;
+                model_surf.set_back_convective_heat_flow(state, q_back)<span class="question-mark">?</span>;
             } <span class="comment">// end of iterating surface
 
             // What  if they are open???
@@ -1042,9 +1042,9 @@ SOFTWARE.
 
                 <span class="comment">// Update temperatures
                 </span><span class="kw">let </span>(q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt);
-                model_surf.set_front_convective_heat_flow(state, q_front);
-                model_surf.set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, <span class="self">self</span>.dt)<span class="question-mark">?</span>;
+                model_surf.set_front_convective_heat_flow(state, q_front)<span class="question-mark">?</span>;
+                model_surf.set_back_convective_heat_flow(state, q_back)<span class="question-mark">?</span>;
             } <span class="comment">// end of iterating surface
 
             /* UPDATE ZONES&#39; TEMPERATURE */
@@ -1059,7 +1059,7 @@ SOFTWARE.
                     <span class="string">&quot;Future temperatures is NaN&quot;
                 </span>);
                 zone.reference_space
-                    .set_dry_bulb_temperature(state, future_temperatures[i]);
+                    .set_dry_bulb_temperature(state, future_temperatures[i])<span class="question-mark">?</span>;
             }
         } <span class="comment">// End of &#39;in each sub-timestep-subdivision&#39;
 
