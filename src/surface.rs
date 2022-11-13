@@ -321,21 +321,21 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         discretization: Discretization,
     ) -> Result<ThermalSurfaceData<T>, String> {
         // Set Front and Back state
-        parent.add_front_convection_state(state, ref_surface_index);
-        parent.add_back_convection_state(state, ref_surface_index);
+        parent.add_front_convection_state(state, ref_surface_index)?;
+        parent.add_back_convection_state(state, ref_surface_index)?;
 
-        parent.add_front_convective_heatflow_state(state, ref_surface_index);
-        parent.add_back_convective_heatflow_state(state, ref_surface_index);
+        parent.add_front_convective_heatflow_state(state, ref_surface_index)?;
+        parent.add_back_convective_heatflow_state(state, ref_surface_index)?;
 
-        parent.add_front_solar_irradiance_state(state, ref_surface_index);
-        parent.add_back_solar_irradiance_state(state, ref_surface_index);
+        parent.add_front_solar_irradiance_state(state, ref_surface_index)?;
+        parent.add_back_solar_irradiance_state(state, ref_surface_index)?;
 
-        parent.add_front_ir_irradiance_state(state, ref_surface_index);
-        parent.add_back_ir_irradiance_state(state, ref_surface_index);
+        parent.add_front_ir_irradiance_state(state, ref_surface_index)?;
+        parent.add_back_ir_irradiance_state(state, ref_surface_index)?;
 
         // Add node data.
         let n_nodes = discretization.segments.len();
-        parent.add_node_temperature_states(state, ref_surface_index, n_nodes);
+        parent.add_node_temperature_states(state, ref_surface_index, n_nodes)?;
 
         let front_substance = model.get_material_substance(&construction.materials[0])?;
 
@@ -621,7 +621,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         wind_direction: Float,
         wind_speed: Float,
         dt: Float,
-    ) -> (Float, Float) {
+    ) -> Result<(Float, Float),String> {
         let mut temperatures = self.parent.get_node_temperatures(state);
 
         let (rows, ..) = temperatures.size();
@@ -826,13 +826,13 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let (_front_env, _back_env, front_hs, back_hs) =
             self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
         self.parent
-            .set_front_convection_coefficient(state, front_hs);
-        self.parent.set_back_convection_coefficient(state, back_hs);
+            .set_front_convection_coefficient(state, front_hs)?;
+        self.parent.set_back_convection_coefficient(state, back_hs)?;
 
         let flow_front = (ts_front - t_front) * front_hs;
         let flow_back = (ts_back - t_back) * back_hs;
 
-        (flow_front, flow_back)
+        Ok((flow_front, flow_back))
     }
 }
 
@@ -963,9 +963,9 @@ mod testing {
         let t_environment = 10.;
         let v = crate::SIGMA * (t_environment + 273.15 as Float).powi(4);
         while q.abs() > 0.00015 {
-            ts.parent.set_front_ir_irradiance(&mut state, v);
-            ts.parent.set_back_ir_irradiance(&mut state, v);
-            let (q_out, q_in) = ts.march(&mut state, t_environment, t_environment, 0.0, 0.0, dt);
+            ts.parent.set_front_ir_irradiance(&mut state, v).unwrap();
+            ts.parent.set_back_ir_irradiance(&mut state, v).unwrap();
+            let (q_out, q_in) = ts.march(&mut state, t_environment, t_environment, 0.0, 0.0, dt).unwrap();
 
             // the same amount of heat needs to leave in each direction
             // println!("q_in = {}, q_out = {} | diff = {}", q_in, q_out, (q_in - q_out).abs());
@@ -1011,14 +1011,14 @@ mod testing {
         let mut final_qfront: Float = -12312.;
         let mut final_qback: Float = 123123123.;
         while change.abs() > 1E-10 {
-            let (q_front, q_back) = ts.march(&mut state, 10.0, 30.0, 0.0, 0.0, dt);
+            let (q_front, q_back) = ts.march(&mut state, 10.0, 30.0, 0.0, 0.0, dt).unwrap();
 
             ts.parent.set_front_ir_irradiance(
                 &mut state,
                 crate::SIGMA * (10. + 273.15 as Float).powi(4),
-            );
+            ).unwrap();
             ts.parent
-                .set_back_ir_irradiance(&mut state, crate::SIGMA * (30. + 273.15 as Float).powi(4));
+                .set_back_ir_irradiance(&mut state, crate::SIGMA * (30. + 273.15 as Float).powi(4)).unwrap();
 
             final_qfront = q_front;
             final_qback = q_back;
@@ -1102,7 +1102,7 @@ mod testing {
 
         // Try marching until q_in and q_out are zero.
 
-        let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, 0.0, 0.0, dt);
+        let (q_in, q_out) = ts.march(&mut state, 10.0, 10.0, 0.0, 0.0, dt).unwrap();
 
         // this should show instantaneous update. So,
         let temperatures = ts.parent.get_node_temperatures(&state);
@@ -1191,7 +1191,7 @@ mod testing {
 
         let t_front = 10.0;
         let t_back = 30.0;
-        let (q_front, q_back) = ts.march(&mut state, t_front, t_back, 0.0, 0.0, dt);
+        let (q_front, q_back) = ts.march(&mut state, t_front, t_back, 0.0, 0.0, dt).unwrap();
 
         // Expecting
         let temperatures = ts.parent.get_node_temperatures(&state);

@@ -100,7 +100,7 @@ impl SimulationModel for ThermalModel {
         for (i, space) in model.spaces.iter().enumerate() {
             // Add the zone to the model... this pushes it to the sate
             // as well
-            zones.push(ThermalZone::from_space(space, state, i));
+            zones.push(ThermalZone::from_space(space, state, i)?);
         }
 
         /* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
@@ -298,9 +298,9 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
-                model_surf.set_front_convective_heat_flow(state, q_front);
-                model_surf.set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
+                model_surf.set_front_convective_heat_flow(state, q_front)?;
+                model_surf.set_back_convective_heat_flow(state, q_back)?;
             } // end of iterating surface
 
             // What  if they are open???
@@ -338,9 +338,9 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt);
-                model_surf.set_front_convective_heat_flow(state, q_front);
-                model_surf.set_back_convective_heat_flow(state, q_back);
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
+                model_surf.set_front_convective_heat_flow(state, q_front)?;
+                model_surf.set_back_convective_heat_flow(state, q_back)?;
             } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
@@ -355,7 +355,7 @@ impl SimulationModel for ThermalModel {
                     "Future temperatures is NaN"
                 );
                 zone.reference_space
-                    .set_dry_bulb_temperature(state, future_temperatures[i]);
+                    .set_dry_bulb_temperature(state, future_temperatures[i])?;
             }
         } // End of 'in each sub-timestep-subdivision'
 

@@ -322,7 +322,7 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
     thermal_model.zones[0]
         .reference_space
-        .set_dry_bulb_temperature(&mut state, t_start);
+        .set_dry_bulb_temperature(&mut state, t_start).unwrap();
 
     let t_out: Float = 30.0; // T of surroundings
 
@@ -515,13 +515,13 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
     let inf_vol_index = state_header.push(
         SimulationStateElement::SpaceInfiltrationVolume(0),
         infiltration_rate,
-    );
-    simple_model.spaces[0].set_infiltration_volume_index(inf_vol_index);
+    ).unwrap();
+    simple_model.spaces[0].set_infiltration_volume_index(inf_vol_index).unwrap();
     let inf_temp_index = state_header.push(
         SimulationStateElement::SpaceInfiltrationTemperature(0),
         t_out,
-    );
-    simple_model.spaces[0].set_infiltration_temperature_index(inf_temp_index);
+    ).unwrap();
+    simple_model.spaces[0].set_infiltration_temperature_index(inf_temp_index).unwrap();
 
     // MAP THE STATE
 
@@ -637,7 +637,7 @@ fn march_model(
     let exp_zone_air_temp = &cols[11]; // 12	INTERIOR SPACE:Zone Mean Air Temperature [C](TimeStep)
 
     // Set initial temperature
-    simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]);
+    simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]).unwrap();
 
     let mut date = Date {
         month: 1,
@@ -666,7 +666,7 @@ fn march_model(
         let surface = &simple_model.surfaces[0];
 
         // Set Solar Radiation
-        surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]);
+        surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]).unwrap();
 
         // Set Long Wave radiation
         if emissivity > 1e-3 {
@@ -678,7 +678,7 @@ fn march_model(
             let ts = surface.first_node_temperature(&state).unwrap();
             let v = outdoor_thermal_heat_gain[i] / surface_area / emissivity
                 + heat::SIGMA * (ts + 273.15).powi(4);
-            surface.set_front_ir_irradiance(&mut state, v);
+            surface.set_front_ir_irradiance(&mut state, v).unwrap();
         }
 
         // March
