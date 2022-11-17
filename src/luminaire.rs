@@ -32,7 +32,7 @@ pub struct ThermalLuminaire {
 }
 
 impl ThermalLuminaire {
-    /// Builds a new [`ThermalHVAC`] from an HVAC and its location
+    /// Builds a new [`ThermalLuminaire`] from an [`Luminaire`] and its location
     pub fn from(lum: &Rc<Luminaire>, model: &SimpleModel) -> Result<Self, String> {
         let parent = (**lum).clone();
         for (i, s) in model.spaces.iter().enumerate() {
