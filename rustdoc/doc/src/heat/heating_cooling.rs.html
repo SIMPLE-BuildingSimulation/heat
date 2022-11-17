@@ -166,6 +166,15 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -200,6 +209,9 @@ SOFTWARE.
 
         <span class="doccomment">/// The space this HVAC is heating/cooling
         </span>target_spaces: Vec&lt;usize&gt;,
+
+        <span class="doccomment">/// The index of the space where the thermostat is located.
+        </span>thermostat_location_index: usize,
     },
 
     <span class="doccomment">/// Electric heater.
@@ -228,27 +240,31 @@ SOFTWARE.
                 }
                 <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;ElectricHeater is supposed to be in a space called &#39;{}&#39;... but it was not found&quot;</span>, parent.target_space()<span class="question-mark">?</span>))
             }
-            HVAC::IdealHeaterCooler(e) =&gt; {
-                <span class="kw">let </span>parent = (<span class="kw-2">**</span>e).clone();
-                <span class="kw">let </span><span class="kw-2">mut </span>target_spaces: Vec&lt;usize&gt; = Vec::with_capacity(parent.target_spaces.len());
+            HVAC::IdealHeaterCooler(_e) =&gt; {
+                <span class="macro">todo!</span>();
+                <span class="comment">// let parent = (**e).clone();
+                // let mut target_spaces: Vec&lt;usize&gt; = Vec::with_capacity(parent.target_spaces.len());
+                // let thermostat_space_name = e.thermostat_location()?;
+                // let mut thermostat_location_index = None;                
 
-                <span class="kw">for </span>space_name <span class="kw">in </span>parent.target_spaces.iter() {
-                    <span class="kw">let </span><span class="kw-2">mut </span>found_space = <span class="bool-val">false</span>;
-                    <span class="kw">for </span>(i, s) <span class="kw">in </span>model.spaces.iter().enumerate() {
-                        <span class="kw">if </span>s.name() == space_name {
-                            target_spaces.push(i);
-                            found_space = <span class="bool-val">true</span>;
-                        }
-                    }
-                    <span class="kw">if </span>!found_space {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;IdealHeaterCooler is supposed to be in a space called &#39;{}&#39;... but it was not found&quot;</span>, space_name));
-                    }
-                }
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::IdealHeaterCooler {
-                    parent,
-                    target_spaces,
-                })
-            }
+                // for space_name in parent.target_spaces.iter() {
+                //     let mut found_space = false;
+                //     for (i, s) in model.spaces.iter().enumerate() {
+                //         if s.name() == space_name {
+                //             target_spaces.push(i);
+                //             found_space = true;
+                //         }
+                //     }
+                //     if !found_space {
+                //         return Err(format!(&quot;IdealHeaterCooler is supposed to be in a space called &#39;{}&#39;... but it was not found&quot;, space_name));
+                //     }
+                // }
+                // Ok(Self::IdealHeaterCooler {
+                //     parent,
+                //     target_spaces,
+                //     thermostat_location_index:thermostat_location_index.ok_or(&quot;Could not find the thermostat location of an IdealHeaterCooler&quot;)?,
+                // })
+            </span>}
         }
     }
 
@@ -260,23 +276,25 @@ SOFTWARE.
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(usize, Float)&gt;, String&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::IdealHeaterCooler {
-                parent,
-                target_spaces,
-            } =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>ret = Vec::with_capacity(target_spaces.len());
+                ..
+                <span class="comment">// parent,
+                // target_spaces,
+            </span>} =&gt; {
+                <span class="macro">todo!</span>();
+                <span class="comment">// let mut ret = Vec::with_capacity(target_spaces.len());
 
-                <span class="kw">for </span>index <span class="kw">in </span>target_spaces.iter() {
-                    <span class="comment">// let space = model.get_space(space)?;
-                    // let index = space.index().unwrap();
-                    </span><span class="kw">let </span>consumption_power = <span class="kw">match </span>parent
-                        .heating_cooling_consumption(state){
-                            <span class="prelude-val">Some</span>(v)=&gt;v,
-                            <span class="prelude-val">None</span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not get Heating/Cooling consumption if IdealHeaterCooler called &#39;{}&#39;&quot;</span>, parent.name()))
-                        };
-                    ret.push((<span class="kw-2">*</span>index, consumption_power));
-                }
-                <span class="prelude-val">Ok</span>(ret)
-            }
+                // for index in target_spaces.iter() {
+                //     // let space = model.get_space(space)?;
+                //     // let index = space.index().unwrap();
+                //     let consumption_power = match parent
+                //         .heating_cooling_consumption(state){
+                //             Some(v)=&gt;v,
+                //             None=&gt; return Err(format!(&quot;Could not get Heating/Cooling consumption if IdealHeaterCooler called &#39;{}&#39;&quot;, parent.name()))
+                //         };
+                //     ret.push((*index, consumption_power));
+                // }
+                // Ok(ret)
+            </span>}
             <span class="self">Self</span>::ElectricHeater {
                 parent,
                 target_space_index,

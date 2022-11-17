@@ -1927,11 +1927,11 @@ SOFTWARE.
 
         <span class="comment">// Calculate and set Front and Back Solar Irradiance
         </span><span class="kw">let </span><span class="kw-2">mut </span>solar_front = <span class="self">self</span>.parent.front_solar_irradiance(state);
-        <span class="kw">if </span>solar_front.is_nan() {
+        <span class="kw">if </span>solar_front.is_nan() || solar_front &lt; <span class="number">0.0</span>{
             solar_front = <span class="number">0.0</span>;
         }
         <span class="kw">let </span><span class="kw-2">mut </span>solar_back = <span class="self">self</span>.parent.back_solar_irradiance(state);
-        <span class="kw">if </span>solar_back.is_nan() {
+        <span class="kw">if </span>solar_back.is_nan() || solar_front &lt; <span class="number">0.0 </span>{
             solar_back = <span class="number">0.0</span>;
         }
 
@@ -2121,7 +2121,7 @@ SOFTWARE.
 
         <span class="comment">// Calc heat flow
         </span><span class="kw">let </span>ts_front = temperatures.get(<span class="number">0</span>, <span class="number">0</span>).unwrap();
-        <span class="kw">let </span>ts_back = temperatures.get(rows - <span class="number">1</span>, <span class="number">0</span>).unwrap();
+        <span class="kw">let </span>ts_back = temperatures.get(rows - <span class="number">1</span>, <span class="number">0</span>).unwrap();        
         <span class="kw">let </span>(_front_env, _back_env, front_hs, back_hs) =
             <span class="self">self</span>.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
         <span class="self">self</span>.parent
@@ -2129,7 +2129,7 @@ SOFTWARE.
         <span class="self">self</span>.parent.set_back_convection_coefficient(state, back_hs)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>flow_front = (ts_front - t_front) * front_hs;
-        <span class="kw">let </span>flow_back = (ts_back - t_back) * back_hs;
+        <span class="kw">let </span>flow_back = (ts_back - t_back) * back_hs;        
 
         <span class="prelude-val">Ok</span>((flow_front, flow_back))
     }
