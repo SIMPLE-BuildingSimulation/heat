@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/SIMPLE-BuildingSimulation/heat/compare/v1.0.0...v1.0.1) (2022-11-17)
+
+
+### Bug Fixes
+
+* negative solar radiation ([668f76d](https://github.com/SIMPLE-BuildingSimulation/heat/commit/668f76d8cb08a874493bfa25059a4d26b165e600))
+
 ## [1.0.0](https://github.com/SIMPLE-BuildingSimulation/heat/compare/v0.1.0...v1.0.0) (2022-11-11)
 
 
