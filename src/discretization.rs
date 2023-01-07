@@ -19,9 +19,9 @@ SOFTWARE.
 */
 
 pub(crate) const MAX_RS: Float = 0.05;
-use crate::{cavity::Cavity, surface::ChunkMemory};
 use crate::convection::ConvectionParams;
 use crate::Float;
+use crate::{cavity::Cavity, surface::ChunkMemory};
 use matrix::Matrix;
 use simple_model::{Construction, SimpleModel, Substance};
 use std::rc::Rc;
@@ -617,11 +617,11 @@ impl Discretization {
             "Expecting `temperatures` to have {} elements... found {}",
             self.segments.len(),
             nrows
-        );        
+        );
         memory.k *= 0.0;
         memory.q *= 0.0;
         let nnodes = fin - ini;
-        
+
         // this is just quite helpful
         let get_t_after = |i: usize| -> Float {
             match temperatures.get(i + 1, 0) {
@@ -1121,13 +1121,15 @@ mod testing {
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
         let mut memory = ChunkMemory {
-            aux: Matrix::new(0.0, n+1, 1),
-            k: Matrix::new(0.0, n+1, n+1),
-            q: Matrix::new(0.0, n+1, 1),
-            k1: Matrix::new(0.0, n+1, 1),
-            k2: Matrix::new(0.0, n+1, 1),
-            k3: Matrix::new(0.0, n+1, 1),
-            k4: Matrix::new(0.0, n+1, 1),
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
         };
         d.get_k_q(
             0,
@@ -1140,7 +1142,8 @@ mod testing {
             back_hs,
             back_rad_hs,
             &mut memory,
-        ).unwrap();
+        )
+        .unwrap();
         println!("k = {}", memory.k);
         println!("heat_flows = {}", memory.q);
 
@@ -1202,13 +1205,15 @@ mod testing {
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
         let mut memory = ChunkMemory {
-            aux: Matrix::new(0.0, n+1, 1),
-            k: Matrix::new(0.0, n+1, n+1),
-            q: Matrix::new(0.0, n+1, 1),
-            k1: Matrix::new(0.0, n+1, 1),
-            k2: Matrix::new(0.0, n+1, 1),
-            k3: Matrix::new(0.0, n+1, 1),
-            k4: Matrix::new(0.0, n+1, 1),
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
         };
 
         d.get_k_q(
@@ -1222,7 +1227,8 @@ mod testing {
             back_hs,
             back_rad_hs,
             &mut memory,
-        ).unwrap();
+        )
+        .unwrap();
         println!("k = {}", memory.k);
         println!("heat_flows = {}", memory.q);
 
@@ -1284,13 +1290,15 @@ mod testing {
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
         let mut memory = ChunkMemory {
-            aux: Matrix::new(0.0, n+1, 1),
-            k: Matrix::new(0.0, n+1, n+1),
-            q: Matrix::new(0.0, n+1, 1),
-            k1: Matrix::new(0.0, n+1, 1),
-            k2: Matrix::new(0.0, n+1, 1),
-            k3: Matrix::new(0.0, n+1, 1),
-            k4: Matrix::new(0.0, n+1, 1),
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
         };
         d.get_k_q(
             2,
@@ -1303,7 +1311,8 @@ mod testing {
             back_hs,
             back_rad_hs,
             &mut memory,
-        ).unwrap();
+        )
+        .unwrap();
         println!("k = {}", memory.k);
         println!("heat_flows = {}", memory.q);
 
@@ -1390,13 +1399,15 @@ mod testing {
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
         let mut memory = ChunkMemory {
-            aux: Matrix::new(0.0, n+1, 1),
-            k: Matrix::new(0.0, n+1, n+1),
-            q: Matrix::new(0.0, n+1, 1),
-            k1: Matrix::new(0.0, n+1, 1),
-            k2: Matrix::new(0.0, n+1, 1),
-            k3: Matrix::new(0.0, n+1, 1),
-            k4: Matrix::new(0.0, n+1, 1),
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
         };
         d.get_k_q(
             1,
@@ -1409,7 +1420,8 @@ mod testing {
             back_hs,
             back_rad_hs,
             &mut memory,
-        ).unwrap();
+        )
+        .unwrap();
         println!("k = {}", memory.k);
         println!("heat_flows = {}", memory.q);
 

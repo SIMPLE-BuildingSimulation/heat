@@ -45,14 +45,17 @@ pub fn is_windward(wind_direction: Float, cos_tilt: Float, normal: Vector3D) -> 
     }
 }
 
-
 /// The memory needed to simulate the marching forward
 /// of a massive chunk
 pub struct ChunkMemory {
     /// memory for a matrix
+    pub temps: Matrix,
+    /// memory for a matrix
     pub aux: Matrix,
     /// memory for a matrix
     pub k: Matrix,
+    /// memory for a matrix
+    pub c: Matrix,
     /// memory for a matrix
     pub q: Matrix,
     /// memory for a matrix
@@ -66,21 +69,23 @@ pub struct ChunkMemory {
 }
 
 impl ChunkMemory {
-    fn new(ini: usize, fin: usize)->Self{
+    fn new(ini: usize, fin: usize) -> Self {
         let n = fin - ini - 1;
         ChunkMemory {
-            aux: Matrix::new(0.0, n+1, 1),
-            k: Matrix::new(0.0, n+1, n+1),
-            q: Matrix::new(0.0, n+1, 1),
-            k1: Matrix::new(0.0, n+1, 1),
-            k2: Matrix::new(0.0, n+1, 1),
-            k3: Matrix::new(0.0, n+1, 1),
-            k4: Matrix::new(0.0, n+1, 1),
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
         }
     }
 }
 
-/// The memory needed to simulate the marching of 
+/// The memory needed to simulate the marching of
 /// a surface
 pub struct SurfaceMemory {
     /// Memory for each massive chunk
@@ -91,7 +96,7 @@ pub struct SurfaceMemory {
     pub temperatures: Matrix,
 
     /// The solar absorption on each node
-    pub q: Matrix
+    pub q: Matrix,
 }
 
 /// Calculates a surface's wind speed modifier; that is to say, the value by which
@@ -158,11 +163,11 @@ pub fn wind_speed_modifier(height: Float, site_details: &Option<SiteDetails>) ->
     (270. / 10. as Float).powf(0.14) * (height / delta).powf(alpha)
 }
 
-fn rearrange_k(dt: Float, c: &Matrix, memory: &mut ChunkMemory) -> Result<(), String> {
-    let (crows, ..) = c.size();
+fn rearrange_k(dt: Float, memory: &mut ChunkMemory) -> Result<(), String> {
+    let (crows, ..) = memory.c.size();
     // Rearrenge into dT = (dt/C) * K + (dt/C)*q
     for nrow in 0..crows {
-        let v = dt / c.get(nrow, nrow)?;
+        let v = dt / memory.c.get(nrow, nrow)?;
         // transform k into k_prime (i.e., k * dt/C)
         let ini = if nrow == 0 { 0 } else { nrow - 1 };
         let fin = if nrow == crows - 1 {
@@ -218,20 +223,14 @@ fn rearrange_k(dt: Float, c: &Matrix, memory: &mut ChunkMemory) -> Result<(), St
 /// * $`k_2 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_1}{2})`$
 /// * $`k_3 = \Delta t \times f(t+\frac{\Delta t}{2}, T+\frac{k_2}{2})`$
 /// * $`k_4 = \Delta t \times f(t+\delta t, T+k_3 )`$
-fn rk4(
-    // dt: Float,
-    c: &Matrix,
-    /*mut k: Matrix, mut q: Matrix,*/
-    memory: &mut ChunkMemory,
-    t: &mut Matrix,
-) -> Result<(), String> {
+fn rk4(memory: &mut ChunkMemory) -> Result<(), String> {
     let (krows, kcols) = memory.k.size();
     assert_eq!(
         krows, kcols,
         "Expecting 'K' to be a squared matrix... nrows={}, ncols={}",
         krows, kcols
     );
-    let (crows, ccols) = c.size();
+    let (crows, ccols) = memory.c.size();
     assert_eq!(
         crows, ccols,
         "Expecting 'C' to be a squared matrix... nrows={}, ncols={}",
@@ -264,32 +263,32 @@ fn rk4(
     memory.aux *= 0.0;
 
     // get k1
-    memory.k.prod_tri_diag_into(t, &mut memory.k1)?;
+    memory.k.prod_tri_diag_into(&memory.temps, &mut memory.k1)?;
     memory.k1 += &memory.q;
-    
+
     // returning "temperatures + k1" is Euler... continuing is
     // Runge–Kutta 4th order
-    // *t += &memory.k1;    
+    // *t += &memory.k1;
     // return Ok(());
 
     memory.k1.scale_into(0.5, &mut memory.aux)?;
-    memory.aux += t;    
+    memory.aux += &memory.temps;
 
     // k2
     memory.k.prod_tri_diag_into(&memory.aux, &mut memory.k2)?;
-    memory.k2 += &memory.q;    
+    memory.k2 += &memory.q;
 
     // k3
     memory.k2.scale_into(0.5, &mut memory.aux)?;
-    memory.aux += t;
+    memory.aux += &memory.temps;
     memory.k.prod_tri_diag_into(&memory.aux, &mut memory.k3)?;
-    memory.k3 += &memory.q;    
+    memory.k3 += &memory.q;
 
     // k4
     memory.aux.copy_from(&memory.k3);
-    memory.aux += t;
+    memory.aux += &memory.temps;
     memory.k.prod_tri_diag_into(&memory.aux, &mut memory.k4)?;
-    memory.k4 += &memory.q;    
+    memory.k4 += &memory.q;
 
     // Scale them and add them all up
     memory.k1 /= 6.;
@@ -298,10 +297,10 @@ fn rk4(
     memory.k4 /= 6.;
 
     // Let's add it all and return
-    *t += &memory.k1;
-    *t += &memory.k2;
-    *t += &memory.k3;
-    *t += &memory.k4;
+    memory.temps += &memory.k1;
+    memory.temps += &memory.k2;
+    memory.temps += &memory.k3;
+    memory.temps += &memory.k4;
 
     Ok(())
 }
@@ -381,13 +380,17 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
 impl<T: SurfaceTrait> ThermalSurfaceData<T> {
     /// Allocates memory for the simulation
     pub fn allocate_memory(&self) -> SurfaceMemory {
-        let massive_chunks = self.massive_chunks.iter().map(|(ini, fin)|{
-            ChunkMemory::new(*ini,*fin)
-        }).collect();
+        let massive_chunks = self
+            .massive_chunks
+            .iter()
+            .map(|(ini, fin)| ChunkMemory::new(*ini, *fin))
+            .collect();
 
-        let nomass_chunks = self.nomass_chunks.iter().map(|(ini, fin)|{
-            ChunkMemory::new(*ini,*fin)
-        }).collect();
+        let nomass_chunks = self
+            .nomass_chunks
+            .iter()
+            .map(|(ini, fin)| ChunkMemory::new(*ini, *fin))
+            .collect();
 
         let ini = self.parent.first_node_temperature_index();
         let fin = self.parent.last_node_temperature_index() + 1;
@@ -395,7 +398,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let q = Matrix::new(0.0, n_nodes, 1);
         let temperatures = Matrix::new(0.0, n_nodes, 1);
 
-        SurfaceMemory{
+        SurfaceMemory {
             massive_chunks,
             nomass_chunks,
             temperatures,
@@ -710,32 +713,30 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         (front_env, back_env, front_hs, back_hs)
     }
 
-    fn march_mass(&self,
-        global_temperatures: &mut Matrix, 
-        solar_radiation: &Matrix, 
+    #[allow(clippy::too_many_arguments)]
+    fn march_mass(
+        &self,
+        global_temperatures: &mut Matrix,
+        solar_radiation: &Matrix,
         dt: Float,
         t_front: Float,
         t_back: Float,
-        front_rad_hs: Float, 
-        back_rad_hs: Float, 
+        front_rad_hs: Float,
+        back_rad_hs: Float,
         wind_direction: Float,
         wind_speed: Float,
-        ini: usize, 
-        fin: usize, 
+        ini: usize,
+        fin: usize,
         memory: &mut ChunkMemory,
         state: &SimulationState,
-    )->Result<(),String>{
-
-        
-
-        
+    ) -> Result<(), String> {
         let (front_env, back_env, front_hs, back_hs) =
             self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
 
         self.discretization.get_k_q(
             ini,
             fin,
-            &global_temperatures,
+            global_temperatures,
             &front_env,
             front_hs,
             front_rad_hs,
@@ -745,73 +746,72 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             memory,
         )?;
 
-        let c = self
+        // Build Mass matrix
+        memory.c *= 0.0;
+        for (i, (mass, ..)) in self
             .discretization
             .segments
             .iter()
             .skip(ini)
             .take(fin - ini)
-            .map(|(mass, _)| *mass)
-            .collect();
-        let c = Matrix::diag(c);
-        
-        
+            .enumerate()
+        {
+            memory.c.set(i, i, *mass)?;
+        }
+
         // ... here we add solar gains
         for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
             let v = solar_radiation.get(global_i, 0).unwrap();
             memory.q.add_to_element(local_i, 0, v).unwrap();
         }
-        
-        rearrange_k(dt, &c, memory)?;
+
+        rearrange_k(dt, memory)?;
 
         // Use RT4 for updating temperatures of massive nodes.
-        let mut local_temps = Matrix::new(0.0, fin - ini, 1);
+        // let mut local_temps = Matrix::new(0.0, fin - ini, 1);
         for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
             let v = global_temperatures.get(global_i, 0).unwrap();
-            local_temps.set(local_i, 0, v).unwrap();
+            memory.temps.set(local_i, 0, v).unwrap();
         }
 
-        
-        rk4( &c, memory, &mut local_temps)?;
+        rk4(memory)?;
 
         for (local_i, global_i) in (ini..fin).into_iter().enumerate() {
-            let v = local_temps.get(local_i, 0).unwrap();
+            let v = memory.temps.get(local_i, 0).unwrap();
             global_temperatures.set(global_i, 0, v).unwrap();
         }
         Ok(())
     }
 
-    fn march_nomass(&self, 
-        global_temperatures: &mut Matrix, 
-        solar_radiation: &Matrix, 
+    #[allow(clippy::too_many_arguments)]
+    fn march_nomass(
+        &self,
+        global_temperatures: &mut Matrix,
+        solar_radiation: &Matrix,
         t_front: Float,
         t_back: Float,
-        front_rad_hs: Float, 
-        back_rad_hs: Float, 
+        front_rad_hs: Float,
+        back_rad_hs: Float,
         wind_direction: Float,
         wind_speed: Float,
-        ini: usize, 
-        fin: usize, 
+        ini: usize,
+        fin: usize,
         memory: &mut ChunkMemory,
         state: &SimulationState,
-    )->Result<(),String>{
+    ) -> Result<(), String> {
         let mut old_err = 99999.;
         let mut count = 0;
-        
-       
 
         loop {
-
             // Update convection coefficients
             let (front_env, back_env, front_hs, back_hs) =
                 self.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
 
-            
             // Calculate q based on heat transfer (convection, IR radiation)
             self.discretization.get_k_q(
                 ini,
                 fin,
-                &global_temperatures,
+                global_temperatures,
                 &front_env,
                 front_hs,
                 front_rad_hs,
@@ -820,7 +820,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 back_rad_hs,
                 memory,
             )?;
-            
+
             // add solar gains
             for (local_i, i) in (ini..fin).into_iter().enumerate() {
                 let v = solar_radiation.get(i, 0)?;
@@ -852,7 +852,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 // front_hs,
                 // back_hs,
                 // err / ((fin - ini) as Float),
-                // temps,                    
+                // temps,
                 // q,
                 // solar_front,
                 // solar_back,
@@ -893,8 +893,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         }
         Ok(())
     }
-    
+
     /// Marches one timestep. Returns front and back heat flow    
+    #[allow(clippy::too_many_arguments)]
     pub fn march(
         &self,
         state: &mut SimulationState,
@@ -905,8 +906,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         dt: Float,
         memory: &mut SurfaceMemory,
     ) -> Result<(Float, Float), String> {
-        let tempsssss = self.parent.get_node_temperatures(state);
-        memory.temperatures.copy_from(&tempsssss);
+        self.parent
+            .get_node_temperatures(state, &mut memory.temperatures)?;
 
         let (rows, ..) = memory.temperatures.size();
 
@@ -922,7 +923,7 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         /////////////////////
         // 1st: Calculate the solar absorption in each node
-        /////////////////////        
+        /////////////////////
         // memory.q *= 0.0; // clean, just in case
         // self.front_alphas.scale_into(solar_front, &mut memory.q)?;
         let mut solar_radiation = &self.front_alphas * solar_front;
@@ -944,18 +945,19 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             * self.back_emissivity
             * crate::SIGMA
             * (273.15 + (back_env.rad_temperature + back_env.surface_temperature) / 2.).powi(3);
-        
-        for (chunk_i,(ini, fin)) in self.nomass_chunks.iter().enumerate() {
+
+        for (chunk_i, (ini, fin)) in self.nomass_chunks.iter().enumerate() {
             self.march_nomass(
-                &mut memory.temperatures, 
-                &solar_radiation,// &memory.q,                
+                &mut memory.temperatures,
+                &solar_radiation, // &memory.q,
                 t_front,
                 t_back,
                 front_rad_hs,
                 back_rad_hs,
                 wind_direction,
                 wind_speed,
-                *ini, *fin, 
+                *ini,
+                *fin,
                 &mut memory.nomass_chunks[chunk_i],
                 state,
             )?;
@@ -977,11 +979,11 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         /////////////////////
         // 3rd: Calculate K and C matrices for the massive walls, and march
         /////////////////////
-        
-        for (chunk_i,(ini, fin)) in self.massive_chunks.iter().enumerate() {            
+
+        for (chunk_i, (ini, fin)) in self.massive_chunks.iter().enumerate() {
             self.march_mass(
                 &mut memory.temperatures,
-                &solar_radiation,// &memory.q,                
+                &solar_radiation, // &memory.q,
                 dt,
                 t_front,
                 t_back,
@@ -989,7 +991,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
                 back_rad_hs,
                 wind_direction,
                 wind_speed,
-                *ini, *fin, 
+                *ini,
+                *fin,
                 &mut memory.massive_chunks[chunk_i],
                 state,
             )?;
@@ -998,7 +1001,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         /////////////////////
         // 4th: Set temperatures, calc heat-flows and return
         /////////////////////
-        self.parent.set_node_temperatures(state, &memory.temperatures);
+        self.parent
+            .set_node_temperatures(state, &memory.temperatures);
 
         // Calc heat flow
         let ts_front = memory.temperatures.get(0, 0).unwrap();
@@ -1145,7 +1149,7 @@ mod testing {
         let mut counter: usize = 0;
         let t_environment = 10.;
         let v = crate::SIGMA * (t_environment + 273.15 as Float).powi(4);
-        while q.abs() > 0.00015 {            
+        while q.abs() > 0.00015 {
             ts.parent.set_front_ir_irradiance(&mut state, v).unwrap();
             ts.parent.set_back_ir_irradiance(&mut state, v).unwrap();
             let (q_out, q_in) = ts
@@ -1179,11 +1183,15 @@ mod testing {
                 panic!("Exceded number of iterations... q.abs() = {}", q.abs())
             }
         }
-        
 
         // all nodes should be at 10.0 now.
-        let temperatures = ts.parent.get_node_temperatures(&state);
-        let (n_nodes, ..) = temperatures.size();
+        let ini = ts.parent.first_node_temperature_index().unwrap();
+        let fin = ts.parent.last_node_temperature_index().unwrap() + 1;
+        let n_nodes = fin - ini;
+        let mut temperatures = Matrix::new(0.0, n_nodes, 1);
+        ts.parent
+            .get_node_temperatures(&state, &mut temperatures)
+            .unwrap();
         for i in 0..n_nodes {
             let t = temperatures.get(i, 0).unwrap();
             assert!(
@@ -1304,8 +1312,14 @@ mod testing {
             .unwrap();
 
         // this should show instantaneous update. So,
-        let temperatures = ts.parent.get_node_temperatures(&state);
-        let (nnodes, ..) = temperatures.size();
+        let ini = ts.parent.first_node_temperature_index().unwrap();
+        let fin = ts.parent.last_node_temperature_index().unwrap() + 1;
+        let n_nodes = fin - ini;
+        let mut temperatures = Matrix::new(0.0, n_nodes, 1);
+        ts.parent
+            .get_node_temperatures(&state, &mut temperatures)
+            .unwrap();
+
         println!(" T == {}", &temperatures);
         assert!(
             (temperatures.get(0, 0).unwrap() - 10.0).abs() < 0.2,
@@ -1313,9 +1327,9 @@ mod testing {
             temperatures.get(0, 0).unwrap()
         );
         assert!(
-            (temperatures.get(nnodes - 1, 0).unwrap() - 10.0).abs() < 0.2,
+            (temperatures.get(n_nodes - 1, 0).unwrap() - 10.0).abs() < 0.2,
             "T = {}",
-            temperatures.get(nnodes - 1, 0).unwrap()
+            temperatures.get(n_nodes - 1, 0).unwrap()
         );
         assert!(q_in.abs() < 0.07, "q_in is {}", q_in);
         assert!(q_out.abs() < 0.07);
@@ -1396,7 +1410,13 @@ mod testing {
             .unwrap();
 
         // Expecting
-        let temperatures = ts.parent.get_node_temperatures(&state);
+        let ini = ts.parent.first_node_temperature_index().unwrap();
+        let fin = ts.parent.last_node_temperature_index().unwrap() + 1;
+        let n_nodes = fin - ini;
+        let mut temperatures = Matrix::new(0.0, n_nodes, 1);
+        ts.parent
+            .get_node_temperatures(&state, &mut temperatures)
+            .unwrap();
 
         println!(" T == {}", &temperatures);
 
@@ -1425,13 +1445,14 @@ mod testing {
         // This system has a transient solution equals to c1*[0.75 1]'* e^(-3t) + c2*[1 1]' * e^(-2t)...
 
         // Find initial conditions so that C1 and C2 are 1.
-        let mut temperatures = Matrix::from_data(2, 1, vec![0.75 + 1., 2.]);
 
         let temp_a_fn = |time: Float| 0.75 * (-3. * time).exp() + (-2. * time).exp();
         let temp_b_fn = |time: Float| (-3. * time).exp() + (-2. * time).exp();
         let mut memory = ChunkMemory {
+            c,
             k,
             q,
+            temps: Matrix::from_data(2, 1, vec![0.75 + 1., 2.]),
             // These are just to put intermediate data
             aux: Matrix::new(0.0, 2, 1),
             k1: Matrix::new(0.0, 2, 1),
@@ -1440,15 +1461,15 @@ mod testing {
             k4: Matrix::new(0.0, 2, 1),
         };
         let dt = 0.01;
-        rearrange_k(dt, &c, &mut memory).unwrap();
+        rearrange_k(dt, /*&c,*/ &mut memory).unwrap();
 
         let mut time = 0.0;
         loop {
-            let temp_a = temperatures.get(0, 0).unwrap();
+            let temp_a = memory.temps.get(0, 0).unwrap();
             let exp_temp_a = temp_a_fn(time);
             let diff_a = (temp_a - exp_temp_a).abs();
 
-            let temp_b = temperatures.get(1, 0).unwrap();
+            let temp_b = memory.temps.get(1, 0).unwrap();
             let exp_temp_b = temp_b_fn(time);
             let diff_b = (temp_b - exp_temp_b).abs();
             const SMOL: Float = 1e-8;
@@ -1468,7 +1489,7 @@ mod testing {
                 diff_b
             );
 
-            rk4(&c, &mut memory, &mut temperatures).unwrap();
+            rk4(&mut memory).unwrap();
 
             time += dt;
 

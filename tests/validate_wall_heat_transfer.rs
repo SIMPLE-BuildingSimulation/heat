@@ -325,7 +325,8 @@ fn march_with_window_and_luminaire() -> (Vec<Float>, Vec<Float>) {
 
     thermal_model.zones[0]
         .reference_space
-        .set_dry_bulb_temperature(&mut state, t_start).unwrap();
+        .set_dry_bulb_temperature(&mut state, t_start)
+        .unwrap();
 
     let t_out: Float = 30.0; // T of surroundings
 
@@ -515,16 +516,24 @@ fn march_with_window_heater_and_infiltration() -> (Vec<Float>, Vec<Float>) {
         ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
     let mut memory = thermal_model.allocate_memory().unwrap();
     // Set infiltration
-    let inf_vol_index = state_header.push(
-        SimulationStateElement::SpaceInfiltrationVolume(0),
-        infiltration_rate,
-    ).unwrap();
-    simple_model.spaces[0].set_infiltration_volume_index(inf_vol_index).unwrap();
-    let inf_temp_index = state_header.push(
-        SimulationStateElement::SpaceInfiltrationTemperature(0),
-        t_out,
-    ).unwrap();
-    simple_model.spaces[0].set_infiltration_temperature_index(inf_temp_index).unwrap();
+    let inf_vol_index = state_header
+        .push(
+            SimulationStateElement::SpaceInfiltrationVolume(0),
+            infiltration_rate,
+        )
+        .unwrap();
+    simple_model.spaces[0]
+        .set_infiltration_volume_index(inf_vol_index)
+        .unwrap();
+    let inf_temp_index = state_header
+        .push(
+            SimulationStateElement::SpaceInfiltrationTemperature(0),
+            t_out,
+        )
+        .unwrap();
+    simple_model.spaces[0]
+        .set_infiltration_temperature_index(inf_temp_index)
+        .unwrap();
 
     // MAP THE STATE
 
@@ -617,7 +626,7 @@ fn march_model(
     let mut thermal_model =
         ThermalModel::new(&META_OPTIONS, (), &simple_model, &mut state_header, n).unwrap();
     let mut memory = thermal_model.allocate_memory().unwrap();
-        // in model like these—i.e., a single surface—EnergyPlus assumes Zero IR radation
+    // in model like these—i.e., a single surface—EnergyPlus assumes Zero IR radation
     thermal_model.surfaces[0].back_emissivity = 0.0;
 
     let mut state = state_header.take_values().unwrap();
@@ -641,7 +650,9 @@ fn march_model(
     let exp_zone_air_temp = &cols[11]; // 12	INTERIOR SPACE:Zone Mean Air Temperature [C](TimeStep)
 
     // Set initial temperature
-    simple_model.spaces[0].set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0]).unwrap();
+    simple_model.spaces[0]
+        .set_dry_bulb_temperature(&mut state, exp_zone_air_temp[0])
+        .unwrap();
 
     let mut date = Date {
         month: 1,
@@ -670,7 +681,9 @@ fn march_model(
         let surface = &simple_model.surfaces[0];
 
         // Set Solar Radiation
-        surface.set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i]).unwrap();
+        surface
+            .set_front_incident_solar_irradiance(&mut state, incident_solar_radiation[i])
+            .unwrap();
 
         // Set Long Wave radiation
         if emissivity > 1e-3 {

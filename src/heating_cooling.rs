@@ -68,7 +68,7 @@ impl ThermalHVAC {
                 // let parent = (**e).clone();
                 // let mut target_spaces: Vec<usize> = Vec::with_capacity(parent.target_spaces.len());
                 // let thermostat_space_name = e.thermostat_location()?;
-                // let mut thermostat_location_index = None;                
+                // let mut thermostat_location_index = None;
 
                 // for space_name in parent.target_spaces.iter() {
                 //     let mut found_space = false;
