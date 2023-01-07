@@ -6,7 +6,7 @@ use simple_model::{
 
 /// A trait for defining shared behaviour between [`Surface`] and
 /// [`Fenestration`] objects
-pub trait SurfaceTrait {
+pub trait SurfaceTrait : Clone + Send  {
     /// Adds the front-convection state element
     fn add_front_convection_state(
         &self,
@@ -137,6 +137,12 @@ pub trait SurfaceTrait {
         v: Float,
     ) -> Result<(), String>;
 
+    /// Sets the convective heat flow
+    fn set_front_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>;
+
+    /// Sets the convective heat flow
+    fn set_back_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>;
+
     /// Sets the back convection coefficient
     fn set_back_convection_coefficient(
         &self,
@@ -158,6 +164,17 @@ pub trait SurfaceTrait {
 }
 
 impl SurfaceTrait for Surface {
+
+    fn set_front_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>{
+        self.set_front_convective_heat_flow(state, v)
+    }
+
+    fn set_back_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>{
+        self.set_back_convective_heat_flow(state, v)
+    }
+    
+
+
     fn front_infrared_irradiance(&self, state: &SimulationState) -> Float {
         self.front_ir_irradiance(state).unwrap()
     }
@@ -362,6 +379,15 @@ impl SurfaceTrait for Surface {
 }
 
 impl SurfaceTrait for Fenestration {
+    
+    fn set_front_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>{
+        self.set_front_convective_heat_flow(state, v)
+    }
+
+    fn set_back_convective_heat_flow(&self, state: &mut SimulationState, v: Float)->Result<(),String>{
+        self.set_back_convective_heat_flow(state, v)
+    }
+
     fn front_infrared_irradiance(&self, state: &SimulationState) -> Float {
         self.front_ir_irradiance(state).unwrap()
     }

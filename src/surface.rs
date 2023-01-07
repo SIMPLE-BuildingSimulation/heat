@@ -47,6 +47,7 @@ pub fn is_windward(wind_direction: Float, cos_tilt: Float, normal: Vector3D) -> 
 
 /// The memory needed to simulate the marching forward
 /// of a massive chunk
+#[derive(Debug, Clone)]
 pub struct ChunkMemory {
     /// memory for a matrix
     pub temps: Matrix,
@@ -87,6 +88,7 @@ impl ChunkMemory {
 
 /// The memory needed to simulate the marching of
 /// a surface
+#[derive(Debug, Clone)]
 pub struct SurfaceMemory {
     /// Memory for each massive chunk
     pub massive_chunks: Vec<ChunkMemory>,
@@ -311,7 +313,7 @@ fn rk4(memory: &mut ChunkMemory) -> Result<(), String> {
 /// are treated in the same way.
 pub struct ThermalSurfaceData<T: SurfaceTrait> {
     /// A reference to the element in the [`SimpleModel`] which this struct represents
-    pub parent: Rc<T>,
+    pub parent: T,
 
     /// The [`Discretization`] that represents this `ThermalSurfaceData`
     pub discretization: Discretization,
@@ -536,9 +538,10 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let cos_tilt = normal * Vector3D::new(0., 0., 1.);
         let wind_speed_modifier = wind_speed_modifier(height, site_details);
 
+        let parent = (**parent).clone();
         // Build resulting
         Ok(ThermalSurfaceData {
-            parent: parent.clone(),
+            parent,
             area,
             perimeter,
             normal,
