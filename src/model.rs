@@ -25,7 +25,7 @@ use communication_protocols::{ErrorHandling, MetaOptions, SimulationModel};
 use geometry3d::Vector3D;
 use weather::Weather;
 
-use crate::surface::{ThermalFenestration, ThermalSurface, ThermalSurfaceData};
+use crate::surface::{SurfaceMemory, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
 use crate::surface_trait::SurfaceTrait;
 
 use crate::heating_cooling::ThermalHVAC;
@@ -40,6 +40,14 @@ use std::borrow::Borrow;
 
 /// The module name. For debugging purposes
 pub(crate) const MODULE_NAME: &str = "Thermal model";
+
+/// The memory that this module requires, so we can allocate only once.
+pub struct ThermalModelMemory {
+    
+    surfaces: Vec<SurfaceMemory>,
+    fenestrations: Vec<SurfaceMemory>,
+}
+
 
 /// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
@@ -76,9 +84,29 @@ impl ErrorHandling for ThermalModel {
     }
 }
 
+
+
 impl SimulationModel for ThermalModel {
-    type Type = Self;
+    type OutputType = Self;
     type OptionType = (); // No options
+    type AllocType = ThermalModelMemory;
+
+    fn allocate_memory(&self)->Result<Self::AllocType, String>{
+        
+        let surfaces = self.surfaces.iter().map(|s|{
+            s.allocate_memory()
+        }).collect();
+
+        let fenestrations = self.fenestrations.iter().map(|s|{
+            s.allocate_memory()
+        }).collect();
+
+        let ret = ThermalModelMemory { 
+            surfaces,
+            fenestrations,
+        };
+        Ok(ret)
+    }
 
     /// Creates a new ThermalModel from a SimpleModel.
     ///    
@@ -243,6 +271,7 @@ impl SimulationModel for ThermalModel {
         weather: &W,
         model: M,
         state: &mut SimulationState,
+        alloc: &mut ThermalModelMemory,
     ) -> Result<(), String> {
         let model = model.borrow();
         // Iterate through all the sub-subdivitions
@@ -267,7 +296,7 @@ impl SimulationModel for ThermalModel {
             
 
             /* UPDATE SURFACE'S TEMPERATURES */
-            for (solar_surf, model_surf) in self.surfaces.iter().zip(model.surfaces.iter()) {
+            for ((solar_surf, model_surf), memory) in self.surfaces.iter().zip(model.surfaces.iter()).zip(alloc.surfaces.iter_mut()) {
                 // find t_in and t_out of surface.
                 let t_front = match &solar_surf.front_boundary {
                     Some(b) => match b {
@@ -298,15 +327,15 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt, memory)?;
                 model_surf.set_front_convective_heat_flow(state, q_front)?;
                 model_surf.set_back_convective_heat_flow(state, q_back)?;
             } // end of iterating surface
 
             // What  if they are open???
             // for i in 0..self.fenestrations.len() {
-            for (solar_surf, model_surf) in
-                self.fenestrations.iter().zip(model.fenestrations.iter())
+            for ((solar_surf, model_surf), memory) in
+                self.fenestrations.iter().zip(model.fenestrations.iter()).zip(alloc.fenestrations.iter_mut())
             {
                 // find t_in and t_out of surface.
                 let t_front = match &solar_surf.front_boundary {
@@ -338,7 +367,7 @@ impl SimulationModel for ThermalModel {
 
                 // Update temperatures
                 let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
+                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt, memory)?;
                 model_surf.set_front_convective_heat_flow(state, q_front)?;
                 model_surf.set_back_convective_heat_flow(state, q_back)?;
             } // end of iterating surface
