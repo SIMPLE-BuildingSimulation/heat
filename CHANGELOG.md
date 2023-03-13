@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/SIMPLE-BuildingSimulation/heat/compare/v1.0.1...v1.0.2) (2023-03-13)
+
+
+### Bug Fixes
+
+* less allocations ([1a1b847](https://github.com/SIMPLE-BuildingSimulation/heat/commit/1a1b8474f0904bddd44adf1d94afed7c70eca621))
+
 ## [1.0.1](https://github.com/SIMPLE-BuildingSimulation/heat/compare/v1.0.0...v1.0.1) (2022-11-17)
 
 
