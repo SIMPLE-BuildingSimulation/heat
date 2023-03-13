@@ -875,26 +875,6 @@
 <a href="#841" id="841">841</a>
 <a href="#842" id="842">842</a>
 <a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
-<a href="#846" id="846">846</a>
-<a href="#847" id="847">847</a>
-<a href="#848" id="848">848</a>
-<a href="#849" id="849">849</a>
-<a href="#850" id="850">850</a>
-<a href="#851" id="851">851</a>
-<a href="#852" id="852">852</a>
-<a href="#853" id="853">853</a>
-<a href="#854" id="854">854</a>
-<a href="#855" id="855">855</a>
-<a href="#856" id="856">856</a>
-<a href="#857" id="857">857</a>
-<a href="#858" id="858">858</a>
-<a href="#859" id="859">859</a>
-<a href="#860" id="860">860</a>
-<a href="#861" id="861">861</a>
-<a href="#862" id="862">862</a>
-<a href="#863" id="863">863</a>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -931,7 +911,6 @@ SOFTWARE.
 <span class="kw">use </span><span class="kw">crate</span>::zone::ThermalZone;
 <span class="kw">use </span>simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 <span class="kw">use </span>std::borrow::Borrow;
-
 
 <span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
 // use rayon::prelude::*;
@@ -976,31 +955,27 @@ SOFTWARE.
 }
 
 <span class="kw">fn </span>get_boundary_temperature(
-    b: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Boundary&gt;,
+    b: <span class="kw-2">&amp;</span>Boundary,
     t_out: Float,
     model: <span class="kw-2">&amp;</span>SimpleModel,
     state: <span class="kw-2">&amp;</span>SimulationState,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Float, String&gt; {
     <span class="kw">match </span>b {
-        <span class="prelude-val">Some</span>(b) =&gt; <span class="kw">match </span>b {
-            Boundary::Space { space } =&gt; {
-                <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
-                space
-                    .dry_bulb_temperature(state)
-                    .ok_or(<span class="string">&quot;Space at the back of surface has no temperature!&quot;</span>.into())
-            }
-            Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
-            Boundary::AmbientTemperature { temperature } =&gt; <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>temperature),
-            Boundary::Outdoor =&gt; <span class="prelude-val">Ok</span>(t_out)
-        },
-        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(t_out),
+        Boundary::Space { space } =&gt; {
+            <span class="kw">let </span>space = model.get_space(space)<span class="question-mark">?</span>;
+            space
+                .dry_bulb_temperature(state)
+                .ok_or_else(|| <span class="string">&quot;Space at the back of surface has no temperature!&quot;</span>.into())
+        }
+        Boundary::Ground =&gt; <span class="macro">unimplemented!</span>(),
+        Boundary::AmbientTemperature { temperature } =&gt; <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>temperature),
+        Boundary::Outdoor =&gt; <span class="prelude-val">Ok</span>(t_out),
     }
 }
 
-
 <span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
 // fn parallel_iterate_surfaces&lt;T : SurfaceTrait&gt;(
-//     surfaces: &amp;[ThermalSurfaceData&lt;T&gt;], 
+//     surfaces: &amp;[ThermalSurfaceData&lt;T&gt;],
 //     alloc: &amp;mut Vec&lt;SurfaceMemory&gt;,
 //     wind_direction: Float,
 //     wind_speed: Float,
@@ -1012,14 +987,8 @@ SOFTWARE.
 
 //     use std::{sync::{Arc, Mutex}, thread};
 
-
-
-    
-
 //     let mut handles = Vec::with_capacity(surfaces.len());
 //     let shared_state = Arc::new(Mutex::new(state.clone()));
-    
-        
 
 //     // let front_back_temp : Vec&lt;(Float, Float)&gt; = surfaces.iter().map(|thermal_surface|{
 //     //     // find t_in and t_out of surface.
@@ -1032,8 +1001,8 @@ SOFTWARE.
 //     //     .iter()
 //     //     .zip(front_back_temp.into_iter())
 //     //     .zip(alloc.iter_mut());
-    
-//     // for d in surface_iter {                  
+
+//     // for d in surface_iter {
 //     //     let ((thermal_surface, (t_front, t_back)), memory) = d;
 //     for i in 0..surfaces.len(){
 //         // let thermal_surface = Arc::new(&amp;surfaces[i]);
@@ -1043,14 +1012,11 @@ SOFTWARE.
 //         let mut memory = alloc[i].clone();
 
 //         let this_state = Arc::clone(&amp;shared_state);
-        
+
 //         let handle = thread::spawn(move || {
-            
+
 //             let mut this_state = this_state.lock().unwrap();
-            
-            
-            
-            
+
 //                 // Update temperatures
 //                 this_surface.march(
 //                     &amp;this_state,
@@ -1061,15 +1027,15 @@ SOFTWARE.
 //                     dt,
 //                     &amp;mut memory,
 //                 ).unwrap();
-            
+
 //                 /////////////////////
 //                 // Now, set temperatures, calc heat-flows and return
 //                 /////////////////////
 //                 // let (rows, ..) = memory.temperatures.size();
-                
+
 //                 // thermal_surface.parent
 //                 // .set_node_temperatures(state, &amp;memory.temperatures);
-    
+
 //                 // // Calc heat flow
 //                 // let ts_front = memory.temperatures.get(0, 0).unwrap();
 //                 // let ts_back = memory.temperatures.get(rows - 1, 0).unwrap();
@@ -1079,96 +1045,98 @@ SOFTWARE.
 //                 //     .set_front_convection_coefficient(state, front_hs).unwrap();
 //                 //     thermal_surface.parent
 //                 //     .set_back_convection_coefficient(state, back_hs).unwrap();
-    
+
 //                 // let flow_front = (ts_front - t_front) * front_hs;
 //                 // let flow_back = (ts_back - t_back) * back_hs;
-    
-                
+
 //                 // thermal_surface.parent.set_front_convective_heat_flow(state, flow_front).unwrap();
 //                 // thermal_surface.parent.set_back_convective_heat_flow(state, flow_back).unwrap();
-    
-    
+
 //             });
 //             handles.push(handle);
-        
 
-        
 //     };
 
 //     for handle in handles {
 //         handle.join().unwrap();
 //     }
-    
+
 //     Ok(())
 // }
 
 // #[cfg(not(feature = &quot;parallel&quot;))]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>)<span class="kw">fn </span>iterate_surfaces&lt;T : SurfaceTrait&gt;(
-    surfaces: <span class="kw-2">&amp;</span>[ThermalSurfaceData&lt;T&gt;], 
-    alloc: <span class="kw-2">&amp;mut </span>Vec&lt;SurfaceMemory&gt;,
+</span><span class="attr">#[allow(clippy::too_many_arguments)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait&gt;(
+    surfaces: <span class="kw-2">&amp;</span>[ThermalSurfaceData&lt;T&gt;],
+    alloc: <span class="kw-2">&amp;mut </span>[SurfaceMemory],
     wind_direction: Float,
     wind_speed: Float,
     t_out: Float,
     dt: Float,
     model: <span class="kw-2">&amp;</span>SimpleModel,
     state: <span class="kw-2">&amp;mut </span>SimulationState,
-)-&gt;<span class="prelude-ty">Result</span>&lt;(),String&gt;{
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+    <span class="kw">let </span>surface_iter = surfaces.iter().zip(alloc.iter_mut());
 
+    <span class="kw">let </span>results = surface_iter.map(
+        |d: (<span class="kw-2">&amp;</span>ThermalSurfaceData&lt;T&gt;, <span class="kw-2">&amp;mut </span>SurfaceMemory)| -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
+            <span class="kw">let </span>(thermal_surface, memory) = d;
 
-    <span class="kw">let </span>surface_iter = surfaces
-        .iter()                        
-        .zip(alloc.iter_mut());
-    
-    <span class="kw">let </span>results = surface_iter.map( |d : (<span class="kw-2">&amp;</span>ThermalSurfaceData&lt;T&gt;, <span class="kw-2">&amp;mut </span>SurfaceMemory)| -&gt; <span class="prelude-ty">Result</span>&lt;(),String&gt; {                  
-        <span class="kw">let </span>(thermal_surface,  memory) = d;
+            <span class="kw">let </span>t_front =
+                get_boundary_temperature(<span class="kw-2">&amp;</span>thermal_surface.front_boundary, t_out, model, state)<span class="question-mark">?</span>;
+            <span class="kw">let </span>t_back =
+                get_boundary_temperature(<span class="kw-2">&amp;</span>thermal_surface.back_boundary, t_out, model, state)<span class="question-mark">?</span>;
+            <span class="comment">//= d;
+            // Update temperatures
+            </span>thermal_surface.march(
+                state,
+                t_front,
+                t_back,
+                wind_direction,
+                wind_speed,
+                dt,
+                memory,
+            )<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>t_front = get_boundary_temperature(<span class="kw-2">&amp;</span>thermal_surface.front_boundary, t_out, model, state)<span class="question-mark">?</span>;
-        <span class="kw">let </span>t_back = get_boundary_temperature(<span class="kw-2">&amp;</span>thermal_surface.back_boundary, t_out, model, state)<span class="question-mark">?</span>;
-        <span class="comment">//= d;
-        // Update temperatures
-        </span>thermal_surface.march(
-            state,
-            t_front,
-            t_back,
-            wind_direction,
-            wind_speed,
-            dt,
-            memory,
-        )<span class="question-mark">?</span>;
-        
-        <span class="comment">/////////////////////
-        // Now, set temperatures, calc heat-flows and return
-        /////////////////////
-        </span><span class="kw">let </span>(rows, ..) = memory.temperatures.size();
-        
-        thermal_surface.parent
-        .set_node_temperatures(state, <span class="kw-2">&amp;</span>memory.temperatures);
+            <span class="comment">/////////////////////
+            // Now, set temperatures, calc heat-flows and return
+            /////////////////////
+            </span><span class="kw">let </span>(rows, ..) = memory.temperatures.size();
 
-        <span class="comment">// Calc heat flow
-        </span><span class="kw">let </span>ts_front = memory.temperatures.get(<span class="number">0</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>ts_back = memory.temperatures.get(rows - <span class="number">1</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>(_front_env, _back_env, front_hs, back_hs) =
-        thermal_surface.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
-        thermal_surface.parent
-            .set_front_convection_coefficient(state, front_hs)<span class="question-mark">?</span>;
-            thermal_surface.parent
-            .set_back_convection_coefficient(state, back_hs)<span class="question-mark">?</span>;
+            thermal_surface
+                .parent
+                .set_node_temperatures(state, <span class="kw-2">&amp;</span>memory.temperatures);
 
-        <span class="kw">let </span>flow_front = (ts_front - t_front) * front_hs;
-        <span class="kw">let </span>flow_back = (ts_back - t_back) * back_hs;
+            <span class="comment">// Calc heat flow
+            </span><span class="kw">let </span>ts_front = memory.temperatures.get(<span class="number">0</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>ts_back = memory.temperatures.get(rows - <span class="number">1</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>(_front_env, _back_env, front_hs, back_hs) = thermal_surface
+                .calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+            thermal_surface
+                .parent
+                .set_front_convection_coefficient(state, front_hs)<span class="question-mark">?</span>;
+            thermal_surface
+                .parent
+                .set_back_convection_coefficient(state, back_hs)<span class="question-mark">?</span>;
 
-        
-        thermal_surface.parent.set_front_convective_heat_flow(state, flow_front)<span class="question-mark">?</span>;
-        thermal_surface.parent.set_back_convective_heat_flow(state, flow_back)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
-    });
+            <span class="kw">let </span>flow_front = (ts_front - t_front) * front_hs;
+            <span class="kw">let </span>flow_back = (ts_back - t_back) * back_hs;
+
+            thermal_surface
+                .parent
+                .set_front_convective_heat_flow(state, flow_front)<span class="question-mark">?</span>;
+            thermal_surface
+                .parent
+                .set_back_convective_heat_flow(state, flow_back)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(())
+        },
+    );
 
     <span class="comment">// Check results
     </span><span class="kw">for </span>r <span class="kw">in </span>results {
         r<span class="question-mark">?</span>;
     }
 
-    
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -1267,13 +1235,9 @@ SOFTWARE.
                 <span class="kw-2">&amp;</span>construction,
                 d,
             )<span class="question-mark">?</span>;
-            <span class="comment">// Match surface and zones
-            </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.front_boundary() {
-                tsurf.set_front_boundary(b, model);
-            }
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.back_boundary() {
-                tsurf.set_back_boundary(b, model);
-            }
+            <span class="comment">// Match surface and zones            
+            </span>tsurf.set_front_boundary(surf.front_boundary.clone(), model);            
+            tsurf.set_back_boundary(surf.back_boundary.clone(), model);
 
             surfaces.push(tsurf);
         }
@@ -1313,12 +1277,9 @@ SOFTWARE.
                 d,
             )<span class="question-mark">?</span>;
             <span class="comment">// Match surface and zones
-            </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.front_boundary() {
-                tsurf.set_front_boundary(b, model);
-            }
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(b) = surf.back_boundary() {
-                tsurf.set_back_boundary(b, model);
-            }
+            </span>tsurf.set_front_boundary(surf.front_boundary.clone(), model);            
+            tsurf.set_back_boundary(surf.back_boundary.clone(), model);
+            
             fenestrations.push(tsurf);
         }
 
@@ -1386,52 +1347,51 @@ SOFTWARE.
 
             <span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
             // parallel_iterate_surfaces(
-            //     &amp;self.surfaces, 
-            //     &amp;mut alloc.surfaces, 
-            //     wind_direction, 
-            //     wind_speed, 
-            //     t_out, 
-            //     self.dt, 
-            //     model, 
+            //     &amp;self.surfaces,
+            //     &amp;mut alloc.surfaces,
+            //     wind_direction,
+            //     wind_speed,
+            //     t_out,
+            //     self.dt,
+            //     model,
             //     state
             // )?;
 
             // #[cfg(feature = &quot;parallel&quot;)]
             // parallel_iterate_surfaces(
-            //     &amp;self.fenestrations, 
-            //     &amp;mut alloc.fenestrations, 
-            //     wind_direction, 
-            //     wind_speed, 
-            //     t_out, 
-            //     self.dt, 
-            //     model, 
+            //     &amp;self.fenestrations,
+            //     &amp;mut alloc.fenestrations,
+            //     wind_direction,
+            //     wind_speed,
+            //     t_out,
+            //     self.dt,
+            //     model,
             //     state
             // )?;
 
             // #[cfg(not(feature = &quot;parallel&quot;))]
             </span>iterate_surfaces(
-                <span class="kw-2">&amp;</span><span class="self">self</span>.surfaces, 
-                <span class="kw-2">&amp;mut </span>alloc.surfaces, 
-                wind_direction, 
-                wind_speed, 
-                t_out, 
-                <span class="self">self</span>.dt, 
-                model, 
-                state
+                <span class="kw-2">&amp;</span><span class="self">self</span>.surfaces,
+                <span class="kw-2">&amp;mut </span>alloc.surfaces,
+                wind_direction,
+                wind_speed,
+                t_out,
+                <span class="self">self</span>.dt,
+                model,
+                state,
             )<span class="question-mark">?</span>;
 
             <span class="comment">// #[cfg(not(feature = &quot;parallel&quot;))]
             </span>iterate_surfaces(
-                <span class="kw-2">&amp;</span><span class="self">self</span>.fenestrations, 
-                <span class="kw-2">&amp;mut </span>alloc.fenestrations, 
-                wind_direction, 
-                wind_speed, 
-                t_out, 
-                <span class="self">self</span>.dt, 
-                model, 
-                state
+                <span class="kw-2">&amp;</span><span class="self">self</span>.fenestrations,
+                <span class="kw-2">&amp;mut </span>alloc.fenestrations,
+                wind_direction,
+                wind_speed,
+                t_out,
+                <span class="self">self</span>.dt,
+                model,
+                state,
             )<span class="question-mark">?</span>;
-            
 
             <span class="comment">/* UPDATE ZONES&#39; TEMPERATURE */
             // This is done analytically.
@@ -1593,7 +1553,7 @@ SOFTWARE.
 
                 <span class="kw">let </span>ai = surface.area;
                 <span class="comment">// if front leads to a Zone
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Boundary::Space { .. }) = <span class="kw-2">&amp;</span>surface.front_boundary {
+                </span><span class="kw">if let </span>Boundary::Space { .. } = <span class="kw-2">&amp;</span>surface.front_boundary {
                     <span class="kw">let </span>z_index = surface.front_space_index.unwrap(); <span class="comment">// Should have one of these if boundary is Space
 
                     </span><span class="kw">let </span>temp = surface.parent.front_temperature(state);
@@ -1602,7 +1562,7 @@ SOFTWARE.
                 }
 
                 <span class="comment">// if back leads to a Zone
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Boundary::Space { .. }) = <span class="kw-2">&amp;</span>surface.back_boundary {
+                </span><span class="kw">if let </span>Boundary::Space { .. } = <span class="kw-2">&amp;</span>surface.back_boundary {
                     <span class="kw">let </span>z_index = surface.back_space_index.unwrap(); <span class="comment">// Should have one of these if boundary is Space
 
                     </span><span class="kw">let </span>temp = surface.parent.back_temperature(state);
