@@ -19,9 +19,9 @@ SOFTWARE.
 */
 
 pub(crate) const MAX_RS: Float = 0.05;
-use crate::cavity::Cavity;
 use crate::convection::ConvectionParams;
 use crate::Float;
+use crate::{cavity::Cavity, surface::ChunkMemory};
 use matrix::Matrix;
 use simple_model::{Construction, SimpleModel, Substance};
 use std::rc::Rc;
@@ -67,6 +67,7 @@ impl std::default::Default for UValue {
 /// > **Note:** This object contains all the [`Cavity`] objects in it, which
 /// contain information not only about their thickness but also their orientation.
 /// This means that one `Discretization` should exist per `Surface`, not just by `Construction`.
+#[derive(Clone, Debug)]
 pub struct Discretization {
     /// Contains the node's mass and the `UValue` of each segment
     pub segments: Vec<(Float, UValue)>,
@@ -603,7 +604,8 @@ impl Discretization {
         back_env: &ConvectionParams,
         back_hs: Float,
         back_rad_hs: Float,
-    ) -> (Matrix, Matrix) {
+        memory: &mut ChunkMemory,
+    ) -> Result<(), String> {
         let (nrows, ncols) = temperatures.size();
         assert_eq!(
             ncols, 1,
@@ -617,10 +619,9 @@ impl Discretization {
             self.segments.len(),
             nrows
         );
+        memory.k *= 0.0;
+        memory.q *= 0.0;
         let nnodes = fin - ini;
-
-        let mut k = Matrix::new(0.0, nnodes, nnodes);
-        let mut q = Matrix::new(0.0, nnodes, 1);
 
         // this is just quite helpful
         let get_t_after = |i: usize| -> Float {
@@ -632,30 +633,30 @@ impl Discretization {
 
         for local_i in 0..nnodes - 1 {
             let global_i = ini + local_i;
-            let t_this = temperatures.get(global_i, 0).unwrap();
+            let t_this = temperatures.get(global_i, 0)?;
             let t_next = get_t_after(global_i);
             let (.., uvalue) = &self.segments[global_i];
             let u = uvalue.u_value(t_this, t_next);
 
             // Top left... should be there
-            k.add_to_element(local_i, local_i, -u).unwrap();
+            memory.k.add_to_element(local_i, local_i, -u)?;
             // Bottom right, only if within range.
-            if let Ok(old_value) = k.get(local_i + 1, local_i + 1) {
-                k.set(local_i + 1, local_i + 1, old_value - u).unwrap();
+            if let Ok(old_value) = memory.k.get(local_i + 1, local_i + 1) {
+                memory.k.set(local_i + 1, local_i + 1, old_value - u)?;
             }
             // Top right, only if within range.
-            if let Ok(old_value) = k.get(local_i, local_i + 1) {
-                k.set(local_i, local_i + 1, old_value + u).unwrap();
+            if let Ok(old_value) = memory.k.get(local_i, local_i + 1) {
+                memory.k.set(local_i, local_i + 1, old_value + u)?;
             }
             // Bottom left, only if within range.
-            if let Ok(old_value) = k.get(local_i + 1, local_i) {
-                k.set(local_i + 1, local_i, old_value + u).unwrap();
+            if let Ok(old_value) = memory.k.get(local_i + 1, local_i) {
+                memory.k.set(local_i + 1, local_i, old_value + u)?;
             }
         }
 
         // Add front border conditions
         let (hs_front, front_q) = if ini == 0 {
-            let ts = temperatures.get(0, 0).unwrap();
+            let ts = temperatures.get(0, 0)?;
             // Solar radiation is added later because it also depends
             // on the solar absorption of different layers.
 
@@ -665,15 +666,15 @@ impl Discretization {
             (front_hs, front_q)
         } else {
             let (.., uvalue) = &self.segments[ini - 1];
-            let t_before = temperatures.get(ini - 1, 0).unwrap(); // this should NEVER fail
-            let t_after = temperatures.get(ini, 0).unwrap(); // this should NEVER fail
+            let t_before = temperatures.get(ini - 1, 0)?; // this should NEVER fail
+            let t_after = temperatures.get(ini, 0)?; // this should NEVER fail
             let u = uvalue.u_value(t_before, t_after);
 
             (u, u * t_before)
         };
 
-        q.add_to_element(0, 0, front_q).unwrap();
-        k.add_to_element(0, 0, -hs_front).unwrap();
+        memory.q.add_to_element(0, 0, front_q).unwrap();
+        memory.k.add_to_element(0, 0, -hs_front).unwrap();
 
         // Add back border conditions
         let (hs_back, back_q) = if fin == nrows {
@@ -686,16 +687,16 @@ impl Discretization {
             (back_hs, back_q)
         } else {
             let (.., uvalue) = &self.segments[fin - 1];
-            let t_before = temperatures.get(fin - 1, 0).unwrap(); // this should NEVER fail
+            let t_before = temperatures.get(fin - 1, 0)?; // this should NEVER fail
             let t_after = get_t_after(fin - 1);
             let u = uvalue.u_value(t_before, t_after);
 
             (u, u * t_after)
         };
-        q.add_to_element(nnodes - 1, 0, back_q).unwrap();
-        k.add_to_element(nnodes - 1, nnodes - 1, -hs_back).unwrap();
+        memory.q.add_to_element(nnodes - 1, 0, back_q)?;
+        memory.k.add_to_element(nnodes - 1, nnodes - 1, -hs_back)?;
 
-        (k, q)
+        Ok(())
     }
 }
 
@@ -1120,7 +1121,18 @@ mod testing {
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
-        let (k, q) = d.get_k_q(
+        let mut memory = ChunkMemory {
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
+        };
+        d.get_k_q(
             0,
             n + 1,
             &temperatures,
@@ -1130,13 +1142,15 @@ mod testing {
             &back_env,
             back_hs,
             back_rad_hs,
-        );
-        println!("k = {}", k);
-        println!("heat_flows = {}", q);
+            &mut memory,
+        )
+        .unwrap();
+        println!("k = {}", memory.k);
+        println!("heat_flows = {}", memory.q);
 
         for r in 0..n + 1 {
             // Check q
-            let heat_flow = q.get(r, 0).unwrap();
+            let heat_flow = memory.q.get(r, 0).unwrap();
             if r == 0 {
                 // exterior temp is lower, so heat flow is negative
                 assert!(heat_flow < -1e-5);
@@ -1148,7 +1162,7 @@ mod testing {
             }
 
             for c in 0..n + 1 {
-                let v = k.get(r, c).unwrap();
+                let v = memory.k.get(r, c).unwrap();
 
                 if c == r {
                     // Diagonal
@@ -1191,8 +1205,19 @@ mod testing {
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
+        let mut memory = ChunkMemory {
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
+        };
 
-        let (k, q) = d.get_k_q(
+        d.get_k_q(
             0,
             3,
             &temperatures,
@@ -1202,13 +1227,15 @@ mod testing {
             &back_env,
             back_hs,
             back_rad_hs,
-        );
-        println!("k = {}", k);
-        println!("heat_flows = {}", q);
+            &mut memory,
+        )
+        .unwrap();
+        println!("k = {}", memory.k);
+        println!("heat_flows = {}", memory.q);
 
         for r in 0..3 {
             // Check q
-            let heat_flow = q.get(r, 0).unwrap();
+            let heat_flow = memory.q.get(r, 0).unwrap();
             if r == 0 {
                 // exterior temp is lower, so heat flow is negative
                 assert!(heat_flow < -1e-5);
@@ -1220,7 +1247,7 @@ mod testing {
             }
 
             for c in 0..3 {
-                let v = k.get(r, c).unwrap();
+                let v = memory.k.get(r, c).unwrap();
 
                 if c == r {
                     // Diagonal
@@ -1263,7 +1290,18 @@ mod testing {
 
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
-        let (k, q) = d.get_k_q(
+        let mut memory = ChunkMemory {
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
+        };
+        d.get_k_q(
             2,
             5,
             &temperatures,
@@ -1273,13 +1311,15 @@ mod testing {
             &back_env,
             back_hs,
             back_rad_hs,
-        );
-        println!("k = {}", k);
-        println!("heat_flows = {}", q);
+            &mut memory,
+        )
+        .unwrap();
+        println!("k = {}", memory.k);
+        println!("heat_flows = {}", memory.q);
 
         for r in 0..3 {
             // Check q
-            let heat_flow = q.get(r, 0).unwrap();
+            let heat_flow = memory.q.get(r, 0).unwrap();
             if r == 1 {
                 // This element is Zero
                 assert!(heat_flow.abs() < 1e-29);
@@ -1289,7 +1329,7 @@ mod testing {
             }
 
             for c in 0..3 {
-                let v = k.get(r, c).unwrap();
+                let v = memory.k.get(r, c).unwrap();
 
                 if c == r {
                     // Diagonal
@@ -1359,7 +1399,18 @@ mod testing {
         let back_hs = 1.739658084820765;
         let front_rad_hs = 1.0;
         let back_rad_hs = 1.0;
-        let (k, q) = d.get_k_q(
+        let mut memory = ChunkMemory {
+            aux: Matrix::new(0.0, n + 1, 1),
+            k: Matrix::new(0.0, n + 1, n + 1),
+            c: Matrix::new(0.0, n + 1, n + 1),
+            q: Matrix::new(0.0, n + 1, 1),
+            temps: Matrix::new(0.0, n + 1, 1),
+            k1: Matrix::new(0.0, n + 1, 1),
+            k2: Matrix::new(0.0, n + 1, 1),
+            k3: Matrix::new(0.0, n + 1, 1),
+            k4: Matrix::new(0.0, n + 1, 1),
+        };
+        d.get_k_q(
             1,
             n,
             &temperatures,
@@ -1369,13 +1420,15 @@ mod testing {
             &back_env,
             back_hs,
             back_rad_hs,
-        );
-        println!("k = {}", k);
-        println!("heat_flows = {}", q);
+            &mut memory,
+        )
+        .unwrap();
+        println!("k = {}", memory.k);
+        println!("heat_flows = {}", memory.q);
 
         for r in 0..n - 1 {
             // Check q
-            let heat_flow = q.get(r, 0).unwrap();
+            let heat_flow = memory.q.get(r, 0).unwrap();
             if r == 0 {
                 assert!(heat_flow > 1e-5);
             } else if r == n - 2 {
@@ -1385,7 +1438,7 @@ mod testing {
             }
 
             for c in 0..n - 1 {
-                let v = k.get(r, c).unwrap();
+                let v = memory.k.get(r, c).unwrap();
 
                 if c == r {
                     // Diagonal

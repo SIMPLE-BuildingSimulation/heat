@@ -25,7 +25,7 @@ use communication_protocols::{ErrorHandling, MetaOptions, SimulationModel};
 use geometry3d::Vector3D;
 use weather::Weather;
 
-use crate::surface::{ThermalFenestration, ThermalSurface, ThermalSurfaceData};
+use crate::surface::{SurfaceMemory, ThermalFenestration, ThermalSurface, ThermalSurfaceData};
 use crate::surface_trait::SurfaceTrait;
 
 use crate::heating_cooling::ThermalHVAC;
@@ -35,11 +35,19 @@ use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 use std::borrow::Borrow;
 
-// #[cfg(feature="parallel")]
+
+// #[cfg(feature = "parallel")]
 // use rayon::prelude::*;
 
 /// The module name. For debugging purposes
 pub(crate) const MODULE_NAME: &str = "Thermal model";
+
+/// The memory that this module requires, so we can allocate only once.
+#[derive(Debug, Clone)]
+pub struct ThermalModelMemory {
+    surfaces: Vec<SurfaceMemory>,
+    fenestrations: Vec<SurfaceMemory>,
+}
 
 /// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
@@ -70,6 +78,203 @@ pub struct ThermalModel {
     pub dt: Float,
 }
 
+fn get_boundary_temperature(
+    b: &Option<Boundary>,
+    t_out: Float,
+    model: &SimpleModel,
+    state: &SimulationState,
+) -> Result<Float, String> {
+    match b {
+        Some(b) => match b {
+            Boundary::Space { space } => {
+                let space = model.get_space(space)?;
+                space
+                    .dry_bulb_temperature(state)
+                    .ok_or("Space at the back of surface has no temperature!".into())
+            }
+            Boundary::Ground => unimplemented!(),
+            Boundary::AmbientTemperature { temperature } => Ok(*temperature),
+            Boundary::Outdoor => Ok(t_out)
+        },
+        None => Ok(t_out),
+    }
+}
+
+
+// #[cfg(feature = "parallel")]
+// fn parallel_iterate_surfaces<T : SurfaceTrait>(
+//     surfaces: &[ThermalSurfaceData<T>], 
+//     alloc: &mut Vec<SurfaceMemory>,
+//     wind_direction: Float,
+//     wind_speed: Float,
+//     t_out: Float,
+//     dt: Float,
+//     model: &SimpleModel,
+//     state: &mut SimulationState,
+// )->Result<(),String>{
+
+//     use std::{sync::{Arc, Mutex}, thread};
+
+
+
+    
+
+//     let mut handles = Vec::with_capacity(surfaces.len());
+//     let shared_state = Arc::new(Mutex::new(state.clone()));
+    
+        
+
+//     // let front_back_temp : Vec<(Float, Float)> = surfaces.iter().map(|thermal_surface|{
+//     //     // find t_in and t_out of surface.
+//     //     let t_front = get_boundary_temperature(&thermal_surface.front_boundary, t_out, model, state).unwrap();
+//     //     let t_back = get_boundary_temperature(&thermal_surface.back_boundary, t_out, model, state).unwrap();
+//     //     (t_front, t_back)
+//     // }).collect();
+
+//     // let surface_iter = surfaces
+//     //     .iter()
+//     //     .zip(front_back_temp.into_iter())
+//     //     .zip(alloc.iter_mut());
+    
+//     // for d in surface_iter {                  
+//     //     let ((thermal_surface, (t_front, t_back)), memory) = d;
+//     for i in 0..surfaces.len(){
+//         // let thermal_surface = Arc::new(&surfaces[i]);
+//         let this_surface = surfaces[i].clone();
+//         let t_front = get_boundary_temperature(&this_surface.front_boundary, t_out, model, state).unwrap();
+//         let t_back = get_boundary_temperature(&this_surface.back_boundary, t_out, model, state).unwrap();
+//         let mut memory = alloc[i].clone();
+
+//         let this_state = Arc::clone(&shared_state);
+        
+//         let handle = thread::spawn(move || {
+            
+//             let mut this_state = this_state.lock().unwrap();
+            
+            
+            
+            
+//                 // Update temperatures
+//                 this_surface.march(
+//                     &this_state,
+//                     t_front,
+//                     t_back,
+//                     wind_direction,
+//                     wind_speed,
+//                     dt,
+//                     &mut memory,
+//                 ).unwrap();
+            
+//                 /////////////////////
+//                 // Now, set temperatures, calc heat-flows and return
+//                 /////////////////////
+//                 // let (rows, ..) = memory.temperatures.size();
+                
+//                 // thermal_surface.parent
+//                 // .set_node_temperatures(state, &memory.temperatures);
+    
+//                 // // Calc heat flow
+//                 // let ts_front = memory.temperatures.get(0, 0).unwrap();
+//                 // let ts_back = memory.temperatures.get(rows - 1, 0).unwrap();
+//                 // let (_front_env, _back_env, front_hs, back_hs) =
+//                 // thermal_surface.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+//                 // thermal_surface.parent
+//                 //     .set_front_convection_coefficient(state, front_hs).unwrap();
+//                 //     thermal_surface.parent
+//                 //     .set_back_convection_coefficient(state, back_hs).unwrap();
+    
+//                 // let flow_front = (ts_front - t_front) * front_hs;
+//                 // let flow_back = (ts_back - t_back) * back_hs;
+    
+                
+//                 // thermal_surface.parent.set_front_convective_heat_flow(state, flow_front).unwrap();
+//                 // thermal_surface.parent.set_back_convective_heat_flow(state, flow_back).unwrap();
+    
+    
+//             });
+//             handles.push(handle);
+        
+
+        
+//     };
+
+//     for handle in handles {
+//         handle.join().unwrap();
+//     }
+    
+//     Ok(())
+// }
+
+// #[cfg(not(feature = "parallel"))]
+pub(crate)fn iterate_surfaces<T : SurfaceTrait>(
+    surfaces: &[ThermalSurfaceData<T>], 
+    alloc: &mut Vec<SurfaceMemory>,
+    wind_direction: Float,
+    wind_speed: Float,
+    t_out: Float,
+    dt: Float,
+    model: &SimpleModel,
+    state: &mut SimulationState,
+)->Result<(),String>{
+
+
+    let surface_iter = surfaces
+        .iter()                        
+        .zip(alloc.iter_mut());
+    
+    let results = surface_iter.map( |d : (&ThermalSurfaceData<T>, &mut SurfaceMemory)| -> Result<(),String> {                  
+        let (thermal_surface,  memory) = d;
+
+        let t_front = get_boundary_temperature(&thermal_surface.front_boundary, t_out, model, state)?;
+        let t_back = get_boundary_temperature(&thermal_surface.back_boundary, t_out, model, state)?;
+        //= d;
+        // Update temperatures
+        thermal_surface.march(
+            state,
+            t_front,
+            t_back,
+            wind_direction,
+            wind_speed,
+            dt,
+            memory,
+        )?;
+        
+        /////////////////////
+        // Now, set temperatures, calc heat-flows and return
+        /////////////////////
+        let (rows, ..) = memory.temperatures.size();
+        
+        thermal_surface.parent
+        .set_node_temperatures(state, &memory.temperatures);
+
+        // Calc heat flow
+        let ts_front = memory.temperatures.get(0, 0)?;
+        let ts_back = memory.temperatures.get(rows - 1, 0)?;
+        let (_front_env, _back_env, front_hs, back_hs) =
+        thermal_surface.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
+        thermal_surface.parent
+            .set_front_convection_coefficient(state, front_hs)?;
+            thermal_surface.parent
+            .set_back_convection_coefficient(state, back_hs)?;
+
+        let flow_front = (ts_front - t_front) * front_hs;
+        let flow_back = (ts_back - t_back) * back_hs;
+
+        
+        thermal_surface.parent.set_front_convective_heat_flow(state, flow_front)?;
+        thermal_surface.parent.set_back_convective_heat_flow(state, flow_back)?;
+        Ok(())
+    });
+
+    // Check results
+    for r in results {
+        r?;
+    }
+
+    
+    Ok(())
+}
+
 impl ErrorHandling for ThermalModel {
     fn module_name() -> &'static str {
         MODULE_NAME
@@ -77,8 +282,25 @@ impl ErrorHandling for ThermalModel {
 }
 
 impl SimulationModel for ThermalModel {
-    type Type = Self;
+    type OutputType = Self;
     type OptionType = (); // No options
+    type AllocType = ThermalModelMemory;
+
+    fn allocate_memory(&self) -> Result<Self::AllocType, String> {
+        let surfaces = self.surfaces.iter().map(|s| s.allocate_memory()).collect();
+
+        let fenestrations = self
+            .fenestrations
+            .iter()
+            .map(|s| s.allocate_memory())
+            .collect();
+
+        let ret = ThermalModelMemory {
+            surfaces,
+            fenestrations,
+        };
+        Ok(ret)
+    }
 
     /// Creates a new ThermalModel from a SimpleModel.
     ///    
@@ -94,7 +316,7 @@ impl SimulationModel for ThermalModel {
         n: usize,
     ) -> Result<Self, String> {
         let model = model.borrow();
-        
+
         /* CREATE ALL ZONES, ONE PER SPACE */
         let mut zones: Vec<ThermalZone> = Vec::with_capacity(model.spaces.len());
         for (i, space) in model.spaces.iter().enumerate() {
@@ -243,6 +465,7 @@ impl SimulationModel for ThermalModel {
         weather: &W,
         model: M,
         state: &mut SimulationState,
+        alloc: &mut ThermalModelMemory,
     ) -> Result<(), String> {
         let model = model.borrow();
         // Iterate through all the sub-subdivitions
@@ -264,84 +487,54 @@ impl SimulationModel for ThermalModel {
             // Gather spaces temperatures
             let t_current = self.get_current_zones_temperatures(state);
 
+            // #[cfg(feature = "parallel")]
+            // parallel_iterate_surfaces(
+            //     &self.surfaces, 
+            //     &mut alloc.surfaces, 
+            //     wind_direction, 
+            //     wind_speed, 
+            //     t_out, 
+            //     self.dt, 
+            //     model, 
+            //     state
+            // )?;
+
+            // #[cfg(feature = "parallel")]
+            // parallel_iterate_surfaces(
+            //     &self.fenestrations, 
+            //     &mut alloc.fenestrations, 
+            //     wind_direction, 
+            //     wind_speed, 
+            //     t_out, 
+            //     self.dt, 
+            //     model, 
+            //     state
+            // )?;
+
+            // #[cfg(not(feature = "parallel"))]
+            iterate_surfaces(
+                &self.surfaces, 
+                &mut alloc.surfaces, 
+                wind_direction, 
+                wind_speed, 
+                t_out, 
+                self.dt, 
+                model, 
+                state
+            )?;
+
+            // #[cfg(not(feature = "parallel"))]
+            iterate_surfaces(
+                &self.fenestrations, 
+                &mut alloc.fenestrations, 
+                wind_direction, 
+                wind_speed, 
+                t_out, 
+                self.dt, 
+                model, 
+                state
+            )?;
             
-
-            /* UPDATE SURFACE'S TEMPERATURES */
-            for (solar_surf, model_surf) in self.surfaces.iter().zip(model.surfaces.iter()) {
-                // find t_in and t_out of surface.
-                let t_front = match &solar_surf.front_boundary {
-                    Some(b) => match b {
-                        Boundary::Space { space } => {
-                            let space = model.get_space(space)?;
-                            space
-                                .dry_bulb_temperature(state)
-                                .expect("Space in front of surface has no temperature!")
-                        }
-                        Boundary::AmbientTemperature { temperature } => *temperature,
-                        Boundary::Ground => unimplemented!(),
-                    },
-                    None => t_out,
-                };
-                let t_back = match &solar_surf.back_boundary {
-                    Some(b) => match b {
-                        Boundary::Space { space } => {
-                            let space = model.get_space(space)?;
-                            space
-                                .dry_bulb_temperature(state)
-                                .expect("Space at the back of surface has no temperature!")
-                        }
-                        Boundary::Ground => unimplemented!(),
-                        Boundary::AmbientTemperature { temperature } => *temperature,
-                    },
-                    None => t_out,
-                };
-
-                // Update temperatures
-                let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
-                model_surf.set_front_convective_heat_flow(state, q_front)?;
-                model_surf.set_back_convective_heat_flow(state, q_back)?;
-            } // end of iterating surface
-
-            // What  if they are open???
-            // for i in 0..self.fenestrations.len() {
-            for (solar_surf, model_surf) in
-                self.fenestrations.iter().zip(model.fenestrations.iter())
-            {
-                // find t_in and t_out of surface.
-                let t_front = match &solar_surf.front_boundary {
-                    Some(b) => match b {
-                        Boundary::Space { space } => {
-                            let space = model.get_space(space)?;
-                            space
-                                .dry_bulb_temperature(state)
-                                .expect("Space in front of fenestration has no temperature!")
-                        }
-                        Boundary::Ground => unimplemented!(),
-                        Boundary::AmbientTemperature { temperature } => *temperature,
-                    },
-                    None => t_out,
-                };
-                let t_back = match &solar_surf.back_boundary {
-                    Some(b) => match b {
-                        Boundary::Space { space } => {
-                            let space = model.get_space(space)?;
-                            space
-                                .dry_bulb_temperature(state)
-                                .expect("Space at the back of fenestration has no temperature!")
-                        }
-                        Boundary::Ground => unimplemented!(),
-                        Boundary::AmbientTemperature { temperature } => *temperature,
-                    },
-                    None => t_out,
-                };
-
-                // Update temperatures
-                let (q_front, q_back) =
-                    solar_surf.march(state, t_front, t_back, wind_direction, wind_speed, self.dt)?;
-                model_surf.set_front_convective_heat_flow(state, q_front)?;
-                model_surf.set_back_convective_heat_flow(state, q_back)?;
-            } // end of iterating surface
 
             /* UPDATE ZONES' TEMPERATURE */
             // This is done analytically.
