@@ -12,8 +12,8 @@ simple_model = {git = "https://github.com/SIMPLE-BuildingSimulation/simple_model
 calendar = { git = "https://github.com/SIMPLE-BuildingSimulation/calendar.git" }
 weather = { git = "https://github.com/SIMPLE-BuildingSimulation/weather.git" }
 geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git"}
-# communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
-communication_protocols = { path = "../communication_protocols" }
+communication_protocols = { git = "https://github.com/SIMPLE-BuildingSimulation/communication_protocols.git" }
+# communication_protocols = { path = "../communication_protocols" }
 matrix = {git = "https://github.com/SIMPLE-BuildingSimulation/matrix.git"}
 polynomial = {git = "https://github.com/SIMPLE-BuildingSimulation/polynomial.git"}
 rayon = {version = "1.5.3", optional = true}
@@ -33,7 +33,7 @@ rustdoc-args = [
 ]
 
 [features]
-default = [] #["parallel"]
+default = ["parallel"]
 parallel=["rayon"]
 float = [
     "simple_model/float",  
