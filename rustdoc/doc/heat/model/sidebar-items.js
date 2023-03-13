@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["MODULE_NAME","The module name. For debugging purposes"]],"struct":[["ThermalModel","A structure containing all the thermal representation of the whole [`SimpleModel`]"]]};
+window.SIDEBAR_ITEMS = {"constant":[["MODULE_NAME","The module name. For debugging purposes"]],"fn":[["get_boundary_temperature",""],["iterate_surfaces",""]],"struct":[["ThermalModel","A structure containing all the thermal representation of the whole [`SimpleModel`]"],["ThermalModelMemory","The memory that this module requires, so we can allocate only once."]]};
