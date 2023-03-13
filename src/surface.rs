@@ -320,13 +320,13 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     pub discretization: Discretization,
 
     /// The back boundary
-    pub front_boundary: Option<Boundary>,
+    pub front_boundary: Boundary,
 
     /// The index of the space in front of this, if any
     pub front_space_index: Option<usize>,
 
-    /// The front boundary
-    pub back_boundary: Option<Boundary>,
+    /// The back boundary
+    pub back_boundary: Boundary,
 
     /// The index of the space at the back of this, if any
     pub back_space_index: Option<usize>,
@@ -548,8 +548,8 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
             normal,
             cos_tilt,
             discretization,
-            front_boundary: None,
-            back_boundary: None,
+            front_boundary: Boundary::default(),
+            back_boundary: Boundary::default(),
             front_space_index: None,
             back_space_index: None,
             front_emissivity,
@@ -567,9 +567,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
     }
 
     /// Sets the front boundary
-    pub fn set_front_boundary(&mut self, b: &Boundary, model: &SimpleModel) {
-        self.front_boundary = Some(b.clone());
-        if let Boundary::Space { space } = b {
+    pub fn set_front_boundary(&mut self, b: Boundary, model: &SimpleModel) {
+        self.front_boundary = b;
+        if let Boundary::Space { space } = &self.front_boundary {
             for (i, s) in model.spaces.iter().enumerate() {
                 if s.name() == space {
                     self.front_space_index = Some(i);
@@ -580,9 +580,9 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
     }
 
     /// Sets the back boundary
-    pub fn set_back_boundary(&mut self, b: &Boundary, model: &SimpleModel) {
-        self.back_boundary = Some(b.clone());
-        if let Boundary::Space { space } = b {
+    pub fn set_back_boundary(&mut self, b: Boundary, model: &SimpleModel) {
+        self.back_boundary = b;
+        if let Boundary::Space { space } = &self.back_boundary {
             for (i, s) in model.spaces.iter().enumerate() {
                 if s.name() == space {
                     self.back_space_index = Some(i);
@@ -608,136 +608,97 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         let windward = is_windward(wind_direction, self.cos_tilt, self.normal);
 
         // TODO: There is something to do here if we are talking about windows
-        let (front_env, front_hs) = if let Some(b) = &self.front_boundary {
-            match &b {
-                Boundary::Space { .. } => {
-                    let front_env = ConvectionParams {
-                        air_temperature: t_front,
-                        air_speed: 0.0,
-                        rad_temperature: t_front,
-                        surface_temperature: self.parent.front_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
+        let (front_env, front_hs) = match &self.front_boundary {
+            Boundary::Space { .. } => {
+                let front_env = ConvectionParams {
+                    air_temperature: t_front,
+                    air_speed: 0.0,
+                    rad_temperature: t_front,
+                    surface_temperature: self.parent.front_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
 
-                    (
-                        front_env,
-                        front_env.get_tarp_natural_convection_coefficient(),
-                    )
-                }
-                Boundary::AmbientTemperature { temperature } => {
-                    let front_env = ConvectionParams {
-                        air_temperature: *temperature,
-                        air_speed: 0.0,
-                        rad_temperature: t_front,
-                        surface_temperature: self.parent.front_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
-
-                    (
-                        front_env,
-                        front_env.get_tarp_natural_convection_coefficient(),
-                    )
-                }
-                Boundary::Ground => unreachable!(),
-                Boundary::Outdoor => {
-                    let mut front_env = ConvectionParams {
-                        air_temperature: t_front,
-                        air_speed: wind_speed * self.wind_speed_modifier,
-                        rad_temperature: (ir_front / crate::SIGMA).powf(0.25) - 273.15,
-                        surface_temperature: self.parent.front_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
-                    front_env.cos_surface_tilt = -self.cos_tilt;
-                    (
-                        front_env,
-                        front_env.get_tarp_convection_coefficient(
-                            self.area,
-                            self.perimeter,
-                            windward,
-                        ),
-                    )
-                }
+                (
+                    front_env,
+                    front_env.get_tarp_natural_convection_coefficient(),
+                )
             }
-        } else {
-            let mut front_env = ConvectionParams {
-                air_temperature: t_front,
-                air_speed: wind_speed * self.wind_speed_modifier,
-                rad_temperature: (ir_front / crate::SIGMA).powf(0.25) - 273.15,
-                surface_temperature: self.parent.front_temperature(state),
-                roughness_index: 1,
-                cos_surface_tilt: self.cos_tilt,
-            };
-            front_env.cos_surface_tilt = -self.cos_tilt;
-            (
-                front_env,
-                front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
-            )
+            Boundary::AmbientTemperature { temperature } => {
+                let front_env = ConvectionParams {
+                    air_temperature: *temperature,
+                    air_speed: 0.0,
+                    rad_temperature: t_front,
+                    surface_temperature: self.parent.front_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
+
+                (
+                    front_env,
+                    front_env.get_tarp_natural_convection_coefficient(),
+                )
+            }
+            Boundary::Ground => unreachable!(),
+            Boundary::Outdoor => {
+                let mut front_env = ConvectionParams {
+                    air_temperature: t_front,
+                    air_speed: wind_speed * self.wind_speed_modifier,
+                    rad_temperature: (ir_front / crate::SIGMA).powf(0.25) - 273.15,
+                    surface_temperature: self.parent.front_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
+                front_env.cos_surface_tilt = -self.cos_tilt;
+                (
+                    front_env,
+                    front_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
+                )
+            }
         };
 
-        let (back_env, back_hs) = if let Some(b) = &self.back_boundary {
-            match &b {
-                Boundary::Space { .. } => {
-                    let back_env = ConvectionParams {
-                        air_temperature: t_back,
-                        air_speed: 0.0,
-                        rad_temperature: t_back, //self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
-                        surface_temperature: self.parent.back_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
-                    (back_env, back_env.get_tarp_natural_convection_coefficient())
-                }
-                Boundary::AmbientTemperature { temperature } => {
-                    let front_env = ConvectionParams {
-                        air_temperature: *temperature,
-                        air_speed: 0.0,
-                        rad_temperature: t_front,
-                        surface_temperature: self.parent.front_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
-
-                    (
-                        front_env,
-                        front_env.get_tarp_natural_convection_coefficient(),
-                    )
-                }
-                Boundary::Ground => unreachable!(),
-                Boundary::Outdoor => {
-                    let back_env = ConvectionParams {
-                        air_temperature: t_back,
-                        air_speed: wind_speed * self.wind_speed_modifier,
-                        rad_temperature: (ir_back / crate::SIGMA).powf(0.25) - 273.15,
-                        surface_temperature: self.parent.back_temperature(state),
-                        roughness_index: 1,
-                        cos_surface_tilt: self.cos_tilt,
-                    };
-                    (
-                        back_env,
-                        back_env.get_tarp_convection_coefficient(
-                            self.area,
-                            self.perimeter,
-                            windward,
-                        ),
-                    )
-                }
+        let (back_env, back_hs) = match &self.back_boundary {
+            Boundary::Space { .. } => {
+                let back_env = ConvectionParams {
+                    air_temperature: t_back,
+                    air_speed: 0.0,
+                    rad_temperature: t_back, //self.parent.back_temperature(state),//(ir_back/crate::SIGMA).powf(0.25) - 273.15,
+                    surface_temperature: self.parent.back_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
+                (back_env, back_env.get_tarp_natural_convection_coefficient())
             }
-        } else {
-            let back_env = ConvectionParams {
-                air_temperature: t_back,
-                air_speed: wind_speed * self.wind_speed_modifier,
-                rad_temperature: (ir_back / crate::SIGMA).powf(0.25) - 273.15,
-                surface_temperature: self.parent.back_temperature(state),
-                roughness_index: 1,
-                cos_surface_tilt: self.cos_tilt,
-            };
-            (
-                back_env,
-                back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
-            )
+            Boundary::AmbientTemperature { temperature } => {
+                let front_env = ConvectionParams {
+                    air_temperature: *temperature,
+                    air_speed: 0.0,
+                    rad_temperature: t_front,
+                    surface_temperature: self.parent.front_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
+
+                (
+                    front_env,
+                    front_env.get_tarp_natural_convection_coefficient(),
+                )
+            }
+            Boundary::Ground => unreachable!(),
+            Boundary::Outdoor => {
+                let back_env = ConvectionParams {
+                    air_temperature: t_back,
+                    air_speed: wind_speed * self.wind_speed_modifier,
+                    rad_temperature: (ir_back / crate::SIGMA).powf(0.25) - 273.15,
+                    surface_temperature: self.parent.back_temperature(state),
+                    roughness_index: 1,
+                    cos_surface_tilt: self.cos_tilt,
+                };
+                (
+                    back_env,
+                    back_env.get_tarp_convection_coefficient(self.area, self.perimeter, windward),
+                )
+            }
         };
 
         assert!(
@@ -951,8 +912,6 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         self.parent
             .get_node_temperatures(state, &mut memory.temperatures)?;
 
-        
-
         // Calculate and set Front and Back Solar Irradiance
         let mut solar_front = self.parent.front_solar_irradiance(state);
         if solar_front.is_nan() || solar_front < 0.0 {
@@ -1063,8 +1022,6 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
 
         // Ok((flow_front, flow_back))
     }
-
-    
 }
 
 /// A [`ThermalSurfaceData`] whose parent is a [`Surface`]
@@ -1153,7 +1110,13 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let s = Surface::new("Surface 1".to_string(), p, c.name().clone());
+        let s = Surface::new(
+            "Surface 1",
+            p,
+            c.name(),
+            Boundary::Outdoor,
+            Boundary::Outdoor,
+        );
 
         let surface = model.add_surface(s);
 
@@ -1181,8 +1144,6 @@ mod testing {
         )
         .unwrap();
 
-        
-
         ts.front_hs = Some(10.);
         ts.back_hs = Some(10.);
 
@@ -1201,20 +1162,26 @@ mod testing {
         let mut alloc = vec![memory];
 
         while q.abs() > 0.00015 {
-            surfaces[0].parent.set_front_ir_irradiance(&mut state, v).unwrap();
-            surfaces[0].parent.set_back_ir_irradiance(&mut state, v).unwrap();
+            surfaces[0]
+                .parent
+                .set_front_ir_irradiance(&mut state, v)
+                .unwrap();
+            surfaces[0]
+                .parent
+                .set_back_ir_irradiance(&mut state, v)
+                .unwrap();
 
             crate::model::iterate_surfaces(
                 &surfaces,
                 &mut alloc,
-                0.0, 
-                0.0, 
+                0.0,
+                0.0,
                 t_environment,
-                dt, 
+                dt,
                 &model,
-                &mut state
-            ).unwrap();
-                        
+                &mut state,
+            )
+            .unwrap();
 
             let q_in = surface.back_convective_heat_flow(&state).unwrap();
             let q_out = surface.front_convective_heat_flow(&state).unwrap();
@@ -1243,7 +1210,8 @@ mod testing {
         let fin = surfaces[0].parent.last_node_temperature_index().unwrap() + 1;
         let n_nodes = fin - ini;
         let mut temperatures = Matrix::new(0.0, n_nodes, 1);
-        surfaces[0].parent
+        surfaces[0]
+            .parent
             .get_node_temperatures(&state, &mut temperatures)
             .unwrap();
         for i in 0..n_nodes {
@@ -1254,7 +1222,6 @@ mod testing {
                 (t - 10.0).abs()
             );
         }
-        
     }
 
     #[test]
@@ -1283,8 +1250,13 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let mut s = Surface::new("Surface 1".to_string(), p, c.name().clone());
-        s.set_front_boundary(Boundary::AmbientTemperature { temperature: 30.0 });
+        let s = Surface::new(
+            "Surface 1",
+            p,
+            c.name(),
+            Boundary::AmbientTemperature { temperature: 30.0 },
+            Boundary::Outdoor,
+        );
 
         let surface = model.add_surface(s);
 
@@ -1312,8 +1284,6 @@ mod testing {
         )
         .unwrap();
 
-        
-
         ts.front_hs = Some(10.);
         ts.back_hs = Some(10.);
 
@@ -1339,23 +1309,19 @@ mod testing {
             //     .unwrap();
 
             crate::model::iterate_surfaces(
-                &surfaces,
-                &mut alloc,
-                0.0, 
-                0.0, 
-                10.0,
-                dt, 
-                &model,
-                &mut state
-            ).unwrap();
+                &surfaces, &mut alloc, 0.0, 0.0, 10.0, dt, &model, &mut state,
+            )
+            .unwrap();
 
             let q_front = surface.front_convective_heat_flow(&state).unwrap();
             let q_back = surface.back_convective_heat_flow(&state).unwrap();
 
-            surfaces[0].parent
+            surfaces[0]
+                .parent
                 .set_front_ir_irradiance(&mut state, crate::SIGMA * (10. + 273.15 as Float).powi(4))
                 .unwrap();
-            surfaces[0].parent
+            surfaces[0]
+                .parent
                 .set_back_ir_irradiance(&mut state, crate::SIGMA * (30. + 273.15 as Float).powi(4))
                 .unwrap();
 
@@ -1370,8 +1336,6 @@ mod testing {
                 panic!("Exceded number of iterations")
             }
         }
-
-        ;
         // Expecting
         assert!(final_qfront > -1e-5, "final_qfront = {}", final_qfront);
         assert!(final_qback < 1e-5, "final_qback = {}", final_qback);
@@ -1404,7 +1368,7 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let s = Surface::new("WALL".to_string(), p, c.name().clone());
+        let s = Surface::new("WALL", p, c.name(), Boundary::Outdoor, Boundary::Outdoor);
         let surface = model.add_surface(s);
         let mut state_header = SimulationStateHeader::new();
 
@@ -1434,8 +1398,7 @@ mod testing {
         .unwrap();
         ts.front_hs = Some(10.);
         ts.back_hs = Some(10.);
-        
-        
+
         let mut state = state_header.take_values().unwrap();
 
         // FIRST TEST -- 10 degrees on each side
@@ -1445,17 +1408,11 @@ mod testing {
         let memory = ts.allocate_memory();
         let surfaces = vec![ts];
         let mut alloc = vec![memory];
-        
+
         crate::model::iterate_surfaces(
-            &surfaces,
-            &mut alloc,
-            0.0, 
-            0.0, 
-            10.0,
-            dt, 
-            &model,
-            &mut state
-        ).unwrap();
+            &surfaces, &mut alloc, 0.0, 0.0, 10.0, dt, &model, &mut state,
+        )
+        .unwrap();
 
         let q_in = surface.front_convective_heat_flow(&state).unwrap();
         let q_out = surface.back_convective_heat_flow(&state).unwrap();
@@ -1465,7 +1422,8 @@ mod testing {
         let fin = surfaces[0].parent.last_node_temperature_index().unwrap() + 1;
         let n_nodes = fin - ini;
         let mut temperatures = Matrix::new(0.0, n_nodes, 1);
-        surfaces[0].parent
+        surfaces[0]
+            .parent
             .get_node_temperatures(&state, &mut temperatures)
             .unwrap();
 
@@ -1511,8 +1469,13 @@ mod testing {
         let p = Polygon3D::new(the_loop).unwrap();
 
         /* SURFACE */
-        let mut s = Surface::new("WALL".to_string(), p, c.name().clone());
-        s.set_back_boundary(Boundary::AmbientTemperature { temperature: 30. });
+        let s = Surface::new(
+            "WALL".to_string(),
+            p,
+            c.name().clone(),
+            Boundary::Outdoor,
+            Boundary::AmbientTemperature { temperature: 30. },
+        );
 
         let surface = model.add_surface(s);
         let mut state_header = SimulationStateHeader::new();
@@ -1543,16 +1506,14 @@ mod testing {
         .unwrap();
         ts.front_hs = Some(10.);
         ts.back_hs = Some(10.);
-        
+
         // assert!(!d.is_massive);
 
         let mut state = state_header.take_values().unwrap();
 
-        
         let memory = ts.allocate_memory();
         let surfaces = vec![ts];
         let mut alloc = vec![memory];
-
 
         // SECOND TEST -- 10 degrees in and 30 out.
         // We expect the final q to be (30-10)/R from
@@ -1560,16 +1521,9 @@ mod testing {
         // q_out = -(30-10)/R
 
         crate::model::iterate_surfaces(
-            &surfaces,
-            &mut alloc,
-            0.0, 
-            0.0, 
-            10.0,
-            dt, 
-            &model,
-            &mut state
-        ).unwrap();
-        
+            &surfaces, &mut alloc, 0.0, 0.0, 10.0, dt, &model, &mut state,
+        )
+        .unwrap();
 
         let q_front = surface.front_convective_heat_flow(&state).unwrap();
         let q_back = surface.back_convective_heat_flow(&state).unwrap();
@@ -1579,7 +1533,8 @@ mod testing {
         let fin = surfaces[0].parent.last_node_temperature_index().unwrap() + 1;
         let n_nodes = fin - ini;
         let mut temperatures = Matrix::new(0.0, n_nodes, 1);
-        surfaces[0].parent
+        surfaces[0]
+            .parent
             .get_node_temperatures(&state, &mut temperatures)
             .unwrap();
 
