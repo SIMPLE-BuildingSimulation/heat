@@ -1617,7 +1617,7 @@ SOFTWARE.
 <span class="kw">use crate</span>::{cavity::Cavity, surface::ChunkMemory};
 <span class="kw">use </span>matrix::Matrix;
 <span class="kw">use </span>simple_model::{Construction, SimpleModel, Substance};
-<span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// Represents a thermal connection in the thermal network.
 /// It can be a Cavity, a Solid, or other.
@@ -1686,7 +1686,7 @@ SOFTWARE.
     /// on each layer of Construction by calling `discretize_construction()`; and then builds the
     /// `Discretization` by calling `build()`.
     </span><span class="kw">pub fn </span>new(
-        construction: <span class="kw-2">&amp;</span>Rc&lt;Construction&gt;,
+        construction: <span class="kw-2">&amp;</span>Arc&lt;Construction&gt;,
         model: <span class="kw-2">&amp;</span>SimpleModel,
         model_dt: Float,
         max_dx: Float,
@@ -1754,7 +1754,7 @@ SOFTWARE.
 
     <span class="doccomment">/// Creates the `segments` of the `Discretization`.
     </span><span class="kw">fn </span>build(
-        construction: <span class="kw-2">&amp;</span>Rc&lt;Construction&gt;,
+        construction: <span class="kw-2">&amp;</span>Arc&lt;Construction&gt;,
         model: <span class="kw-2">&amp;</span>SimpleModel,
         tstep_subdivision: usize,
         n_elements: Vec&lt;usize&gt;,
@@ -2001,7 +2001,7 @@ SOFTWARE.
     /// actually half of what these equations use. This is because what we are using
     /// is a heuristic and I want to be safe... ish
     </span><span class="kw">fn </span>discretize_construction(
-        construction: <span class="kw-2">&amp;</span>Rc&lt;Construction&gt;,
+        construction: <span class="kw-2">&amp;</span>Arc&lt;Construction&gt;,
         model: <span class="kw-2">&amp;</span>SimpleModel,
         model_dt: Float,
         max_dx: Float,
@@ -2009,7 +2009,7 @@ SOFTWARE.
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(usize, Vec&lt;usize&gt;), String&gt; {
         <span class="comment">// I could only think of how to make this recursively... so I did this.
         </span><span class="kw">fn </span>aux(
-            construction: <span class="kw-2">&amp;</span>Rc&lt;Construction&gt;,
+            construction: <span class="kw-2">&amp;</span>Arc&lt;Construction&gt;,
             model: <span class="kw-2">&amp;</span>SimpleModel,
             main_dt: Float,
             n: usize,
@@ -2323,7 +2323,7 @@ SOFTWARE.
         density: Float,
         cp: Float,
         thickness: Float,
-    ) -&gt; (SimpleModel, Rc&lt;Construction&gt;) {
+    ) -&gt; (SimpleModel, Arc&lt;Construction&gt;) {
         <span class="kw">let </span><span class="kw-2">mut </span>model = SimpleModel::default();
 
         <span class="kw">let </span><span class="kw-2">mut </span>s = simple_model::substance::Normal::new(<span class="string">&quot;the substance&quot;</span>);
@@ -3151,4 +3151,4 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0 (2c8cc3432 2023-03-06)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>

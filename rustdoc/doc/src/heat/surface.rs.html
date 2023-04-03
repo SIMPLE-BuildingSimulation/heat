@@ -1685,7 +1685,7 @@ SOFTWARE.
     TerrainClass,
 };
 <span class="kw">use </span>simple_model::{SimulationState, SiteDetails};
-<span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// Calculates whether a surface is facing the wind direction
 /// **wind_direction in Radians**
@@ -1967,7 +1967,7 @@ SOFTWARE.
 /// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
 /// are treated in the same way.
 </span><span class="attr">#[derive(Clone, Debug)]
-</span><span class="kw">pub struct </span>ThermalSurfaceData&lt;T: SurfaceTrait&gt; {
+</span><span class="kw">pub struct </span>ThermalSurfaceData&lt;T: SurfaceTrait + Send&gt; {
     <span class="doccomment">/// A clone of the element in the [`SimpleModel`] which this struct represents
     </span><span class="kw">pub </span>parent: T,
 
@@ -2035,7 +2035,7 @@ SOFTWARE.
     </span><span class="kw">pub </span>back_hs: <span class="prelude-ty">Option</span>&lt;Float&gt;,
 }
 
-<span class="kw">impl</span>&lt;T: SurfaceTrait&gt; ThermalSurfaceData&lt;T&gt; {
+<span class="kw">impl</span>&lt;T: SurfaceTrait + Send&gt; ThermalSurfaceData&lt;T&gt; {
     <span class="doccomment">/// Allocates memory for the simulation
     </span><span class="kw">pub fn </span>allocate_memory(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SurfaceMemory {
         <span class="kw">let </span>massive_chunks = <span class="self">self
@@ -2071,12 +2071,12 @@ SOFTWARE.
         model: <span class="kw-2">&amp;</span>SimpleModel,
         site_details: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SiteDetails&gt;,
         ref_surface_index: usize,
-        parent: <span class="kw-2">&amp;</span>Rc&lt;T&gt;,
+        parent: <span class="kw-2">&amp;</span>Arc&lt;T&gt;,
         area: Float,
         perimeter: Float,
         height: Float,
         normal: Vector3D,
-        construction: <span class="kw-2">&amp;</span>Rc&lt;Construction&gt;,
+        construction: <span class="kw-2">&amp;</span>Arc&lt;Construction&gt;,
         discretization: Discretization,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;ThermalSurfaceData&lt;T&gt;, String&gt; {
         <span class="comment">// Set Front and Back state
@@ -2733,7 +2733,7 @@ SOFTWARE.
         model: <span class="kw-2">&amp;mut </span>SimpleModel,
         substance: Substance,
         thickness: Float,
-    ) -&gt; Rc&lt;Material&gt; {
+    ) -&gt; Arc&lt;Material&gt; {
         <span class="kw">let </span>mat = Material::new(<span class="string">&quot;123123&quot;</span>.to_string(), substance.name().clone(), thickness);
 
         model.add_material(mat)
@@ -3275,4 +3275,4 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0 (2c8cc3432 2023-03-06)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>

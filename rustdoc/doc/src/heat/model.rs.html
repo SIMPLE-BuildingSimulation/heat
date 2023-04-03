@@ -765,116 +765,6 @@
 <a href="#731" id="731">731</a>
 <a href="#732" id="732">732</a>
 <a href="#733" id="733">733</a>
-<a href="#734" id="734">734</a>
-<a href="#735" id="735">735</a>
-<a href="#736" id="736">736</a>
-<a href="#737" id="737">737</a>
-<a href="#738" id="738">738</a>
-<a href="#739" id="739">739</a>
-<a href="#740" id="740">740</a>
-<a href="#741" id="741">741</a>
-<a href="#742" id="742">742</a>
-<a href="#743" id="743">743</a>
-<a href="#744" id="744">744</a>
-<a href="#745" id="745">745</a>
-<a href="#746" id="746">746</a>
-<a href="#747" id="747">747</a>
-<a href="#748" id="748">748</a>
-<a href="#749" id="749">749</a>
-<a href="#750" id="750">750</a>
-<a href="#751" id="751">751</a>
-<a href="#752" id="752">752</a>
-<a href="#753" id="753">753</a>
-<a href="#754" id="754">754</a>
-<a href="#755" id="755">755</a>
-<a href="#756" id="756">756</a>
-<a href="#757" id="757">757</a>
-<a href="#758" id="758">758</a>
-<a href="#759" id="759">759</a>
-<a href="#760" id="760">760</a>
-<a href="#761" id="761">761</a>
-<a href="#762" id="762">762</a>
-<a href="#763" id="763">763</a>
-<a href="#764" id="764">764</a>
-<a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
-<a href="#780" id="780">780</a>
-<a href="#781" id="781">781</a>
-<a href="#782" id="782">782</a>
-<a href="#783" id="783">783</a>
-<a href="#784" id="784">784</a>
-<a href="#785" id="785">785</a>
-<a href="#786" id="786">786</a>
-<a href="#787" id="787">787</a>
-<a href="#788" id="788">788</a>
-<a href="#789" id="789">789</a>
-<a href="#790" id="790">790</a>
-<a href="#791" id="791">791</a>
-<a href="#792" id="792">792</a>
-<a href="#793" id="793">793</a>
-<a href="#794" id="794">794</a>
-<a href="#795" id="795">795</a>
-<a href="#796" id="796">796</a>
-<a href="#797" id="797">797</a>
-<a href="#798" id="798">798</a>
-<a href="#799" id="799">799</a>
-<a href="#800" id="800">800</a>
-<a href="#801" id="801">801</a>
-<a href="#802" id="802">802</a>
-<a href="#803" id="803">803</a>
-<a href="#804" id="804">804</a>
-<a href="#805" id="805">805</a>
-<a href="#806" id="806">806</a>
-<a href="#807" id="807">807</a>
-<a href="#808" id="808">808</a>
-<a href="#809" id="809">809</a>
-<a href="#810" id="810">810</a>
-<a href="#811" id="811">811</a>
-<a href="#812" id="812">812</a>
-<a href="#813" id="813">813</a>
-<a href="#814" id="814">814</a>
-<a href="#815" id="815">815</a>
-<a href="#816" id="816">816</a>
-<a href="#817" id="817">817</a>
-<a href="#818" id="818">818</a>
-<a href="#819" id="819">819</a>
-<a href="#820" id="820">820</a>
-<a href="#821" id="821">821</a>
-<a href="#822" id="822">822</a>
-<a href="#823" id="823">823</a>
-<a href="#824" id="824">824</a>
-<a href="#825" id="825">825</a>
-<a href="#826" id="826">826</a>
-<a href="#827" id="827">827</a>
-<a href="#828" id="828">828</a>
-<a href="#829" id="829">829</a>
-<a href="#830" id="830">830</a>
-<a href="#831" id="831">831</a>
-<a href="#832" id="832">832</a>
-<a href="#833" id="833">833</a>
-<a href="#834" id="834">834</a>
-<a href="#835" id="835">835</a>
-<a href="#836" id="836">836</a>
-<a href="#837" id="837">837</a>
-<a href="#838" id="838">838</a>
-<a href="#839" id="839">839</a>
-<a href="#840" id="840">840</a>
-<a href="#841" id="841">841</a>
-<a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -925,6 +815,7 @@ SOFTWARE.
     fenestrations: Vec&lt;SurfaceMemory&gt;,
 }
 
+
 <span class="doccomment">/// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
 </span><span class="kw">pub struct </span>ThermalModel {
@@ -942,10 +833,8 @@ SOFTWARE.
 
     <span class="doccomment">/// Luminaires
     </span><span class="kw">pub </span>luminaires: Vec&lt;ThermalLuminaire&gt;,
-
-    <span class="comment">// / contains all the HVACs
-    // pub hvacs: Vec&lt;Float&gt;,
-    </span><span class="doccomment">/// The number of steps that this model needs
+    
+    <span class="doccomment">/// The number of steps that this model needs
     /// to take in order to advance one step of the main
     /// simulation.
     </span><span class="kw">pub </span>dt_subdivisions: usize,
@@ -973,100 +862,11 @@ SOFTWARE.
     }
 }
 
-<span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
-// fn parallel_iterate_surfaces&lt;T : SurfaceTrait&gt;(
-//     surfaces: &amp;[ThermalSurfaceData&lt;T&gt;],
-//     alloc: &amp;mut Vec&lt;SurfaceMemory&gt;,
-//     wind_direction: Float,
-//     wind_speed: Float,
-//     t_out: Float,
-//     dt: Float,
-//     model: &amp;SimpleModel,
-//     state: &amp;mut SimulationState,
-// )-&gt;Result&lt;(),String&gt;{
 
-//     use std::{sync::{Arc, Mutex}, thread};
 
-//     let mut handles = Vec::with_capacity(surfaces.len());
-//     let shared_state = Arc::new(Mutex::new(state.clone()));
-
-//     // let front_back_temp : Vec&lt;(Float, Float)&gt; = surfaces.iter().map(|thermal_surface|{
-//     //     // find t_in and t_out of surface.
-//     //     let t_front = get_boundary_temperature(&amp;thermal_surface.front_boundary, t_out, model, state).unwrap();
-//     //     let t_back = get_boundary_temperature(&amp;thermal_surface.back_boundary, t_out, model, state).unwrap();
-//     //     (t_front, t_back)
-//     // }).collect();
-
-//     // let surface_iter = surfaces
-//     //     .iter()
-//     //     .zip(front_back_temp.into_iter())
-//     //     .zip(alloc.iter_mut());
-
-//     // for d in surface_iter {
-//     //     let ((thermal_surface, (t_front, t_back)), memory) = d;
-//     for i in 0..surfaces.len(){
-//         // let thermal_surface = Arc::new(&amp;surfaces[i]);
-//         let this_surface = surfaces[i].clone();
-//         let t_front = get_boundary_temperature(&amp;this_surface.front_boundary, t_out, model, state).unwrap();
-//         let t_back = get_boundary_temperature(&amp;this_surface.back_boundary, t_out, model, state).unwrap();
-//         let mut memory = alloc[i].clone();
-
-//         let this_state = Arc::clone(&amp;shared_state);
-
-//         let handle = thread::spawn(move || {
-
-//             let mut this_state = this_state.lock().unwrap();
-
-//                 // Update temperatures
-//                 this_surface.march(
-//                     &amp;this_state,
-//                     t_front,
-//                     t_back,
-//                     wind_direction,
-//                     wind_speed,
-//                     dt,
-//                     &amp;mut memory,
-//                 ).unwrap();
-
-//                 /////////////////////
-//                 // Now, set temperatures, calc heat-flows and return
-//                 /////////////////////
-//                 // let (rows, ..) = memory.temperatures.size();
-
-//                 // thermal_surface.parent
-//                 // .set_node_temperatures(state, &amp;memory.temperatures);
-
-//                 // // Calc heat flow
-//                 // let ts_front = memory.temperatures.get(0, 0).unwrap();
-//                 // let ts_back = memory.temperatures.get(rows - 1, 0).unwrap();
-//                 // let (_front_env, _back_env, front_hs, back_hs) =
-//                 // thermal_surface.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
-//                 // thermal_surface.parent
-//                 //     .set_front_convection_coefficient(state, front_hs).unwrap();
-//                 //     thermal_surface.parent
-//                 //     .set_back_convection_coefficient(state, back_hs).unwrap();
-
-//                 // let flow_front = (ts_front - t_front) * front_hs;
-//                 // let flow_back = (ts_back - t_back) * back_hs;
-
-//                 // thermal_surface.parent.set_front_convective_heat_flow(state, flow_front).unwrap();
-//                 // thermal_surface.parent.set_back_convective_heat_flow(state, flow_back).unwrap();
-
-//             });
-//             handles.push(handle);
-
-//     };
-
-//     for handle in handles {
-//         handle.join().unwrap();
-//     }
-
-//     Ok(())
-// }
-
-// #[cfg(not(feature = &quot;parallel&quot;))]
+<span class="comment">// #[cfg(not(feature = &quot;parallel&quot;))]
 </span><span class="attr">#[allow(clippy::too_many_arguments)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait&gt;(
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait + Send&gt;(
     surfaces: <span class="kw-2">&amp;</span>[ThermalSurfaceData&lt;T&gt;],
     alloc: <span class="kw-2">&amp;mut </span>[SurfaceMemory],
     wind_direction: Float,
@@ -1076,9 +876,15 @@ SOFTWARE.
     model: <span class="kw-2">&amp;</span>SimpleModel,
     state: <span class="kw-2">&amp;mut </span>SimulationState,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
-    <span class="kw">let </span>surface_iter = surfaces.iter().zip(alloc.iter_mut());
 
-    <span class="kw">let </span>results = surface_iter.map(
+    <span class="comment">// #[cfg(not(feature = &quot;parallel&quot;))]
+    </span><span class="kw">let </span>surface_iter = surfaces.iter().zip(alloc.iter_mut());
+    <span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
+    // let surface_iter = surfaces.into_par_iter().zip(alloc.par_iter_mut());
+
+    
+
+    </span><span class="kw">let </span>results = surface_iter.map(
         |d: (<span class="kw-2">&amp;</span>ThermalSurfaceData&lt;T&gt;, <span class="kw-2">&amp;mut </span>SurfaceMemory)| -&gt; <span class="prelude-ty">Result</span>&lt;(), String&gt; {
             <span class="kw">let </span>(thermal_surface, memory) = d;
 
@@ -1189,7 +995,7 @@ SOFTWARE.
             // as well
             </span>zones.push(ThermalZone::from_space(space, state, i)<span class="question-mark">?</span>);
         }
-
+        
         <span class="comment">/* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
 
         // choose the smallest timestep in all constructions
@@ -1345,32 +1151,8 @@ SOFTWARE.
             <span class="comment">// Gather spaces temperatures
             </span><span class="kw">let </span>t_current = <span class="self">self</span>.get_current_zones_temperatures(state);
 
-            <span class="comment">// #[cfg(feature = &quot;parallel&quot;)]
-            // parallel_iterate_surfaces(
-            //     &amp;self.surfaces,
-            //     &amp;mut alloc.surfaces,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(feature = &quot;parallel&quot;)]
-            // parallel_iterate_surfaces(
-            //     &amp;self.fenestrations,
-            //     &amp;mut alloc.fenestrations,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(not(feature = &quot;parallel&quot;))]
-            </span>iterate_surfaces(
+            
+            iterate_surfaces(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.surfaces,
                 <span class="kw-2">&amp;mut </span>alloc.surfaces,
                 wind_direction,
@@ -1380,9 +1162,8 @@ SOFTWARE.
                 model,
                 state,
             )<span class="question-mark">?</span>;
-
-            <span class="comment">// #[cfg(not(feature = &quot;parallel&quot;))]
-            </span>iterate_surfaces(
+            
+            iterate_surfaces(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.fenestrations,
                 <span class="kw-2">&amp;mut </span>alloc.fenestrations,
                 wind_direction,
@@ -1422,14 +1203,13 @@ SOFTWARE.
     }
 
     <span class="doccomment">/// Retrieves a ThermalZone
-    </span><span class="kw">pub fn </span>get_thermal_zone(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>ThermalZone, String&gt; {
+    </span><span class="kw">pub fn </span>get_thermal_zone(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>ThermalZone, String&gt; {        
         <span class="kw">if </span>index &gt;= <span class="self">self</span>.zones.len() {
             <span class="kw">return </span>ThermalModel::internal_error(<span class="macro">format!</span>(
                 <span class="string">&quot;Ouf of bounds: Thermal Zone number {} does not exist&quot;</span>,
                 index
             ));
         }
-
         <span class="prelude-val">Ok</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.zones[index])
     }
 
@@ -1540,7 +1320,7 @@ SOFTWARE.
         }
 
         <span class="comment">/* SURFACES */
-        </span><span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait&gt;(
+        </span><span class="kw">fn </span>iterate_surfaces&lt;T: SurfaceTrait + Send&gt;(
             surfaces: <span class="kw-2">&amp;</span>[ThermalSurfaceData&lt;T&gt;],
             state: <span class="kw-2">&amp;</span>SimulationState,
             a: <span class="kw-2">&amp;mut </span>[Float],
@@ -1719,4 +1499,4 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0 (2c8cc3432 2023-03-06)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>

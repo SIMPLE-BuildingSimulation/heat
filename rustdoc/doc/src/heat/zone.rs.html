@@ -120,12 +120,12 @@ SOFTWARE.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::Float;
 <span class="kw">use </span>simple_model::{SimulationStateElement, SimulationStateHeader, Space};
-<span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// A thermal representation of a [`Space`]
 </span><span class="kw">pub struct </span>ThermalZone {
     <span class="doccomment">/// The `Space` that this [`Thermal Zone`] represents
-    </span><span class="kw">pub </span>reference_space: Rc&lt;Space&gt;,
+    </span><span class="kw">pub </span>reference_space: Arc&lt;Space&gt;,
 
     <span class="doccomment">/// volume of the zone
     </span>volume: Float,
@@ -136,7 +136,7 @@ SOFTWARE.
     /// It will copy the index of the space, so it should be used
     /// by iterating the spaces in a model (so there is no mismatch).
     </span><span class="kw">pub fn </span>from_space(
-        space: <span class="kw-2">&amp;</span>Rc&lt;Space&gt;,
+        space: <span class="kw-2">&amp;</span>Arc&lt;Space&gt;,
         state: <span class="kw-2">&amp;mut </span>SimulationStateHeader,
         space_index: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
@@ -150,7 +150,7 @@ SOFTWARE.
         space.set_dry_bulb_temperature_index(state_index)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(ThermalZone {
-            reference_space: Rc::clone(space),
+            reference_space: Arc::clone(space),
             volume,
         })
     }
@@ -165,4 +165,4 @@ SOFTWARE.
     </span>}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0 (2c8cc3432 2023-03-06)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="heat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
