@@ -30,7 +30,7 @@ use simple_model::{
     TerrainClass,
 };
 use simple_model::{SimulationState, SiteDetails};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Calculates whether a surface is facing the wind direction
 /// **wind_direction in Radians**
@@ -312,7 +312,7 @@ fn rk4(memory: &mut ChunkMemory) -> Result<(), String> {
 /// radiation, e.g., light), both simple_model::Fenestration and simple_model::Surface
 /// are treated in the same way.
 #[derive(Clone, Debug)]
-pub struct ThermalSurfaceData<T: SurfaceTrait> {
+pub struct ThermalSurfaceData<T: SurfaceTrait + Send> {
     /// A clone of the element in the [`SimpleModel`] which this struct represents
     pub parent: T,
 
@@ -380,7 +380,7 @@ pub struct ThermalSurfaceData<T: SurfaceTrait> {
     pub back_hs: Option<Float>,
 }
 
-impl<T: SurfaceTrait> ThermalSurfaceData<T> {
+impl<T: SurfaceTrait + Send> ThermalSurfaceData<T> {
     /// Allocates memory for the simulation
     pub fn allocate_memory(&self) -> SurfaceMemory {
         let massive_chunks = self
@@ -416,12 +416,12 @@ impl<T: SurfaceTrait> ThermalSurfaceData<T> {
         model: &SimpleModel,
         site_details: &Option<SiteDetails>,
         ref_surface_index: usize,
-        parent: &Rc<T>,
+        parent: &Arc<T>,
         area: Float,
         perimeter: Float,
         height: Float,
         normal: Vector3D,
-        construction: &Rc<Construction>,
+        construction: &Arc<Construction>,
         discretization: Discretization,
     ) -> Result<ThermalSurfaceData<T>, String> {
         // Set Front and Back state
@@ -1078,7 +1078,7 @@ mod testing {
         model: &mut SimpleModel,
         substance: Substance,
         thickness: Float,
-    ) -> Rc<Material> {
+    ) -> Arc<Material> {
         let mat = Material::new("123123".to_string(), substance.name().clone(), thickness);
 
         model.add_material(mat)

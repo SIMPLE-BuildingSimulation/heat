@@ -20,12 +20,12 @@ SOFTWARE.
 
 use crate::Float;
 use simple_model::{SimulationStateElement, SimulationStateHeader, Space};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// A thermal representation of a [`Space`]
 pub struct ThermalZone {
     /// The `Space` that this [`Thermal Zone`] represents
-    pub reference_space: Rc<Space>,
+    pub reference_space: Arc<Space>,
 
     /// volume of the zone
     volume: Float,
@@ -36,7 +36,7 @@ impl ThermalZone {
     /// It will copy the index of the space, so it should be used
     /// by iterating the spaces in a model (so there is no mismatch).
     pub fn from_space(
-        space: &Rc<Space>,
+        space: &Arc<Space>,
         state: &mut SimulationStateHeader,
         space_index: usize,
     ) -> Result<Self, String> {
@@ -50,7 +50,7 @@ impl ThermalZone {
         space.set_dry_bulb_temperature_index(state_index)?;
 
         Ok(ThermalZone {
-            reference_space: Rc::clone(space),
+            reference_space: Arc::clone(space),
             volume,
         })
     }

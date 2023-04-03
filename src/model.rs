@@ -48,6 +48,7 @@ pub struct ThermalModelMemory {
     fenestrations: Vec<SurfaceMemory>,
 }
 
+
 /// A structure containing all the thermal representation of the whole
 /// [`SimpleModel`]
 pub struct ThermalModel {
@@ -65,9 +66,7 @@ pub struct ThermalModel {
 
     /// Luminaires
     pub luminaires: Vec<ThermalLuminaire>,
-
-    // / contains all the HVACs
-    // pub hvacs: Vec<Float>,
+    
     /// The number of steps that this model needs
     /// to take in order to advance one step of the main
     /// simulation.
@@ -96,100 +95,11 @@ fn get_boundary_temperature(
     }
 }
 
-// #[cfg(feature = "parallel")]
-// fn parallel_iterate_surfaces<T : SurfaceTrait>(
-//     surfaces: &[ThermalSurfaceData<T>],
-//     alloc: &mut Vec<SurfaceMemory>,
-//     wind_direction: Float,
-//     wind_speed: Float,
-//     t_out: Float,
-//     dt: Float,
-//     model: &SimpleModel,
-//     state: &mut SimulationState,
-// )->Result<(),String>{
 
-//     use std::{sync::{Arc, Mutex}, thread};
-
-//     let mut handles = Vec::with_capacity(surfaces.len());
-//     let shared_state = Arc::new(Mutex::new(state.clone()));
-
-//     // let front_back_temp : Vec<(Float, Float)> = surfaces.iter().map(|thermal_surface|{
-//     //     // find t_in and t_out of surface.
-//     //     let t_front = get_boundary_temperature(&thermal_surface.front_boundary, t_out, model, state).unwrap();
-//     //     let t_back = get_boundary_temperature(&thermal_surface.back_boundary, t_out, model, state).unwrap();
-//     //     (t_front, t_back)
-//     // }).collect();
-
-//     // let surface_iter = surfaces
-//     //     .iter()
-//     //     .zip(front_back_temp.into_iter())
-//     //     .zip(alloc.iter_mut());
-
-//     // for d in surface_iter {
-//     //     let ((thermal_surface, (t_front, t_back)), memory) = d;
-//     for i in 0..surfaces.len(){
-//         // let thermal_surface = Arc::new(&surfaces[i]);
-//         let this_surface = surfaces[i].clone();
-//         let t_front = get_boundary_temperature(&this_surface.front_boundary, t_out, model, state).unwrap();
-//         let t_back = get_boundary_temperature(&this_surface.back_boundary, t_out, model, state).unwrap();
-//         let mut memory = alloc[i].clone();
-
-//         let this_state = Arc::clone(&shared_state);
-
-//         let handle = thread::spawn(move || {
-
-//             let mut this_state = this_state.lock().unwrap();
-
-//                 // Update temperatures
-//                 this_surface.march(
-//                     &this_state,
-//                     t_front,
-//                     t_back,
-//                     wind_direction,
-//                     wind_speed,
-//                     dt,
-//                     &mut memory,
-//                 ).unwrap();
-
-//                 /////////////////////
-//                 // Now, set temperatures, calc heat-flows and return
-//                 /////////////////////
-//                 // let (rows, ..) = memory.temperatures.size();
-
-//                 // thermal_surface.parent
-//                 // .set_node_temperatures(state, &memory.temperatures);
-
-//                 // // Calc heat flow
-//                 // let ts_front = memory.temperatures.get(0, 0).unwrap();
-//                 // let ts_back = memory.temperatures.get(rows - 1, 0).unwrap();
-//                 // let (_front_env, _back_env, front_hs, back_hs) =
-//                 // thermal_surface.calc_border_conditions(state, t_front, t_back, wind_direction, wind_speed);
-//                 // thermal_surface.parent
-//                 //     .set_front_convection_coefficient(state, front_hs).unwrap();
-//                 //     thermal_surface.parent
-//                 //     .set_back_convection_coefficient(state, back_hs).unwrap();
-
-//                 // let flow_front = (ts_front - t_front) * front_hs;
-//                 // let flow_back = (ts_back - t_back) * back_hs;
-
-//                 // thermal_surface.parent.set_front_convective_heat_flow(state, flow_front).unwrap();
-//                 // thermal_surface.parent.set_back_convective_heat_flow(state, flow_back).unwrap();
-
-//             });
-//             handles.push(handle);
-
-//     };
-
-//     for handle in handles {
-//         handle.join().unwrap();
-//     }
-
-//     Ok(())
-// }
 
 // #[cfg(not(feature = "parallel"))]
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn iterate_surfaces<T: SurfaceTrait>(
+pub(crate) fn iterate_surfaces<T: SurfaceTrait + Send>(
     surfaces: &[ThermalSurfaceData<T>],
     alloc: &mut [SurfaceMemory],
     wind_direction: Float,
@@ -199,7 +109,13 @@ pub(crate) fn iterate_surfaces<T: SurfaceTrait>(
     model: &SimpleModel,
     state: &mut SimulationState,
 ) -> Result<(), String> {
+
+    // #[cfg(not(feature = "parallel"))]
     let surface_iter = surfaces.iter().zip(alloc.iter_mut());
+    // #[cfg(feature = "parallel")]
+    // let surface_iter = surfaces.into_par_iter().zip(alloc.par_iter_mut());
+
+    
 
     let results = surface_iter.map(
         |d: (&ThermalSurfaceData<T>, &mut SurfaceMemory)| -> Result<(), String> {
@@ -312,7 +228,7 @@ impl SimulationModel for ThermalModel {
             // as well
             zones.push(ThermalZone::from_space(space, state, i)?);
         }
-
+        
         /* CREATE ALL SURFACES AND FENESTRATIONS, AND IDENTIFY MODEL TIMESTEP  */
 
         // choose the smallest timestep in all constructions
@@ -468,31 +384,7 @@ impl SimulationModel for ThermalModel {
             // Gather spaces temperatures
             let t_current = self.get_current_zones_temperatures(state);
 
-            // #[cfg(feature = "parallel")]
-            // parallel_iterate_surfaces(
-            //     &self.surfaces,
-            //     &mut alloc.surfaces,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(feature = "parallel")]
-            // parallel_iterate_surfaces(
-            //     &self.fenestrations,
-            //     &mut alloc.fenestrations,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(not(feature = "parallel"))]
+            
             iterate_surfaces(
                 &self.surfaces,
                 &mut alloc.surfaces,
@@ -503,8 +395,7 @@ impl SimulationModel for ThermalModel {
                 model,
                 state,
             )?;
-
-            // #[cfg(not(feature = "parallel"))]
+            
             iterate_surfaces(
                 &self.fenestrations,
                 &mut alloc.fenestrations,
@@ -545,14 +436,13 @@ impl ThermalModel {
     }
 
     /// Retrieves a ThermalZone
-    pub fn get_thermal_zone(&self, index: usize) -> Result<&ThermalZone, String> {
+    pub fn get_thermal_zone(&self, index: usize) -> Result<&ThermalZone, String> {        
         if index >= self.zones.len() {
             return ThermalModel::internal_error(format!(
                 "Ouf of bounds: Thermal Zone number {} does not exist",
                 index
             ));
         }
-
         Ok(&self.zones[index])
     }
 
@@ -663,7 +553,7 @@ impl ThermalModel {
         }
 
         /* SURFACES */
-        fn iterate_surfaces<T: SurfaceTrait>(
+        fn iterate_surfaces<T: SurfaceTrait + Send>(
             surfaces: &[ThermalSurfaceData<T>],
             state: &SimulationState,
             a: &mut [Float],
