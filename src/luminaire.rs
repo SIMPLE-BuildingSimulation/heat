@@ -19,7 +19,7 @@ SOFTWARE.
 */
 
 use simple_model::{Luminaire, SimpleModel};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// An HVAC element from the point of view of the thermal
 /// model.
@@ -33,7 +33,7 @@ pub struct ThermalLuminaire {
 
 impl ThermalLuminaire {
     /// Builds a new [`ThermalLuminaire`] from an [`Luminaire`] and its location
-    pub fn from(lum: &Rc<Luminaire>, model: &SimpleModel) -> Result<Self, String> {
+    pub fn from(lum: &Arc<Luminaire>, model: &SimpleModel) -> Result<Self, String> {
         let parent = (**lum).clone();
         for (i, s) in model.spaces.iter().enumerate() {
             if s.name() == parent.target_space()? {

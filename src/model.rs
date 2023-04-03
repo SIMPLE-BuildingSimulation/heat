@@ -35,8 +35,8 @@ use crate::zone::ThermalZone;
 use simple_model::{Boundary, SimpleModel, SimulationState, SimulationStateHeader};
 use std::borrow::Borrow;
 
-// #[cfg(feature = "parallel")]
-// use rayon::prelude::*;
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 
 /// The module name. For debugging purposes
 pub(crate) const MODULE_NAME: &str = "Thermal model";
@@ -97,7 +97,7 @@ fn get_boundary_temperature(
 }
 
 // #[cfg(feature = "parallel")]
-// fn parallel_iterate_surfaces<T : SurfaceTrait>(
+// fn iterate_surfaces<T : SurfaceTrait>(
 //     surfaces: &[ThermalSurfaceData<T>],
 //     alloc: &mut Vec<SurfaceMemory>,
 //     wind_direction: Float,
@@ -108,7 +108,7 @@ fn get_boundary_temperature(
 //     state: &mut SimulationState,
 // )->Result<(),String>{
 
-//     use std::{sync::{Arc, Mutex}, thread};
+//     use std::{Send::{Arc, Mutex}, thread};
 
 //     let mut handles = Vec::with_capacity(surfaces.len());
 //     let shared_state = Arc::new(Mutex::new(state.clone()));
@@ -189,7 +189,7 @@ fn get_boundary_temperature(
 
 // #[cfg(not(feature = "parallel"))]
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn iterate_surfaces<T: SurfaceTrait>(
+pub(crate) fn iterate_surfaces<T: SurfaceTrait + Send>(
     surfaces: &[ThermalSurfaceData<T>],
     alloc: &mut [SurfaceMemory],
     wind_direction: Float,
@@ -199,7 +199,13 @@ pub(crate) fn iterate_surfaces<T: SurfaceTrait>(
     model: &SimpleModel,
     state: &mut SimulationState,
 ) -> Result<(), String> {
+
+    #[cfg(not(feature = "parallel"))]
     let surface_iter = surfaces.iter().zip(alloc.iter_mut());
+    #[cfg(feature = "parallel")]
+    let surface_iter = surfaces.into_par_iter().zip(alloc.par_iter_mut());
+
+    
 
     let results = surface_iter.map(
         |d: (&ThermalSurfaceData<T>, &mut SurfaceMemory)| -> Result<(), String> {
@@ -468,31 +474,7 @@ impl SimulationModel for ThermalModel {
             // Gather spaces temperatures
             let t_current = self.get_current_zones_temperatures(state);
 
-            // #[cfg(feature = "parallel")]
-            // parallel_iterate_surfaces(
-            //     &self.surfaces,
-            //     &mut alloc.surfaces,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(feature = "parallel")]
-            // parallel_iterate_surfaces(
-            //     &self.fenestrations,
-            //     &mut alloc.fenestrations,
-            //     wind_direction,
-            //     wind_speed,
-            //     t_out,
-            //     self.dt,
-            //     model,
-            //     state
-            // )?;
-
-            // #[cfg(not(feature = "parallel"))]
+            
             iterate_surfaces(
                 &self.surfaces,
                 &mut alloc.surfaces,
@@ -503,8 +485,7 @@ impl SimulationModel for ThermalModel {
                 model,
                 state,
             )?;
-
-            // #[cfg(not(feature = "parallel"))]
+            
             iterate_surfaces(
                 &self.fenestrations,
                 &mut alloc.fenestrations,
@@ -663,7 +644,7 @@ impl ThermalModel {
         }
 
         /* SURFACES */
-        fn iterate_surfaces<T: SurfaceTrait>(
+        fn iterate_surfaces<T: SurfaceTrait + Send>(
             surfaces: &[ThermalSurfaceData<T>],
             state: &SimulationState,
             a: &mut [Float],

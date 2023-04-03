@@ -24,7 +24,7 @@ use crate::Float;
 use crate::{cavity::Cavity, surface::ChunkMemory};
 use matrix::Matrix;
 use simple_model::{Construction, SimpleModel, Substance};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Represents a thermal connection in the thermal network.
 /// It can be a Cavity, a Solid, or other.
@@ -93,7 +93,7 @@ impl Discretization {
     /// on each layer of Construction by calling `discretize_construction()`; and then builds the
     /// `Discretization` by calling `build()`.
     pub fn new(
-        construction: &Rc<Construction>,
+        construction: &Arc<Construction>,
         model: &SimpleModel,
         model_dt: Float,
         max_dx: Float,
@@ -161,7 +161,7 @@ impl Discretization {
 
     /// Creates the `segments` of the `Discretization`.
     fn build(
-        construction: &Rc<Construction>,
+        construction: &Arc<Construction>,
         model: &SimpleModel,
         tstep_subdivision: usize,
         n_elements: Vec<usize>,
@@ -408,7 +408,7 @@ impl Discretization {
     /// actually half of what these equations use. This is because what we are using
     /// is a heuristic and I want to be safe... ish
     fn discretize_construction(
-        construction: &Rc<Construction>,
+        construction: &Arc<Construction>,
         model: &SimpleModel,
         model_dt: Float,
         max_dx: Float,
@@ -416,7 +416,7 @@ impl Discretization {
     ) -> Result<(usize, Vec<usize>), String> {
         // I could only think of how to make this recursively... so I did this.
         fn aux(
-            construction: &Rc<Construction>,
+            construction: &Arc<Construction>,
             model: &SimpleModel,
             main_dt: Float,
             n: usize,
@@ -730,7 +730,7 @@ mod testing {
         density: Float,
         cp: Float,
         thickness: Float,
-    ) -> (SimpleModel, Rc<Construction>) {
+    ) -> (SimpleModel, Arc<Construction>) {
         let mut model = SimpleModel::default();
 
         let mut s = simple_model::substance::Normal::new("the substance");
