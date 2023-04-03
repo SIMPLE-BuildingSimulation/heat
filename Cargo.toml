@@ -33,7 +33,7 @@ rustdoc-args = [
 ]
 
 [features]
-default = ["parallel"]
+default = []
 parallel=["rayon"]
 float = [
     "simple_model/float",  
