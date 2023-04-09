@@ -200,10 +200,10 @@ pub(crate) fn iterate_surfaces<T: SurfaceTrait + Send>(
     state: &mut SimulationState,
 ) -> Result<(), String> {
 
-    // #[cfg(not(feature = "parallel"))]
+    #[cfg(not(feature = "parallel"))]
     let surface_iter = surfaces.iter().zip(alloc.iter_mut());
-    // #[cfg(feature = "parallel")]
-    // let surface_iter = surfaces.into_par_iter().zip(alloc.par_iter_mut());
+    #[cfg(feature = "parallel")]
+    let surface_iter = surfaces.into_par_iter().zip(alloc.par_iter_mut());
 
     
 
